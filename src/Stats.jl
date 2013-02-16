@@ -1,5 +1,5 @@
 module Stats
-    import Base.mean
+    import Base.mean, Base.quantile
 
     export autocor,
            cor_spearman,
@@ -7,6 +7,7 @@ module Stats
            decile,
            distances,
            distances,
+           ecdf,
            inverse_rle,
            iqr,
            kurtosis,
@@ -221,5 +222,31 @@ module Stats
             end
         end
         return res
+    end
+
+    ## Empirical cummulative density function
+    function ecdf{T}(X::AbstractVector{T})
+        Xs = sort(X)
+        isnan(Xs[end]) && error("ecdf undefined in presence of NaNs")
+        n = length(X)
+        e(x::Real) = searchsortedlast(Xs, x) / n
+        function e(v::Vector)
+            ord = sortperm(v)
+            m = length(v)
+            r = Array(T, m)
+            r0 = 0
+            i = 1
+            for x in Xs
+                if x > v[ord[i]]
+                    r[ord[i]] = r0
+                    i += 1
+                end
+                r0 += 1
+                if i > m break end
+            end
+            if i == m r[ord[i]] = n end
+            return r / n
+        end
+        return e
     end
 end
