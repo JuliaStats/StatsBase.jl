@@ -21,7 +21,17 @@ module Stats
            tiedrank,
            weighted_mean
 
-    mean(v::AbstractArray, dim::Int) = sum(v, dim) / size(v, dim)
+    mean(v::AbstractArray, dim::Int) = squeeze(sum(v, dim), dim) / size(v, dim)
+
+    # tensor mean along a vector of dimensions
+    # For example, if A is an array with dimension M x N x P, then mean(A, [2 3])
+    # returns a length-M vector after taking the mean along the 2nd and 3rd dimension.
+    function mean{N}(v::AbstractArray, dims::Array{Int,N})
+       r = reducedim(+, v, dims, 0)
+       s = size(v)
+       r /= prod(s[dims])
+       squeeze(r, dims)
+   end
 
     weighted_mean(v::AbstractArray, w::AbstractArray) = sum(v .* w) / sum(w)
 
