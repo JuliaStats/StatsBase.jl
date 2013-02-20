@@ -23,7 +23,7 @@ module Stats
 
     # tensor mean along a vector of dimensions
     # For example, if A is an array with dimension M x N x P, then mean(A, [2 3])
-    # returns a length-M vector after taking the mean along the 2nd and 3rd dimension.
+    # returns a M x 1 x 1 array after taking the mean along the 2nd and 3rd dimension.
     mean(v::AbstractArray, dims::Union(Int, AbstractArray{Int})) = sum(v, dims) / prod(size(v)[dims])
 
     weighted_mean(v::AbstractArray, w::AbstractArray) = sum(v .* w) / sum(w)
