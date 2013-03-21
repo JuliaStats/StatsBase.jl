@@ -118,53 +118,47 @@ module Stats
     #
 
     # spearman covariance between two vectors
-    function cov_spearman(x::AbstractVector, y::AbstractVector, corrected::Bool)
-        return cov(tiedrank(x), tiedrank(y), corrected)
+    function cov_spearman(x::AbstractVector, y::AbstractVector)
+        return cov(tiedrank(x), tiedrank(y))
     end
 
     # spearman covariance over all pairs of columns of two matrices
-    function cov_spearman(X::AbstractMatrix, Y::AbstractMatrix, corrected::Bool)
-        return [cov_spearman(X[:,i], Y[:,j], corrected) for i = 1:size(X, 2), j = 1:size(Y,2)]
+    function cov_spearman(X::AbstractMatrix, Y::AbstractMatrix)
+        return [cov_spearman(X[:,i], Y[:,j]) for i = 1:size(X, 2), j = 1:size(Y,2)]
     end
-    function cov_spearman(x::AbstractVector, Y::AbstractMatrix, corrected::Bool)
-        return [cov_spearman(x, Y[:,i], corrected) for i = 1:size(Y, 2)]
+    function cov_spearman(x::AbstractVector, Y::AbstractMatrix)
+        return [cov_spearman(x, Y[:,i]) for i = 1:size(Y, 2)]
     end
-    function cov_spearman(X::AbstractMatrix, y::AbstractVector, corrected::Bool)
-        return [cov_spearman(X[:,i], y, corrected) for i = 1:size(X, 2)]
+    function cov_spearman(X::AbstractMatrix, y::AbstractVector)
+        return [cov_spearman(X[:,i], y) for i = 1:size(X, 2)]
     end
     # spearman covariance over all pairs of columns of a matrix
-    cov_spearman(X::AbstractMatrix, corrected::Bool) = cov(tiedrank(X, 1), corrected)
-
-    cov_spearman(x) = cov_spearman(x, true)
-    cov_spearman(x, y) = cov_spearman(x, y, true)
+    cov_spearman(X::AbstractMatrix) = cov(tiedrank(X, 1))
 
     #
     # spearman correlation functions
     #
 
     # spearman correlation between two vectors
-    function cor_spearman(x::AbstractVector, y::AbstractVector, corrected::Bool)
-        return cor(tiedrank(x), tiedrank(y), corrected)
+    function cor_spearman(x::AbstractVector, y::AbstractVector)
+        return cor(tiedrank(x), tiedrank(y))
     end
 
     # spearman correlation over all pairs of columns of two matrices
-    function cor_spearman(X::AbstractMatrix, Y::AbstractMatrix, corrected::Bool)
+    function cor_spearman(X::AbstractMatrix, Y::AbstractMatrix)
         return cor(tiedrank(X, 1), tiedrank(Y, 1))
     end
-    function cor_spearman(X::AbstractMatrix, y::AbstractVector, corrected::Bool)
+    function cor_spearman(X::AbstractMatrix, y::AbstractVector)
         return cor(tiedrank(X, 1), tiedrank(y))
     end
-    function cor_spearman(x::AbstractVector, Y::AbstractMatrix, corrected::Bool)
+    function cor_spearman(x::AbstractVector, Y::AbstractMatrix)
         return cor(tiedrank(x), tiedrank(Y, 1))
     end
 
     # spearman correlation over all pairs of columns of a matrix
-    function cor_spearman(X::AbstractMatrix, corrected::Bool)
-        return cor(tiedrank(X, 1), corrected)
+    function cor_spearman(X::AbstractMatrix)
+        return cor(tiedrank(X, 1))
     end
-
-    cor_spearman(x) = cor_spearman(x, true)
-    cor_spearman(x, y) = cor_spearman(x, y, true)
 
     # autocorrelation at a specific lag
     function autocor(v::AbstractVector, lag::Real)
