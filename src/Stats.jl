@@ -6,11 +6,13 @@ module Stats
            cov_spearman,
            decile,
            distances,
-           distances,
            ecdf,
            inverse_rle,
            iqr,
+           invlogit,
            kurtosis,
+           logit,
+           logsumexp,
            mad,
            percentile,
            quantile,
@@ -21,9 +23,19 @@ module Stats
            tiedrank,
            weighted_mean
 
+    # Generic array mean
     mean(v::AbstractArray, dim::Int) = sum(v, dim) / size(v, dim)
 
-    weighted_mean(v::AbstractArray, w::AbstractArray) = sum(v .* w) / sum(w)
+    # Weighted mean
+    # NB: Weights should include 1/n factor
+    function weighted_mean(v::AbstractArray, w::AbstractArray)
+        sv, sw = 0.0, 0.0
+        for i in 1:length(v)
+            sv += v[i] * w[i]
+            sw += w[i]
+        end
+        return sv / sw
+    end
 
     # median absolute deviation with known center with consistency adjustment
     mad(v::AbstractArray, center::Number) = 1.4826 * median(abs(v - center))
@@ -66,18 +78,44 @@ module Stats
     kurtosis(v::AbstractVector) = kurtosis(v, mean(v))
 
     # distance matrix
+    # Assumes vectors are column vectors
     function distances(m::AbstractMatrix)
-        n = size(m, 1)
-        d = Array(Float64, n, n)
-        for i in 1:n
-            d[i, i] = 0.0
-            for j in (i + 1):n
-                x = norm(m[i, :] - m[j, :])
-                d[i, j] = x
-                d[j, i] = x
+        p, n = size(m)
+        D = Array(Float64, n, n)
+        for j in 1:n
+            D[j, j] = 0.0
+            for i in (j + 1):n
+                x = 0.0
+                for k in 1:p
+                    x += (m[k, i] - m[k, j])^2
+                end
+                x = sqrt(x)
+                D[i, j] = x
+                D[j, i] = x
             end
         end
-        return d
+        return D
+    end
+
+    # distance matrix between entries of two distinct matrices
+    # Assumes vectors are column vectors
+    function distances(a::AbstractMatrix, b::AbstractMatrix)
+        p_a, n_a = size(a)
+        p_b, n_b = size(b)
+        if p_a != p_b
+            throw(DomainError("A and B must have the same dimension"))
+        end
+        D = Array(Float64, n_a, n_b)
+        for j in 1:n_b
+            for i in 1:n_a
+                x = 0.0
+                for k in 1:p_a
+                    x += (a[k, i] - b[k, j])^2
+                end
+                D[i, j] = sqrt(x)
+            end
+        end
+        return D
     end
 
     # order (aka, rank), resolving ties using the mean rank
@@ -243,4 +281,35 @@ module Stats
         end
         return e
     end
-end
+
+    function logit(p::Real)
+        if p < 0.0 || p > 1.0
+            DomainError("logit(p) only defined when p lies in [0, 1]")
+        else
+            return log(p / (1.0 - p))
+        end
+    end
+
+    invlogit(z::Real) = 1.0 / (1.0 + exp(-clamp(z, -709.0, 745.0)))
+
+    function logsumexp{T <: Real}(a::Vector{T})
+        a_min = Inf
+        a_max = -Inf
+        n = length(a)
+        for i in 1:n
+            if a[i] < a_min
+                a_min = a[i]
+            end
+            if a[i] > a_max
+                a_max = a[i]
+            end
+        end
+        c = a_max
+        s = 0.0
+        for i in 1:n
+            s += exp(a[i] - c)
+        end
+        return c + log(s)
+    end
+
+end # module
