@@ -26,7 +26,9 @@ module Stats
            rle,
            skewness,
            tiedrank,
-           weighted_mean
+           weighted_mean,
+           randshuffle!,
+           randsample
 
     # Generic array mean
     mean(v::AbstractArray, dim::Int) = sum(v, dim) / size(v, dim)
@@ -432,5 +434,79 @@ module Stats
         softmax!(x, y)
         y
     end
+
+    # some functions for sampling
+    
+    function randshuffle!{T}(x::AbstractArray{T}, n::Integer)
+        # inplace random shuffle of vector x
+        #
+        # randomly shuffles n elements of x to the first n locations
+        #
+        
+        n0 = length(x)
+        if n > n0
+            throw(ArgumentError("n exceeds the length of x"))
+        end
+        
+        for i = 1 : n      # Fisher-Yates shuffle (from left to right)
+            j = rand(i:n0)
+            if j > i
+                t::T = x[i]
+                x[i] = x[j]
+                x[j] = t                                
+            end
+        end
+    end
+
+    
+    function randsample{T<:Integer}(a::Range1{T}, n::Integer)
+        # random sample without replacement
+        
+        n0 = length(a)
+        if n > n0
+            throw(ArgumentError("n exceeds the length of x"))
+        end
+        
+        if n == 1
+            [rand(a)]
+            
+        elseif n == 2
+            x = rand(a, 2)
+            while x[2] == x[1]
+                x[2] = rand(a)
+            end
+            x
+        
+        elseif n * max(n, 100) < n0
+            # when n is very small as compared to n0, it is not worth
+            # the time to even generate [a]
+            
+            x = rand(a, n)  # first shot is likely successful
+            for i = 2 : n   # check and re-generate repeated ones
+                pass::Bool = false
+                xi::T = x[i]
+                while !pass                    
+                    pass = true
+                    for j = 1 : i-1
+                        if xi == x[j]
+                            pass = false
+                            break
+                        end                                     
+                    end
+                    if !pass
+                        xi = x[i] = rand(a)
+                    end
+                end                                
+            end            
+            x
+            
+        else
+            x = [a]
+            randshuffle!(x, n)
+            x[1:n]
+        end
+    end
+
+    randsample{T}(x::AbstractVector{T}, n::Integer) = x[randsample(1:length(x), n)]
 
 end # module
