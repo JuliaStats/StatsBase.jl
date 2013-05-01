@@ -13,6 +13,11 @@ module Stats
            kurtosis,
            logit,
            logsumexp,
+           logsumexp!,
+           pventropy,
+           pventropy!,
+           softmax,
+           softmax!,
            mad,
            percentile,
            quantile,
@@ -294,13 +299,138 @@ module Stats
 
     # logsumexp
 
-    function logsumexp{T <: Real}(a::Vector{T})
+    function logsumexp{T <: Real}(a::AbstractVector{T})
         c = max(a)
         s = 0.0
         for i in 1 : length(a)
             s += exp(a[i] - c)
         end
         return c + log(s)
+    end
+    
+    function logsumexp!{T <: Real}(a::AbstractMatrix{T}, r::AbstractVector{T})        
+        m = size(a, 1)
+        n = size(a, 2)
+        if length(r) != n
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+                
+        for j = 1 : n
+            c = a[1, j]
+            for i = 2 : m
+                if a[i, j] > c
+                    c = a[i, j]
+                end
+            end
+            s = 0.
+            for i = 1 : m
+                s += exp(a[i,j] - c)
+            end
+            r[j] = c + log(s)
+        end 
+    end
+    
+    function logsumexp{T <: Real}(a::AbstractMatrix{T})
+        r = Array(Float64, size(a, 2))
+        logsumexp!(a, r)
+        r
+    end
+    
+    # entropy of probability vectors
+    
+    function pventropy{T <: Real}(p::AbstractVector{T})
+        s = 0.
+        for i = 1 : length(p)
+            pi::T = p[i]
+            if pi > 0.
+                s += pi * log(pi)
+            end
+        end
+        -s
+    end
+    
+    function pventropy!{T <: Real}(p::AbstractMatrix{T}, r::AbstractVector{T})
+        m = size(p, 1)
+        n = size(p, 2)
+        if length(r) != n
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+        
+        for j = 1 : n
+            s = 0.
+            for i = 1 : m
+                pi::T = p[i, j]
+                if pi > 0.
+                    s += pi * log(pi)
+                end
+            end
+            r[j] = -s
+        end       
+    end
+    
+    function pventropy{T <: Real}(p::AbstractMatrix{T})
+        r = Array(Float64, size(p, 2))
+        pventropy!(p, r)
+        r
+    end
+    
+    # softmax
+    #
+    # y[i] = exp(x[i]) / sum(exp(x))
+    #
+    # It is useful to turn log-likelihood into posterior
+    #
+    
+    function softmax!{T <: Real}(x::AbstractVector{T}, y::AbstractVector{T})
+        n::Int = length(x)
+        if length(y) != n
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+        c = max(x)
+        s = 0.
+        for i = 1 : n
+            s += (y[i] = exp(x[i] - c))
+        end
+        inv_s = 1. / s
+        for i = 1 : n
+            y[i] *= inv_s
+        end
+    end
+    
+    function softmax{T <: Real}(x::AbstractVector{T})
+        y = Array(Float64, length(x))
+        softmax!(x, y)
+        y
+    end
+    
+    function softmax!{T <: Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T})
+        m::Int = size(x, 1)
+        n::Int = size(x, 2)
+        if size(y) != (m, n)
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+        for j = 1 : n
+            c = 0.
+            for i = 1 : m
+                if x[i,j] > c
+                    c = x[i,j]
+                end
+            end
+            s = 0.
+            for i = 1 : m
+                s += (y[i,j] = exp(x[i,j] - c))
+            end
+            inv_s = 1. / s
+            for i = 1 : m
+                y[i,j] *= inv_s
+            end
+        end
+    end
+    
+    function softmax{T <: Real}(x::AbstractMatrix{T})
+        y = Array(Float64, size(x))
+        softmax!(x, y)
+        y
     end
 
 end # module
