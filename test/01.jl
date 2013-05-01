@@ -1,5 +1,5 @@
 using Stats
-using Test
+using Base.Test
 
 @test_approx_eq autocor([1, 2, 3, 4, 5]) 1.0
 
@@ -22,11 +22,11 @@ d = [0.0 sqrt(2); sqrt(2) 0.0]
 @test_approx_eq distances(m) d
 
 m = [3.0 1.0; 5.0 1.0]
-d = [0.0 2.0; 2.0 0.0]
+d = [0.0 sqrt(20.); sqrt(20.) 0.0]
 @test_approx_eq distances(m) d
 
 m = [1 0 0; 0 1 0 ; 1 0 1]
-d = [0.0 sqrt(2) 1.0; sqrt(2) 0.0 sqrt(3); 1.0 sqrt(3) 0.0]
+d = [0.0 sqrt(3) 1.0; sqrt(3) 0.0 sqrt(2); 1.0 sqrt(2) 0.0]
 @test_approx_eq distances(m) d
 
 # X = [1 0; 2 1; 3 0; 4 1; 5 10]
