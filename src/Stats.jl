@@ -292,21 +292,12 @@ module Stats
 
     invlogit(z::Real) = 1.0 / (1.0 + exp(-clamp(z, -709.0, 745.0)))
 
+    # logsumexp
+
     function logsumexp{T <: Real}(a::Vector{T})
-        a_min = Inf
-        a_max = -Inf
-        n = length(a)
-        for i in 1:n
-            if a[i] < a_min
-                a_min = a[i]
-            end
-            if a[i] > a_max
-                a_max = a[i]
-            end
-        end
-        c = a_max
+        c = max(a)
         s = 0.0
-        for i in 1:n
+        for i in 1 : length(a)
             s += exp(a[i] - c)
         end
         return c + log(s)
