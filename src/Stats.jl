@@ -13,6 +13,11 @@ module Stats
            kurtosis,
            logit,
            logsumexp,
+           logsumexp!,
+           pventropy,
+           pventropy!,
+           softmax,
+           softmax!,
            mad,
            percentile,
            quantile,
@@ -21,7 +26,9 @@ module Stats
            rle,
            skewness,
            tiedrank,
-           weighted_mean
+           weighted_mean,
+           randshuffle!,
+           randsample
 
     # Generic array mean
     mean(v::AbstractArray, dim::Int) = sum(v, dim) / size(v, dim)
@@ -294,7 +301,7 @@ module Stats
 
     # logsumexp
 
-    function logsumexp{T <: Real}(a::Vector{T})
+    function logsumexp{T <: Real}(a::AbstractVector{T})
         c = max(a)
         s = 0.0
         for i in 1 : length(a)
@@ -302,5 +309,204 @@ module Stats
         end
         return c + log(s)
     end
+    
+    function logsumexp!{T <: Real}(a::AbstractMatrix{T}, r::AbstractVector{T})        
+        m = size(a, 1)
+        n = size(a, 2)
+        if length(r) != n
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+                
+        for j = 1 : n
+            c = a[1, j]
+            for i = 2 : m
+                if a[i, j] > c
+                    c = a[i, j]
+                end
+            end
+            s = 0.
+            for i = 1 : m
+                s += exp(a[i,j] - c)
+            end
+            r[j] = c + log(s)
+        end 
+    end
+    
+    function logsumexp{T <: Real}(a::AbstractMatrix{T})
+        r = Array(Float64, size(a, 2))
+        logsumexp!(a, r)
+        r
+    end
+    
+    # entropy of probability vectors
+    
+    function pventropy{T <: Real}(p::AbstractVector{T})
+        s = 0.
+        for i = 1 : length(p)
+            pi::T = p[i]
+            if pi > 0.
+                s += pi * log(pi)
+            end
+        end
+        -s
+    end
+    
+    function pventropy!{T <: Real}(p::AbstractMatrix{T}, r::AbstractVector{T})
+        m = size(p, 1)
+        n = size(p, 2)
+        if length(r) != n
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+        
+        for j = 1 : n
+            s = 0.
+            for i = 1 : m
+                pi::T = p[i, j]
+                if pi > 0.
+                    s += pi * log(pi)
+                end
+            end
+            r[j] = -s
+        end       
+    end
+    
+    function pventropy{T <: Real}(p::AbstractMatrix{T})
+        r = Array(Float64, size(p, 2))
+        pventropy!(p, r)
+        r
+    end
+    
+    # softmax
+    #
+    # y[i] = exp(x[i]) / sum(exp(x))
+    #
+    # It is useful to turn log-likelihood into posterior
+    #
+    
+    function softmax!{T <: Real}(x::AbstractVector{T}, y::AbstractVector{T})
+        n::Int = length(x)
+        if length(y) != n
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+        c = max(x)
+        s = 0.
+        for i = 1 : n
+            s += (y[i] = exp(x[i] - c))
+        end
+        inv_s = 1. / s
+        for i = 1 : n
+            y[i] *= inv_s
+        end
+    end
+    
+    function softmax{T <: Real}(x::AbstractVector{T})
+        y = Array(Float64, length(x))
+        softmax!(x, y)
+        y
+    end
+    
+    function softmax!{T <: Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T})
+        m::Int = size(x, 1)
+        n::Int = size(x, 2)
+        if size(y) != (m, n)
+            throw(ArgumentError("Inconsistent argument dimensions."))
+        end
+        for j = 1 : n
+            c = 0.
+            for i = 1 : m
+                if x[i,j] > c
+                    c = x[i,j]
+                end
+            end
+            s = 0.
+            for i = 1 : m
+                s += (y[i,j] = exp(x[i,j] - c))
+            end
+            inv_s = 1. / s
+            for i = 1 : m
+                y[i,j] *= inv_s
+            end
+        end
+    end
+    
+    function softmax{T <: Real}(x::AbstractMatrix{T})
+        y = Array(Float64, size(x))
+        softmax!(x, y)
+        y
+    end
+
+    # some functions for sampling
+    
+    function randshuffle!{T}(x::AbstractArray{T}, n::Integer)
+        # inplace random shuffle of vector x
+        #
+        # randomly shuffles n elements of x to the first n locations
+        #
+        
+        n0 = length(x)
+        if n > n0
+            throw(ArgumentError("n exceeds the length of x"))
+        end
+        
+        for i = 1 : n      # Fisher-Yates shuffle (from left to right)
+            j = rand(i:n0)
+            if j > i
+                t::T = x[i]
+                x[i] = x[j]
+                x[j] = t                                
+            end
+        end
+    end
+
+    
+    function randsample{T<:Integer}(a::Range1{T}, n::Integer)
+        # random sample without replacement
+        
+        n0 = length(a)
+        if n > n0
+            throw(ArgumentError("n exceeds the length of x"))
+        end
+        
+        if n == 1
+            [rand(a)]
+            
+        elseif n == 2
+            x = rand(a, 2)
+            while x[2] == x[1]
+                x[2] = rand(a)
+            end
+            x
+        
+        elseif n * max(n, 100) < n0
+            # when n is very small as compared to n0, it is not worth
+            # the time to even generate [a]
+            
+            x = rand(a, n)  # first shot is likely successful
+            for i = 2 : n   # check and re-generate repeated ones
+                pass::Bool = false
+                xi::T = x[i]
+                while !pass                    
+                    pass = true
+                    for j = 1 : i-1
+                        if xi == x[j]
+                            pass = false
+                            break
+                        end                                     
+                    end
+                    if !pass
+                        xi = x[i] = rand(a)
+                    end
+                end                                
+            end            
+            x
+            
+        else
+            x = [a]
+            randshuffle!(x, n)
+            x[1:n]
+        end
+    end
+
+    randsample{T}(x::AbstractVector{T}, n::Integer) = x[randsample(1:length(x), n)]
 
 end # module
