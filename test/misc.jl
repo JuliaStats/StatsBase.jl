@@ -33,3 +33,8 @@ x = [2, 1, 3, 3, 2]
 x = ["b", "a", "c", "c", "b"]
 @test indicatormat(x) == I
 @test full(indicatormat(x; sparse=true)) == I
+
+# zscore
+
+x = [rand(100) 5*rand(100)]
+@test_approx_eq_eps mean(zscore(x), 1) [0.0 0.0] eps()

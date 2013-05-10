@@ -79,9 +79,14 @@ module Stats
     nobs,
     stderr,
     vcov,
+    pca,
     predict,
     residuals,
-    model_response
+    model_response,
+    rle,
+    stderr,
+    vcov,
+    zscore
 
 
     # source files
