@@ -1,5 +1,5 @@
 module Stats
-    import Base.mean, Base.quantile
+    import Base.quantile
 
     export autocor,
            cor_spearman,
@@ -22,9 +22,6 @@ module Stats
            skewness,
            tiedrank,
            weighted_mean
-
-    # Generic array mean
-    mean(v::AbstractArray, dim::Int) = sum(v, dim) / size(v, dim)
 
     # Weighted mean
     # NB: Weights should include 1/n factor
