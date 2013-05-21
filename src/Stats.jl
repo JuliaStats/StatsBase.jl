@@ -202,13 +202,26 @@ module Stats
         return cor(tiedrank(X, 1))
     end
 
-    # autocorrelation at a specific lag
-    function autocor(v::AbstractVector, lag::Real)
-        return cor(v[1:end-lag], v[1+lag:end])
+    # autocorrelation for range
+    function autocor(x::AbstractVector, lags::Ranges)
+        lx = length(x)
+        if max(lags) > lx error("Autocorrelation distance must be less than sample size") end
+        mx = mean(x)
+        sxinv = 1/stdm(x, mx)
+        xs = Array(typeof(sxinv), lx)
+        for i = 1:lx
+            xs[i] = (x[i] - mx)*sxinv
+        end
+        acf = Array(typeof(sxinv), length(lags))
+        for i in 1:length(lags)
+            acf[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/(lx - 1)
+        end
+        return acf
     end
-
-    # autocorrelation at a default lag of 1
-    autocor(v::AbstractVector) = autocor(v, 1)
+    # autocorrelation at a specific lag
+    autocor(x::AbstractVector, lags::Real) = autocor(x, lags:lags)[1]
+    # autocorrelation at a default of zero to 10log10(length(v)) lags
+    autocor(v::AbstractVector) = autocor(v, 0:min(length(v) - 1, 10log10(length(v))))
 
     quantile(v::AbstractVector) = quantile(v, [.0, .25, .5, .75, 1.0])
     percentile(v::AbstractVector) = quantile(v, [1:99] / 100)
