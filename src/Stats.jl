@@ -151,7 +151,7 @@ module Stats
     end
     tiedrank(X::AbstractMatrix) = tiedrank(reshape(X, length(X)))
     function tiedrank(X::AbstractMatrix, dim::Int)
-        retmat = apply(hcat, amap(tiedrank, X, 3 - dim))
+        retmat = apply(hcat, mapslices(tiedrank, X, 3 - dim))
         return dim == 1 ? retmat : retmat'
     end
 
