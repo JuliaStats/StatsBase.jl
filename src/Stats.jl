@@ -19,6 +19,7 @@ module Stats
            softmax,
            softmax!,
            mad,
+           mad!,
            percentile,
            quantile,
            quartile,
@@ -51,6 +52,17 @@ module Stats
             v[i] = abs(v[i]-center)
         end
         1.4826 * median!(v, checknan=false)
+    end
+
+    function mad!(v::AbstractVector)
+        center = median!(v)
+        by = x->abs(x-center)
+        o = Sort.By(by)
+        n = length(v)
+        1.4826 * (isodd(n) ?
+            by(select!(v,div(n+1,2),o)) :
+           (by(select!(v,div(n,2),o))+by(select!(v,div(n,2)+1,o)))/2
+        )
     end
 
     # maximum likelihood estimate of skewness with known mean m
