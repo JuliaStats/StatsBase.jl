@@ -41,11 +41,17 @@ module Stats
         return sv / sw
     end
 
-    # median absolute deviation with known center with consistency adjustment
-    mad(v::AbstractArray, center::Number) = 1.4826 * median(abs(v - center))
+    # median absolute deviation with consistency adjustment
+    mad(v::AbstractArray, center::Number) = 1.4826 * median!(abs(v-center))
 
-    # median absolute deviation
-    mad(v::AbstractArray) = mad(v, median(v))
+    function mad(v::AbstractArray)
+        v = copy(v)
+        center = median!(v)
+        for i in 1:length(v)
+            v[i] = abs(v[i]-center)
+        end
+        1.4826 * median!(v)
+    end
 
     # maximum likelihood estimate of skewness with known mean m
     function skewness(v::AbstractVector, m::Number)
