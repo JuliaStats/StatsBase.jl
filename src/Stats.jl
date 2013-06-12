@@ -50,7 +50,7 @@ module Stats
         for i in 1:length(v)
             v[i] = abs(v[i]-center)
         end
-        1.4826 * median!(v)
+        1.4826 * median!(v, checknan=false)
     end
 
     # maximum likelihood estimate of skewness with known mean m
