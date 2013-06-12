@@ -309,7 +309,15 @@ module Stats
 
     invlogit(z::Real) = 1.0 / (1.0 + exp(-clamp(z, -709.0, 745.0)))
 
+
     # logsumexp
+    #
+    # We use the following formula for numerically stable computation
+    #
+    #   logsumexp(x) = log(sum_i exp(x[i] - c)) + c
+    #
+    # Here, c = max(x)
+    #
 
     function logsumexp{T <: Real}(a::AbstractVector{T})
         c = max(a)
@@ -320,34 +328,74 @@ module Stats
         return c + log(s)
     end
     
-    function logsumexp!{T <: Real}(a::AbstractMatrix{T}, r::AbstractVector{T})        
+    function logsumexp!{T <: Real}(r::AbstractVector{T}, a::AbstractMatrix{T}; dim::Int=1)        
         m = size(a, 1)
         n = size(a, 2)
-        if length(r) != n
-            throw(ArgumentError("Inconsistent argument dimensions."))
-        end
-                
-        for j = 1 : n
-            c = a[1, j]
-            for i = 2 : m
-                if a[i, j] > c
-                    c = a[i, j]
+
+        if dim == 1
+            if length(r) != n
+                throw(ArgumentError("Inconsistent argument dimensions."))
+            end
+
+            for j = 1 : n
+                c = a[1, j]
+                for i = 2 : m
+                    if a[i, j] > c
+                        c = a[i, j]
+                    end
+                end
+                s = 0.
+                for i = 1 : m
+                    s += exp(a[i,j] - c)
+                end
+                r[j] = c + log(s)                
+            end 
+
+        elseif dim == 2
+            if length(r) != m
+                throw(ArgumentError("Inconsistent argument dimensions."))                
+            end
+
+            # temporily store per-row maximums
+            c = a[:,1]
+            for j = 2 : n
+                for i = 1 : m
+                    if a[i,j] > c[i]
+                        c[i] = a[i,j]
+                    end
                 end
             end
-            s = 0.
+
+            # first column
             for i = 1 : m
-                s += exp(a[i,j] - c)
+                r[i] = exp(a[i,1] - c[i])
             end
-            r[j] = c + log(s)
-        end 
+
+            # remaining columns
+            for j = 2 : n
+                for i = 1 : m
+                    r[i] += exp(a[i,j] - c[i])
+                end
+            end
+
+            # get the final value
+            for i = 1 : m
+                r[i] = log(r[i]) + c[i]
+            end
+
+        else
+            throw(ArgumentError("The dim argument must be either 1 or 2."))
+        end
     end
     
-    function logsumexp{T <: Real}(a::AbstractMatrix{T})
-        r = Array(Float64, size(a, 2))
-        logsumexp!(a, r)
+    function logsumexp{T <: Real}(a::AbstractMatrix{T}; dim::Int=1)
+        rlen::Int = dim == 1 ? size(a, 2) : size(a, 1)
+        r = Array(Float64, rlen)
+        logsumexp!(r, a, dim=dim)
         r
     end
     
+
     # entropy of probability vectors
     
     function pventropy{T <: Real}(p::AbstractVector{T})
@@ -361,28 +409,56 @@ module Stats
         -s
     end
     
-    function pventropy!{T <: Real}(p::AbstractMatrix{T}, r::AbstractVector{T})
+    function pventropy!{T <: Real}(r::AbstractVector{T}, p::AbstractMatrix{T}; dim::Int=1)
         m = size(p, 1)
         n = size(p, 2)
-        if length(r) != n
-            throw(ArgumentError("Inconsistent argument dimensions."))
-        end
+
+        if dim == 1
+            if length(r) != n
+                throw(ArgumentError("Inconsistent argument dimensions."))
+            end
         
-        for j = 1 : n
-            s = 0.
+            for j = 1 : n
+                s = 0.
+                for i = 1 : m
+                    pi::T = p[i, j]
+                    if pi > 0.
+                        s += pi * log(pi)
+                    end
+                end
+                r[j] = -s
+            end       
+
+        elseif dim == 2
+            if length(r) != m
+                throw(ArgumentError("Inconsistent argument dimensions."))
+            end
+
+            # first column
             for i = 1 : m
-                pi::T = p[i, j]
-                if pi > 0.
-                    s += pi * log(pi)
+                pi::T = p[i,1]
+                r[i] = pi > 0. ? -pi * log(pi) : 0.
+            end
+
+            # remaining columns
+            for j = 2 : n
+                for i = 1 : m
+                    pi::T = p[i,j]
+                    if pi > 0.
+                        r[i] -= pi * log(pi)
+                    end
                 end
             end
-            r[j] = -s
-        end       
+
+        else
+            throw(ArgumentError("The dim argument must be either 1 or 2."))
+        end
     end
     
-    function pventropy{T <: Real}(p::AbstractMatrix{T})
-        r = Array(Float64, size(p, 2))
-        pventropy!(p, r)
+    function pventropy{T <: Real}(p::AbstractMatrix{T}; dim::Int=1)
+        rlen::Int = dim == 1 ? size(p, 2) : size(p, 1)
+        r = Array(Float64, rlen)
+        pventropy!(r, p; dim=dim)
         r
     end
     
@@ -390,10 +466,10 @@ module Stats
     #
     # y[i] = exp(x[i]) / sum(exp(x))
     #
-    # It is useful to turn log-likelihood into posterior
+    # It is useful for turning log-likelihood into posterior
     #
     
-    function softmax!{T <: Real}(x::AbstractVector{T}, y::AbstractVector{T})
+    function softmax!{T <: Real}(y::AbstractVector{T}, x::AbstractVector{T})
         n::Int = length(x)
         if length(y) != n
             throw(ArgumentError("Inconsistent argument dimensions."))
@@ -411,39 +487,77 @@ module Stats
     
     function softmax{T <: Real}(x::AbstractVector{T})
         y = Array(Float64, length(x))
-        softmax!(x, y)
+        softmax!(y, x)
         y
     end
     
-    function softmax!{T <: Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T})
+    function softmax!{T <: Real}(y::AbstractMatrix{T}, x::AbstractMatrix{T}; dim::Int=1)
         m::Int = size(x, 1)
         n::Int = size(x, 2)
         if size(y) != (m, n)
             throw(ArgumentError("Inconsistent argument dimensions."))
         end
-        for j = 1 : n
-            c = 0.
-            for i = 1 : m
-                if x[i,j] > c
-                    c = x[i,j]
+
+        if dim == 1
+            for j = 1 : n
+                c = 0.
+                for i = 1 : m
+                    if x[i,j] > c
+                        c = x[i,j]
+                    end
+                end
+                s = 0.
+                for i = 1 : m
+                    s += (y[i,j] = exp(x[i,j] - c))
+                end
+                inv_s = 1. / s
+                for i = 1 : m
+                    y[i,j] *= inv_s
                 end
             end
-            s = 0.
-            for i = 1 : m
-                s += (y[i,j] = exp(x[i,j] - c))
+
+        elseif dim == 2
+            # per-row maximums
+            c = x[:,1]
+            for j = 2 : n
+                for i = 1 : m
+                    if x[i,j] > c[i]
+                        c[i] = x[i,j]
+                    end
+                end
             end
-            inv_s = 1. / s
-            for i = 1 : m
-                y[i,j] *= inv_s
+
+            s = zeros(m)
+            for j = 1 : n
+                for i = 1 : m
+                    v = exp(x[i,j] - c[i])
+                    y[i,j] = v
+                    s[i] += v
+                end
             end
+
+            # normalize
+            for i = 1 : m
+                s[i] = 1.0 / s[i]
+            end
+
+            for j = 1 : n
+                for i = 1 : m
+                    y[i,j] *= s[i]
+                end
+            end
+
+        else
+            throw(ArgumentError("The dim argument must be either 1 or 2."))
         end
     end
     
-    function softmax{T <: Real}(x::AbstractMatrix{T})
+    function softmax{T <: Real}(x::AbstractMatrix{T}; dim::Int=1)
         y = Array(Float64, size(x))
-        softmax!(x, y)
+        softmax!(y, x, dim=dim)
         y
     end
+
 
     # some functions for sampling
     

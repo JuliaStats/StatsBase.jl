@@ -22,6 +22,12 @@ for i = 1 : 3
     r[i] = logsumexp(a[:,i])
 end
 @test_approx_eq logsumexp(a) r
+@test_approx_eq logsumexp(a, dim=1) r 
+@test_approx_eq logsumexp(a', dim=2) r
+
+@test_approx_eq logsumexp(a + 1000.) r + 1000.
+@test_approx_eq logsumexp(a + 1000., dim=1) r + 1000.
+@test_approx_eq logsumexp(a' + 1000., dim=2) r + 1000.
 
 # entropy
 
@@ -33,6 +39,8 @@ for i = 1 : 6
     r[i] = pventropy(a[:,i])
 end 
 @test_approx_eq pventropy(a) r
+@test_approx_eq pventropy(a; dim=1) r
+@test_approx_eq pventropy(a'; dim=2) r
 
 # softmax
 
@@ -46,3 +54,9 @@ for i = 1 : 3
     r[:,i] = softmax(a[:,i])
 end
 @test_approx_eq softmax(a) r
+@test_approx_eq softmax(a; dim=1) r
+@test_approx_eq softmax(a'; dim=2) r'
+
+@test_approx_eq softmax(a+1000.) r
+@test_approx_eq softmax(a+1000.; dim=1) r
+@test_approx_eq softmax(a'+1000.; dim=2) r'
