@@ -20,6 +20,7 @@ module Stats
            softmax!,
            mad,
            mad!,
+           mad!!,
            percentile,
            quantile,
            quartile,
@@ -44,9 +45,9 @@ module Stats
 
     # median absolute deviation with consistency adjustment
     mad(v::AbstractArray, center::Number) = 1.4826 * median!(abs(v-center))
+    mad(v::AbstractArray) = mad!!(copy(v))
 
-    function mad(v::AbstractArray)
-        v = copy(v)
+    function mad!!(v::AbstractVector)
         center = median!(v)
         for i in 1:length(v)
             v[i] = abs(v[i]-center)
