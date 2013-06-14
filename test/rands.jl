@@ -24,7 +24,6 @@ function verify_randsample(r::Matrix{Int}, m::Int, tol::Float64)
 end
 
 
-
 # rand shuffle
 
 m = 5
@@ -66,4 +65,18 @@ for i = 1 : n
     r[:,i] = randsample(1:m, 4)
 end
 @test verify_randsample(r, m, 0.02)
+
+# sample_by_weights
+
+w = [1., 2., 3., 4.]
+n = 1000000
+
+cnts = zeros(Int, 4)
+for i = 1 : n
+    xi = sample_by_weights(w, 10.)
+    cnts[xi] += 1
+end
+p = cnts / n
+p0 = w / sum(w)
+@test all(abs(p - p0) .< 0.01)
 
