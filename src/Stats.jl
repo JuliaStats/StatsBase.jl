@@ -23,8 +23,9 @@ module Stats
            weighted_mean,
            randshuffle!,
            randsample,
-           sample_by_weights
-
+           sample_by_weights,
+           gmean,
+           hmean
 
     # Weighted mean
     # NB: Weights should include 1/n factor
@@ -35,6 +36,33 @@ module Stats
             sw += w[i]
         end
         return sv / sw
+    end
+
+    # TODO: Support slicing along any dimensions
+    function gmean(a::AbstractArray)
+        s = 0.0
+        n = length(a)
+        for i in 1:n
+            tmp = a[i]
+            if tmp < 0.0
+                throw(DomainError())
+            elseif tmp == 0.0
+                return 0.0
+            else
+                s += log(tmp)
+            end
+        end
+        return exp(s / n)
+    end
+
+    # TODO: Support slicing along any dimensions
+    function hmean(a::AbstractArray)
+        s = 0.0
+        n = length(a)
+        for i in 1:n
+            s += 1 / a[i]
+        end
+        return n / s
     end
 
     # median absolute deviation with consistency adjustment
@@ -416,5 +444,17 @@ module Stats
 
     sample_by_weights(w::Vector{Float64}) = sample_by_weights(w, sum(w))
 
-end # module
+    # TODO: Support slicing along any dimensions
+    function modes{T}(a::AbstractArray{T})
+        res = Array(T, 0)
+        tab = table(a)
+        m = max(values(tab))
+        for (k, v) in tab
+            if v == m
+                push!(res, k)
+            end
+        end
+        return res
+    end
 
+end # module
