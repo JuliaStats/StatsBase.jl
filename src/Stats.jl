@@ -26,7 +26,8 @@ module Stats
            sample_by_weights,
            gmean,
            hmean,
-           findat
+           findat,
+           table
 
     # Weighted mean
     # NB: Weights should include 1/n factor
@@ -482,4 +483,13 @@ module Stats
         return indices
     end
 
+    # TODO: Support slicing along any dimensions
+    function table{T}(a::AbstractArray{T})
+        counts = Dict{T, Int}()
+        for i = 1:length(a)
+            tmp = a[i]
+            counts[tmp] = get(counts, tmp, 0) + 1
+        end
+        return counts
+    end
 end # module
