@@ -25,7 +25,8 @@ module Stats
            randsample,
            sample_by_weights,
            gmean,
-           hmean
+           hmean,
+           findat
 
     # Weighted mean
     # NB: Weights should include 1/n factor
@@ -455,6 +456,30 @@ module Stats
             end
         end
         return res
+    end
+
+    # TODO: Support slicing along any dimensions
+    function findat!{T}(indices::Vector{Int},
+                        a::AbstractArray,
+                        b::AbstractArray{T})
+        inds = Dict{T, Int}()
+        for i in 1:length(b)
+            tmp = b[i]
+            if !haskey(inds, tmp)
+                inds[tmp] = i
+            end
+        end
+        for i = 1:length(a)
+            indices[i] = get(inds, a[i], 0)
+        end
+        return
+    end
+
+    # TODO: Support slicing along any dimensions
+    function findat(a::AbstractArray, b::AbstractArray)
+        indices = Array(Int, length(a))
+        findat!(indices, a, b)
+        return indices
     end
 
 end # module
