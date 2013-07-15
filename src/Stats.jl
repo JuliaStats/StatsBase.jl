@@ -30,7 +30,8 @@ module Stats
            table,
            range,
            variation,
-           describe
+           describe,
+           sem
 
     # Weighted mean
     # NB: Weights should include 1/n factor
@@ -516,18 +517,23 @@ module Stats
 
     # TODO: Support slicing along any dimensions
     function describe(a::AbstractArray)
-        minval, maxval = range(a)
-        q25, q75 = iqr(a)
-        @printf "Min: %f\n" minval
-        @printf "1st Quartile: %f\n" q25
-        @printf "Median: %f\n" median(a)
-        @printf "Mean: %f\n" mean(a)
-        @printf "3rd Quartile: %f\n" q75
-        @printf "Max: %f\n" maxval
+        q00, q25, q50, q75, q10 = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
+        @printf "Min:          %.6f\n" q00
+        @printf "1st Quartile: %.6f\n" q25
+        @printf "Median:       %.6f\n" q50
+        @printf "Mean:         %.6f\n" mean(a)
+        @printf "3rd Quartile: %.6f\n" q75
+        @printf "Max:          %.6f\n" q10
         return
     end
 
     # TODO: Support slicing along any dimensions
     sem(a::AbstractArray) = sqrt(var(a) / length(a))
+
+    # TODO: Support slicing along any dimensions
+    function midrange(a::AbstractArray)
+        minval, maxval = range(a)
+        return (maxvavl - minval) / 2
+    end
 
 end # module
