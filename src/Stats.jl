@@ -27,7 +27,10 @@ module Stats
            gmean,
            hmean,
            findat,
-           table
+           table,
+           range,
+           variation,
+           describe
 
     # Weighted mean
     # NB: Weights should include 1/n factor
@@ -492,4 +495,39 @@ module Stats
         end
         return counts
     end
+
+    # TODO: Support slicing along any dimensions
+    function range{T <: Real}(a::AbstractArray{T})
+        minval, maxval = typemax(T), typemin(T)
+        for i in 1:length(a)
+            tmp = a[i]
+            if tmp < minval
+                minval = tmp
+            end
+            if tmp > maxval
+                maxval = tmp
+            end
+        end
+        return minval, maxval
+    end
+
+    # TODO: Support slicing along any dimensions
+    variation(a::AbstractArray) = std(a) / mean(a)
+
+    # TODO: Support slicing along any dimensions
+    function describe(a::AbstractArray)
+        minval, maxval = range(a)
+        q25, q75 = iqr(a)
+        @printf "Min: %f\n" minval
+        @printf "1st Quartile: %f\n" q25
+        @printf "Median: %f\n" median(a)
+        @printf "Mean: %f\n" mean(a)
+        @printf "3rd Quartile: %f\n" q75
+        @printf "Max: %f\n" maxval
+        return
+    end
+
+    # TODO: Support slicing along any dimensions
+    sem(a::AbstractArray) = sqrt(var(a) / length(a))
+
 end # module
