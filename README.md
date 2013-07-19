@@ -26,8 +26,6 @@ Basic statistics functions for Julia
 * `quantile(a)`: Compute any desired quantile of `a`.
 * `quartile(a): Compute the quartiles of `a`.
 * `quintile(a)`: Compute the quintiles of `a`.
-* `randsample(a)`: Randomly sample from `a`.
-* `randshuffle!(a)`: Produce a random shuffle of `a`.
 * `range(a)`: Compute the min and max of `a`.
 * `rle(a)`: Compute a run-length encoding of `a`.
 * `sem(a)`: Compute the standard error of the mean of `a`.

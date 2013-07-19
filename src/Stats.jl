@@ -21,9 +21,6 @@ module Stats
            skewness,
            tiedrank,
            weighted_mean,
-           randshuffle!,
-           randsample,
-           sample_by_weights,
            gmean,
            hmean,
            findat,
@@ -345,110 +342,6 @@ module Stats
 
     invlogit(z::Real) = 1.0 / (1.0 + exp(-clamp(z, -709.0, 745.0)))
 
-
-    # some functions for sampling
-    
-    function randshuffle!{T}(x::AbstractArray{T}, n::Integer)
-        # inplace random shuffle of vector x
-        #
-        # randomly shuffles n elements of x to the first n locations
-        #
-        
-        n0 = length(x)
-        if n > n0
-            throw(ArgumentError("n exceeds the length of x"))
-        end
-        
-        for i = 1 : n      # Fisher-Yates shuffle (from left to right)
-            j = rand(i:n0)
-            if j > i
-                t::T = x[i]
-                x[i] = x[j]
-                x[j] = t                                
-            end
-        end
-    end
-
-    
-    function randsample{T<:Integer}(a::Range1{T}, n::Integer)
-        # random sample without replacement
-        
-        n0 = length(a)
-        if n > n0
-            throw(ArgumentError("n exceeds the length of x"))
-        end
-        
-        if n == 1
-            [rand(a)]
-            
-        elseif n == 2
-            x = rand(a, 2)
-            while x[2] == x[1]
-                x[2] = rand(a)
-            end
-            x
-        
-        elseif n * max(n, 100) < n0
-            # when n is very small as compared to n0, it is not worth
-            # the time to even generate [a]
-            
-            x = rand(a, n)  # first shot is likely successful
-            for i = 2 : n   # check and re-generate repeated ones
-                pass::Bool = false
-                xi::T = x[i]
-                while !pass                    
-                    pass = true
-                    for j = 1 : i-1
-                        if xi == x[j]
-                            pass = false
-                            break
-                        end                                     
-                    end
-                    if !pass
-                        xi = x[i] = rand(a)
-                    end
-                end                                
-            end            
-            x
-            
-        else
-            x = [a]
-            randshuffle!(x, n)
-            x[1:n]
-        end
-    end
-
-    randsample{T}(x::AbstractVector{T}, n::Integer) = x[randsample(1:length(x), n)]
-
-
-    ###########################################################
-    #
-    #   A fast sampling method to sample x ~ p,
-    #   where p is proportional to given weights.
-    #
-    #   This algorithm performs the sampling without
-    #   computing p (normalizing the weights).
-    #
-    #   This function is particularly useful in many MCMC
-    #   algorithms.
-    #
-    ###########################################################
-
-    function sample_by_weights(w::Vector{Float64}, totalw::Float64)
-        n = length(w)
-        t = rand() * totalw
-
-        x = 1
-        s = w[1]
-
-        while x < n && s < t
-            x += 1
-            s += w[x]
-        end
-        return x
-    end
-
-    sample_by_weights(w::Vector{Float64}) = sample_by_weights(w, sum(w))
 
     # TODO: Support slicing along any dimensions
     function modes{T}(a::AbstractArray{T})
