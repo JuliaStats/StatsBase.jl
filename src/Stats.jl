@@ -13,6 +13,8 @@ module Stats
            kurtosis,
            logit,
            mad,
+           mad!,
+           mad!!,
            percentile,
            quantile,
            quartile,
@@ -70,14 +72,25 @@ module Stats
 
     # median absolute deviation with consistency adjustment
     mad(v::AbstractArray, center::Number) = 1.4826 * median!(abs(v-center))
+    mad(v::AbstractArray) = mad!!(copy(v))
 
-    function mad(v::AbstractArray)
-        v = copy(v)
+    function mad!!(v::AbstractVector)
         center = median!(v)
         for i in 1:length(v)
             v[i] = abs(v[i]-center)
         end
         1.4826 * median!(v, checknan=false)
+    end
+
+    function mad!(v::AbstractVector)
+        center = median!(v)
+        by = x->abs(x-center)
+        o = Sort.By(by)
+        n = length(v)
+        1.4826 * (isodd(n) ?
+            by(select!(v,div(n+1,2),o)) :
+           (by(select!(v,div(n,2),o))+by(select!(v,div(n,2)+1,o)))/2
+        )
     end
 
     # maximum likelihood estimate of skewness with known mean m
