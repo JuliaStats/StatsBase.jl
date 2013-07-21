@@ -17,18 +17,6 @@ values, lengths = rle(z)
 @test lengths == [2, 2, 1, 1, 3, 1]
 @test inverse_rle(values, lengths) == z
 
-m = [1 0; 0 1]
-d = [0.0 sqrt(2); sqrt(2) 0.0]
-@test_approx_eq distances(m) d
-
-m = [3.0 1.0; 5.0 1.0]
-d = [0.0 sqrt(20.); sqrt(20.) 0.0]
-@test_approx_eq distances(m) d
-
-m = [1 0 0; 0 1 0 ; 1 0 1]
-d = [0.0 sqrt(3) 1.0; sqrt(3) 0.0 sqrt(2); 1.0 sqrt(2) 0.0]
-@test_approx_eq distances(m) d
-
 # X = [1 0; 2 1; 3 0; 4 1; 5 10]
 # y = [5, 3, 4, 2, 5]
 # @assert_approx_eq cov_spearman(X, y)[1] cov_spearman(X[:,1],y)

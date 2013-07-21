@@ -6,8 +6,7 @@
 
 using Stats
 
-my_tests = ["test/01.jl",
-            "test/02.jl"]
+my_tests = ["test/01.jl"]
             #"test/statquiz.jl"]
 
 println("Running tests:")
