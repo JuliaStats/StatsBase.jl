@@ -11,7 +11,7 @@ Basic statistics functions for Julia
 * `distances(X)`: Compute the pairwise distances between columns of `X`.
 * `distances(X, Y)`: Compute the pairwise distances between columns of `X` and `Y`.
 * `ecdf(a)`: Return the empirical CDF of `a` as a function that can be evaluated anywhere on the real line.
-* `findat!(indices, a, b): Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`. This occurs in-place by mutating indices.
+* `findat!(indices, a, b):` Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`. This occurs in-place by mutating indices.
 * `findat(a, b)`: Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`.
 * `gmean(a)`: Compute the geometric mean of `a`.
 * `hmean(a)`: Compute the harmonic mean of `a`.
