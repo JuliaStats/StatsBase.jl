@@ -21,6 +21,8 @@ module Stats
     quintile,
     decile,
     iqr,
+    table,
+    mode,
     modes,
     describe,
 
@@ -36,9 +38,8 @@ module Stats
     rle,
     inverse_rle,
     ecdf,
-    findat,
-    table    
-
+    findat
+     
 
     include("scalar_stats.jl")
     include("weighted_stats.jl")
