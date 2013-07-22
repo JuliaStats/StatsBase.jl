@@ -67,16 +67,6 @@ function findat(a::AbstractArray, b::AbstractArray)
     return indices
 end
 
-# TODO: Support slicing along any dimensions
-function table{T}(a::AbstractArray{T})
-    counts = Dict{T, Int}()
-    for i = 1:length(a)
-        tmp = a[i]
-        counts[tmp] = get(counts, tmp, 0) + 1
-    end
-    return counts
-end
-
 
 ## Empirical cummulative density function
 function ecdf{T}(X::AbstractVector{T})

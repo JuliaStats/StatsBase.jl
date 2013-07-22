@@ -166,17 +166,46 @@ quintile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.2, .4, .6, .8])
 decile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.1, .2, .3, .4, .5, .6, .7, .8, .9])
 iqr{T<:Real}(v::AbstractVector{T}) = quantile(v, [.25, .75])
 
-# all modes
-function modes{T}(x::AbstractArray{T})
-    m = max(x)
-    r = Array(T, 0)
-    for x_i in x
-        if x_i == m
-            push!(r, x_i)
+
+# table & mode
+
+function table{T}(a::AbstractArray{T})
+    counts = Dict{T, Int}()
+    for i = 1:length(a)
+        tmp = a[i]
+        counts[tmp] = get(counts, tmp, 0) + 1
+    end
+    return counts
+end
+
+function mode{T}(a::AbstractArray{T})
+    if isempty(a)
+        throw(ArgumentError("mode: a cannot be empty."))
+    end
+    tab = table(a)
+    m = max(values(tab))
+    for (k, v) in tab
+        if v == m
+            return k
         end
     end
-    r
 end
+
+function modes{T}(a::AbstractArray{T})
+    if isempty(a)
+        throw(ArgumentError("mode: a cannot be empty."))
+    end
+    res = Array(T, 0)
+    tab = table(a)
+    m = max(values(tab))
+    for (k, v) in tab
+        if v == m
+            push!(res, k)
+        end
+    end
+    return res
+end
+
 
 # Print out basic summary statistics
 function describe{T<:Real}(a::AbstractArray{T})
