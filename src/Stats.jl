@@ -35,11 +35,25 @@ module Stats
     cor_kendall,    
 
     # others
-    rle,
-    inverse_rle,
+    ## Types
+    StatisticalModel,
+    RegressionModel,
+    
+    ## Fcuntions
+    coef,
+    coeftable,
+    confint,
     ecdf,
-    findat
-     
+    findat,
+    inverse_rle,
+    loglikelihood,
+    nobs,
+    predict,
+    residuals,
+    model_response,
+    rle,
+    stderr,
+    vcov
 
     include("scalar_stats.jl")
     include("weighted_stats.jl")
