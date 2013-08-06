@@ -151,12 +151,6 @@ end
 
 tiedrank{T<:Real}(X::AbstractMatrix{T}) = tiedrank(reshape(X, length(X)))
 
-function tiedrank{T<:Real}(X::AbstractMatrix{T}, dim::Int)
-    retmat = apply(hcat, mapslices(tiedrank, X, 3 - dim))
-    return dim == 1 ? retmat : retmat'
-end
-
-
 # quantile and friends
 
 quantile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.0, .25, .5, .75, 1.0])

@@ -32,7 +32,7 @@ module Stats
     # corr
     autocor,
     cor_spearman,
-    cov_spearman,    
+    cor_kendall,    
 
     # others
     rle,
