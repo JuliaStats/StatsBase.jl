@@ -109,13 +109,13 @@ end
 
 
 # Mid-range
-function midrange{T<:Real}(x::AbstractArray{T})
+function midrange{T<:Real}(a::AbstractArray{T})
     xmin, xmax = minmax(a)
     return xmin + (xmax - xmin) / 2
 end
 
 # Range: xmax - xmin
-function range{T<:Real}(x::AbstractArray{T})
+function range{T<:Real}(a::AbstractArray{T})
     xmin, xmax = minmax(a)
     return xmax - xmin
 end
