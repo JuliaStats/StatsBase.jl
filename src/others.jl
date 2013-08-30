@@ -81,14 +81,17 @@ function ecdf{T}(X::AbstractVector{T})
         r0 = 0
         i = 1
         for x in Xs
-            if x > v[ord[i]]
+            while i <= m && x > v[ord[i]]
                 r[ord[i]] = r0
                 i += 1
             end
             r0 += 1
             if i > m break end
         end
-        if i == m r[ord[i]] = n end
+        while i <= m
+            r[ord[i]] = n
+            i += 1
+        end
         return r / n
     end
     return e
