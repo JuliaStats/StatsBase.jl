@@ -48,6 +48,7 @@ module Stats
     inverse_rle,
     loglikelihood,
     nobs,
+    onehot,
     predict,
     residuals,
     model_response,

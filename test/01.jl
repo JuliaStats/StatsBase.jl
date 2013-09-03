@@ -31,3 +31,7 @@ fnecdf = ecdf(randn(10000000))
 
 fnecdf = ecdf([0.5])
 @test fnecdf([zeros(5000), ones(5000)]) == [zeros(5000), ones(5000)]
+
+y = [0, 1, 0, 2, 1]
+@test onehot(y) == [1 0 0; 0 1 0; 1 0 0; 0 0 1; 0 1 0]'
+

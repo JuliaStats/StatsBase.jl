@@ -97,6 +97,19 @@ function ecdf{T}(X::AbstractVector{T})
     return e
 end
 
+# Encode categories using one-hot scheme aka one-of-C encoding
+# Assumes that categories are encoded as integers in the range [0, c-1],
+# where c is the number of categories (or classes)
+function onehot{T<:Real}(y::AbstractVector{T})
+    const n = length(y)
+    const c = max(y)+1
+    Y = zeros(T, c, n)
+    for i in 1:n
+        Y[y[i]+1, i] = one(T)
+    end
+    return Y
+end
+
 abstract StatisticalModel
 
 coef(obj::StatisticalModel) = error("No method defined")
