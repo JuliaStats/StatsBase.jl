@@ -32,6 +32,9 @@ fnecdf = ecdf(randn(10000000))
 fnecdf = ecdf([0.5])
 @test fnecdf([zeros(5000), ones(5000)]) == [zeros(5000), ones(5000)]
 
-y = [0, 1, 0, 2, 1]
-@test onehot(y) == [1 0 0; 0 1 0; 1 0 0; 0 0 1; 0 1 0]'
-
+y = [1, 2, 1, 3, 2]
+expected = [1 0 0; 0 1 0; 1 0 0; 0 0 1; 0 1 0]'
+@test indicators(y) == expected
+@test indicators(y, 1:3, true) == expected
+y = [2, 3, 2, 4, 3]
+@test indicators(y) == expected

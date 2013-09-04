@@ -98,14 +98,20 @@ function ecdf{T}(X::AbstractVector{T})
 end
 
 # Encode categories using one-hot scheme aka one-of-C encoding
-# Assumes that categories are encoded as integers in the range [0, c-1],
+# Assumes that categories are encoded as integers in the range [1, c],
 # where c is the number of categories (or classes)
-function onehot{T<:Real}(y::AbstractVector{T})
+function indicators{T<:Real}(y::AbstractVector{T},
+                    categories::Range1{T}=min(y):max(y),
+                    sparse::Bool=false)
     const n = length(y)
-    const c = max(y)+1
-    Y = zeros(T, c, n)
+    const c = length(categories)
+    if sparse
+        Y = spzeros(T, c, n)
+    else
+        Y = zeros(T, c, n)
+    end
     for i in 1:n
-        Y[y[i]+1, i] = one(T)
+        Y[y[i]-categories[1]+1, i] = one(T)
     end
     return Y
 end
