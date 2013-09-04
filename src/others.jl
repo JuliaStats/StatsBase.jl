@@ -97,23 +97,55 @@ function ecdf{T}(X::AbstractVector{T})
     return e
 end
 
-# Encode categories using one-hot scheme aka one-of-C encoding
-# Assumes that categories are encoded as integers in the range [1, c],
-# where c is the number of categories (or classes)
-function indicators{T<:Real}(y::AbstractVector{T},
-                    categories::Range1{T}=min(y):max(y),
-                    sparse::Bool=false)
-    const n = length(y)
-    const c = length(categories)
+function indicators{T<:Real}(input::AbstractMatrix{T},
+                             categories::Array{Any, 1}={},
+                             sparse::Bool=false)
+    internal_categories = copy(categories)
+    nfeatures, nsamples = size(input)
+    nOutputRows = 0
+    if length(internal_categories) != nfeatures
+        for i in 1:nfeatures
+            xmin, xmax = minmax(input[i, :])
+            push!(internal_categories, xmin:xmax)
+        end
+    end
+    for i in 1:nfeatures
+        nOutputRows += length(internal_categories[i])
+    end
     if sparse
-        Y = spzeros(T, c, n)
+        output = spzeros(T, nOutputRows, nsamples)
     else
-        Y = zeros(T, c, n)
+        output = zeros(T, nOutputRows, nsamples)
     end
-    for i in 1:n
-        Y[y[i]-categories[1]+1, i] = one(T)
+    offset = 1
+    for i in 1:nfeatures
+        indicators!(output, offset, slice(input, i, :), internal_categories[i])
+        offset += length(internal_categories[i])
     end
-    return Y
+    return output
+end
+
+function indicators{T<:Real}(input::AbstractVector{T},
+                             categories::Range1{T}=min(input):max(input),
+                             sparse::Bool=false)
+    if sparse
+        output = spzeros(T, length(categories), length(input))
+    else
+        output = zeros(T, length(categories), length(input))
+    end
+    indicators!(output, 1, input, categories)
+    return output
+end
+
+function indicators!{T<:Real}(output::AbstractArray{T},
+                              offset::Integer,
+                              input::AbstractVector{T},
+                              categories::Range1{T}=min(input):max(input))
+    const lo = offset-categories[1]
+    for i in 1:length(input)
+        output[input[i]+lo, i] = one(T)
+    end
+    return
 end
 
 abstract StatisticalModel

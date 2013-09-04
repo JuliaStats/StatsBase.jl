@@ -38,3 +38,8 @@ expected = [1 0 0; 0 1 0; 1 0 0; 0 0 1; 0 1 0]'
 @test indicators(y, 1:3, true) == expected
 y = [2, 3, 2, 4, 3]
 @test indicators(y) == expected
+X = [1 2 3; 1 1 1; 2 1 1]
+expected = [1 0 0; 0 1 0; 0 0 1; 1 1 1; 0 1 1; 1 0 0]
+@test indicators(X) == expected
+expected = [1 0 0; 0 1 0; 0 0 1; 1 1 1; 0 0 0; 0 0 0; 0 1 1; 1 0 0]
+@test indicators(X, {1:3, 1:3, 1:2}) == expected
