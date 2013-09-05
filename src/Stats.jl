@@ -45,6 +45,7 @@ module Stats
     confint,
     ecdf,
     findat,
+    indicators,
     inverse_rle,
     loglikelihood,
     nobs,

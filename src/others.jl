@@ -97,6 +97,60 @@ function ecdf{T}(X::AbstractVector{T})
     return e
 end
 
+function indicators{T}(input::AbstractMatrix{T},
+                       categories::Array{Any,1}={};
+                       sparse::Bool=false)
+    nfeatures, nsamples = size(input)
+    if length(categories) != 0 && length(categories) != nfeatures
+        error("You must provide either categories for each feature or no categories")
+    end
+    internal_categories = copy(categories)
+    noutrows = 0
+    if length(internal_categories) != nfeatures
+        for i in 1:nfeatures
+            push!(internal_categories, sort(unique(input[i, :])))
+        end
+    end
+    for i in 1:nfeatures
+        noutrows += length(internal_categories[i])
+    end
+    if sparse
+        output = spzeros(noutrows, nsamples)
+    else
+        output = zeros(noutrows, nsamples)
+    end
+    offset = 1
+    for i in 1:nfeatures
+        indicators!(output, offset, slice(input, i, :), internal_categories[i])
+        offset += length(internal_categories[i])
+    end
+    return output
+end
+
+function indicators{T}(input::AbstractVector{T},
+                       categories::Array{T,1}=sort(unique(input));
+                       sparse::Bool=false)
+    if sparse
+        output = spzeros(length(categories), length(input))
+    else
+        output = zeros(length(categories), length(input))
+    end
+    indicators!(output, 1, input, categories)
+    return output
+end
+ 
+function indicators!{S<:Real,T}(output::AbstractArray{S},
+                                offset::Integer,
+                                input::AbstractVector{T},
+                                categories::Array{T,1}=sort(unique(input)))
+    indices = (T=>Integer)[categories[i]=>i for i in 1:length(categories)]
+    const lo = offset-1
+    for i in 1:length(input)
+        output[indices[input[i]]+lo, i] = one(S)
+    end
+    return
+end
+
 abstract StatisticalModel
 
 coef(obj::StatisticalModel) = error("No method defined")
