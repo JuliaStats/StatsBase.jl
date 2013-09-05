@@ -43,3 +43,10 @@ expected = [1 0 0; 0 1 0; 0 0 1; 1 1 1; 0 1 1; 1 0 0]
 @test indicators(X) == expected
 expected = [1 0 0; 0 1 0; 0 0 1; 1 1 1; 0 0 0; 0 0 0; 0 1 1; 1 0 0]
 @test indicators(X, {1:3, 1:3, 1:2}) == expected
+y = ["A", "B", "C", "B", "A"]
+expected = [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 1.0 0.0 0.0; 1.0 0.0 0.0 0.0]'
+@test indicators(y, ["A", "B", "C", "D"], true) == expected
+X = ["A" "B" "C"; "B" "A" "C"]
+cats = ["A", "B", "C", "D"]
+expected = [1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0; 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0]'
+@test indicators(X, {cats, cats}, false) == expected

@@ -20,7 +20,7 @@ Basic statistics functions for Julia
 * `mad(a)`: Compute the median absolute deviation of `a` with a correction factor, which ensures that the MAD will be a consistent estimator of the mean for normally distributed data.
 * `midrange(a)`: Compute the mid point of the range of `a` (e.g `(max(a) + min(a) / 2)`).
 * `modes(a)`: Compute all modes of `a`. Be warned that every element of an array with no repeated elements is considered a mode.
-* `indicators(a)`: Encode categories using one-hot scheme aka one-of-C encoding, indicator matrix or dummy variables. Assumes that categories are encoded as integers in the range [1, c], where c is the number of categories (or classes). Optionally, you can provide a range min:max so that min will be encoded as [1 0 ...] and max as [... 0 1].
+* `indicators(a)`: Encode categories using one-hot scheme aka one-of-C encoding, indicator matrix or dummy variables. Optionally, you can provide either a range min:max for categories that are encoded as integers (so that min will be encoded as [1 0 ...] and max as [... 0 1]) or a list of possible values, e.g. ["A", "B, "C"].
 * `percentile(a)`: Compute the percentiles (0%, 10%, ..., 100%) of `a`.
 * `quantile(a)`: Compute any desired quantile of `a`.
 * `quartile(a): Compute the quartiles of `a`.
