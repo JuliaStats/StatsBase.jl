@@ -97,81 +97,27 @@ function ecdf{T}(X::AbstractVector{T})
     return e
 end
 
-function indicators{T<:Real}(input::AbstractMatrix{T},
-                             categories::Array{Any, 1}={},
-                             sparse::Bool=false)
-    nfeatures, nsamples = size(input)
-    if length(categories) != 0 && length(categories) != nfeatures
-        error("You must provide either categories for each feature or no categories")
-    end
-    internal_categories = copy(categories)
-    nOutputRows = 0
-    if length(internal_categories) != nfeatures
-        for i in 1:nfeatures
-            xmin, xmax = minmax(input[i, :])
-            push!(internal_categories, xmin:xmax)
-        end
-    end
-    for i in 1:nfeatures
-        nOutputRows += length(internal_categories[i])
-    end
-    if sparse
-        output = spzeros(T, nOutputRows, nsamples)
-    else
-        output = zeros(T, nOutputRows, nsamples)
-    end
-    offset = 1
-    for i in 1:nfeatures
-        indicators!(output, offset, slice(input, i, :), internal_categories[i])
-        offset += length(internal_categories[i])
-    end
-    return output
-end
-
-function indicators{T<:Real}(input::AbstractVector{T},
-                             categories::Range1{T}=min(input):max(input),
-                             sparse::Bool=false)
-    if sparse
-        output = spzeros(T, length(categories), length(input))
-    else
-        output = zeros(T, length(categories), length(input))
-    end
-    indicators!(output, 1, input, categories)
-    return output
-end
-
-function indicators!{T<:Real}(output::AbstractArray{T},
-                              offset::Integer,
-                              input::AbstractVector{T},
-                              categories::Range1{T}=min(input):max(input))
-    const lo = offset-categories[1]
-    for i in 1:length(input)
-        output[input[i]+lo, i] = one(T)
-    end
-    return
-end
-
 function indicators{T}(input::AbstractMatrix{T},
-                       categories::Array{Any, 1}={},
+                       categories::Array{Any,1}={};
                        sparse::Bool=false)
     nfeatures, nsamples = size(input)
     if length(categories) != 0 && length(categories) != nfeatures
         error("You must provide either categories for each feature or no categories")
     end
     internal_categories = copy(categories)
-    nOutputRows = 0
+    noutrows = 0
     if length(internal_categories) != nfeatures
         for i in 1:nfeatures
             push!(internal_categories, sort(unique(input[i, :])))
         end
     end
     for i in 1:nfeatures
-        nOutputRows += length(internal_categories[i])
+        noutrows += length(internal_categories[i])
     end
     if sparse
-        output = spzeros(nOutputRows, nsamples)
+        output = spzeros(noutrows, nsamples)
     else
-        output = zeros(nOutputRows, nsamples)
+        output = zeros(noutrows, nsamples)
     end
     offset = 1
     for i in 1:nfeatures
@@ -182,7 +128,7 @@ function indicators{T}(input::AbstractMatrix{T},
 end
 
 function indicators{T}(input::AbstractVector{T},
-                       categories::Array{T,1}=sort(unique(input)),
+                       categories::Array{T,1}=sort(unique(input));
                        sparse::Bool=false)
     if sparse
         output = spzeros(length(categories), length(input))

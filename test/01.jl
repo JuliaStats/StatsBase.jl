@@ -35,18 +35,18 @@ fnecdf = ecdf([0.5])
 y = [1, 2, 1, 3, 2]
 expected = [1 0 0; 0 1 0; 1 0 0; 0 0 1; 0 1 0]'
 @test indicators(y) == expected
-@test indicators(y, 1:3, true) == expected
+@test indicators(y, [1:3], sparse=true) == expected
 y = [2, 3, 2, 4, 3]
 @test indicators(y) == expected
 X = [1 2 3; 1 1 1; 2 1 1]
 expected = [1 0 0; 0 1 0; 0 0 1; 1 1 1; 0 1 1; 1 0 0]
 @test indicators(X) == expected
 expected = [1 0 0; 0 1 0; 0 0 1; 1 1 1; 0 0 0; 0 0 0; 0 1 1; 1 0 0]
-@test indicators(X, {1:3, 1:3, 1:2}) == expected
+@test indicators(X, {[1:3], [1:3], [1:2]}) == expected
 y = ["A", "B", "C", "B", "A"]
 expected = [1.0 0.0 0.0 0.0; 0.0 1.0 0.0 0.0; 0.0 0.0 1.0 0.0; 0.0 1.0 0.0 0.0; 1.0 0.0 0.0 0.0]'
-@test indicators(y, ["A", "B", "C", "D"], true) == expected
+@test indicators(y, ["A", "B", "C", "D"], sparse=true) == expected
 X = ["A" "B" "C"; "B" "A" "C"]
 cats = ["A", "B", "C", "D"]
 expected = [1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0; 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0]'
-@test indicators(X, {cats, cats}, false) == expected
+@test indicators(X, {cats, cats}, sparse=false) == expected
