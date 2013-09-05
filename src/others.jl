@@ -205,14 +205,6 @@ function indicators!{S<:Real,T}(output::AbstractArray{S},
     return
 end
 
-function indicators!{S<:Real,T}(output::AbstractArray{S},
-                                offset::Integer,
-                                input::AbstractVector{T},
-                                categories::Range1{T}=sort(unique(input)))
-    dict = (T=>Integer)[c[i]=>i for i in 1:length(categories)]
-    println(dict)
-end
-
 abstract StatisticalModel
 
 coef(obj::StatisticalModel) = error("No method defined")
