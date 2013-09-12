@@ -161,8 +161,8 @@ autocor(x::AbstractVector, lags::Real) = autocor(x, lags:lags)[1]
 # autocorrelation at a default of zero to 10log10(length(v)) lags
 autocor(v::AbstractVector) = autocor(v, 0:min(length(v) - 1, 10log10(length(v))))
 
-# crosscorrelation for range
-function crosscor(x::AbstractVector, y::AbstractVector, lags::Ranges)
+# crosscorrelation between two vectors for range
+function autocor(x::AbstractVector, y::AbstractVector, lags::Ranges)
   lx, ly = length(x), length(y)
 
   if lx != ly error("Input vectors must have same length") end
@@ -181,8 +181,28 @@ function crosscor(x::AbstractVector, y::AbstractVector, lags::Ranges)
   return acf
 end
 
-# crosscorrelation at a specific lag
-crosscor(x::AbstractVector, y::AbstractVector, lags::Real) = crosscor(x, y, lags:lags)[1]
+# crosscorrelation between two vectors at a specific lag
+autocor(x::AbstractVector, y::AbstractVector, lags::Real) = autocor(x, y, lags:lags)[1]
 
-# crosscorrelation at a default of zero to 10log10(length(v)) lags
-crosscor(x::AbstractVector, y::AbstractVector) = crosscor(x, y, 0:min(length(x) - 1, 10log10(length(x))))
+# crosscorrelation between two vectors at a default of zero to 10log10(length(v)) lags
+autocor(x::AbstractVector, y::AbstractVector) = autocor(x, y, 0:min(length(x) - 1, 10log10(length(x))))
+
+# crosscorrelation between all pairs of columns of a matrix for range
+function autocor(x::AbstractMatrix, lags::Ranges)
+  ncols = size(x, 2)
+  acf = Array(eltype(x), length(lags), ncols, ncols)
+
+  for i = 1:ncols
+    for j = 1:ncols
+      acf[:, i, j] = autocor(x[:, i], x[:, j], lags)
+    end
+  end
+
+  return acf
+end
+
+# crosscorrelation between all pairs of columns of a matrix at a specific lag
+autocor(x::AbstractMatrix, lags::Real) = reshape(autocor(x, lags:lags), size(x, 2), size(x, 2))
+
+# crosscorrelation between all pairs of columns of a matrix at a default of zero to 10log10(length(v)) lags
+autocor(x::AbstractMatrix) = autocor(x, 0:min(length(x) - 1, 10log10(length(x))))

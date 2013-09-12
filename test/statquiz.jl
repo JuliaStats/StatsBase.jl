@@ -57,6 +57,11 @@ for i in 1:5
 end
 println("OK")
 
+print("Test crosscorrelation: ")
+x = randn(10)
+@test autocor(x) == autocor(x, x)
+println("OK")
+
 print("Test spearman correlation: ")
 cn = colnames(nasty)[[2,5:9]]
 for i in 1:5
