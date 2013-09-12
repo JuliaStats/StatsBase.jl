@@ -160,3 +160,29 @@ autocor(x::AbstractVector, lags::Real) = autocor(x, lags:lags)[1]
 
 # autocorrelation at a default of zero to 10log10(length(v)) lags
 autocor(v::AbstractVector) = autocor(v, 0:min(length(v) - 1, 10log10(length(v))))
+
+# crosscorrelation for range
+function crosscor(x::AbstractVector, y::AbstractVector, lags::Ranges)
+  lx, ly = length(x), length(y)
+
+  if lx != ly error("Input vectors must have same length") end
+  if max(lags) > lx error("Autocorrelation distance must be less than sample size") end
+
+  mx, my = mean(x), mean(y)
+  sxinv, syinv = 1/stdm(x, mx), 1/stdm(y, my)
+  xs, ys = Array(typeof(sxinv), lx), Array(typeof(syinv), ly)
+  for i = 1:lx
+    xs[i], ys[i] = (x[i] - mx)*sxinv, (y[i] - my)*syinv
+  end
+  acf = Array(typeof(sxinv), length(lags))
+  for i in 1:length(lags)
+    acf[i] = dot(xs[1:end - lags[i]], ys[lags[i] + 1:end])/(lx - 1)
+  end
+  return acf
+end
+
+# crosscorrelation at a specific lag
+crosscor(x::AbstractVector, y::AbstractVector, lags::Real) = crosscor(x, y, lags:lags)[1]
+
+# crosscorrelation at a default of zero to 10log10(length(v)) lags
+crosscor(x::AbstractVector, y::AbstractVector) = crosscor(x, y, 0:min(length(x) - 1, 10log10(length(x))))
