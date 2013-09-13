@@ -138,6 +138,38 @@ function mswaps(x::AbstractVector, y::AbstractVector)
     return nSwaps
 end
 
+# autocovariance for range
+function autocov(x::AbstractVector, lags::Ranges; biased::Bool=true)
+  lx, llags = length(x), length(lags)
+  if max(lags) > lx error("Autocovariance distance must be less than sample size") end
+  if (biased == false && lx <= llags) error("Length of vector must be greater than length of lags") end
+
+  mx = mean(x)
+  xs = Array(typeof(mx), lx)
+  for i = 1:lx
+    xs[i] = x[i] - mx
+  end
+
+  acv = Array(typeof(mx), llags)
+  if biased
+    for i in 1:llags
+      acv[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/lx
+    end
+  else
+    for i in 1:llags
+      acv[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/(lx-llags)
+    end    
+  end
+    
+  return acv
+end
+
+# autocovariance at a specific lag
+autocov(x::AbstractVector, lags::Real; biased::Bool=true) = autocov(x, lags:lags, biased=biased)[1]
+
+# autocovariance at a default of zero to 10log10(length(v)) lags
+autocov(v::AbstractVector; biased::Bool=true) = autocov(v, 0:min(length(v)-1, 10log10(length(v))), biased=biased)
+
 # autocorrelation for range
 function autocor(x::AbstractVector, lags::Ranges)
     lx = length(x)
