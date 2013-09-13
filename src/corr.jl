@@ -207,7 +207,7 @@ autocor(x::AbstractMatrix, lags::Real) = reshape(autocor(x, lags:lags), size(x, 
 # crosscorrelation between all pairs of columns of a matrix at a default of zero to 10log10(length(v)) lags
 autocor(x::AbstractMatrix) = autocor(x, 0:min(length(x) - 1, 10log10(length(x))))
 
-# Unlike autocor, compute only autocorrelations (not crosscorrelations) between matrix columns for range
+# Unlike autocor, compute only autocorrelations (not crosscorrelations) of matrix columns for range
 function autocordiag(x::AbstractMatrix, lags::Ranges)
   ncols = size(x, 2)
   acf = Array(eltype(x), length(lags), ncols)
@@ -219,8 +219,8 @@ function autocordiag(x::AbstractMatrix, lags::Ranges)
   return acf
 end
 
-# Unlike autocor, compute only autocorrelations (not crosscorrelations) between matrix columns at a specific lag
+# Unlike autocor, compute only autocorrelations (not crosscorrelations) of matrix columns at a specific lag
 autocordiag(x::AbstractMatrix, lags::Real) = autocordiag(x, lags:lags)
 
-# Unlike autocor, compute only autocorrelations (not crosscorrelations) between matrix columns at a default of zero to 10log10(length(v)) lags
+# Unlike autocor, compute only autocorrelations (not crosscorrelations) of matrix columns at a default of zero to 10log10(length(v)) lags
 autocordiag(x::AbstractMatrix) = autocordiag(x, 0:min(length(x) - 1, 10log10(length(x))))
