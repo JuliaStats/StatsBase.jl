@@ -30,7 +30,8 @@ module Stats
     wmean,
 
     # corr
-    autocor,
+    acv,
+    acf,
     cor_spearman,
     cor_kendall,    
 

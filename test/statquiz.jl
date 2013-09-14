@@ -59,7 +59,7 @@ println("OK")
 
 print("Test crosscorrelation: ")
 x = randn(10)
-@test autocor(x) == autocor(x, x)
+@test acf(x) == acf(x, x)
 println("OK")
 
 print("Test spearman correlation: ")
