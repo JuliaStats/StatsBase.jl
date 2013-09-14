@@ -139,10 +139,10 @@ function mswaps(x::AbstractVector, y::AbstractVector)
 end
 
 # autocovariance for range
-function autocov(x::AbstractVector, lags::Ranges; biased::Bool=true)
+function acv(x::AbstractVector, lags::Ranges; pop::Bool=true, biased::Bool=false)
   lx, llags = length(x), length(lags)
-  if max(lags) > lx error("Autocovariance distance must be less than sample size") end
-  if (biased == false && lx <= llags) error("Length of vector must be greater than length of lags") end
+  if max(lags) > lx; error("Autocovariance distance must be less than sample size"); end
+  if (pop == true) && (biased == true); error("Only unbiased estimator of population acv is available"); end
 
   mx = mean(x)
   xs = Array(typeof(mx), lx)
@@ -150,109 +150,183 @@ function autocov(x::AbstractVector, lags::Ranges; biased::Bool=true)
     xs[i] = x[i] - mx
   end
 
-  acv = Array(typeof(mx), llags)
-  if biased
-    for i in 1:llags
-      acv[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/lx
-    end
-  else
-    for i in 1:llags
-      acv[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/(lx-llags)
-    end    
+  autocov = Array(typeof(mx), llags)
+  for i in 1:llags
+    autocov[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])
   end
-    
-  return acv
+  
+  pop ? (return autocov/lx) : (biased ? (return autocov/(lx-1)) : (return autocov/llags))
 end
 
 # autocovariance at a specific lag
-autocov(x::AbstractVector, lags::Real; biased::Bool=true) = autocov(x, lags:lags, biased=biased)[1]
+acv(x::AbstractVector, lags::Real; pop::Bool=true, biased::Bool=false) = acv(x, lags:lags, pop=pop, biased=biased)[1]
 
-# autocovariance at a default of zero to 10log10(length(v)) lags
-autocov(v::AbstractVector; biased::Bool=true) = autocov(v, 0:min(length(v)-1, 10log10(length(v))), biased=biased)
+# autocovariance at a default of zero to 10log10(length(x)) lags
+acv(x::AbstractVector; pop::Bool=true, biased::Bool=false) = 
+  acv(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
 
-# autocorrelation for range
-function autocor(x::AbstractVector, lags::Ranges)
-    lx = length(x)
-    if max(lags) > lx error("Autocorrelation distance must be less than sample size") end
-    mx = mean(x)
-    sxinv = 1/stdm(x, mx)
-    xs = Array(typeof(sxinv), lx)
-    for i = 1:lx
-        xs[i] = (x[i] - mx)*sxinv
-    end
-    acf = Array(typeof(sxinv), length(lags))
-    for i in 1:length(lags)
-        acf[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/(lx - 1)
-    end
-    return acf
-end
-
-# autocorrelation at a specific lag
-autocor(x::AbstractVector, lags::Real) = autocor(x, lags:lags)[1]
-
-# autocorrelation at a default of zero to 10log10(length(v)) lags
-autocor(v::AbstractVector) = autocor(v, 0:min(length(v) - 1, 10log10(length(v))))
-
-# crosscorrelation between two vectors for range
-function autocor(x::AbstractVector, y::AbstractVector, lags::Ranges)
-  lx, ly = length(x), length(y)
-
+# crosscovariance between two vectors for range
+function acv(x::AbstractVector, y::AbstractVector, lags::Ranges; pop::Bool=true, biased::Bool=false)
+  lx, ly, llags = length(x), length(y), length(lags)
   if lx != ly error("Input vectors must have same length") end
   if max(lags) > lx error("Autocorrelation distance must be less than sample size") end
+  if (pop == true) && (biased == true); error("Only unbiased estimator of population acv is available"); end
 
   mx, my = mean(x), mean(y)
-  sxinv, syinv = 1/stdm(x, mx), 1/stdm(y, my)
-  xs, ys = Array(typeof(sxinv), lx), Array(typeof(syinv), ly)
+  xs, ys = Array(typeof(mx), lx), Array(typeof(my), ly)
   for i = 1:lx
-    xs[i], ys[i] = (x[i] - mx)*sxinv, (y[i] - my)*syinv
+    xs[i], ys[i] = x[i] - mx, y[i] - my
   end
-  acf = Array(typeof(sxinv), length(lags))
-  for i in 1:length(lags)
-    acf[i] = dot(xs[1:end - lags[i]], ys[lags[i] + 1:end])/(lx - 1)
+
+  autocov = Array(typeof(mx), llags)
+  for i in 1:llags
+    autocov[i] = dot(xs[1:end - lags[i]], ys[lags[i] + 1:end])
   end
-  return acf
+
+  pop ? (return autocov/lx) : (biased ? (return autocov/(lx-1)) : (return autocov/llags))
 end
 
-# crosscorrelation between two vectors at a specific lag
-autocor(x::AbstractVector, y::AbstractVector, lags::Real) = autocor(x, y, lags:lags)[1]
+# crosscovariance between two vectors at a specific lag
+acv(x::AbstractVector, y::AbstractVector, lags::Real; pop::Bool=true, biased::Bool=false) =
+  acv(x, y, lags:lags, pop=pop, biased=biased)[1]
 
-# crosscorrelation between two vectors at a default of zero to 10log10(length(v)) lags
-autocor(x::AbstractVector, y::AbstractVector) = autocor(x, y, 0:min(length(x) - 1, 10log10(length(x))))
+# crosscovariance between two vectors at a default of zero to 10log10(length(x)) lags
+acv(x::AbstractVector, y::AbstractVector; pop::Bool=true, biased::Bool=false) =
+  acv(x, y, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
 
-# crosscorrelation between all pairs of columns of a matrix for range
-function autocor(x::AbstractMatrix, lags::Ranges)
+# crosscovariance between all pairs of columns of a matrix for range
+function acvall(x::AbstractMatrix, lags::Ranges; pop::Bool=true, biased::Bool=false)
   ncols = size(x, 2)
-  acf = Array(eltype(x), length(lags), ncols, ncols)
+  autocov = Array(eltype(x), length(lags), ncols, ncols)
 
   for i = 1:ncols
     for j = 1:ncols
-      acf[:, i, j] = autocor(x[:, i], x[:, j], lags)
+      autocov[:, i, j] = acv(x[:, i], x[:, j], lags, pop=pop, biased=biased)
     end
   end
 
-  return acf
+  return autocov
+end
+
+# crosscovariance between all pairs of columns of a matrix at a specific lag
+acvall(x::AbstractMatrix, lags::Real; pop::Bool=true, biased::Bool=false) =
+  reshape(acvall(x, lags:lags, pop=pop, biased=biased), size(x, 2), size(x, 2))
+
+# crosscovariance between all pairs of columns of a matrix at a default of zero to 10log10(length(x)) lags
+acvall(x::AbstractMatrix; pop::Bool=true, biased::Bool=false) =
+  acvall(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+
+# Unlike acvall, compute only autocovariance (not crosscovariance) of matrix columns for range
+function acvdiag(x::AbstractMatrix, lags::Ranges; pop::Bool=true, biased::Bool=false)
+  ncols = size(x, 2)
+  autocov = Array(eltype(x), length(lags), ncols)
+
+  for i = 1:ncols
+    autocov[:, i] = acv(x[:, i], lags, pop=pop, biased=biased)
+  end
+
+  return autocov
+end
+
+# Unlike acvall, compute only autocovariance (not crosscovariance) of matrix columns at a specific lag
+acvdiag(x::AbstractMatrix, lags::Real; pop::Bool=true, biased::Bool=false) =
+  acvdiag(x, lags:lags, pop=pop, biased=biased)
+
+# Unlike acvall, compute only autocovariance (not crosscovariance) of matrix columns at a default of zero to 10log10(length(x)) lags
+acvdiag(x::AbstractMatrix; pop::Bool=true, biased::Bool=false) =
+  acvdiag(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+
+# acv wrapper for range
+function acv(x::AbstractMatrix, lags::Ranges; pop::Bool=true, biased::Bool=false, diag::Bool=false)
+ diag ? acvdiag(x, lags, pop=pop, biased=biased) : acvall(x, lags, pop=pop, biased=biased)
+end
+
+# acv wrapper at a specific lag
+function acv(x::AbstractMatrix, lags::Real; pop::Bool=true, biased::Bool=false, diag::Bool=false)
+ diag ? acvdiag(x, lags, pop=pop, biased=biased) : acvall(x, lags, pop=pop, biased=biased)
+end
+
+# acv wrapper at a default of zero to 10log10(length(x)) lags
+function acv(x::AbstractMatrix; pop::Bool=true, biased::Bool=false, diag::Bool=false)
+ diag ? acvdiag(x, pop=pop, biased=biased) : acvall(x, pop=pop, biased=biased)
+end
+
+# autocorrelation for range
+acf(x::AbstractVector, lags::Ranges; pop::Bool=false, biased::Bool=true) =
+  acv(x, lags, pop=pop, biased=biased)/var(x)
+
+# autocorrelation at a specific lag
+acf(x::AbstractVector, lags::Real; pop::Bool=false, biased::Bool=true) = acf(x, lags:lags, pop=pop, biased=biased)[1]
+
+# autocorrelation at a default of zero to 10log10(length(x)) lags
+acf(x::AbstractVector; pop::Bool=false, biased::Bool=true) =
+  acf(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+
+# crosscorrelation for range
+acf(x::AbstractVector, y::AbstractVector, lags::Ranges; pop::Bool=false, biased::Bool=true) =
+  acv(x, y, lags, pop=pop, biased=biased)/(std(x)*std(y))
+
+# crosscorrelation at a specific lag
+acf(x::AbstractVector, y::AbstractVector, lags::Real; pop::Bool=false, biased::Bool=true) =
+  acf(x, y, lags:lags, pop=pop, biased=biased)[1]
+
+# crosscorrelation at a default of zero to 10log10(length(x)) lags
+acf(x::AbstractVector, y::AbstractVector; pop::Bool=false, biased::Bool=true) =
+  acf(x, y, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+
+# crosscorrelation between all pairs of columns of a matrix for range
+function acfall(x::AbstractMatrix, lags::Ranges; pop::Bool=false, biased::Bool=true)
+  ncols = size(x, 2)
+  autocorr = Array(eltype(x), length(lags), ncols, ncols)
+
+  for i = 1:ncols
+    for j = 1:ncols
+      autocorr[:, i, j] = acf(x[:, i], x[:, j], lags, pop=pop, biased=biased)
+    end
+  end
+
+  return autocorr
 end
 
 # crosscorrelation between all pairs of columns of a matrix at a specific lag
-autocor(x::AbstractMatrix, lags::Real) = reshape(autocor(x, lags:lags), size(x, 2), size(x, 2))
+acfall(x::AbstractMatrix, lags::Real; pop::Bool=false, biased::Bool=true) =
+  reshape(acfall(x, lags:lags, pop=pop, biased=biased), size(x, 2), size(x, 2))
 
-# crosscorrelation between all pairs of columns of a matrix at a default of zero to 10log10(length(v)) lags
-autocor(x::AbstractMatrix) = autocor(x, 0:min(length(x) - 1, 10log10(length(x))))
+# crosscorrelation between all pairs of columns of a matrix at a default of zero to 10log10(length(x)) lags
+acfall(x::AbstractMatrix; pop::Bool=false, biased::Bool=true) =
+  acfall(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
 
-# Unlike autocor, compute only autocorrelations (not crosscorrelations) of matrix columns for range
-function autocordiag(x::AbstractMatrix, lags::Ranges)
+# Unlike acfall, compute only autocorrelation (not crosscorrelation) of matrix columns for range
+function acfdiag(x::AbstractMatrix, lags::Ranges; pop::Bool=false, biased::Bool=true)
   ncols = size(x, 2)
-  acf = Array(eltype(x), length(lags), ncols)
+  autocorr = Array(eltype(x), length(lags), ncols)
 
   for i = 1:ncols
-    acf[:, i] = autocor(x[:, i], lags)
+    autocorr[:, i] = acf(x[:, i], lags, pop=pop, biased=biased)
   end
 
-  return acf
+  return autocorr
 end
 
-# Unlike autocor, compute only autocorrelations (not crosscorrelations) of matrix columns at a specific lag
-autocordiag(x::AbstractMatrix, lags::Real) = autocordiag(x, lags:lags)
+# Unlike acfall, compute only autocorrelation (not crosscorrelation) of matrix columns at a specific lag
+acfdiag(x::AbstractMatrix, lags::Real; pop::Bool=false, biased::Bool=true) =
+  acfdiag(x, lags:lags, pop=pop, biased=biased)
 
-# Unlike autocor, compute only autocorrelations (not crosscorrelations) of matrix columns at a default of zero to 10log10(length(v)) lags
-autocordiag(x::AbstractMatrix) = autocordiag(x, 0:min(length(x) - 1, 10log10(length(x))))
+# Unlike acfall, compute only autocorrelation (not crosscorrelation) of matrix columns at a default of zero to 10log10(length(x)) lags
+acfdiag(x::AbstractMatrix; pop::Bool=false, biased::Bool=true) =
+  acfdiag(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+
+# acf wrapper for range
+function acf(x::AbstractMatrix, lags::Ranges; pop::Bool=false, biased::Bool=true, diag::Bool=false)
+ diag ? acfdiag(x, lags, pop=pop, biased=biased) : acfall(x, lags, pop=pop, biased=biased)
+end
+
+# acf wrapper at a specific lag
+function acf(x::AbstractMatrix, lags::Real; pop::Bool=false, biased::Bool=true, diag::Bool=false)
+ diag ? acfdiag(x, lags, pop=pop, biased=biased) : acfall(x, lags, pop=pop, biased=biased)
+end
+
+# acf wrapper at a default of zero to 10log10(length(x)) lags
+function acf(x::AbstractMatrix; pop::Bool=false, biased::Bool=true, diag::Bool=false)
+ diag ? acfdiag(x, pop=pop, biased=biased) : acfall(x, pop=pop, biased=biased)
+end
