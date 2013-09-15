@@ -138,195 +138,167 @@ function mswaps(x::AbstractVector, y::AbstractVector)
     return nSwaps
 end
 
-# autocovariance for range
-function acv(x::AbstractVector, lags::Ranges; pop::Bool=true, biased::Bool=false)
-  lx, llags = length(x), length(lags)
+# Autocovariance sum term for range
+function acv_sumterm(x::AbstractVector, lags::Ranges; demean::Bool=true)
+  lx, llags, typex = length(x), length(lags), eltype(x)
   if max(lags) > lx; error("Autocovariance distance must be less than sample size"); end
-  if (pop == true) && (biased == true); error("Only unbiased estimator of population acv is available"); end
 
-  mx = mean(x)
-  xs = Array(typeof(mx), lx)
-  for i = 1:lx
-    xs[i] = x[i] - mx
-  end
+  xs = Array(typex, lx)
+  demean ? (mx = mean(x); for i = 1:lx; xs[i] = x[i]-mx; end) : (for i = 1:lx; xs[i] = x[i]; end)
 
-  autocov = Array(typeof(mx), llags)
+  autocov = Array(typex, llags)
   for i in 1:llags
-    autocov[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])
+    autocov[i] = dot(xs[1:end-lags[i]], xs[lags[i]+1:end])
   end
-  
-  pop ? (return autocov/lx) : (biased ? (return autocov/(lx-1)) : (return autocov/llags))
+  autocov
 end
 
-# autocovariance at a specific lag
-acv(x::AbstractVector, lags::Real; pop::Bool=true, biased::Bool=false) = acv(x, lags:lags, pop=pop, biased=biased)[1]
+# Autocovariance sum term at a specific lag
+acv_sumterm(x::AbstractVector, lags::Real; demean::Bool=true) = acv_sumterm(x, lags:lags, demean=demean)[1]
 
-# autocovariance at a default of zero to 10log10(length(x)) lags
-acv(x::AbstractVector; pop::Bool=true, biased::Bool=false) = 
-  acv(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+# Autocovariance sum term at a default of zero to 10log10(length(x)) lags
+acv_sumterm(x::AbstractVector; demean::Bool=true) =
+  acv_sumterm(x, 0:min(length(x)-1, 10log10(length(x))), demean=demean)
 
-# crosscovariance between two vectors for range
-function acv(x::AbstractVector, y::AbstractVector, lags::Ranges; pop::Bool=true, biased::Bool=false)
-  lx, ly, llags = length(x), length(y), length(lags)
+# Cross-covariance sum term for range
+function acv_sumterm(x::AbstractVector, y::AbstractVector, lags::Ranges; demean::Bool=true)
+  lx, ly, llags, typex = length(x), length(y), length(lags), eltype(x)
   if lx != ly error("Input vectors must have same length") end
-  if max(lags) > lx error("Autocorrelation distance must be less than sample size") end
-  if (pop == true) && (biased == true); error("Only unbiased estimator of population acv is available"); end
+  if max(lags) > lx error("Cross-covariance distance must be less than sample size") end
 
-  mx, my = mean(x), mean(y)
-  xs, ys = Array(typeof(mx), lx), Array(typeof(my), ly)
-  for i = 1:lx
-    xs[i], ys[i] = x[i] - mx, y[i] - my
+  xs, ys = Array(typex, lx), Array(eltype(y), ly)
+  if demean
+    mx, my = mean(x), mean(y)
+    for i = 1:lx; xs[i], ys[i] = x[i]-mx, y[i]-my; end
+  else
+    for i = 1:lx; xs[i], ys[i] = x[i], y[i]; end
   end
 
-  autocov = Array(typeof(mx), llags)
+  autocov = Array(typex, llags)
   for i in 1:llags
-    autocov[i] = dot(xs[1:end - lags[i]], ys[lags[i] + 1:end])
+    autocov[i] = dot(xs[1:end-lags[i]], ys[lags[i]+1:end])
   end
-
-  pop ? (return autocov/lx) : (biased ? (return autocov/(lx-1)) : (return autocov/llags))
+  autocov
 end
 
-# crosscovariance between two vectors at a specific lag
-acv(x::AbstractVector, y::AbstractVector, lags::Real; pop::Bool=true, biased::Bool=false) =
-  acv(x, y, lags:lags, pop=pop, biased=biased)[1]
+# Cross-covariance sum term at a specific lag
+acv_sumterm(x::AbstractVector, y::AbstractVector, lags::Real; demean::Bool=true) =
+  acv_sumterm(x, y, lags:lags, demean=demean)[1]
 
-# crosscovariance between two vectors at a default of zero to 10log10(length(x)) lags
-acv(x::AbstractVector, y::AbstractVector; pop::Bool=true, biased::Bool=false) =
-  acv(x, y, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+# Cross-covariance sum term at a default of zero to 10log10(length(x)) lags
+acv_sumterm(x::AbstractVector, y::AbstractVector; demean::Bool=true) =
+  acv_sumterm(x, y, 0:min(length(x)-1, 10log10(length(x))), demean=demean)
 
-# crosscovariance between all pairs of columns of a matrix for range
-function acvall(x::AbstractMatrix, lags::Ranges; pop::Bool=true, biased::Bool=false)
+# Cross-covariance sum term between all pairs of columns of a matrix for range
+function acvall_sumterm(x::AbstractMatrix, lags::Ranges; demean::Bool=true)
   ncols = size(x, 2)
-  autocov = Array(eltype(x), length(lags), ncols, ncols)
 
+  autocov = Array(eltype(x), length(lags), ncols, ncols)
   for i = 1:ncols
     for j = 1:ncols
-      autocov[:, i, j] = acv(x[:, i], x[:, j], lags, pop=pop, biased=biased)
+      autocov[:, i, j] = acv_sumterm(x[:, i], x[:, j], lags, demean=demean)
     end
   end
-
-  return autocov
+  autocov
 end
 
-# crosscovariance between all pairs of columns of a matrix at a specific lag
-acvall(x::AbstractMatrix, lags::Real; pop::Bool=true, biased::Bool=false) =
-  reshape(acvall(x, lags:lags, pop=pop, biased=biased), size(x, 2), size(x, 2))
+# Cross-covariance sum term between all pairs of columns of a matrix at a specific lag
+acvall_sumterm(x::AbstractMatrix, lags::Real; demean::Bool=true) =
+  reshape(acvall_sumterm(x, lags:lags, demean=demean), size(x, 2), size(x, 2))
 
-# crosscovariance between all pairs of columns of a matrix at a default of zero to 10log10(length(x)) lags
-acvall(x::AbstractMatrix; pop::Bool=true, biased::Bool=false) =
-  acvall(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+# Cross-covariance sum term between all pairs of columns of a matrix at a default of zero to 10log10(length(x)) lags
+acvall_sumterm(x::AbstractMatrix; demean::Bool=true) =
+  acvall_sumterm(x, 0:min(length(x)-1, 10log10(length(x))), demean=demean)
 
-# Unlike acvall, compute only autocovariance (not crosscovariance) of matrix columns for range
-function acvdiag(x::AbstractMatrix, lags::Ranges; pop::Bool=true, biased::Bool=false)
+# Unlike acvall_sumterm, compute only autocovariance (not cross-covariance) sum term of matrix columns for range
+function acvdiag_sumterm(x::AbstractMatrix, lags::Ranges; demean::Bool=true)
   ncols = size(x, 2)
+
   autocov = Array(eltype(x), length(lags), ncols)
-
   for i = 1:ncols
-    autocov[:, i] = acv(x[:, i], lags, pop=pop, biased=biased)
+    autocov[:, i] = acv_sumterm(x[:, i], lags, demean=demean)
   end
-
-  return autocov
+  autocov
 end
 
-# Unlike acvall, compute only autocovariance (not crosscovariance) of matrix columns at a specific lag
-acvdiag(x::AbstractMatrix, lags::Real; pop::Bool=true, biased::Bool=false) =
-  acvdiag(x, lags:lags, pop=pop, biased=biased)
+# Unlike acvall_sumterm, compute only autocovariance (not cross-covariance) sum term of matrix columns at a specific lag
+acvdiag_sumterm(x::AbstractMatrix, lags::Real; demean::Bool=true) =
+  acvdiag_sumterm(x, lags:lags, pop=pop, biased=biased)
 
-# Unlike acvall, compute only autocovariance (not crosscovariance) of matrix columns at a default of zero to 10log10(length(x)) lags
-acvdiag(x::AbstractMatrix; pop::Bool=true, biased::Bool=false) =
-  acvdiag(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+# Unlike acvall_sumterm, compute only autocovariance (not cross-covariance) sum term of matrix columns at a default of
+# zero to 10log10(length(x)) lags
+acvdiag_sumterm(x::AbstractMatrix; demean::Bool=true) =
+  acvdiag_sumterm(x, 0:min(length(x)-1, 10log10(length(x))), demean=demean)
+
+# acv_sumterm wrapper for range
+function acv_sumterm(x::AbstractMatrix, lags::Ranges; demean::Bool=true, diag::Bool=false)
+ diag ? acvdiag_sumterm(x, lags, demean=demean) : acvall_sumterm(x, lags, demean=demean)
+end
+
+# acv_sumterm wrapper at a specific lag
+function acv_sumterm(x::AbstractMatrix, lags::Real; demean::Bool=true, diag::Bool=false)
+ diag ? acvdiag_sumterm(x, lags, demean=demean) : acvall_sumterm(x, lags, demean=demean)
+end
+
+# acv_sumterm wrapper at a default of zero to 10log10(length(x)) lags
+function acv_sumterm(x::AbstractMatrix; demean::Bool=true, diag::Bool=false)
+ diag ? acvdiag_sumterm(x, demean=demean) : acvall_sumterm(x, demean=demean)
+end
+
+# Autocovariance for range
+acv(x::AbstractVector, lags::Ranges; demean::Bool=true) = acv_sumterm(x, lags, demean=demean)/length(x)
+
+# Autocovariance at a specific lag
+acv(x::AbstractVector, lags::Real; demean::Bool=true) = acv_sumterm(x, lags, demean=demean)/length(x)
+
+# Autocovariance at a default of zero to 10log10(length(x)) lags
+acv(x::AbstractVector; demean::Bool=true) = acv_sumterm(x, demean=demean)/length(x)
+
+# Cross-covariance for range
+acv(x::AbstractVector, y::AbstractVector, lags::Ranges; demean::Bool=true) =
+  acv_sumterm(x, y, lags, demean=demean)/length(x)
+
+# Cross-covariance at a specific lag
+acv(x::AbstractVector, y::AbstractVector, lags::Real; demean::Bool=true) =
+  acv_sumterm(x, y, lags, demean=demean)/length(x)
+
+# Cross-covariance at a default of zero to 10log10(length(x)) lags
+acv(x::AbstractVector, y::AbstractVector; demean::Bool=true) = acv_sumterm(x, y, demean=demean)/length(x)
 
 # acv wrapper for range
-function acv(x::AbstractMatrix, lags::Ranges; pop::Bool=true, biased::Bool=false, diag::Bool=false)
- diag ? acvdiag(x, lags, pop=pop, biased=biased) : acvall(x, lags, pop=pop, biased=biased)
-end
+acv(x::AbstractMatrix, lags::Ranges; demean::Bool=true, diag::Bool=false) =
+  acv_sumterm(x, lags, demean=demean, diag=diag)/length(x)
 
 # acv wrapper at a specific lag
-function acv(x::AbstractMatrix, lags::Real; pop::Bool=true, biased::Bool=false, diag::Bool=false)
- diag ? acvdiag(x, lags, pop=pop, biased=biased) : acvall(x, lags, pop=pop, biased=biased)
-end
+acv(x::AbstractMatrix, lags::Real; demean::Bool=true, diag::Bool=false) =
+  acv_sumterm(x, lags, demean=demean, diag=diag)/length(x)
 
 # acv wrapper at a default of zero to 10log10(length(x)) lags
-function acv(x::AbstractMatrix; pop::Bool=true, biased::Bool=false, diag::Bool=false)
- diag ? acvdiag(x, pop=pop, biased=biased) : acvall(x, pop=pop, biased=biased)
-end
+acv(x::AbstractMatrix; demean::Bool=true, diag::Bool=false) = acv_sumterm(x, demean=demean, diag=diag)/length(x)
 
-# autocorrelation for range
-acf(x::AbstractVector, lags::Ranges; pop::Bool=false, biased::Bool=true) =
-  acv(x, lags, pop=pop, biased=biased)/var(x)
+# Autocorrelation for range
+acf(x::AbstractVector, lags::Ranges) = acv_sumterm(x, lags)/((length(x)-1)*var(x))
 
-# autocorrelation at a specific lag
-acf(x::AbstractVector, lags::Real; pop::Bool=false, biased::Bool=true) = acf(x, lags:lags, pop=pop, biased=biased)[1]
+# Autocorrelation at a specific lag
+acf(x::AbstractVector, lags::Real) = acv_sumterm(x, lags)/((length(x)-1)*var(x))
 
-# autocorrelation at a default of zero to 10log10(length(x)) lags
-acf(x::AbstractVector; pop::Bool=false, biased::Bool=true) =
-  acf(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+# Autocorrelation at a default of zero to 10log10(length(x)) lags
+acf(x::AbstractVector) = acv_sumterm(x)/((length(x)-1)*var(x))
 
-# crosscorrelation for range
-acf(x::AbstractVector, y::AbstractVector, lags::Ranges; pop::Bool=false, biased::Bool=true) =
-  acv(x, y, lags, pop=pop, biased=biased)/(std(x)*std(y))
+# Cross-correlation for range
+acf(x::AbstractVector, y::AbstractVector, lags::Ranges) = acv_sumterm(x, y, lags)/((length(x)-1)*var(x))
 
-# crosscorrelation at a specific lag
-acf(x::AbstractVector, y::AbstractVector, lags::Real; pop::Bool=false, biased::Bool=true) =
-  acf(x, y, lags:lags, pop=pop, biased=biased)[1]
+# Cross-correlation at a specific lag
+acf(x::AbstractVector, y::AbstractVector, lags::Real) = acv_sumterm(x, y, lags)/((length(x)-1)*var(x))
 
-# crosscorrelation at a default of zero to 10log10(length(x)) lags
-acf(x::AbstractVector, y::AbstractVector; pop::Bool=false, biased::Bool=true) =
-  acf(x, y, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
-
-# crosscorrelation between all pairs of columns of a matrix for range
-function acfall(x::AbstractMatrix, lags::Ranges; pop::Bool=false, biased::Bool=true)
-  ncols = size(x, 2)
-  autocorr = Array(eltype(x), length(lags), ncols, ncols)
-
-  for i = 1:ncols
-    for j = 1:ncols
-      autocorr[:, i, j] = acf(x[:, i], x[:, j], lags, pop=pop, biased=biased)
-    end
-  end
-
-  return autocorr
-end
-
-# crosscorrelation between all pairs of columns of a matrix at a specific lag
-acfall(x::AbstractMatrix, lags::Real; pop::Bool=false, biased::Bool=true) =
-  reshape(acfall(x, lags:lags, pop=pop, biased=biased), size(x, 2), size(x, 2))
-
-# crosscorrelation between all pairs of columns of a matrix at a default of zero to 10log10(length(x)) lags
-acfall(x::AbstractMatrix; pop::Bool=false, biased::Bool=true) =
-  acfall(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
-
-# Unlike acfall, compute only autocorrelation (not crosscorrelation) of matrix columns for range
-function acfdiag(x::AbstractMatrix, lags::Ranges; pop::Bool=false, biased::Bool=true)
-  ncols = size(x, 2)
-  autocorr = Array(eltype(x), length(lags), ncols)
-
-  for i = 1:ncols
-    autocorr[:, i] = acf(x[:, i], lags, pop=pop, biased=biased)
-  end
-
-  return autocorr
-end
-
-# Unlike acfall, compute only autocorrelation (not crosscorrelation) of matrix columns at a specific lag
-acfdiag(x::AbstractMatrix, lags::Real; pop::Bool=false, biased::Bool=true) =
-  acfdiag(x, lags:lags, pop=pop, biased=biased)
-
-# Unlike acfall, compute only autocorrelation (not crosscorrelation) of matrix columns at a default of zero to 10log10(length(x)) lags
-acfdiag(x::AbstractMatrix; pop::Bool=false, biased::Bool=true) =
-  acfdiag(x, 0:min(length(x)-1, 10log10(length(x))), pop=pop, biased=biased)
+# Cross-correlation at a default of zero to 10log10(length(x)) lags
+acf(x::AbstractVector, y::AbstractVector) = acv_sumterm(x, y)/((length(x)-1)*var(x))
 
 # acf wrapper for range
-function acf(x::AbstractMatrix, lags::Ranges; pop::Bool=false, biased::Bool=true, diag::Bool=false)
- diag ? acfdiag(x, lags, pop=pop, biased=biased) : acfall(x, lags, pop=pop, biased=biased)
-end
+acf(x::AbstractMatrix, lags::Ranges, diag::Bool=false) = acv_sumterm(x, lags, diag=diag)/((length(x)-1)*var(x))
 
 # acf wrapper at a specific lag
-function acf(x::AbstractMatrix, lags::Real; pop::Bool=false, biased::Bool=true, diag::Bool=false)
- diag ? acfdiag(x, lags, pop=pop, biased=biased) : acfall(x, lags, pop=pop, biased=biased)
-end
+acf(x::AbstractMatrix, lags::Real, diag::Bool=false) = acv_sumterm(x, lags, diag=diag)/((length(x)-1)*var(x))
 
 # acf wrapper at a default of zero to 10log10(length(x)) lags
-function acf(x::AbstractMatrix; pop::Bool=false, biased::Bool=true, diag::Bool=false)
- diag ? acfdiag(x, pop=pop, biased=biased) : acfall(x, pop=pop, biased=biased)
-end
+acf(x::AbstractMatrix, diag::Bool=false) = acv_sumterm(x, diag=diag)/((length(x)-1)*var(x))
