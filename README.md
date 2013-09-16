@@ -4,7 +4,6 @@ Basic statistics functions for Julia
 
 ## List of Functions
 
-* `acv(A, l)`: Compute the autocovariance of an array `A` at lag(s) `l`.
 * `acf(A, l)`: Compute the autocorrelation of an array `A` at lag(s) `l`.
 * `cor_spearman(x, y)`: Compute Spearman's rank order correlation between `x` and `y`.
 * `cov_spearman(x, y)`: Compute Spearman's rank order covariance between `x` and `y`.
