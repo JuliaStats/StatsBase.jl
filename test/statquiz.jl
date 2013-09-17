@@ -1,6 +1,6 @@
 # Test taken from http://www.stanford.edu/~clint/bench/wilk.txt
 
-using Test
+using Base.Test
 using DataFrames
 using Stats
 using GLM
@@ -57,9 +57,60 @@ for i in 1:5
 end
 println("OK")
 
-print("Test crosscorrelation: ")
-x = randn(10)
-@test acf(x) == acf(x, x)
+print("Test autocorrelation: ")
+# x was sampled by calling x = randn(10, 2)
+x = [-2.133252557240862 -.7445937365828654;
+.1775816414485478 -.5834801838041446;
+-.6264517920318317 -.68444205333293;
+-.8809042583216906 .9071671734302398;
+.09251017186697393 -1.0404476733379926;
+-.9271887119115569 -.620728578941385;
+3.355819743178915 -.8325051361909978;
+-.2834039258495755 -.22394811874731657;
+.5354280026977677 .7481337671592626;
+.39182285417742585 .3085762550821047]
+# "racfx11" was computed by calling R's acf function on x: acf(x[, 1], plot=FALSE)$acf[, 1, 1]
+racfx11 = [1.00000000, -0.22117301, 0.22932198, 0.01950558, -0.13901577,
+  0.12568106, -0.42790934, 0.02169910, -0.05988954, -0.04822006]
+# "jacfx11" are computed by calling Julia's acf function on x
+jacfx11 = acf(x[:, 1])
+for i =1:length(racfx11)
+@test_approx_eq round(racfx11[i], 6) round(jacfx11[i], 6)
+end
+println("OK")
+
+print("Test cross-correlation: ")
+# "racfx12" was computed by calling R's acf function on x: acf(x, plot=FALSE)$acf[, 2, 1]
+racfx12 = [-0.078553060, 0.136340207, 0.569584690, -0.101572230, 0.160177390, -0.025170763, 0.007961874]
+# "jacfx12" are computed by calling Julia's acf function on x
+jacfx12 = acf(x[:, 1], x[:, 2], 0:6)
+for i =1:length(racfx12)
+@test_approx_eq round(jacfx12[i], 6) round(racfx12[i], 6)
+end
+println("OK")
+
+print("Test autocorrelation vs cross-correlation: ")
+@test acf(x[:, 1]) == acf(x[:, 1], x[:, 1])
+
+print("Test autocovariance: ")
+# "racvx11" was computed by calling R's acf function on x: acf(x[, 1], plot=FALSE, type="covariance")$acf[, 1, 1]
+racvx11 = [1.83921424, -0.40678455, 0.42177225, 0.03587494, -0.25567978,
+0.23115440, -0.78701696, 0.03990929, -0.11014970, -0.08868702]
+# "jacvx11" are computed by calling Julia's acf function on x
+jacvx11 = acf(x[:, 1], correlation=false)
+for i =1:length(racvx11)
+@test_approx_eq round(racvx11[i], 6) round(jacvx11[i], 6)
+end
+println("OK")
+
+print("Test cross-covariance: ")
+# "racvx12" was computed by calling R's acf function on x: acf(x, plot=FALSE, type="covariance")$acf[, 2, 1]
+racvx12 = [-0.069752175, 0.121064998, 0.505769872, -0.090192336, 0.142231524, -0.022350695, 0.007069846]
+# "jacfx12" are computed by calling Julia's acf function on x
+jacvx12 = acf(x[:, 1], x[:, 2], 0:6, correlation=false)
+for i =1:length(racvx12)
+@test_approx_eq round(jacvx12[i], 6) round(racvx12[i], 6)
+end
 println("OK")
 
 print("Test spearman correlation: ")
