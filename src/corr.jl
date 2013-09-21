@@ -153,7 +153,11 @@ function acf{T<:Real}(x::AbstractVector{T}, lags::Ranges=0:min(length(x)-1, 10lo
   end
   autocov_sumterm
 
-  correlation ? (return autocov_sumterm/((lx-1)*var(x))) : (return autocov_sumterm/lx)
+  if correlation
+    demean ? (return autocov_sumterm/((lx-1)*var(x))) : (return autocov_sumterm/sum(x.^2))
+  else
+    return autocov_sumterm/lx
+  end
 end
 
 # Autocorrelation at a specific lag
@@ -180,7 +184,11 @@ function acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Ranges=0
   end
   crosscov_sumterm
 
-  correlation ? (return crosscov_sumterm/((lx-1)*std(x)*std(y))) : (return crosscov_sumterm/lx)
+  if correlation
+    demean ? (return crosscov_sumterm/((lx-1)*std(x)*std(y))) : (return crosscov_sumterm/sqrt(sum(x.^2)*sum(y.^2)))
+  else
+    return crosscov_sumterm/lx
+  end  
 end
 
 # Cross-correlation at a specific lag
