@@ -51,6 +51,7 @@ end
 
 
 # Skewness
+# This is Type 1 definition according to Joanes and Gill (1998)
 function skewness{T<:Real}(v::AbstractVector{T}, m::Real)
     n = length(v)
     cm2 = 0.0   # empirical 2nd centered moment (variance)
@@ -69,8 +70,8 @@ end
 
 skewness{T<:Real}(v::AbstractVector{T}) = skewness(v, mean(v))
 
-
 # (excessive) Kurtosis
+# This is Type 1 definition according to Joanes and Gill (1998)
 function kurtosis{T<:Real}(v::AbstractVector{T}, m::Real)
     n = length(v)
     cm2 = 0.0  # empirical 2nd centered moment (variance)
