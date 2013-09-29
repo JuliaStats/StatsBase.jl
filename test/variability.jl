@@ -28,3 +28,9 @@ using Base.Test
 # sem()
 
 # variation()
+
+@test rms([0, 0, 0]) == 0.0
+@test round(rms([3:3:15]),4) == 9.9499
+@test rms([1.0:1.0:10.0],[1.0:1.0:10.0]) == 0.0
+@test round(rms([2:2:10],[4:4:20]),4) == 6.6332
+@test round(rms([2:2:10],[4:4:20],1),4) == 0.4146
