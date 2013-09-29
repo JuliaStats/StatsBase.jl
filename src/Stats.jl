@@ -25,6 +25,7 @@ module Stats
     mode,
     modes,
     describe,
+    rms,
 
     # weighted stats
     wmean,
@@ -39,7 +40,7 @@ module Stats
     StatisticalModel,
     RegressionModel,
     
-    ## Fcuntions
+    ## Functions
     coef,
     coeftable,
     confint,
