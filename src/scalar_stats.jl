@@ -238,6 +238,6 @@ function rms{T1<:Real, T2<:Real}(s1::Array{T1, 1}, s2::Array{T2, 1}, n::Integer=
     if n == 0
         return sqrt(sumsq/length(s2))
     else
-        return sqrt(sumsq/length(s2)) / range(s2)
+        return sqrt(sumsq/length(s2)) / (max(s2) - min(s2))
     end
 end
