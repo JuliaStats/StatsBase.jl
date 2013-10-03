@@ -156,7 +156,7 @@ function acf{T<:Real}(x::AbstractVector{T},
 
   if correlation
     demean ?
-      (return autocov_sumterm/(min(lags)==0 ? autocov_sumterm[1] : dot(xs,xs))) : (return autocov_sumterm/dot(x,x))
+      (return autocov_sumterm/(min(lags)==0 ? autocov_sumterm[1] : dot(xs, xs))) : (return autocov_sumterm/dot(x, x))
   else
     return autocov_sumterm/lx
   end
@@ -188,7 +188,8 @@ function acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T},
   crosscov_sumterm
 
   if correlation
-    demean ? (return crosscov_sumterm/((lx-1)*std(x)*std(y))) : (return crosscov_sumterm/sqrt(sum(x.^2)*sum(y.^2)))
+    demean ?
+      (return crosscov_sumterm/(sqrt(dot(xs, xs)*dot(ys, ys)))) : (return crosscov_sumterm/sqrt(dot(x, x)*dot(y, y)))
   else
     return crosscov_sumterm/lx
   end  
