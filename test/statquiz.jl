@@ -86,14 +86,14 @@ print("Test cross-correlation: ")
 racfx12 = [-0.0785530595168460604727, 0.1363402071384945957178, 0.5695846902378886023044, -0.1015722302688646383473,
   0.1601773904236522549915, -0.0251707633078918115166, 0.0079618741584954952351]
 # "jacfx12" are computed by calling Julia's acf function on x
-jacfx12 = acf(x[:, 1], x[:, 2], 0:6)
+jacfx12 = ccf(x[:, 1], x[:, 2], 0:6)
 for i =1:length(racfx12)
 @test_approx_eq racfx12[i] jacfx12[i]
 end
 println("OK")
 
 print("Test autocorrelation vs cross-correlation: ")
-@test acf(x[:, 1]) == acf(x[:, 1], x[:, 1])
+@test acf(x[:, 1]) == ccf(x[:, 1], x[:, 1])
 
 print("Test autocovariance: ")
 # "racvx11" was computed by calling R's acf function on x: acf(x[, 1], plot=FALSE, type="covariance")$acf[, 1, 1]
@@ -112,7 +112,7 @@ print("Test cross-covariance: ")
 racvx12 = [-0.0697521748336961816550, 0.1210649976420989648584, 0.5057698724968141545943, -0.0901923363334168753935,
   0.1422315236345411126884, -0.0223506951065748533936, 0.0070698460597599819752]
 # "jacfx12" are computed by calling Julia's acf function on x
-jacvx12 = acf(x[:, 1], x[:, 2], 0:6, correlation=false)
+jacvx12 = ccf(x[:, 1], x[:, 2], 0:6, correlation=false)
 for i =1:length(racvx12)
 @test_approx_eq racvx12[i] jacvx12[i]
 end
@@ -135,14 +135,14 @@ print("Test cross-correlation with demean=false: ")
 racfx12nodemean = [-0.063791841616291797279, 0.143906622654901311664, 0.557311279399980707971, -0.070174737610974355362,
   0.270818343664623484290, 0.071161936583426677050, 0.103265547537476284901]
 # "jacfx12" are computed by calling Julia's acf function on x
-jacfx12nodemean = acf(x[:, 1], x[:, 2], 0:6, demean=false)
+jacfx12nodemean = ccf(x[:, 1], x[:, 2], 0:6, demean=false)
 for i =1:length(racfx12nodemean)
 @test_approx_eq racfx12nodemean[i] jacfx12nodemean[i]
 end
 println("OK")
 
-print("Test autocorrelation vs cross-correlation: ")
-@test acf(x[:, 1]) == acf(x[:, 1], x[:, 1])
+print("Test autocorrelation vs cross-correlation with demean=false: ")
+@test acf(x[:, 1], demean=false) == ccf(x[:, 1], x[:, 1], demean=false)
 
 print("Test autocovariance with demean=false: ")
 # "racvx11" was computed by calling R's acf function on x:
@@ -163,7 +163,7 @@ print("Test cross-covariance with demean=false: ")
 racvx12nodemean = [-0.061507621146693322589, 0.138753699571784711031, 0.537355407299582976677, -0.067661962183297230666,
   0.261121040867466125412, 0.068613812119833542114, 0.099567875993390383971]
 # "jacfx12" are computed by calling Julia's acf function on x
-jacvx12nodemean = acf(x[:, 1], x[:, 2], 0:6, correlation=false, demean=false)
+jacvx12nodemean = ccf(x[:, 1], x[:, 2], 0:6, correlation=false, demean=false)
 for i =1:length(racvx12nodemean)
 @test_approx_eq racvx12nodemean[i] jacvx12nodemean[i]
 end

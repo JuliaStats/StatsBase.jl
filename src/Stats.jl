@@ -31,6 +31,7 @@ module Stats
 
     # corr
     acf,
+    ccf,
     cor_spearman,
     cor_kendall,    
 
