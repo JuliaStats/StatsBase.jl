@@ -139,10 +139,11 @@ function mswaps(x::AbstractVector, y::AbstractVector)
 end
 
 # Autocorrelation for range
-function acf{T<:Real}(x::AbstractVector{T}, lags::Ranges=0:min(length(x)-1, 10log10(length(x)));
+function acf{T<:Real}(x::AbstractVector{T},
+  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
   correlation::Bool=true, demean::Bool=true)
   lx, llags = length(x), length(lags)
-  if max(lags) > lx; error("Autocovariance distance must be less than sample size"); end
+  if max(lags) >= lx; error("Autocovariance distance must be less than sample size"); end
 
   xs = Array(T, lx)
   demean ? (mx = mean(x); for i = 1:lx; xs[i] = x[i]-mx; end) : (for i = 1:lx; xs[i] = x[i]; end)
@@ -154,18 +155,20 @@ function acf{T<:Real}(x::AbstractVector{T}, lags::Ranges=0:min(length(x)-1, 10lo
   autocov_sumterm
 
   if correlation
-    demean ? (return autocov_sumterm/((lx-1)*var(x))) : (return autocov_sumterm/sum(x.^2))
+    demean ?
+      (return autocov_sumterm/(min(lags)==0 ? autocov_sumterm[1] : dot(xs,xs))) : (return autocov_sumterm/dot(x,x))
   else
     return autocov_sumterm/lx
   end
 end
 
 # Autocorrelation at a specific lag
-acf{T<:Real}(x::AbstractVector{T}, lags::Real; correlation::Bool=true, demean::Bool=true) =
+acf{T<:Real}(x::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
   acf(x, lags:lags, correlation=correlation, demean=demean)[1]
 
 # Cross-correlation for range
-function acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Ranges=0:min(length(x)-1, 10log10(length(x)));
+function acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T},
+  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
   correlation::Bool=true, demean::Bool=true)
   lx, ly, llags = length(x), length(y), length(lags)
   if lx != ly error("Input vectors must have same length") end
@@ -192,11 +195,12 @@ function acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Ranges=0
 end
 
 # Cross-correlation at a specific lag
-acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Real; correlation::Bool=true, demean::Bool=true) =
+acf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
   acf(x, y, lags:lags, correlation=correlation, demean=demean)[1]
 
 # Cross-correlation between all pairs of columns of a matrix for range
-function acfall{T<:Real}(x::AbstractMatrix{T}, lags::Ranges=0:min(size(x, 1)-1, 10log10(size(x, 1)));
+function acfall{T<:Real}(x::AbstractMatrix{T},
+  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
   correlation::Bool=true, demean::Bool=true)
   ncols = size(x, 2)
 
@@ -210,11 +214,12 @@ function acfall{T<:Real}(x::AbstractMatrix{T}, lags::Ranges=0:min(size(x, 1)-1, 
 end
 
 # Cross-correlation between all pairs of columns of a matrix at a specific lag
-acfall{T<:Real}(x::AbstractMatrix{T}, lags::Real; correlation::Bool=true, demean::Bool=true) =
+acfall{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
   reshape(acfall(x, lags:lags, correlation=correlation, demean=demean), size(x, 2), size(x, 2))
 
 # Unlike acfall, compute only autocorrelation (not cross-correlation) of matrix columns for range
-function acfdiag{T<:Real}(x::AbstractMatrix{T}, lags::Ranges=0:min(size(x, 1)-1, 10log10(size(x, 1)));
+function acfdiag{T<:Real}(x::AbstractMatrix{T},
+  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
   correlation::Bool=true, demean::Bool=true)
   ncols = size(x, 2)
 
@@ -226,11 +231,12 @@ function acfdiag{T<:Real}(x::AbstractMatrix{T}, lags::Ranges=0:min(size(x, 1)-1,
 end
 
 # Unlike acfall, compute only autocorrelation (not cross-correlation) of matrix columns at a specific lag
-acfdiag{T<:Real}(x::AbstractMatrix{T}, lags::Real; correlation::Bool=true, demean::Bool=true) =
+acfdiag{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
   acfdiag(x, lags:lags, correlation=correlation, demean=demean)
 
 # acf wrapper (with matrix as input) for range
-function acf{T<:Real}(x::AbstractMatrix{T}, lags::Ranges=0:min(size(x, 1)-1, 10log10(size(x, 1)));
+function acf{T<:Real}(x::AbstractMatrix{T},
+  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
   correlation::Bool=true, demean::Bool=true, diag::Bool=false)
   diag ?
     acfdiag(x, lags, correlation=correlation, demean=demean) :
@@ -238,7 +244,7 @@ function acf{T<:Real}(x::AbstractMatrix{T}, lags::Ranges=0:min(size(x, 1)-1, 10l
 end
 
 # acf wrapper (with matrix as input) at a specific lag
-function acf{T<:Real}(x::AbstractMatrix{T}, lags::Real; correlation::Bool=true, demean::Bool=true, diag::Bool=false)
+function acf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true, diag::Bool=false)
  diag ?
    acfdiag(x, lags, correlation=correlation, demean=demean) :
    acfall(x, lags, correlation=correlation, demean=demean)
