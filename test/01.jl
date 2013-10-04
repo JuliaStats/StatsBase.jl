@@ -1,7 +1,7 @@
 using Stats
 using Base.Test
 
-@test_approx_eq autocor([1, 2, 3, 4, 5], 1) 0.4
+@test_approx_eq acf([1, 2, 3, 4, 5], 1) 0.4
 
 @test iqr([1, 2, 3, 4, 5]) == [2.0, 4.0]
 

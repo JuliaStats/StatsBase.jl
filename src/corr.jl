@@ -138,25 +138,97 @@ function mswaps(x::AbstractVector, y::AbstractVector)
     return nSwaps
 end
 
-# autocorrelation for range
-function autocor(x::AbstractVector, lags::Ranges)
-    lx = length(x)
-    if max(lags) > lx error("Autocorrelation distance must be less than sample size") end
-    mx = mean(x)
-    sxinv = 1/stdm(x, mx)
-    xs = Array(typeof(sxinv), lx)
-    for i = 1:lx
-        xs[i] = (x[i] - mx)*sxinv
-    end
-    acf = Array(typeof(sxinv), length(lags))
-    for i in 1:length(lags)
-        acf[i] = dot(xs[1:end - lags[i]], xs[lags[i] + 1:end])/(lx - 1)
-    end
-    return acf
+# Autocorrelation for range
+function acf{T<:Real}(x::AbstractVector{T}, lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
+  correlation::Bool=true, demean::Bool=true)
+  lx, llags = length(x), length(lags)
+  if max(lags) >= lx; error("Autocovariance distance must be less than sample size"); end
+
+  xs = Array(T, lx)
+  demean ? (mx = mean(x); for i = 1:lx; xs[i] = x[i]-mx; end) : (for i = 1:lx; xs[i] = x[i]; end)
+
+  autocov_sumterm = Array(T, llags)
+  for i in 1:llags
+    autocov_sumterm[i] = dot(xs[1:end-lags[i]], xs[lags[i]+1:end])
+  end
+  autocov_sumterm
+
+  if correlation
+    demean ?
+      (return autocov_sumterm/(min(lags)==0 ? autocov_sumterm[1] : dot(xs, xs))) : (return autocov_sumterm/dot(x, x))
+  else
+    return autocov_sumterm/lx
+  end
 end
 
-# autocorrelation at a specific lag
-autocor(x::AbstractVector, lags::Real) = autocor(x, lags:lags)[1]
+# Autocorrelation at a specific lag
+acf{T<:Real}(x::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
+  acf(x, lags:lags, correlation=correlation, demean=demean)[1]
 
-# autocorrelation at a default of zero to 10log10(length(v)) lags
-autocor(v::AbstractVector) = autocor(v, 0:min(length(v) - 1, 10log10(length(v))))
+# Cross-correlation for range
+function ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T},
+  lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
+  correlation::Bool=true, demean::Bool=true)
+  lx, ly, llags = length(x), length(y), length(lags)
+  if lx != ly error("Input vectors must have same length") end
+  if max(lags) > lx; error("Cross-covariance distance must be less than sample size"); end
+
+  xs, ys = Array(T, lx), Array(T, ly)
+  if demean
+    mx, my = mean(x), mean(y); for i = 1:lx; xs[i], ys[i] = x[i]-mx, y[i]-my; end
+  else
+    for i = 1:lx; xs[i], ys[i] = x[i], y[i]; end
+  end
+
+  crosscov_sumterm = Array(T, llags)
+  for i in 1:llags
+    crosscov_sumterm[i] = dot(xs[1:end-lags[i]], ys[lags[i]+1:end])
+  end
+  crosscov_sumterm
+
+  if correlation
+    demean ?
+      (return crosscov_sumterm/(sqrt(dot(xs, xs)*dot(ys, ys)))) : (return crosscov_sumterm/sqrt(dot(x, x)*dot(y, y)))
+  else
+    return crosscov_sumterm/lx
+  end  
+end
+
+# Cross-correlation at a specific lag
+ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
+  ccf(x, y, lags:lags, correlation=correlation, demean=demean)[1]
+
+# Cross-correlation between all pairs of columns of a matrix for range
+function ccf{T<:Real}(x::AbstractMatrix{T}, lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
+  correlation::Bool=true, demean::Bool=true)
+  ncols = size(x, 2)
+
+  crosscorr = Array(T, length(lags), ncols, ncols)
+  for i = 1:ncols
+    for j = 1:ncols
+      crosscorr[:, i, j] = ccf(x[:, i], x[:, j], lags, correlation=correlation, demean=demean)
+    end
+  end
+  crosscorr
+end
+
+# Cross-correlation between all pairs of columns of a matrix at a specific lag
+ccf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
+  reshape(ccf(x, lags:lags, correlation=correlation, demean=demean), size(x, 2), size(x, 2))
+
+# Unlike ccf, compute only autocorrelation (not cross-correlation) of matrix columns for range
+function acf{T<:Real}(x::AbstractMatrix{T},
+  lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
+  correlation::Bool=true, demean::Bool=true)
+  ncols = size(x, 2)
+
+  autocorr = Array(T, length(lags), ncols)
+  for i = 1:ncols
+    autocorr[:, i] = acf(x[:, i], lags, correlation=correlation, demean=demean)
+  end
+  autocorr
+end
+
+# Unlike ccf, compute only autocorrelation (not cross-correlation) of matrix columns at a specific lag
+acf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
+  acf(x, lags:lags, correlation=correlation, demean=demean)
