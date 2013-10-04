@@ -6,7 +6,9 @@
 
 using Stats
 
-my_tests = ["test/01.jl"]
+my_tests = ["test/01.jl"
+            "test/means.jl",
+            "test/variability.jl"]
             #"test/statquiz.jl"]
 
 println("Running tests:")
