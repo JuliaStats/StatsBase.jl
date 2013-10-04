@@ -139,8 +139,7 @@ function mswaps(x::AbstractVector, y::AbstractVector)
 end
 
 # Autocorrelation for range
-function acf{T<:Real}(x::AbstractVector{T},
-  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
+function acf{T<:Real}(x::AbstractVector{T}, lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
   correlation::Bool=true, demean::Bool=true)
   lx, llags = length(x), length(lags)
   if max(lags) >= lx; error("Autocovariance distance must be less than sample size"); end
@@ -168,7 +167,7 @@ acf{T<:Real}(x::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean
 
 # Cross-correlation for range
 function ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T},
-  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
+  lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
   correlation::Bool=true, demean::Bool=true)
   lx, ly, llags = length(x), length(y), length(lags)
   if lx != ly error("Input vectors must have same length") end
@@ -200,8 +199,7 @@ ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Integer; correlat
   ccf(x, y, lags:lags, correlation=correlation, demean=demean)[1]
 
 # Cross-correlation between all pairs of columns of a matrix for range
-function ccf{T<:Real}(x::AbstractMatrix{T},
-  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
+function ccf{T<:Real}(x::AbstractMatrix{T}, lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
   correlation::Bool=true, demean::Bool=true)
   ncols = size(x, 2)
 
@@ -220,7 +218,7 @@ ccf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean
 
 # Unlike ccf, compute only autocorrelation (not cross-correlation) of matrix columns for range
 function acf{T<:Real}(x::AbstractMatrix{T},
-  lags::AbstractVector{Int}=convert(Vector{Int}, 0:min(length(x)-1, int(10log10(length(x)))));
+  lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
   correlation::Bool=true, demean::Bool=true)
   ncols = size(x, 2)
 
