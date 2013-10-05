@@ -26,6 +26,7 @@ module Stats
     modes,
     describe,
     rms,
+    rmse,
 
     # weighted stats
     wmean,

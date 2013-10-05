@@ -28,8 +28,8 @@ Basic statistics functions for Julia
 * `minmax(a)`: Compute the min and max of `a`.
 * `range(a)`: Compute the length of range, i.e. ``max(a) - min(a)``.
 * `rle(a)`: Compute a run-length encoding of `a`.
-* `rms(s)`: Compute the root-mean-square of `s`.
-* `rms(s1, s2[, n])`: Compute the root-mean-square of ``s1 - s2``. Optionally normalise w.r.t. the range of `s2`.
+* `rms(s)`: Compute the root mean square of `s`.
+* `rmse(s1, s2)`: Compute the root mean square error of `s1` w.r.t. `s2`.
 * `sem(a)`: Compute the standard error of the mean of `a`.
 * `skewness(a)`: Compute the skewness of `a`.
 * `table(a): Produce a hash table containing counts of the unique elements of `a`.

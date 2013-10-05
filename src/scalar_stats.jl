@@ -223,9 +223,8 @@ function rms{T<:Real}(s::Array{T,1})
    return sqrt(sumsq/length(s))
 end
 
-# Root-mean-square of the difference between two vectors
-# Optional normalisation w.r.t. the second vector
-function rms{T1<:Real, T2<:Real}(s1::Array{T1, 1}, s2::Array{T2, 1}, n::Integer=0)
+# Root-mean-square error between two vectors
+function rmse{T1<:Real, T2<:Real}(s1::Array{T1, 1}, s2::Array{T2, 1})
     if length(s1) != length(s2)
         error("Data series must have equal lengths")
     end
@@ -235,9 +234,5 @@ function rms{T1<:Real, T2<:Real}(s1::Array{T1, 1}, s2::Array{T2, 1}, n::Integer=
         ds = s1[i] - s2[i]
         sumsq += ds * ds
     end
-    if n == 0
-        return sqrt(sumsq/length(s2))
-    else
-        return sqrt(sumsq/length(s2)) / (max(s2) - min(s2))
-    end
+    return sqrt(sumsq/length(s2))
 end
