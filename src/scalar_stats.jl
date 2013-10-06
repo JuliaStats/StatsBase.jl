@@ -214,3 +214,25 @@ function describe{T<:Real}(a::AbstractArray{T})
     return
 end
 
+# Root-mean-square of a vector
+function rms{T<:Real}(s::Array{T,1})
+   sumsq = zero(T)
+   for si in s
+       sumsq += si * si
+   end
+   return sqrt(sumsq/length(s))
+end
+
+# Root-mean-square error between two vectors
+function rmse{T1<:Real, T2<:Real}(s1::Array{T1, 1}, s2::Array{T2, 1})
+    if length(s1) != length(s2)
+        error("Data series must have equal lengths")
+    end
+    ds = zero(T1)
+    sumsq = zero(T1)
+    for i = 1:length(s2)
+        ds = s1[i] - s2[i]
+        sumsq += ds * ds
+    end
+    return sqrt(sumsq/length(s2))
+end

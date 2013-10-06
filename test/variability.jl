@@ -28,3 +28,8 @@ using Base.Test
 # sem()
 
 # variation()
+
+@test rms([0, 0, 0]) == 0.0
+@test_approx_eq rms([3:3:15]) 9.9498743710662
+@test rmse([1.0:1.0:10.0],[1.0:1.0:10.0]) == 0.0
+@test rmse([2:2:10],[4:4:20]) == 6.6332495807108
