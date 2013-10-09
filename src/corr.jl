@@ -234,4 +234,50 @@ ccf{T<:Real}(X::AbstractMatrix{T}, args1...; args2...) = ccf(float(X), args1...;
 ccf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
   reshape(ccf(x, lags:lags, correlation=correlation, demean=demean), size(x, 2), size(x, 2))
 
-
+# Partial autoroccelation
+function pacf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int} = 0:min(size(X,1)-1, int(10log10(size(X,1)))); 
+    method::Symbol = :regression)
+    n, p = size(X)
+    nk = length(lags)
+    mk = max(lags)
+    if min(lags) < 0 error("Negative autoroccelations not allowed") end
+    if 2mk >= n error("Can at most calculate pacf for $(div(n,2) - 1) lags, you requested $mk") end
+    val = Array(T, nk, p)
+    if method == :regression
+        tmpX = ones(T, n, mk + 1)
+        for j = 1:p
+            for l = 1:mk
+                for i = 1+l:n
+                    tmpX[i,l+1] = X[i-l,j]
+                end
+            end
+            i = 1
+            for l in lags
+                sX = sub(tmpX, 1+l:n, 1:l+1)
+                val[i,j] = (cholfact!(sX'sX)\(sX'sub(X, 1+l:n, j)))[end]
+                i += 1
+            end
+        end
+    elseif method == :yulewalker
+        tmp = Array(T, mk)
+        for j = 1:p
+            acfs = acf(sub(X,1:n,j),1:mk)
+            i = 1
+            for l in lags
+                if l == 0
+                    val[i,j] = one(T)
+                elseif l == 1
+                    val[i,j] = acfs[i]
+                else
+                    val[i,j] = -durbin!(sub(acfs, 1:l), tmp)[l]
+                end
+                i += 1
+            end
+        end
+    else
+        error("No such method")
+    end
+    return val
+end
+pacf{T<:Real}(X::AbstractMatrix{T}, args1...; args2...) = pacf(float(X), args1...; args2...)
+pacf(x::AbstractVector, args1...; args2...) = squeeze(pacf(reshape(x, length(x), 1), args1...; args2...),2)
