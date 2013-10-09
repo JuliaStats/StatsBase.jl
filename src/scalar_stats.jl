@@ -1,32 +1,5 @@
 # Statistics for an array of scalars
 
-# Geometric mean
-function gmean{T<:Real}(a::AbstractArray{T})
-    s = 0.0
-    n = length(a)
-    for i in 1:n
-        tmp = a[i]
-        if tmp < 0.0
-            throw(DomainError())
-        elseif tmp == 0.0
-            return 0.0
-        else
-            s += log(tmp)
-        end
-    end
-    return exp(s / n)
-end
-
-# Harmonic mean
-function hmean{T<:Real}(a::AbstractArray{T})
-    s = 0.0
-    n = length(a)
-    for i in 1:n
-        s += 1 / a[i]
-    end
-    return n / s
-end
-
 
 # Variation: std / mean
 variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m

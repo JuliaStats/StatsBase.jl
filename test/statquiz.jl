@@ -82,3 +82,4 @@ nasty["x9"] = nasty["x"].^9
 lm(:(x1~x2+x3+x4+x5+x6+x7+x8+x9), nasty)
 @test_approx_eq coef(lm(:(x~x), nasty)) [0,1]
 println("OK")
+

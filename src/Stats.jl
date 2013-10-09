@@ -58,8 +58,8 @@ module Stats
     stderr,
     vcov
 
+    include("means.jl")
     include("scalar_stats.jl")
-    include("weighted_stats.jl")
     include("corr.jl")
     include("others.jl")
 
