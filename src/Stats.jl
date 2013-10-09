@@ -4,9 +4,12 @@ module Stats
 
     export
 
-    # scalar_stats
-    gmean, 
-    hmean, 
+    # means
+    gmean,
+    hmean,
+    wmean,
+
+    # scalar_stats 
     variation, 
     sem,
     mad,
@@ -28,8 +31,11 @@ module Stats
     summarystats,
     describe,
 
-    # weighted stats
-    wmean,
+    # intstats
+    addcounts!,
+    addwcounts!,
+    counts,
+    wcounts,
 
     # corr
     acf,
@@ -61,6 +67,7 @@ module Stats
 
     include("means.jl")
     include("scalar_stats.jl")
+    include("intstats.jl")
     include("corr.jl")
     include("others.jl")
 
