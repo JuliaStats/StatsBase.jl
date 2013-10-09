@@ -25,6 +25,7 @@ module Stats
     table,
     mode,
     modes,
+    summarystats,
     describe,
 
     # weighted stats

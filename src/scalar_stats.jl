@@ -176,14 +176,38 @@ end
 
 
 # Print out basic summary statistics
-function describe{T<:Real}(a::AbstractArray{T})
-    q00, q25, q50, q75, q10 = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
-    @printf "Min:          %.6f\n" q00
-    @printf "1st Quartile: %.6f\n" q25
-    @printf "Median:       %.6f\n" q50
-    @printf "Mean:         %.6f\n" mean(a)
-    @printf "3rd Quartile: %.6f\n" q75
-    @printf "Max:          %.6f\n" q10
-    return
+
+immutable SummaryStats{T<:FloatingPoint}
+    mean::T
+    min::T
+    q25::T    
+    median::T    
+    q75::T
+    max::T
 end
+
+function summarystats{T<:Real}(a::AbstractArray{T})
+    m = mean(a)
+    qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])    
+    R = typeof(convert(FloatingPoint, zero(T)))
+    SummaryStats{R}(
+        convert(R, m), 
+        convert(R, qs[1]),
+        convert(R, qs[2]),
+        convert(R, qs[3]),
+        convert(R, qs[4]),
+        convert(R, qs[5]))
+end
+
+function Base.show(io::IO, ss::SummaryStats)
+    println(io, "Summary Stats:")
+    @printf(io, "Mean:         %.6f\n", ss.mean)
+    @printf(io, "Minimum:      %.6f\n", ss.min)
+    @printf(io, "1st Quartile: %.6f\n", ss.q25)
+    @printf(io, "Median:       %.6f\n", ss.median)
+    @printf(io, "3rd Quartile: %.6f\n", ss.q75)
+    @printf(io, "Maximum:      %.6f\n", ss.max)
+end
+
+describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))
 
