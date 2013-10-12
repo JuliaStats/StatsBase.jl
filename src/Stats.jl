@@ -41,21 +41,24 @@ module Stats
     acf,
     ccf,
     cor_spearman,
-    cor_kendall,    
+    cor_kendall,
+    pacf,    
 
     # others
     ## Types
     StatisticalModel,
     RegressionModel,
     
-    ## Fcuntions
+    ## Functions
     coef,
     coeftable,
     confint,
+    durbin,
     ecdf,
     findat,
     indicators,
     inverse_rle,
+    levinson,
     loglikelihood,
     nobs,
     predict,
@@ -68,6 +71,7 @@ module Stats
     include("means.jl")
     include("scalar_stats.jl")
     include("intstats.jl")
+    include("toeplitzsolvers.jl")
     include("corr.jl")
     include("others.jl")
 

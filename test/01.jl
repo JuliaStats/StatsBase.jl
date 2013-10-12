@@ -180,6 +180,22 @@ for i =1:length(racvx12nodemean)
 	@test_approx_eq racvx12nodemean[i] jacvx12nodemean[i]
 end
 println("OK")
+print("Test partial autocorrelation (regression): ")
+    @test_approx_eq pacf(x[:,1], 1:4) [-0.218158122381419,
+                                        0.195015316828711,
+                                        0.144315804606139,
+                                       -0.199791229449779]
+
+
+
+println("OK")
+
+print("Test partial autocorrelation (Yule Walker): ")
+    @test_approx_eq pacf(x[:,1], 1:4, method = :yulewalker) [-0.221173011668873,
+                                                               0.189683314308021,
+                                                               0.111857020733719,
+                                                              -0.175020669835420]
+println("OK")
 
 @test iqr([1, 2, 3, 4, 5]) == [2.0, 4.0]
 
