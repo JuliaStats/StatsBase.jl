@@ -22,6 +22,7 @@ Basic statistics functions for Julia
 * `midrange(a)`: Compute the mid point of the range of `a` (e.g `(max(a) + min(a) / 2)`).
 * `modes(a)`: Compute all modes of `a`. Be warned that every element of an array with no repeated elements is considered a mode.
 * `indicators(a)`: Encode categories using one-hot scheme aka one-of-C encoding, indicator matrix or dummy variables. Optionally, you can provide a list of possible values, e.g. ["A", "B, "C"] or [1:3].
+* `pacf(A, l, method)`: Compute partial autocorrelation of an array `A` at lag(s) `l`. The computational method acn either be :regression (default) or :yulewalker.
 * `percentile(a)`: Compute the percentiles (0%, 10%, ..., 100%) of `a`.
 * `quantile(a)`: Compute any desired quantile of `a`.
 * `quartile(a): Compute the quartiles of `a`.
