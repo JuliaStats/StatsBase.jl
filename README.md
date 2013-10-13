@@ -10,6 +10,7 @@ Basic statistics functions for Julia
 * `cov_spearman(x, y)`: Compute Spearman's rank order covariance between `x` and `y`.
 * `decile(a)`: Compute the deciles of `a`.
 * `describe(a)`: Print out basic summary statistics for `a`.
+* `durbin(r)`: Solve the positive definite Toeplitz system Tr=-r.
 * `ecdf(a)`: Return the empirical CDF of `a` as a function that can be evaluated anywhere on the real line.
 * `findat!(indices, a, b):` Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`. This occurs in-place by mutating indices.
 * `findat(a, b)`: Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`.
@@ -18,6 +19,7 @@ Basic statistics functions for Julia
 * `inverse_rle(r)`: Translate a run length encoding, `r`, into a dense vector.
 * `iqr(a)`: Compute the interquantile range of `a`.
 * `kurtosis(a)`: Compute the excess kurtosis of `a`.
+* `levinson(r,b)`: Solve the postitive definite Toeplitz system Tr=b.
 * `mad(a)`: Compute the median absolute deviation of `a` with a correction factor, which ensures that the MAD will be a consistent estimator of the mean for normally distributed data.
 * `midrange(a)`: Compute the mid point of the range of `a` (e.g `(max(a) + min(a) / 2)`).
 * `modes(a)`: Compute all modes of `a`. Be warned that every element of an array with no repeated elements is considered a mode.
