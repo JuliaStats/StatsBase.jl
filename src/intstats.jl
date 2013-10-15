@@ -33,10 +33,10 @@ end
 
 # This function returns a vector r, s.t. r[i] == sum(x .== i)
 counts{T<:Real}(x::AbstractArray{T}, k::Integer) = addcounts!(zeros(Int, k), x)
-counts{T<:Real}(x::AbstractArray{T}) = counts(x, int(max(x)))
+counts{T<:Real}(x::AbstractArray{T}) = counts(x, int(maximum(x)))
 
 wcounts{T<:Real,W<:Real}(x::AbstractArray{T}, w::AbstractArray{W}, k::Integer) = addwcounts!(zeros(W, k), x, w)
-wcounts{T<:Real,W<:Real}(x::AbstractArray{T}, w::AbstractArray{W}) = wcounts(x, w, int(max(x)))
+wcounts{T<:Real,W<:Real}(x::AbstractArray{T}, w::AbstractArray{W}) = wcounts(x, w, int(maximum(x)))
 
 
 ### functions for counting over two lists of indexes
@@ -78,7 +78,7 @@ end
 
 counts{T<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}, rsiz::(Int, Int)) = addcounts!(zeros(Int, rsiz), x1, x2)
 counts{T<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}, rd::Int) = addcounts!(zeros(Int, rd, rd), x1, x2)
-counts{T<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}) = counts(x1, x2, (int(max(x1)), int(max(x2))))
+counts{T<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}) = counts(x1, x2, (int(maximum(x1)), int(maximum(x2))))
 
 function wcounts{T<:Real,W<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}, w::AbstractArray{W}, rsiz::(Int, Int))
 	addwcounts!(zeros(W, rsiz), x1, x2, w)
@@ -89,6 +89,6 @@ function wcounts{T<:Real,W<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}, w:
 end
 
 function wcounts{T<:Real,W<:Real}(x1::AbstractArray{T}, x2::AbstractArray{T}, w::AbstractArray{W})
-	wcounts(x1, x2, w, (int(max(x1)), int(max(x2))))
+	wcounts(x1, x2, w, (int(maximum(x1)), int(maximum(x2))))
 end
 

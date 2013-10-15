@@ -151,7 +151,7 @@ function mode{T}(a::AbstractArray{T})
         throw(ArgumentError("mode: a cannot be empty."))
     end
     tab = table(a)
-    m = max(values(tab))
+    m = maximum(values(tab))
     for (k, v) in tab
         if v == m
             return k
@@ -165,7 +165,7 @@ function modes{T}(a::AbstractArray{T})
     end
     res = Array(T, 0)
     tab = table(a)
-    m = max(values(tab))
+    m = maximum(values(tab))
     for (k, v) in tab
         if v == m
             push!(res, k)

@@ -142,7 +142,7 @@ end
 function acf{T<:BlasReal}(x::AbstractVector{T}, lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
     correlation::Bool=true, demean::Bool=true)
     lx, llags = length(x), length(lags)
-    if max(lags) >= lx; error("Autocovariance distance must be less than sample size"); end
+    if maximum(lags) >= lx; error("Autocovariance distance must be less than sample size"); end
     
     xs = Array(T, lx)
     demean ? (mx = mean(x); for i = 1:lx; xs[i] = x[i]-mx; end) : (for i = 1:lx; xs[i] = x[i]; end)
@@ -187,7 +187,7 @@ function ccf{T<:BlasReal}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Abst
     correlation::Bool=true, demean::Bool=true)
     lx, ly, llags = length(x), length(y), length(lags)
     if lx != ly error("Input vectors must have same length") end
-    if max(lags) > lx; error("Cross-covariance distance must be less than sample size"); end
+    if maximum(lags) > lx; error("Cross-covariance distance must be less than sample size"); end
     
     xs, ys = Array(T, lx), Array(T, ly)
     if demean
@@ -239,8 +239,8 @@ function pacf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int} = 0:m
     method::Symbol = :regression)
     n, p = size(X)
     nk = length(lags)
-    mk = max(lags)
-    if min(lags) < 0 error("Negative autoroccelations not allowed") end
+    mk = maximum(lags)
+    if minimum(lags) < 0 error("Negative autoroccelations not allowed") end
     if 2mk >= n error("Can at most calculate pacf for $(div(n,2) - 1) lags, you requested $mk") end
     val = Array(T, nk, p)
     if method == :regression

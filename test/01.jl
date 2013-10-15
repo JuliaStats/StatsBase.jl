@@ -21,7 +21,6 @@ using Base.Test
 														     -0.400000000000000  -0.230940107675850;
 														     -0.400000000000000   0.230940107675850]
 
-print("Test autocorrelation: ")
 # x was sampled by calling x = randn(10, 2)
 x = [-2.133252557240862    -.7445937365828654;
 	   .1775816414485478   -.5834801838041446;
@@ -50,9 +49,7 @@ jacfx11 = acf(x[:, 1])
 for i =1:length(racfx11)
 	@test_approx_eq racfx11[i] jacfx11[i]
 end
-println("OK")
 
-print("Test cross-correlation: ")
 # "racfx12" was computed by calling R's acf function on x: acf(x, plot=FALSE)$acf[, 2, 1]
 racfx12 = [-0.0785530595168460604727, 
 			0.1363402071384945957178, 
@@ -66,12 +63,9 @@ jacfx12 = ccf(x[:, 1], x[:, 2], 0:6)
 for i =1:length(racfx12)
 	@test_approx_eq racfx12[i] jacfx12[i]
 end
-println("OK")
 
-print("Test autocorrelation vs cross-correlation: ")
 @test_approx_eq acf(x[:, 1]) ccf(x[:, 1], x[:, 1], 0:size(x,1)-1)
 
-print("Test autocovariance: ")
 # "racvx11" was computed by calling R's acf function on x: acf(x[, 1], plot=FALSE, type="covariance")$acf[, 1, 1]
 racvx11 =  [1.839214242630635709475, 
 		   -0.406784553146903871124, 
@@ -88,9 +82,7 @@ jacvx11 = acf(x[:, 1], correlation=false)
 for i =1:length(racvx11)
 	@test_approx_eq racvx11[i] jacvx11[i]
 end
-println("OK")
 
-print("Test cross-covariance: ")
 # "racvx12" was computed by calling R's acf function on x: acf(x, plot=FALSE, type="covariance")$acf[, 2, 1]
 racvx12 = [-0.0697521748336961816550, 
    			0.1210649976420989648584, 
@@ -104,9 +96,7 @@ jacvx12 = ccf(x[:, 1], x[:, 2], 0:6, correlation=false)
 for i =1:length(racvx12)
 	@test_approx_eq racvx12[i] jacvx12[i]
 end
-println("OK")
 
-print("Test autocorrelation with demean=false: ")
 # "racfx11nodemean" was computed by calling R's acf function on x: acf(x[, 1], plot=FALSE, demean=FALSE)$acf[, 1, 1]
 racfx11nodemean = [1.000000000000000000000, 
 				  -0.223355812053329189082, 
@@ -123,9 +113,7 @@ jacfx11nodemean = acf(x[:, 1], demean=false)
 for i =1:length(racfx11nodemean)
 	@test_approx_eq racfx11nodemean[i] jacfx11nodemean[i]
 end
-println("OK")
 
-print("Test cross-correlation with demean=false: ")
 # "racfx12nodemean" was computed by calling R's acf function on x: acf(x, plot=FALSE, demean=FALSE)$acf[, 2, 1]
 racfx12nodemean = [-0.063791841616291797279, 
 					0.143906622654901311664, 
@@ -139,12 +127,10 @@ jacfx12nodemean = ccf(x[:, 1], x[:, 2], 0:6, demean=false)
 for i =1:length(racfx12nodemean)
 	@test_approx_eq racfx12nodemean[i] jacfx12nodemean[i]
 end
-println("OK")
 
-print("Test autocorrelation vs cross-correlation with demean=false: ")
 @test_approx_eq acf(x[:, 1], demean=false) ccf(x[:, 1], x[:, 1], 0:size(x,1)-1, demean=false)
 
-print("Test autocovariance with demean=false: ")
+
 # "racvx11" was computed by calling R's acf function on x:
 # acf(x[, 1], plot=FALSE, type="covariance", demean=FALSE)$acf[, 1, 1]
 racvx11nodemean =  [1.840102514084350771029, 
@@ -162,9 +148,7 @@ jacvx11nodemean = acf(x[:, 1], correlation=false, demean=false)
 for i =1:length(racvx11nodemean)
 	@test_approx_eq racvx11nodemean[i] jacvx11nodemean[i]
 end
-println("OK")
 
-print("Test cross-covariance with demean=false: ")
 # "racvx12" was computed by calling R's acf function on x:
 # acf(x, plot=FALSE, type="covariance", demean=FALSE)$acf[, 2, 1]
 racvx12nodemean = [-0.061507621146693322589, 
@@ -179,23 +163,18 @@ jacvx12nodemean = ccf(x[:, 1], x[:, 2], 0:6, correlation=false, demean=false)
 for i =1:length(racvx12nodemean)
 	@test_approx_eq racvx12nodemean[i] jacvx12nodemean[i]
 end
-println("OK")
-print("Test partial autocorrelation (regression): ")
-    @test_approx_eq pacf(x[:,1], 1:4) [-0.218158122381419,
-                                        0.195015316828711,
-                                        0.144315804606139,
-                                       -0.199791229449779]
 
 
+@test_approx_eq pacf(x[:,1], 1:4) [-0.218158122381419,
+                                    0.195015316828711,
+                                    0.144315804606139,
+                                   -0.199791229449779]
 
-println("OK")
 
-print("Test partial autocorrelation (Yule Walker): ")
-    @test_approx_eq pacf(x[:,1], 1:4, method = :yulewalker) [-0.221173011668873,
-                                                               0.189683314308021,
-                                                               0.111857020733719,
-                                                              -0.175020669835420]
-println("OK")
+@test_approx_eq pacf(x[:,1], 1:4, method = :yulewalker) [-0.221173011668873,
+                                                           0.189683314308021,
+                                                           0.111857020733719,
+                                                          -0.175020669835420]
 
 @test iqr([1, 2, 3, 4, 5]) == [2.0, 4.0]
 
@@ -244,3 +223,5 @@ X = ["A" "B" "C"; "B" "A" "C"]
 cats = ["A", "B", "C", "D"]
 expected = [1.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0; 0.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0; 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0]'
 @test indicators(X, {cats, cats}, sparse=false) == expected
+
+
