@@ -156,6 +156,7 @@ abstract StatisticalModel
 coef(obj::StatisticalModel) = error("No method defined")
 coeftable(obj::StatisticalModel) = error("No method defined")
 confint(obj::StatisticalModel) = error("No method defined")
+deviance(obj::StatisticalModel) = error("No method defined")    
 loglikelihood(obj::StatisticalModel) = error("No method defined")
 nobs(obj::StatisticalModel) = size(model_response(obj), 1)
 stderr(obj::StatisticalModel) = sqrt(diag(vcov(obj)))
@@ -166,3 +167,6 @@ abstract RegressionModel <: StatisticalModel
 residuals(obj::RegressionModel) = error("No method defined")
 model_response(obj::RegressionModel) = error("No method defined")
 predict(obj::RegressionModel) = error("No method defined")
+
+
+

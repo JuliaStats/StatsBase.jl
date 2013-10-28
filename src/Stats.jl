@@ -53,6 +53,7 @@ module Stats
     coef,
     coeftable,
     confint,
+    deviance,
     durbin,
     ecdf,
     findat,
