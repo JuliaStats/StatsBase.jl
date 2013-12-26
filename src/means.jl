@@ -50,3 +50,5 @@ function wmean{T<:BlasReal}(v::Array{T}, w::Array{T}; wsum::T=NaN)
 	sw = (isnan(wsum) ? sum(w) : wsum)
 	dot(v, w) / sw
 end
+
+mean(wv::WeightedVector) = wmean(values(wv), weights(wv); wsum=weightsum(wv))

@@ -1,5 +1,5 @@
 module Stats
-    import Base.quantile, Base.values
+    import Base: show, quantile, values, mean
     import Base.LinAlg: BlasReal
 
     export
