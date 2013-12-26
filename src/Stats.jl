@@ -70,7 +70,7 @@ module Stats
     vcov
 
     include("means.jl")
-    include("scalar_stats.jl")
+    include("scalarstats.jl")
     include("intstats.jl")
     include("ranking.jl")
     include("toeplitzsolvers.jl")
