@@ -14,4 +14,4 @@ script:
     - julia -e 'versioninfo(); Pkg.init();'
     - mkdir -p ~/.julia/Stats
     - cp -R ./* ~/.julia/Stats/
-    - julia ./run_tests.jl
+    - julia ./runtests.jl
