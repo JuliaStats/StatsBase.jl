@@ -1,27 +1,11 @@
 # Statistics for an array of scalars
 
 
-# Variation: std / mean
-variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m
-variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
-
-
-# Standard error of the mean: std(a)
-sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
-
-
-# Median absolute deviation
-mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v-center))
-
-function mad{T<:Real}(v::AbstractArray{T})
-    v = copy(v)
-    center = median!(v)
-    for i in 1:length(v)
-        v[i] = abs(v[i]-center)
-    end
-    1.4826 * median!(v, checknan=false)
-end
-
+#############################
+#
+#   Moments
+#
+#############################
 
 # Skewness
 # This is Type 1 definition according to Joanes and Gill (1998)
@@ -38,7 +22,7 @@ function skewness{T<:Real}(v::AbstractVector{T}, m::Real)
     end
     cm3 /= n
     cm2 /= n
-    return cm3 / (cm2^1.5)
+    return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
 end
 
 skewness{T<:Real}(v::AbstractVector{T}) = skewness(v, mean(v))
@@ -57,11 +41,43 @@ function kurtosis{T<:Real}(v::AbstractVector{T}, m::Real)
     end
     cm4 /= n
     cm2 /= n
-    return (cm4 / (cm2^2)) - 3.0
+    return (cm4 / (cm2 * cm2)) - 3.0
 end
 
 kurtosis{T<:Real}(v::AbstractVector{T}) = kurtosis(v, mean(v))
 
+
+#############################
+#
+#   Variability measurements
+#
+#############################
+
+# Variation: std / mean
+variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m
+variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
+
+# Standard error of the mean: std(a)
+sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
+
+# Median absolute deviation
+mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v-center))
+
+function mad{T<:Real}(v::AbstractArray{T})
+    v = copy(v)
+    center = median!(v)
+    for i in 1:length(v)
+        v[i] = abs(v[i]-center)
+    end
+    1.4826 * median!(v, checknan=false)
+end
+
+
+#############################
+#
+#   min/max related
+#
+#############################
 
 # Minimum and maximum
 function minmax{T<:Real}(x::AbstractArray{T})
@@ -81,7 +97,6 @@ function minmax{T<:Real}(x::AbstractArray{T})
     return xmin, xmax
 end
 
-
 # Mid-range
 function midrange{T<:Real}(a::AbstractArray{T})
     xmin, xmax = minmax(a)
@@ -95,37 +110,11 @@ function range{T<:Real}(a::AbstractArray{T})
 end
 
 
-# order (aka. rank), resolving ties using the mean rank
-function tiedrank{T<:Real}(v::AbstractArray{T})
-    n     = length(v)
-    place = sortperm(v)
-    ord   = Array(Float64, n)
-
-    i = 1
-    while i <= n
-        j = i
-        while j + 1 <= n && v[place[i]] == v[place[j + 1]]
-            j += 1
-        end
-
-        if j > i
-            m = sum(i:j) / (j - i + 1)
-            for k = i:j
-                ord[place[k]] = m
-            end
-        else
-            ord[place[i]] = i
-        end
-
-        i = j + 1
-    end
-
-    return ord
-end
-
-tiedrank{T<:Real}(X::AbstractMatrix{T}) = tiedrank(reshape(X, length(X)))
-
-# quantile and friends
+#############################
+#
+#   quantile and friends
+#
+#############################
 
 quantile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
 percentile{T<:Real}(v::AbstractVector{T}) = quantile(v, [1:99] / 100)
@@ -135,7 +124,11 @@ decile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.1, .2, .3, .4, .5, .6, .7,
 iqr{T<:Real}(v::AbstractVector{T}) = quantile(v, [.25, .75])
 
 
-# table & mode
+#############################
+#
+#   table & mode
+#
+#############################
 
 function table{T}(a::AbstractArray{T})
     counts = Dict{T, Int}()
@@ -175,7 +168,12 @@ function modes{T}(a::AbstractArray{T})
 end
 
 
-# Print out basic summary statistics
+
+#############################
+#
+#   summary
+#
+#############################
 
 immutable SummaryStats{T<:FloatingPoint}
     mean::T

@@ -72,6 +72,7 @@ module Stats
     include("means.jl")
     include("scalar_stats.jl")
     include("intstats.jl")
+    include("ranking.jl")
     include("toeplitzsolvers.jl")
     include("corr.jl")
     include("statmodels.jl")
