@@ -1,8 +1,14 @@
 module Stats
-    import Base.quantile
+    import Base.quantile, Base.values
     import Base.LinAlg: BlasReal
 
     export
+
+    # warrays
+    WeightedVector,     # constructs a weighted vector
+    values,             # retrieve the values of a weighted vector
+    weights,            # retrieve the weights of a weighted vector
+    weightsum,          # retrieve the sum of weights
 
     # means
     gmean,      # geometric mean
@@ -71,6 +77,7 @@ module Stats
     stderr,
     vcov
 
+    include("warrays.jl")
     include("means.jl")
     include("scalarstats.jl")
     include("counts.jl")

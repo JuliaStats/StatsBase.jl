@@ -14,7 +14,6 @@ c0 = Int[nnz(x .== i) for i in 1 : 5]
 @test c == c0
 @test counts(x+1, 2:6) == c0
 
-
 x = rand(1:5, n)
 w = rand(n)
 c = wcounts(x, w, 1:5)

@@ -51,4 +51,3 @@ end
 counts{T<:Integer}(x::AbstractArray{T}, rgn::Range1{T}) = addcounts!(zeros(Int, length(rgn)), x, rgn)
 wcounts{T<:Integer,W<:Real}(x::AbstractArray{T}, w::AbstractArray{W}, rgn::Range1{T}) = addwcounts!(zeros(W, length(rgn)), x, w, rgn)
 
-
