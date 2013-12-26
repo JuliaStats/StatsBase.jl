@@ -49,3 +49,12 @@ using Base.Test
 @test_approx_eq prctile([1:5], [25, 50, 75]) [2.0, 3.0, 4.0]
 @test_approx_eq iqr(1:5) 2.0
 
+# mode & modes
+
+@test mode([1, 2, 3, 3, 2, 2, 1], 1:3) == 2
+@test modes([1, 2, 3, 3, 2, 2, 1], 1:3) == [2]
+@test modes([1, 3, 2, 3, 3, 2, 2, 1], 1:3) == [2, 3]
+
+@test mode([1, 2, 3, 3, 2, 2, 1]) == 2
+@test modes([1, 2, 3, 3, 2, 2, 1]) == [2]
+@test sort(modes([1, 3, 2, 3, 3, 2, 2, 1])) == [2, 3]

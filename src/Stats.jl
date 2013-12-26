@@ -22,11 +22,13 @@ module Stats
     prctile,    # quantile using percentage (instead of fraction) as argument
     iqr,        # interquatile range 
     nquantile,  # quantiles at [0:n]/n
-    table,
-    mode,
-    modes,
+    mode,       # find a mode from data 
+    modes,      # find all modes from data
     summarystats,
     describe,
+
+    # table
+    table,
 
     # intstats
     addcounts!,
@@ -71,6 +73,7 @@ module Stats
 
     include("means.jl")
     include("scalarstats.jl")
+    include("table.jl")
     include("intstats.jl")
     include("ranking.jl")
     include("toeplitzsolvers.jl")

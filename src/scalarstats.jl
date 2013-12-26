@@ -136,45 +136,122 @@ nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 
 #############################
 #
-#   table & mode
+#   mode & modes
 #
 #############################
 
-function table{T}(a::AbstractArray{T})
-    counts = Dict{T, Int}()
-    for i = 1:length(a)
-        tmp = a[i]
-        counts[tmp] = get(counts, tmp, 0) + 1
+# compute mode, given the range of integer values
+function mode{T<:Integer}(a::AbstractArray{T}, rgn::Range1{T})
+    isempty(a) && error("mode: input array cannot be empty.")
+
+    r0 = rgn[1]  
+    r1 = rgn[end]
+    cnts = zeros(Int, length(rgn))
+
+    mc = 0    # maximum count
+    mv = r0   # a value corresponding to maximum count
+
+    for x in a
+        if r0 <= x <= r1
+            @inbounds c = (cnts[x - r0 + 1] += 1)
+            if c > mc
+                mc = c
+                mv = x
+            end
+        end
     end
-    return counts
+
+    return mv
+end
+
+function modes{T<:Integer}(a::AbstractArray{T}, rgn::Range1{T})
+    r0 = rgn[1]  
+    r1 = rgn[end]
+    n = length(rgn)
+    cnts = zeros(Int, n)
+
+    # find the maximum count
+    mc = 0 
+    for x in a
+        if r0 <= x <= r1
+            @inbounds c = (cnts[x - r0 + 1] += 1)
+            if c > mc
+                mc = c
+            end
+        end
+    end
+
+    # find all values corresponding to maximum count
+    ms = T[]
+    for i = 1 : n
+        @inbounds if cnts[i] == mc
+            push!(ms, rgn[i])
+        end
+    end
+
+    return ms
 end
 
 function mode{T}(a::AbstractArray{T})
-    if isempty(a)
-        throw(ArgumentError("mode: a cannot be empty."))
-    end
-    tab = table(a)
-    m = maximum(values(tab))
-    for (k, v) in tab
-        if v == m
-            return k
+    isempty(a) && error("mode: input array cannot be empty.")
+
+    cnts = (T=>Int)[]
+
+    # first element
+    mc = 1
+    mv = a[1]
+    cnts[mv] = 1
+
+    # find the mode along with table construction
+    for i = 2 : length(a)
+        @inbounds x = a[i]
+        if haskey(cnts, x)
+            c = (cnts[x] += 1)
+            if c > mc
+                mc = c
+                mv = x
+            end
+        else
+            cnts[x] = 1
+            # in this case: c = 1, and thus c > mc won't happen
         end
     end
+
+    return mv
 end
 
 function modes{T}(a::AbstractArray{T})
-    if isempty(a)
-        throw(ArgumentError("mode: a cannot be empty."))
-    end
-    res = Array(T, 0)
-    tab = table(a)
-    m = maximum(values(tab))
-    for (k, v) in tab
-        if v == m
-            push!(res, k)
+    isempty(a) && error("modes: input array cannot be empty.")
+
+    cnts = (T=>Int)[]
+
+    # first element
+    mc = 1
+    cnts[a[1]] = 1
+
+    # find the mode along with table construction
+    for i = 2 : length(a)
+        @inbounds x = a[i]
+        if haskey(cnts, x)
+            c = (cnts[x] += 1)
+            if c > mc
+                mc = c
+            end
+        else
+            cnts[x] = 1
+            # in this case: c = 1, and thus c > mc won't happen
         end
     end
-    return res
+
+    # find values corresponding to maximum counts
+    ms = T[]
+    for (x, c) in cnts
+        if c == mc
+            push!(ms, x)
+        end
+    end
+
+    return ms
 end
 
 
