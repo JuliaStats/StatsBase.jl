@@ -4,15 +4,8 @@
 function gmean{T<:Real}(a::AbstractArray{T})
     s = 0.0
     n = length(a)
-    for i in 1:n
-        tmp = a[i]
-        if tmp < 0.0
-            throw(DomainError())
-        elseif tmp == 0.0
-            return 0.0
-        else
-            s += log(tmp)
-        end
+    for i = 1 : n
+        @inbounds s += log(a[i])
     end
     return exp(s / n)
 end
