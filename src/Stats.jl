@@ -74,6 +74,7 @@ module Stats
     include("intstats.jl")
     include("toeplitzsolvers.jl")
     include("corr.jl")
+    include("statmodels.jl")
     include("others.jl")
 
 end # module
