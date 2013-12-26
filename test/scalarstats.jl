@@ -1,7 +1,6 @@
 using Stats
 using Base.Test
 
-
 ## moments
 
 @test_approx_eq skewness(1:5) 0.0
@@ -58,3 +57,16 @@ using Base.Test
 @test mode([1, 2, 3, 3, 2, 2, 1]) == 2
 @test modes([1, 2, 3, 3, 2, 2, 1]) == [2]
 @test sort(modes([1, 3, 2, 3, 3, 2, 2, 1])) == [2, 3]
+
+# summarystats
+
+s = summarystats(1:5)
+@test isa(s, Stats.SummaryStats)
+@test s.min == 1.0
+@test s.max == 5.0
+@test_approx_eq s.mean 3.0
+@test_approx_eq s.median 3.0
+@test_approx_eq s.q25 2.0
+@test_approx_eq s.q75 4.0
+
+

@@ -24,8 +24,8 @@ module Stats
     nquantile,  # quantiles at [0:n]/n
     mode,       # find a mode from data 
     modes,      # find all modes from data
-    summarystats,
-    describe,
+    summarystats,   # summary statistics
+    describe,       # print the summary statistics
 
     # table
     table,
