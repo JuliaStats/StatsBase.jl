@@ -1,8 +1,6 @@
 using Stats
 using Base.Test
 
-# Should this be 4 - 2?
-# @test_approx_eq iqr([1, 2, 3, 4, 5])
 
 ## moments
 
@@ -25,9 +23,11 @@ using Base.Test
 @test_approx_eq mad([1:5]) 1.4826
 @test_approx_eq mad(1:5) 1.4826
 
+# min/max related
 
-# TODO: This shouldn't fail
-# @test_approx_eq mad(1:5) 1.4826
+@test minmax(1:5) == (1,5)
+@test minmax([3, 2, 7, 1, 4]) == (1,7)
+@test minmax([3.0, NaN, 1.0, NaN, 2.0]) == (1.0, 3.0)
 
 @test_approx_eq midrange([1, 2, 3, 4, 5]) 3.0
 @test_approx_eq midrange([1, 2, 2, 2, 5]) 3.0

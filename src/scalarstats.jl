@@ -84,19 +84,29 @@ mad{T<:Real}(v::Range1{T}) = mad!([v])
 
 # Minimum and maximum
 function minmax{T<:Real}(x::AbstractArray{T})
-    if isempty(x)
-        error("minmax: x cannot be empty.")
-    end
+    isempty(x) && error("minmax: x cannot be empty.")
 
-    xmin = xmax = x[1]
-    for i = 2:length(x)
-        x_i = x[i]
-        if x_i < xmin
-            xmin = x_i
-        elseif x_i > xmax
-            xmax = x_i
+    # find the first non-NaN value
+    x0 = x[1]
+    n = length(x)
+    i = 1
+    while i < n && (x0 != x0)
+        i += 1
+        @inbounds x0 = x[i] 
+    end
+    xmin = xmax = x0
+
+    # deal with the remaining
+    while i < n
+        i += 1
+        @inbounds xi = x[i]
+        if xi < xmin
+            xmin = xi
+        elseif xi > xmax
+            xmax = xi
         end
     end
+
     return xmin, xmax
 end
 
