@@ -14,8 +14,8 @@ end
 function hmean{T<:Real}(a::AbstractArray{T})
     s = 0.0
     n = length(a)
-    for i in 1:n
-        s += 1 / a[i]
+    for i in 1 : n
+        @inbounds s += inv(a[i])
     end
     return n / s
 end
