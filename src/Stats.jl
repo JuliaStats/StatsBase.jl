@@ -5,26 +5,23 @@ module Stats
     export
 
     # means
-    gmean,
-    hmean,
-    wmean,
+    gmean,      # geometric mean
+    hmean,      # harmonic mean
+    wmean,      # weighted mean
 
     # scalar_stats 
-    variation, 
-    sem,
-    mad,
-    skewness,
-    kurtosis,
-    minmax,
-    midrange,
-    range,
-    tiedrank,
-    percentile,
-    quantile,
-    quartile,
-    quintile,
-    decile,
-    iqr,
+    skewness,   # (standardized) skewness
+    kurtosis,   # (excessive) kurtosis
+    variation,  # ratio of standard deviation to mean
+    sem,        # standard error of the mean, i.e. sqrt(var / n)
+    mad,        # median absolute deviation
+    minmax,     # obtain min & max in a single pass
+    middle,     # the mean of two real numbers
+    midrange,   # the mean of minimum and maximum
+    range,      # the difference between maximum and minimum
+    prctile,    # quantile using percentage (instead of fraction) as argument
+    iqr,        # interquatile range 
+    nquantile,  # quantiles at [0:n]/n
     table,
     mode,
     modes,
@@ -36,6 +33,9 @@ module Stats
     addwcounts!,
     counts,
     wcounts,
+
+    # ranking
+    tiedrank,
 
     # corr
     acf,

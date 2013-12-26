@@ -110,17 +110,15 @@ function minmax{T<:Real}(x::AbstractArray{T})
     return xmin, xmax
 end
 
+# middle
+middle{T<:FloatingPoint}(a1::T, a2::T) = (a1 + a2) / convert(T, 2)
+middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
+
 # Mid-range
-function midrange{T<:Real}(a::AbstractArray{T})
-    xmin, xmax = minmax(a)
-    return xmin + (xmax - xmin) / 2
-end
+midrange{T<:Real}(a::AbstractArray{T}) = middle(minmax(a)...)
 
 # Range: xmax - xmin
-function range{T<:Real}(a::AbstractArray{T})
-    xmin, xmax = minmax(a)
-    return xmax - xmin
-end
+range{T<:Real}(a::AbstractArray{T}) = ((m0, m1) = minmax(a); m1 - m0)
 
 
 #############################
@@ -129,12 +127,11 @@ end
 #
 #############################
 
-quantile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
-percentile{T<:Real}(v::AbstractVector{T}) = quantile(v, [1:99] / 100)
-quartile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.25, .5, .75])
-quintile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.2, .4, .6, .8])
-decile{T<:Real}(v::AbstractVector{T}) = quantile(v, [.1, .2, .3, .4, .5, .6, .7, .8, .9])
-iqr{T<:Real}(v::AbstractVector{T}) = quantile(v, [.25, .75])
+prctile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
+iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
+
+quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
+nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 
 
 #############################

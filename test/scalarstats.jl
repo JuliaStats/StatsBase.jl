@@ -39,8 +39,13 @@ using Base.Test
 @test_approx_eq range([1, 4, 4, 4, 5]) 4.0
 @test_approx_eq range([1:15]) 14.0
 
+# quantile & friends
 
+@test_approx_eq quantile(1:5) [1:5]
+@test_approx_eq nquantile(1:5, 2) [1, 3, 5]
+@test_approx_eq nquantile(1:5, 4) [1:5] 
 
-# sem()
+@test_approx_eq prctile([1:5], 25) 2.0
+@test_approx_eq prctile([1:5], [25, 50, 75]) [2.0, 3.0, 4.0]
+@test_approx_eq iqr(1:5) 2.0
 
-# variation()
