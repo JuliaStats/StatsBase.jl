@@ -17,6 +17,10 @@ using Base.Test
 
 ## variability
 
+@test_approx_eq variation([1:5]) 0.527046276694730
+
+@test_approx_eq sem([1:5]) 0.707106781186548
+
 @test_approx_eq mad([1:5], 3) 1.4826
 @test_approx_eq mad([1:5]) 1.4826
 @test_approx_eq mad(1:5) 1.4826
