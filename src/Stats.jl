@@ -38,9 +38,6 @@ module Stats
     countmap,       # count distinct values and return a map
     proportionmap,  # proportions of distinct values returned as a map                     
 
-    # table
-    table,
-
     # ranking
     tiedrank,
 
