@@ -80,7 +80,6 @@ module Stats
     include("means.jl")
     include("scalarstats.jl")
     include("counts.jl")
-    include("table.jl")
     include("ranking.jl")
     include("toeplitzsolvers.jl")
     include("corr.jl")
