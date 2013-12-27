@@ -40,7 +40,10 @@ module Stats
     proportionmap,  # proportions of distinct values returned as a map                     
 
     # ranking
-    tiedrank,
+    ordinalrank,    # ordinal ranking ("1234" ranking)
+    competerank,    # competition ranking ("1 2 2 4" ranking)
+    denserank,      # dense ranking ("1 2 2 3" ranking)
+    tiedrank,       # tied ranking ("1 2.5 2.5 4" ranking)
 
     # corr
     acf,

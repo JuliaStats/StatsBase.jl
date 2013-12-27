@@ -1,6 +1,6 @@
 using Stats
 
-tests = ["means", "scalarstats", "counts"]
+tests = ["means", "scalarstats", "counts", "ranking"]
 
 println("Running tests:")
 
