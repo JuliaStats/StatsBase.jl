@@ -133,29 +133,21 @@ proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn:
 
 function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T})
 	for v in x
-		if haskey(cm, v)
-			cm[v] += 1
-		else
-			cm[v] = 1
-		end
+		cm[v] = get(cm, v, 0) + 1
 	end
 	return cm
 end
 
-function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec)
+function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec{W})
 	n = length(x)
 	length(wv) == n || raise_dimerror()
 	w = values(wv)
+	z = zero(W)
 
 	@inbounds for i = 1 : n
 		xi = x[i]
 		wi = w[i]
-
-		if haskey(cm, xi)
-			cm[xi] += wi
-		else
-			cm[xi] = wi
-		end
+		cm[xi] = get(cm, xi, z) + wi
 	end
 	return cm
 end
