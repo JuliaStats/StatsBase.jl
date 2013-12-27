@@ -1,7 +1,7 @@
 # A variety of means
 
 # Geometric mean
-function gmean{T<:Real}(a::AbstractArray{T})
+function gmean(a::RealArray)
     s = 0.0
     n = length(a)
     for i = 1 : n
@@ -11,7 +11,7 @@ function gmean{T<:Real}(a::AbstractArray{T})
 end
 
 # Harmonic mean
-function hmean{T<:Real}(a::AbstractArray{T})
+function hmean(a::RealArray)
     s = 0.0
     n = length(a)
     for i in 1 : n
@@ -50,3 +50,6 @@ function wmean{T<:BlasReal}(v::Array{T}, w::Array{T}; wsum::T=NaN)
 	sw = (isnan(wsum) ? sum(w) : wsum)
 	dot(v, w) / sw
 end
+
+wmean{T<:Number}(v::AbstractArray{T}, w::WeightVec) = wmean(v, values(w), sum(w))
+

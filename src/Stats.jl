@@ -1,8 +1,11 @@
 module Stats
-    import Base: show, quantile
+    import Base: length, isempty, values, sum, show, quantile
     import Base.LinAlg: BlasReal
 
     export
+
+    # common
+    WeightVec, weights,
 
     # means
     gmean,      # geometric mean
@@ -71,6 +74,7 @@ module Stats
     stderr,
     vcov
 
+    include("common.jl")
     include("means.jl")
     include("scalarstats.jl")
     include("counts.jl")
