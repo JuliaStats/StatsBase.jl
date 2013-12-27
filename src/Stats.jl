@@ -8,9 +8,10 @@ module Stats
     WeightVec, weights,
 
     # means
-    gmean,      # geometric mean
-    hmean,      # harmonic mean
-    wmean,      # weighted mean
+    geomean, gmean,     # geometric mean
+    harmmean, hmean,    # harmonic mean
+    trimmean,           # trimmed mean
+    wmean,              # weighted mean
 
     # scalar_stats 
     skewness,   # (standardized) skewness

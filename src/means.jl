@@ -1,7 +1,7 @@
 # A variety of means
 
 # Geometric mean
-function gmean(a::RealArray)
+function geomean(a::RealArray)
     s = 0.0
     n = length(a)
     for i = 1 : n
@@ -9,9 +9,11 @@ function gmean(a::RealArray)
     end
     return exp(s / n)
 end
+gmean(a::RealArray) = geomean(a)
+
 
 # Harmonic mean
-function hmean(a::RealArray)
+function harmmean(a::RealArray)
     s = 0.0
     n = length(a)
     for i in 1 : n
@@ -19,6 +21,29 @@ function hmean(a::RealArray)
     end
     return n / s
 end
+hmean(a::RealArray) = harmmean(a)
+
+
+# Trimmed mean
+
+function trimmean(x::RealArray, p::FloatingPoint)
+    n = length(x)
+    n > 0 || error("x can not be empty.")
+    rn = min(iround(n * p), n-1)
+    if rn == n - 1
+        return median(x)
+    else
+        sx = sort(x)
+        nl = rn >> 1
+        nh = (rn - nl)
+        s = 0.0
+        @inbounds for i = (1+nl) : (n-nh)
+            s += x[i]
+        end
+        return s / (n - rn)
+    end
+end
+
 
 # Weighted mean
 function wmean{T<:Number,W<:Real}(v::AbstractArray{T}, w::AbstractArray{W}; wsum::W=NaN)
@@ -52,3 +77,4 @@ function wmean{T<:BlasReal}(v::Array{T}, w::Array{T}; wsum::T=NaN)
 end
 
 mean{T<:Number}(v::AbstractArray{T}, w::WeightVec) = wmean(v, values(w); wsum=sum(w))
+
