@@ -121,3 +121,57 @@ proportions(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1) = coun
 proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1) = counts(x, y, wv, xrgn, yrgn) .* inv(sum(wv))
 
 
+
+#################################################
+#
+#  counts on distinct values
+#
+#  These methods are based on dictionaries, and 
+#  can be used on any kind of hashable values.
+#  
+#################################################
+
+function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T})
+	for v in x
+		if haskey(cm, v)
+			cm[v] += 1
+		else
+			cm[v] = 1
+		end
+	end
+	return cm
+end
+
+function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec)
+	n = length(x)
+	length(wv) == n || raise_dimerror()
+	w = values(wv)
+
+	@inbounds for i = 1 : n
+		xi = x[i]
+		wi = w[i]
+
+		if haskey(cm, xi)
+			cm[xi] += wi
+		else
+			cm[xi] = wi
+		end
+	end
+	return cm
+end
+
+countmap{T}(x::AbstractArray{T}) = addcounts!((T=>Int)[], x)
+countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!((T=>W)[], x, wv)
+
+function _normalize_countmap{T}(cm::Dict{T}, s::Real)
+	r = (T=>Float64)[]
+	for (k, c) in cm
+		r[k] = c / s 
+	end
+	return r
+end
+
+proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
+proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
+
+

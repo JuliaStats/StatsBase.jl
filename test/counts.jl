@@ -43,3 +43,29 @@ c0 = Float64[sum(w.values[(x .== i) & (y .== j)]) for i in 1 : 4, j in 1 : 5]
 @test_approx_eq c c0
 @test_approx_eq counts(x+2, y+3, w, 3:6, 4:8) c0
 @test_approx_eq proportions(x, y, w, 1:4, 1:5) (c0 ./ sum(w))
+
+# count map
+
+x = ["a", "b", "a", "a", "b", "c"]
+cm = countmap(x)
+@test cm["a"] == 3
+@test cm["b"] == 2
+@test cm["c"] == 1
+pm = proportionmap(x)
+@test_approx_eq pm["a"] (1/2)
+@test_approx_eq pm["b"] (1/3)
+@test_approx_eq pm["c"] (1/6)
+
+x = ["a", "b", "a", "a", "b", "c"]
+w = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5]
+cm = countmap(x, weights(w))
+@test cm["a"] == 5.5
+@test cm["b"] == 4.5
+@test cm["c"] == 3.5
+pm = proportionmap(x, weights(w))
+@test_approx_eq pm["a"] (5.5 / 13.5)
+@test_approx_eq pm["b"] (4.5 / 13.5)
+@test_approx_eq pm["c"] (3.5 / 13.5)
+
+
+

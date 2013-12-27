@@ -31,10 +31,12 @@ module Stats
     describe,       # print the summary statistics
 
     # counts
-    addcounts!,     # add counts to an accumulating array
-    counts,         # counts distinct values in given arrays
-    proportions,    # proportions of distinct values in given arrays 
-                    # (normalized version of counts)
+    addcounts!,     # add counts to an accumulating array or map
+    counts,         # count integer values in given arrays
+    proportions,    # proportions of integer values in given arrays 
+                    # (normalized version of counts)                    
+    countmap,       # count distinct values and return a map
+    proportionmap,  # proportions of distinct values returned as a map                     
 
     # table
     table,
