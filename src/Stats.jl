@@ -30,14 +30,14 @@ module Stats
     summarystats,   # summary statistics
     describe,       # print the summary statistics
 
+    # counts
+    addcounts!,     # add counts to an accumulating array
+    counts,         # counts distinct values in given arrays
+    proportions,    # proportions of distinct values in given arrays 
+                    # (normalized version of counts)
+
     # table
     table,
-
-    # intstats
-    addcounts!,
-    addwcounts!,
-    counts,
-    wcounts,
 
     # ranking
     tiedrank,

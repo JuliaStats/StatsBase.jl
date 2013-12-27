@@ -52,6 +52,9 @@ end
 counts(x::IntegerArray, rgn::Range1) = addcounts!(zeros(Int, length(rgn)), x, rgn)
 counts(x::IntegerArray, wv::WeightVec, rgn::Range1) = addcounts!(zeros(eltype(wv), length(rgn)), x, wv, rgn)
 
+proportions(x::IntegerArray, rgn::Range1) = counts(x, rgn) .* inv(length(x))
+proportions(x::IntegerArray, wv::WeightVec, rgn::Range1) = counts(x, wv, rgn) .* inv(sum(wv))
+
 
 #### functions for counting a single list of integers (2D)
 
@@ -114,6 +117,7 @@ function counts(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, y
 	addcounts!(zeros(eltype(wv), length(xrgn), length(yrgn)), x, y, wv, xrgn, yrgn)
 end
 
-
+proportions(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1) = counts(x, y, xrgn, yrgn) .* inv(length(x))
+proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1) = counts(x, y, wv, xrgn, yrgn) .* inv(sum(wv))
 
 
