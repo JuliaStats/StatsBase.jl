@@ -30,5 +30,3 @@ using Base.Test
 @test_approx_eq wmean(1:3, [0.5, 0.5, 0.0]) 1.5
 @test_approx_eq wmean(1:3, [0.0, 0.5, 0.5]) 2.5
 
-@test_approx_eq mean(WeightedVector(1:3, [1.0, 1.0, 0.5])) 1.8
-
