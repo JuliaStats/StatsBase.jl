@@ -37,9 +37,10 @@ ordinalrank(x::RealArray) = ordinalrank!(Array(Int, size(x)), x, sortperm(x))
 function competerank!(rks::RealArray, x::RealArray, p::IntegerArray)
     n = _check_randparams(rks, x, p)
     
-    if n > 0        
-        v = x[1]
-        rks[p[1]] = k = 1
+    if n > 0    
+        p1 = p[1]    
+        v = x[p1]
+        rks[p1] = k = 1
 
         i = 2
         while i <= n
@@ -65,9 +66,10 @@ competerank(x::RealArray) = competerank!(Array(Int, size(x)), x, sortperm(x))
 function denserank!(rks::RealArray, x::RealArray, p::IntegerArray)
     n = _check_randparams(rks, x, p)
     
-    if n > 0        
-        v = x[1]
-        rks[p[1]] = k = 1
+    if n > 0     
+        p1 = p[1]   
+        v = x[p1]
+        rks[p1] = k = 1
 
         i = 2
         while i <= n
@@ -93,25 +95,32 @@ denserank(x::RealArray) = denserank!(Array(Int, size(x)), x, sortperm(x))
 function tiedrank!(rks::RealArray, x::RealArray, p::IntegerArray)
     n = _check_randparams(rks, x, p)
 
-    i = 1
+    if n > 0
+        v = x[p[1]]
 
-    while i <= n
-        j = i
-        while j + 1 <= n && x[p[i]] == x[p[j + 1]]
-            j += 1
-        end
-
-        if j > i
-            m = sum(i:j) / (j - i + 1)
-            for k = i:j
-                rks[p[k]] = m
+        s = 1  # starting index of current range
+        e = 2  # pass-by-end index of current range
+        while e <= n 
+            cx = x[p[e]]
+            if cx != v
+                # fill average rank to s : e-1
+                ar = (s + e - 1) / 2
+                for i = s : e-1
+                    rks[p[i]] = ar
+                end
+                # switch to next range
+                s = e
+                v = cx
             end
-        else
-            rks[p[i]] = i
+            e += 1
         end
 
-        i = j + 1
-    end 
+        # the last range (e == n+1)
+        ar = (s + n) / 2
+        for i = s : n
+            rks[p[i]] = ar
+        end
+    end
 
     return rks
 end
