@@ -1,6 +1,8 @@
 ## Stats.jl
 
-Basic statistics functions for Julia
+Basic statistics functions for Julia.
+
+[![Build Status](https://travis-ci.org/JuliaStats/Stats.jl.png?branch=master)](https://travis-ci.org/JuliaStats/Stats.jl)
 
 ## List of Functions
 
