@@ -51,5 +51,4 @@ function wmean{T<:BlasReal}(v::Array{T}, w::Array{T}; wsum::T=NaN)
 	dot(v, w) / sw
 end
 
-wmean{T<:Number}(v::AbstractArray{T}, w::WeightVec) = wmean(v, values(w), sum(w))
-
+mean{T<:Number}(v::AbstractArray{T}, w::WeightVec) = wmean(v, values(w); wsum=sum(w))
