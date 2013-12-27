@@ -12,42 +12,108 @@
 
 #### functions for counting a single list of integers (1D)
 
-function addcounts!{T<:Integer}(r::AbstractArray, x::AbstractArray{T}, rgn::Range1{T})
+function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1)
 	# add counts of integers from x to r
 
 	k = length(rgn)
-	length(r) == k || error("Inconsistent argument lengths.")
+	length(r) == k || raise_dimerror()
 
 	m0 = rgn[1]
 	m1 = rgn[end]
-	b = m0 - one(T)
+	b = m0 - 1
 	
-	for i in 1 : length(x)
-		@inbounds xi = x[i]
+	@inbounds for i in 1 : length(x)
+		xi = x[i]
 		if m0 <= xi <= m1
-			@inbounds r[xi - b] += 1  
+			r[xi - b] += 1  
 		end
 	end
 	return r
 end
 
-function addwcounts!{T<:Integer,W<:Real}(r::AbstractArray, x::AbstractArray{T}, w::AbstractArray{W}, rgn::Range1{T})
+function addcounts!(r::AbstractArray, x::IntegerArray, wv::WeightVec, rgn::Range1)
 	k = length(rgn)
-	length(r) == k || error("Inconsistent argument lengths.")
+	length(r) == k || raise_dimerror()
 
 	m0 = rgn[1]
 	m1 = rgn[end]
-	b = m0 - one(T)
+	b = m0 - 1
+	w = values(wv)
 	
-	for i in 1 : length(x)
-		@inbounds xi = x[i]
+	@inbounds for i in 1 : length(x)
+		xi = x[i]
 		if m0 <= xi <= m1
-			@inbounds r[xi - b] += w[i]  
+			r[xi - b] += w[i]  
 		end
 	end
 	return r
 end
 
-counts{T<:Integer}(x::AbstractArray{T}, rgn::Range1{T}) = addcounts!(zeros(Int, length(rgn)), x, rgn)
-wcounts{T<:Integer,W<:Real}(x::AbstractArray{T}, w::AbstractArray{W}, rgn::Range1{T}) = addwcounts!(zeros(W, length(rgn)), x, w, rgn)
+counts(x::IntegerArray, rgn::Range1) = addcounts!(zeros(Int, length(rgn)), x, rgn)
+counts(x::IntegerArray, wv::WeightVec, rgn::Range1) = addcounts!(zeros(eltype(wv), length(rgn)), x, wv, rgn)
+
+
+#### functions for counting a single list of integers (2D)
+
+function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1)
+	# add counts of integers from x to r
+
+	kx = length(xrgn)
+	ky = length(yrgn)
+	size(r) == (kx, ky) || raise_dimerror()
+
+	mx0 = xrgn[1]
+	mx1 = xrgn[end]
+	my0 = yrgn[1]
+	my1 = yrgn[end]
+
+	bx = mx0 - 1
+	by = my0 - 1
+	
+	for i in 1 : length(x)
+		xi = x[i]
+		yi = y[i]
+		if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
+			r[xi - bx, yi - by] += 1  
+		end
+	end
+	return r
+end
+
+function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1)
+	# add counts of integers from x to r
+
+	kx = length(xrgn)
+	ky = length(yrgn)
+	size(r) == (kx, ky) || raise_dimerror()
+
+	mx0 = xrgn[1]
+	mx1 = xrgn[end]
+	my0 = yrgn[1]
+	my1 = yrgn[end]
+
+	bx = mx0 - 1
+	by = my0 - 1
+	w = values(wv)
+	
+	for i in 1 : length(x)
+		xi = x[i]
+		yi = y[i]
+		if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
+			r[xi - bx, yi - by] += w[i] 
+		end
+	end
+	return r
+end
+
+function counts(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1)
+	addcounts!(zeros(Int, length(xrgn), length(yrgn)), x, y, xrgn, yrgn)
+end
+
+function counts(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1)
+	addcounts!(zeros(eltype(wv), length(xrgn), length(yrgn)), x, y, wv, xrgn, yrgn)
+end
+
+
+
 

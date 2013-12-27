@@ -25,7 +25,7 @@ function wmean{T<:Number,W<:Real}(v::AbstractArray{T}, w::AbstractArray{W}; wsum
 	# wsum is the pre-computed sum of weights
 
 	n = length(v)
-	length(w) == n || throw(ArgumentError("Inconsistent array lengths."))
+	length(w) == n || raise_dimerror()
     sv = zero(T)
 
     if isnan(wsum)

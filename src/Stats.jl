@@ -1,5 +1,5 @@
 module Stats
-    import Base: length, isempty, values, sum, mean, show, quantile
+    import Base: length, isempty, eltype, values, sum, mean, show, quantile
     import Base.LinAlg: BlasReal
 
     export
