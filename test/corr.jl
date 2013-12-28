@@ -26,8 +26,8 @@ x2 = x[:, 2]
 
 # autocov & autocorr
 
-@test_approx_eq autocov(float64([1:5])) [2.0, 0.8, -0.2, -0.8, -0.8]
-@test_approx_eq autocor(float64([1, 2, 3, 4, 5])) [1.0, 0.4, -0.1, -0.4, -0.4]
+@test_approx_eq autocov([1:5]) [2.0, 0.8, -0.2, -0.8, -0.8]
+@test_approx_eq autocor([1, 2, 3, 4, 5]) [1.0, 0.4, -0.1, -0.4, -0.4]
 
 racovx1 =  [1.839214242630635709475, 
            -0.406784553146903871124, 
@@ -56,5 +56,53 @@ racorx1 = [0.999999999999999888978,
 
 @test_approx_eq autocor(x1) racorx1
 @test_approx_eq autocor(x) [autocor(x1) autocor(x2)]
+
+
+# crosscov & crosscor
+
+rcov0 = [0.320000000000000006661,
+        -0.319999999999999951150,
+         0.080000000000000029421,
+        -0.479999999999999982236,
+         0.000000000000000000000,
+         0.479999999999999982236,
+        -0.080000000000000029421,
+         0.319999999999999951150,
+        -0.320000000000000006661]
+
+@test_approx_eq crosscov([1, 2, 3, 4, 5], [1, -1, 1, -1, 1]) rcov0
+@test_approx_eq crosscov([1:5], [1:5]) [-0.8, -0.8, -0.2, 0.8, 2.0, 0.8, -0.2, -0.8, -0.8]
+
+c11 = crosscov(x1, x1)
+c12 = crosscov(x1, x2)
+c21 = crosscov(x2, x1)
+c22 = crosscov(x2, x2)
+
+@test_approx_eq crosscov(x,  x1) [c11 c21]  
+@test_approx_eq crosscov(x1, x)  [c11 c12]
+@test_approx_eq crosscov(x,  x)  cat(3, [c11 c21], [c12 c22])
+
+rcor0 = [0.230940107675850,
+        -0.230940107675850,
+         0.057735026918963,
+        -0.346410161513775,
+         0.000000000000000,
+         0.346410161513775,
+        -0.057735026918963,
+         0.230940107675850,
+        -0.230940107675850]
+
+@test_approx_eq crosscor([1, 2, 3, 4, 5], [1, -1, 1, -1, 1]) rcor0        
+@test_approx_eq crosscor([1:5], [1:5]) [-0.4, -0.4, -0.1, 0.4, 1.0, 0.4, -0.1, -0.4, -0.4]
+
+c11 = crosscor(x1, x1)
+c12 = crosscor(x1, x2)
+c21 = crosscor(x2, x1)
+c22 = crosscor(x2, x2)
+
+@test_approx_eq crosscor(x,  x1) [c11 c21]  
+@test_approx_eq crosscor(x1, x)  [c11 c12]
+@test_approx_eq crosscor(x,  x)  cat(3, [c11 c21], [c12 c22])
+
 
 

@@ -18,6 +18,22 @@ typealias IntegerMatrix{T<:Integer} AbstractArray{T,2}
 
 typealias RealFP Union(Float32, Float64)
 
+## conversion from real to fp types
+
+fptype(::Type{Float32}) = Float32
+fptype(::Type{Float64}) = Float64
+fptype(::Type{Bool}) = Float32
+fptype(::Type{Int8}) = Float32
+fptype(::Type{Uint8}) = Float32
+fptype(::Type{Int16}) = Float32
+fptype(::Type{Uint16}) = Float32
+fptype(::Type{Int32}) = Float64
+fptype(::Type{Uint32}) = Float64
+fptype(::Type{Int64}) = Float64
+fptype(::Type{Uint64}) = Float64
+fptype(::Type{Int128}) = Float64
+fptype(::Type{Uint128}) = Float64
+
 ## consistent way to raise error
 #
 # only change this, if we decide to change to way that
