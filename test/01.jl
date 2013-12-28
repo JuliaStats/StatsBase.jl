@@ -176,7 +176,7 @@ end
                                                            0.111857020733719,
                                                           -0.175020669835420]
 
-@test iqr([1, 2, 3, 4, 5]) == [2.0, 4.0]
+@test iqr([1, 2, 3, 4, 5]) == 4.0 - 2.0
 
 z = [true, true, false, false, true, false, true, true, true]
 values, lengths = rle(z)

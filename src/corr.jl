@@ -1,8 +1,139 @@
-# Various correlation 
+# Correlation 
 
+#######################################
 #
-# spearman correlation functions
+#   Helper functions
 #
+#######################################
+
+default_lags(lx::Int) = 0 : min(lx-1, int(10log10(lx)))
+
+function demean_col!{T<:RealFP}(z::Vector{T}, x::Matrix{T}, j::Int, demean::Bool)
+    m = size(x, 1)
+    @assert m == length(z)
+    b = m * (j-1)
+    if demean
+        s = zero(T)
+        for i = 1 : m
+            s += x[b + i]
+        end
+        mv = s / m
+        for i = 1 : m
+            z[i] = x[b + i] - mv
+        end
+    else
+        copy!(z, 1, x, b+1, m)
+    end
+    z
+end
+
+
+#######################################
+#
+#   Auto-correlations
+#
+#######################################
+
+## autocov
+
+function autocov!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+    lx = length(x)
+    m = length(lags)
+    length(r) == m || raise_dimerror()
+    maximum(lags) < lx || error("autocorr: lags must be less than the sample length.")
+
+    z::Vector{T} = demean ? x - mean(x) : x
+    for k = 1 : m  # foreach lag value
+        l = lags[k]
+        r[k] = dot(z, 1:lx-l, z, 1+l:lx) / lx
+    end
+    return r
+end
+
+function autocov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+    lx = size(x, 1)
+    ns = size(x, 2)
+    m = length(lags)
+    size(r) == (m, ns) || raise_dimerror()
+
+    z = Array(T, m)
+    for j = 1 : ns
+        demean_col!(z, x, j, demean)
+        for k = 1 : m
+            l = lags[k]
+            r[k,j] = dot(z, 1:n-l, z, 1+l:n) / lx
+        end
+    end
+    return r
+end
+
+function autocov{T<:RealFP}(x::VecOrMat{T}, lags::IntegerVector; demean::Bool=true)
+    autocov!(Array(T, length(lags)), x, lags; demean=demean)
+end
+
+autocov{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocov(x, default_lags(length(x)); demean=demean)
+
+## autocorr
+
+function autocorr!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+    lx = length(x)
+    m = length(lags)
+    length(r) == m || raise_dimerror()
+    maximum(lags) < lx || error("autocorr: lags must be less than the sample length.")
+
+    z::Vector{T} = demean ? x - mean(x) : x
+    zz = dot(z, z)
+    for k = 1 : m  # foreach lag value
+        l = lags[k]
+        r[k] = dot(z, 1:lx-l, z, 1+l:lx) / zz
+    end
+    return r
+end
+
+function autocorr!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+    lx = size(x, 1)
+    ns = size(x, 2)
+    m = length(lags)
+    size(r) == (m, ns) || raise_dimerror()
+
+    z = Array(T, m)
+    for j = 1 : ns
+        demean_col!(z, x, j, demean)
+        zz = dot(z, z)
+        for k = 1 : m
+            l = lags[k]
+            r[k,j] = dot(z, 1:n-l, z, 1+l:n) / zz
+        end
+    end
+    return r
+end
+
+function autocorr{T<:RealFP}(x::VecOrMat{T}, lags::IntegerVector; demean::Bool=true)
+    autocorr!(Array(T, length(lags)), x, lags; demean=demean)
+end
+
+autocorr{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocorr(x, default_lags(length(x)); demean=demean)
+
+const acf = autocorr
+
+
+
+#######################################
+#
+#   Old part
+#
+#######################################
+
+
+
+
+
+
+#######################################
+#
+#   Spearman correlation
+#
+#######################################
 
 # spearman correlation between two vectors
 function cor_spearman(x::AbstractVector, y::AbstractVector)
@@ -138,49 +269,7 @@ function mswaps(x::AbstractVector, y::AbstractVector)
     return nSwaps
 end
 
-# Autocorrelation for range
-function acf{T<:BlasReal}(x::AbstractVector{T}, lags::AbstractVector{Int}=0:min(length(x)-1, int(10log10(length(x))));
-    correlation::Bool=true, demean::Bool=true)
-    lx, llags = length(x), length(lags)
-    if maximum(lags) >= lx; error("Autocovariance distance must be less than sample size"); end
-    
-    xs = Array(T, lx)
-    demean ? (mx = mean(x); for i = 1:lx; xs[i] = x[i]-mx; end) : (for i = 1:lx; xs[i] = x[i]; end)
-    
-    autocov_sumterm = Array(T, llags)
-    for i in 1:llags
-      autocov_sumterm[i] = dot(xs[1:end-lags[i]], xs[lags[i]+1:end])
-    end
-    autocov_sumterm
-    
-    if correlation
-      demean ?
-        (return autocov_sumterm/dot(xs, xs)) : (return autocov_sumterm/dot(x, x))
-    else
-      return autocov_sumterm/lx
-    end
-end
-# acf{T<:Real}(x::AbstractVector{T}, lags::AbstractVector{T}; args...) = acf(float(x), lags; args...)
 
-# Autocorrelation at a specific lag
-acf{T<:Real}(x::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) = acf(x, lags:lags, correlation=correlation, demean=demean)[1]
-
-# Unlike ccf, compute only autocorrelation (not cross-correlation) of matrix columns for range
-function acf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int}=0:min(size(X,1)-1, int(10log10(size(X,1))));
-    correlation::Bool=true, demean::Bool=true)
-    ncols = size(X, 2)
-    
-    autocorr = Array(T, length(lags), ncols)
-    for i = 1:ncols
-        autocorr[:, i] = acf(X[:, i], lags, correlation=correlation, demean=demean)
-    end
-    autocorr
-end
-acf{T<:Real}(X::AbstractArray{T}, args1...; args2...) = acf(float(X), args1...; args2...)
-
-# Unlike ccf, compute only autocorrelation (not cross-correlation) of matrix columns at a specific lag
-acf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
-  acf(x, lags:lags, correlation=correlation, demean=demean)
 
 # Cross-correlation for range
 function ccf{T<:BlasReal}(x::AbstractVector{T}, y::AbstractVector{T}, lags::AbstractVector{Int}=-min(length(x)-1, int(10log10(length(x)))):min(length(x)-1, int(10log10(length(x))));

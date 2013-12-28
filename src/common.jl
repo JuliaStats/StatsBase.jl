@@ -16,6 +16,8 @@ typealias IntegerArray{T<:Integer,N} AbstractArray{T,N}
 typealias IntegerVector{T<:Integer} AbstractArray{T,1}
 typealias IntegerMatrix{T<:Integer} AbstractArray{T,2}
 
+typealias RealFP Union(Float32, Float64)
+
 ## consistent way to raise error
 #
 # only change this, if we decide to change to way that
@@ -44,4 +46,3 @@ eltype(wv::WeightVec) = eltype(wv.values)
 length(wv::WeightVec) = length(wv.values)
 values(wv::WeightVec) = wv.values
 sum(wv::WeightVec) = wv.sum
-

@@ -46,6 +46,11 @@ module Stats
     tiedrank,       # tied ranking ("1 2.5 2.5 4" ranking)
 
     # corr
+    autocov!, autocov,      # auto covariance
+    autocorr!, autocorr,    # auto correlation
+    crosscov!, crosscov,    # cross covariance
+    crosscorr!, crosscorr,  # cross correlation
+
     acf,
     ccf,
     cor_spearman,
