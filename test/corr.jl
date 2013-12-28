@@ -41,6 +41,7 @@ racovx1 =  [1.839214242630635709475,
            -0.088687020167434751916]
 
 @test_approx_eq autocov(x1) racovx1
+@test_approx_eq autocov(x) [autocov(x1) autocov(x2)]
 
 racorx1 = [0.999999999999999888978, 
           -0.221173011668873431557,  
@@ -54,4 +55,6 @@ racorx1 = [0.999999999999999888978,
           -0.048220059475281865091]
 
 @test_approx_eq autocor(x1) racorx1
+@test_approx_eq autocor(x) [autocor(x1) autocor(x2)]
+
 

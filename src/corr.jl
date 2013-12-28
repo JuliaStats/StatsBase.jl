@@ -6,7 +6,7 @@
 #
 #######################################
 
-default_lags(lx::Int) = 0 : min(lx-1, int(10log10(lx)))
+default_laglen(lx::Int) = min(lx-1, int(10log10(lx)))
 
 function demean_col!{T<:RealFP}(z::Vector{T}, x::Matrix{T}, j::Int, demean::Bool)
     m = size(x, 1)
@@ -34,6 +34,8 @@ end
 #
 #######################################
 
+default_autolags(lx::Int) = 0 : default_laglen(lx)
+
 ## autocov
 
 function autocov!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
@@ -56,24 +58,28 @@ function autocov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; d
     m = length(lags)
     size(r) == (m, ns) || raise_dimerror()
 
-    z = Array(T, m)
+    z = Array(T, lx)
     for j = 1 : ns
         demean_col!(z, x, j, demean)
         for k = 1 : m
             l = lags[k]
-            r[k,j] = dot(z, 1:n-l, z, 1+l:n) / lx
+            r[k,j] = dot(z, 1:lx-l, z, 1+l:lx) / lx
         end
     end
     return r
 end
 
-function autocov{T<:RealFP}(x::VecOrMat{T}, lags::IntegerVector; demean::Bool=true)
+function autocov{T<:RealFP}(x::Vector{T}, lags::IntegerVector; demean::Bool=true)
     autocov!(Array(T, length(lags)), x, lags; demean=demean)
 end
 
-autocov{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocov(x, default_lags(length(x)); demean=demean)
+function autocov{T<:RealFP}(x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+    autocov!(Array(T, length(lags), size(x,2)), x, lags; demean=demean)
+end
 
-## autocorr
+autocov{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocov(x, default_autolags(size(x,1)); demean=demean)
+
+## autocor
 
 function autocor!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -96,23 +102,27 @@ function autocor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; d
     m = length(lags)
     size(r) == (m, ns) || raise_dimerror()
 
-    z = Array(T, m)
+    z = Array(T, lx)
     for j = 1 : ns
         demean_col!(z, x, j, demean)
         zz = dot(z, z)
         for k = 1 : m
             l = lags[k]
-            r[k,j] = dot(z, 1:n-l, z, 1+l:n) / zz
+            r[k,j] = dot(z, 1:lx-l, z, 1+l:lx) / zz
         end
     end
     return r
 end
 
-function autocor{T<:RealFP}(x::VecOrMat{T}, lags::IntegerVector; demean::Bool=true)
+function autocor{T<:RealFP}(x::Vector{T}, lags::IntegerVector; demean::Bool=true)
     autocor!(Array(T, length(lags)), x, lags; demean=demean)
 end
 
-autocor{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_lags(length(x)); demean=demean)
+function autocor{T<:RealFP}(x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+    autocor!(Array(T, length(lags), size(x,2)), x, lags; demean=demean)
+end
+
+autocor{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
 
 const acf = autocor
 
@@ -124,10 +134,7 @@ const acf = autocor
 #
 #######################################
 
-
-
-
-
+default_crosslags(lx::Int) = (l=default_laglen(lx); -l:l)
 
 
 
@@ -275,57 +282,57 @@ end
 
 
 
-# Cross-correlation for range
-function ccf{T<:BlasReal}(x::AbstractVector{T}, y::AbstractVector{T}, lags::AbstractVector{Int}=-min(length(x)-1, int(10log10(length(x)))):min(length(x)-1, int(10log10(length(x))));
-    correlation::Bool=true, demean::Bool=true)
-    lx, ly, llags = length(x), length(y), length(lags)
-    if lx != ly error("Input vectors must have same length") end
-    if maximum(lags) > lx; error("Cross-covariance distance must be less than sample size"); end
+# # Cross-correlation for range
+# function ccf{T<:BlasReal}(x::AbstractVector{T}, y::AbstractVector{T}, lags::AbstractVector{Int}=-min(length(x)-1, int(10log10(length(x)))):min(length(x)-1, int(10log10(length(x))));
+#     correlation::Bool=true, demean::Bool=true)
+#     lx, ly, llags = length(x), length(y), length(lags)
+#     if lx != ly error("Input vectors must have same length") end
+#     if maximum(lags) > lx; error("Cross-covariance distance must be less than sample size"); end
     
-    xs, ys = Array(T, lx), Array(T, ly)
-    if demean
-        mx, my = mean(x), mean(y); for i = 1:lx; xs[i], ys[i] = x[i]-mx, y[i]-my; end
-    else
-        for i = 1:lx; xs[i], ys[i] = x[i], y[i]; end
-    end
+#     xs, ys = Array(T, lx), Array(T, ly)
+#     if demean
+#         mx, my = mean(x), mean(y); for i = 1:lx; xs[i], ys[i] = x[i]-mx, y[i]-my; end
+#     else
+#         for i = 1:lx; xs[i], ys[i] = x[i], y[i]; end
+#     end
     
-    crosscov_sumterm = Array(T, llags)
-    for i in 1:llags
-        crosscov_sumterm[i] = lags[i] > 0 ? dot(xs[1:end-lags[i]], ys[lags[i]+1:end]) : dot(xs[1-lags[i]:end], ys[1:end+lags[i]])
-    end
-    crosscov_sumterm
+#     crosscov_sumterm = Array(T, llags)
+#     for i in 1:llags
+#         crosscov_sumterm[i] = lags[i] > 0 ? dot(xs[1:end-lags[i]], ys[lags[i]+1:end]) : dot(xs[1-lags[i]:end], ys[1:end+lags[i]])
+#     end
+#     crosscov_sumterm
     
-    if correlation
-        demean ?
-            (return crosscov_sumterm/(sqrt(dot(xs, xs)*dot(ys, ys)))) : (return crosscov_sumterm/sqrt(dot(x, x)*dot(y , y)))
-    else
-      return crosscov_sumterm/lx
-    end  
-end
-ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, args1...; args2...) = ccf(float(x), float(y), args1...; args2...)
+#     if correlation
+#         demean ?
+#             (return crosscov_sumterm/(sqrt(dot(xs, xs)*dot(ys, ys)))) : (return crosscov_sumterm/sqrt(dot(x, x)*dot(y , y)))
+#     else
+#       return crosscov_sumterm/lx
+#     end  
+# end
+# ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, args1...; args2...) = ccf(float(x), float(y), args1...; args2...)
 
-# Cross-correlation at a specific lag
-ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
-  ccf(x, y, lags:lags, correlation=correlation, demean=demean)[1]
+# # Cross-correlation at a specific lag
+# ccf{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
+#   ccf(x, y, lags:lags, correlation=correlation, demean=demean)[1]
 
-# Cross-correlation between all pairs of columns of a matrix for range
-function ccf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int}=0:min(size(X,1)-1, int(10log10(size(X,1)/size(X,2))));
-  correlation::Bool=true, demean::Bool=true)
-  ncols = size(X, 2)
+# # Cross-correlation between all pairs of columns of a matrix for range
+# function ccf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int}=0:min(size(X,1)-1, int(10log10(size(X,1)/size(X,2))));
+#   correlation::Bool=true, demean::Bool=true)
+#   ncols = size(X, 2)
 
-  crosscorr = Array(T, length(lags), ncols, ncols)
-  for i = 1:ncols
-    for j = 1:ncols
-      crosscorr[:, i, j] = ccf(X[:, i], X[:, j], lags, correlation=correlation, demean=demean)
-    end
-  end
-  crosscorr
-end
-ccf{T<:Real}(X::AbstractMatrix{T}, args1...; args2...) = ccf(float(X), args1...; args2...)
+#   crosscorr = Array(T, length(lags), ncols, ncols)
+#   for i = 1:ncols
+#     for j = 1:ncols
+#       crosscorr[:, i, j] = ccf(X[:, i], X[:, j], lags, correlation=correlation, demean=demean)
+#     end
+#   end
+#   crosscorr
+# end
+# ccf{T<:Real}(X::AbstractMatrix{T}, args1...; args2...) = ccf(float(X), args1...; args2...)
 
-# Cross-correlation between all pairs of columns of a matrix at a specific lag
-ccf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
-  reshape(ccf(x, lags:lags, correlation=correlation, demean=demean), size(x, 2), size(x, 2))
+# # Cross-correlation between all pairs of columns of a matrix at a specific lag
+# ccf{T<:Real}(x::AbstractMatrix{T}, lags::Integer; correlation::Bool=true, demean::Bool=true) =
+#   reshape(ccf(x, lags:lags, correlation=correlation, demean=demean), size(x, 2), size(x, 2))
 
 # Partial autoroccelation
 function pacf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int} = 0:min(size(X,1)-1, int(10log10(size(X,1)))); 
