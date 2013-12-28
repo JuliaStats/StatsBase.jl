@@ -27,7 +27,7 @@ x2 = x[:, 2]
 # autocov & autocorr
 
 @test_approx_eq autocov(float64([1:5])) [2.0, 0.8, -0.2, -0.8, -0.8]
-@test_approx_eq autocorr(float64([1, 2, 3, 4, 5])) [1.0, 0.4, -0.1, -0.4, -0.4]
+@test_approx_eq autocor(float64([1, 2, 3, 4, 5])) [1.0, 0.4, -0.1, -0.4, -0.4]
 
 racovx1 =  [1.839214242630635709475, 
            -0.406784553146903871124, 
@@ -53,5 +53,5 @@ racorx1 = [0.999999999999999888978,
           -0.059889541590524189574, 
           -0.048220059475281865091]
 
-@test_approx_eq autocorr(x1) racorx1
+@test_approx_eq autocor(x1) racorx1
 

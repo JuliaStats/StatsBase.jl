@@ -47,9 +47,9 @@ module Stats
 
     # corr
     autocov!, autocov,      # auto covariance
-    autocorr!, autocorr,    # auto correlation
+    autocor!, autocor,      # auto correlation
     crosscov!, crosscov,    # cross covariance
-    crosscorr!, crosscorr,  # cross correlation
+    crosscor!, crosscor,    # cross correlation
 
     acf,
     ccf,

@@ -75,7 +75,7 @@ autocov{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocov(x, default_lags(
 
 ## autocorr
 
-function autocorr!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+function autocor!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     m = length(lags)
     length(r) == m || raise_dimerror()
@@ -90,7 +90,7 @@ function autocorr!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; 
     return r
 end
 
-function autocorr!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
@@ -108,21 +108,25 @@ function autocorr!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; 
     return r
 end
 
-function autocorr{T<:RealFP}(x::VecOrMat{T}, lags::IntegerVector; demean::Bool=true)
-    autocorr!(Array(T, length(lags)), x, lags; demean=demean)
+function autocor{T<:RealFP}(x::VecOrMat{T}, lags::IntegerVector; demean::Bool=true)
+    autocor!(Array(T, length(lags)), x, lags; demean=demean)
 end
 
-autocorr{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocorr(x, default_lags(length(x)); demean=demean)
+autocor{T<:RealFP}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_lags(length(x)); demean=demean)
 
-const acf = autocorr
+const acf = autocor
 
 
 
 #######################################
 #
-#   Old part
+#   Cross-correlations
 #
 #######################################
+
+
+
+
 
 
 
