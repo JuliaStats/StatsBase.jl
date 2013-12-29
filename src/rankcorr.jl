@@ -10,27 +10,13 @@
 #
 #######################################
 
-# spearman correlation between two vectors
 cor_spearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
 
-# spearman correlation over all pairs of columns of two matrices
-function cor_spearman(X::RealMatrix, Y::RealMatrix)
-    return cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
-end
+cor_spearman(X::RealMatrix, Y::RealMatrix) = cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
+cor_spearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, 1), tiedrank(y))
+cor_spearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, 1))
 
-function cor_spearman(X::RealMatrix, y::RealVector)
-    return cor(mapslices(tiedrank, X, 1), tiedrank(y))
-end
-
-function cor_spearman(x::RealVector, Y::RealMatrix)
-    return cor(tiedrank(x), mapslices(tiedrank, Y, 1))
-end
-
-# spearman correlation over all pairs of columns of a matrix
-function cor_spearman(X::RealMatrix)
-	Z = mapslices(tiedrank, X, 1)
-	cor(Z, Z)
-end
+cor_spearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
 
 
 #######################################
@@ -40,7 +26,8 @@ end
 #######################################
 
 # Knigh JASA (1966)
-function cor_kendall!{T<:Real,S<:Real}(x::AbstractVector{T}, y::AbstractVector{S})
+
+function cor_kendall!(x::RealVector, y::RealVector)
     if any(isnan(x)) || any(isnan(y)) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
@@ -97,11 +84,17 @@ function cor_kendall!{T<:Real,S<:Real}(x::AbstractVector{T}, y::AbstractVector{S
     nD = div(n*(n - 1),2)
     return (nD - nT - nU + nV - 2swaps!(y))/sqrt((nD - nT)*(nD - nU))
 end
-cor_kendall(x::AbstractVector, y::AbstractVector) = cor_kendall!(copy(x), copy(y))
-cor_kendall(x::AbstractVector, Y::AbstractMatrix) = [cor_kendall(x, Y[:,i]) for i in 1:size(Y, 2)]
-cor_kendall(X::AbstractMatrix, y::AbstractVector) = [cor_kendall(X[:,i], y) for i in 1:size(X, 2)]
-cor_kendall(X::AbstractMatrix, Y::AbstractMatrix) = [cor_kendall(X[:,i], Y[:,j]) for i in 1:size(X, 2), j in 1:size(Y, 2)]
-function cor_kendall(X::AbstractMatrix)
+
+
+cor_kendall(x::RealVector, y::RealVector) = cor_kendall!(float(copy(x)), float(copy(y)))
+
+cor_kendall(X::RealMatrix, y::RealVector) = [cor_kendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
+
+cor_kendall(x::RealVector, Y::RealMatrix) = (n = size(Y,2); reshape([cor_kendall!(float(copy(x)), float(Y[:,i])) for i in 1:n], 1, n))
+
+cor_kendall(X::RealMatrix, Y::RealMatrix) = [cor_kendall!(float(X[:,i]), float(Y[:,j])) for i in 1:size(X, 2), j in 1:size(Y, 2)]
+
+function cor_kendall(X::RealMatrix)
     n = size(X, 2)
     C = eye(n)
     for j = 2:n
@@ -114,7 +107,8 @@ function cor_kendall(X::AbstractMatrix)
 end
 
 # Auxilliary functions for Kendall's rank correlation
-function swaps!(x::AbstractVector)
+
+function swaps!(x::RealVector)
     n = length(x)
     if n == 1 return 0 end
     n2 = div(n, 2)
@@ -127,7 +121,7 @@ function swaps!(x::AbstractVector)
     return nsl + nsr + mswaps(xl,xr)
 end
 
-function mswaps(x::AbstractVector, y::AbstractVector)
+function mswaps(x::RealVector, y::RealVector)
     i = 1
     j = 1
     nSwaps = 0
