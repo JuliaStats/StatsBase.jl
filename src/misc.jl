@@ -1,46 +1,51 @@
-# Other stuff
+# Miscelleneous stuff
 
 # run-length encoding
 function rle{T}(v::Vector{T})
     n = length(v)
-    current_value = v[1]
-    current_length = 1
-    values = Array(T, n)
-    total_values = 1
-    lengths = Array(Int, n)
-    total_lengths = 1
-    for i in 2:n
-        if v[i] == current_value
-            current_length += 1
+    vals = T[]
+    lens = Int[]
+
+    cv = v[1]
+    cl = 1
+
+    i = 2
+    @inbounds while i <= n
+        vi = v[i]
+        if vi == cv
+            cl += 1
         else
-            values[total_values] = current_value
-            total_values += 1
-            lengths[total_lengths] = current_length
-            total_lengths += 1
-            current_value = v[i]
-            current_length = 1
+            push!(vals, cv)
+            push!(lens, cl)
+            cv = vi
+            cl = 1
         end
+        i += 1
     end
-    values[total_values] = current_value
-    lengths[total_lengths] = current_length
-    return (values[1:total_values], lengths[1:total_lengths])
+
+    # the last section
+    push!(vals, cv)
+    push!(lens, cl)
+
+    return (vals, lens)
 end
 
 # inverse run-length encoding
-function inverse_rle{T}(values::Vector{T}, lengths::Vector{Int})
-    total_n = sum(lengths)
-    pos = 0
-    res = Array(T, total_n)
-    n = length(values)
-    for i in 1:n
-        v = values[i]
-        l = lengths[i]
-        for j in 1:l
-            pos += 1
-            res[pos] = v
+function inverse_rle{T}(vals::AbstractVector{T}, lens::IntegerVector)
+    m = length(vals)
+    length(lens) == m || raise_dimerror()
+
+    r = Array(T, sum(lens))
+    p = 0
+    @inbounds for i = 1 : m
+        j = lens[i]
+        v = vals[i]
+        while j > 0
+            r[p+=1] = v
+            j -=1 
         end
     end
-    return res
+    return r
 end
 
 # TODO: Support slicing along any dimensions
