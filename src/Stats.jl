@@ -57,30 +57,28 @@ module Stats
     cor_spearman,
     cor_kendall,
         
-    # others
-    ## Types
+    # statistical models
     StatisticalModel,
     RegressionModel,
-    
-    ## Functions
+
     coef,
     coeftable,
     confint,
     deviance,
-    durbin,
-    ecdf,
-    findat,
-    indicators,
-    inverse_rle,
-    levinson,
     loglikelihood,
     nobs,
+    stderr,
+    vcov,
     predict,
     residuals,
     model_response,
+
+    # misc
     rle,
-    stderr,
-    vcov
+    inverse_rle,
+    ecdf,
+    findat,
+    indicators
 
     include("common.jl")
     include("means.jl")
@@ -91,6 +89,6 @@ module Stats
     include("corr.jl")
     include("rankcorr.jl")
     include("statmodels.jl")
-    include("others.jl")
+    include("misc.jl")
 
 end # module
