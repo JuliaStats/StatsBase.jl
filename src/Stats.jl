@@ -54,12 +54,19 @@ module Stats
     acf, ccf, pacf,
 
     # rankcorr
-    cor_spearman,
-    cor_kendall,
+    cor_spearman,       # spearman's rank correlation
+    cor_kendall,        # kendall's rank correlation
 
     # empirical
-    ecdf, 
-    kde,
+    ecdf,           # empirical cumulative distribution function
+    kde,            # kernel density estimation
+
+    # misc
+    rle,            # run-length encoding
+    inverse_rle,    # inverse run-length encoding
+    indexmap,       # construct a map from element to index
+    findat,         # find the position within a for elements in b
+    indicatormat,   # construct indicator matrix
         
     # statistical models
     StatisticalModel,
@@ -75,14 +82,9 @@ module Stats
     vcov,
     predict,
     residuals,
-    model_response,
+    model_response
 
-    # misc
-    rle,
-    inverse_rle,
-    indexmap,
-    findat,
-    indicators
+
 
     include("common.jl")
     include("means.jl")
@@ -93,7 +95,8 @@ module Stats
     include("corr.jl")
     include("rankcorr.jl")
     include("empirical.jl")
-    include("statmodels.jl")
     include("misc.jl")
+    include("statmodels.jl")
+    
 
 end # module

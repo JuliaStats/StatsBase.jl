@@ -19,3 +19,17 @@ vals, lens = rle(z)
 
 findat([2, 4, 6, 8, 10], [8, 6, 4]) == [4, 3, 2]
 findat([2, 4, 6, 8, 10], [2, 3, 4]) == [1, 0, 2]
+
+# indicatormat
+
+I = bool([0 1 0 0 0; 
+          1 0 0 0 1;
+          0 0 1 1 0])
+
+x = [2, 1, 3, 3, 2]
+@test indicatormat(x, 3) == I
+@test full(indicatormat(x, 3; sparse=true)) == I
+
+x = ["b", "a", "c", "c", "b"]
+@test indicatormat(x) == I
+@test full(indicatormat(x; sparse=true)) == I

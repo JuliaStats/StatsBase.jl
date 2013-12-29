@@ -74,58 +74,61 @@ end
 findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
 
 
+# indicatormat
 
-function indicators{T}(input::AbstractMatrix{T},
-                       categories::Array{Any,1}={};
-                       sparse::Bool=false)
-    nfeatures, nsamples = size(input)
-    if length(categories) != 0 && length(categories) != nfeatures
-        error("You must provide either categories for each feature or no categories")
-    end
-    internal_categories = copy(categories)
-    noutrows = 0
-    if length(internal_categories) != nfeatures
-        for i in 1:nfeatures
-            push!(internal_categories, sort(unique(input[i, :])))
-        end
-    end
-    for i in 1:nfeatures
-        noutrows += length(internal_categories[i])
-    end
-    if sparse
-        output = spzeros(noutrows, nsamples)
-    else
-        output = zeros(noutrows, nsamples)
-    end
-    offset = 1
-    for i in 1:nfeatures
-        indicators!(output, offset, slice(input, i, :), internal_categories[i])
-        offset += length(internal_categories[i])
-    end
-    return output
+# x: input elements, 
+# c: categories
+# k: the maximum integer in x
+
+function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
+    sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
 end
 
-function indicators{T}(input::AbstractVector{T},
-                       categories::Array{T,1}=sort(unique(input));
-                       sparse::Bool=false)
-    if sparse
-        output = spzeros(length(categories), length(input))
-    else
-        output = zeros(length(categories), length(input))
-    end
-    indicators!(output, 1, input, categories)
-    return output
+function indicatormat(x::AbstractArray, c::AbstractArray; sparse::Bool=false)
+    sparse ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
 end
- 
-function indicators!{S<:Real,T}(output::AbstractArray{S},
-                                offset::Integer,
-                                input::AbstractVector{T},
-                                categories::Array{T,1}=sort(unique(input)))
-    indices = (T=>Integer)[categories[i]=>i for i in 1:length(categories)]
-    const lo = offset-1
-    for i in 1:length(input)
-        output[indices[input[i]]+lo, i] = one(S)
+
+indicatormat{T<:Union(Real,String)}(x::AbstractArray{T}; sparse::Bool=false) = indicatormat(x, sort!(unique(x)); sparse=sparse)
+indicatormat(x::AbstractArray; sparse::Bool=false) = indicatormat(x, unique(x); sparse=sparse)
+
+
+function _indicatormat_dense(x::IntegerArray, k::Integer)
+    n = length(x)
+    r = zeros(Bool, k, n)
+    for i = 1 : n
+        r[x[i], i] = true
     end
-    return
+    return r
 end
+
+function _indicatormat_dense{T}(x::AbstractArray{T}, c::AbstractArray{T})
+    d = indexmap(c)
+    m = length(c)
+    n = length(x)
+    r = zeros(Bool, m, n)
+    o = 0
+    @inbounds for i = 1 : n
+        xi = x[i]
+        r[o + d[xi]] = true
+        o += m
+    end
+    return r
+end
+
+_indicatormat_sparse(x::IntegerArray, k::Integer) = (n = length(x); sparse(x, 1:n, true, k, n))
+
+function _indicatormat_sparse{T}(x::AbstractArray{T}, c::AbstractArray{T})
+    d = indexmap(c)
+    m = length(c)
+    n = length(x)
+
+    rinds = Array(Int, n)
+    @inbounds for i = 1 : n
+        rinds[i] = d[x[i]]
+    end
+    return sparse(rinds, 1:n, true, m, n)
+end
+
+const indicators = indicatormat
+
 
