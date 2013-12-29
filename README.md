@@ -42,6 +42,7 @@ r = mean(x, weights(w))  # the inline function weights wraps w into a weight vec
 
   The ``mean`` function is also extended to accept a weight vector. Now, one can write ``mean(x, weights(w))`` to compute a weighted mean.
 
+
 #### Scalar Statistics
 
 The following functions are for computing statistics over an array of scalar real numbers.  
@@ -100,7 +101,7 @@ The following functions are for computing statistics over an array of scalar rea
 
 * **mode**(x)  
 
-  Return the mode of ``x``, one of the numbers that appear the most times in ``x``. [Wikipedia](http://en.wikipedia.org/wiki/Mode_(statistics))
+  Return the mode of ``x``, one of the numbers that appear the most times in ``x``. 
 
 * **modes**(x)
 
@@ -120,46 +121,63 @@ The following functions are for computing statistics over an array of scalar rea
       max::T
   end
   ```
-  
+
 * **describe**(x)  
 
   Print a summary of stats of ``x``. 
 
 
-#### Old documents
+#### Counts
+
+* **counts**(x, a:b[, weights(w)])
+
+  Count the number of times (or total weights if a weight vector is given) values in ``a:b`` appear in array ``x``. 
+
+  For example, ``counts([1, 2, 2, 2, 3, 3], 1:3)`` returns ``[1, 3, 2]``. 
+
+* **counts**(x, y, [weights(w),] a:b, c:d)
+
+  Count the number of times (or total weights if a weight vector is given) pairs of values in ``a:b`` and ``c:d`` that appear in arrays ``x`` and ``y``.
+
+  For example, ``counts([1, 2, 1, 1, 2], [1, 2, 3, 3, 2], 1:2, 1:3)`` returns an array ``r`` of size ``(2, 3)`` as 
+  ```julia
+  1 0 2
+  0 0 2
+  ```
+  In particular, we have this invariant: ``r[i, j] == sum(x .== (a:b)[i] & y .== (c:d)[j])``.
+
+  This function is useful in various applications, *e.g.* computing confusion matrix in evaluating the performance of a classifier.
+
+* **proportions**(x, a:b[, weights(w)])  
+
+  Compute the proportions of values in ``a:b`` with respect to ``x``. Equivalent to ``counts(x, a:b) / length(x)``. 
+
+* **proportions**(x, y, [weights(w),] a:b, c:d)
+
+  Equivalent to ``counts(x, y, a:b, c:d) / length(x)``.
+
+* **addcounts!**(r, x, a:b[, weights(w)])
+
+  Adds the counts of values in ``x`` to an accumulating array ``r``.
+
+* **addcounts!**(r, x, y, [weights(w),] a:b, c:d)
+
+  Adds the counts of pairs in ``x`` and ``y`` to an accumulating matrix ``r``.  
+
+**Note:** For the functions above, when they encounter an value (or pair) that does not fall in the specified range, they simply ignore it (without raising an error or warning).
+
+* **countmap**(x[, weights(w)])
+
+  Return a dictionary that maps distinct values in ``x`` to their counts (or total weights).
+
+* **proportionmap**(x[, weights(w)])
+
+  Return a dictionary that maps distinct values in ``x`` to their proportions. 
+
+* **addcounts!**(dict, x[, weights(w)])
+
+  Add counts based on ``x`` to a count map. New entries will be added if new values come up.
+  
 
 
-* `acf(A, l)`: Compute the autocorrelation of an array `A` at lag(s) `l`.
-* `ccf(A, B, l)`: Compute the crosscorrelation of array `A` and `B` at lag(s) `l`.
-* `cor_spearman(x, y)`: Compute Spearman's rank order correlation between `x` and `y`.
-* `cov_spearman(x, y)`: Compute Spearman's rank order covariance between `x` and `y`.
-* `decile(a)`: Compute the deciles of `a`.
-* `describe(a)`: Print out basic summary statistics for `a`.
-* `durbin(r)`: Solve the positive definite Toeplitz system Tr=-r.
-* `ecdf(a)`: Return the empirical CDF of `a` as a function that can be evaluated anywhere on the real line.
-* `findat!(indices, a, b):` Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`. This occurs in-place by mutating indices.
-* `findat(a, b)`: Find the indices at which elements of `a` occur in `b`. Uses `0` indices for elements of `a` that do not occur in `b`.
-* `gmean(a)`: Compute the geometric mean of `a`.
-* `hmean(a)`: Compute the harmonic mean of `a`.
-* `inverse_rle(r)`: Translate a run length encoding, `r`, into a dense vector.
-* `iqr(a)`: Compute the interquantile range of `a`.
-* `kurtosis(a)`: Compute the excess kurtosis of `a`.
-* `levinson(r,b)`: Solve the postitive definite Toeplitz system Tr=b.
-* `mad(a)`: Compute the median absolute deviation of `a` with a correction factor, which ensures that the MAD will be a consistent estimator of the mean for normally distributed data.
-* `midrange(a)`: Compute the mid point of the range of `a` (e.g `(max(a) + min(a) / 2)`).
-* `modes(a)`: Compute all modes of `a`. Be warned that every element of an array with no repeated elements is considered a mode.
-* `indicators(a)`: Encode categories using one-hot scheme aka one-of-C encoding, indicator matrix or dummy variables. Optionally, you can provide a list of possible values, e.g. ["A", "B, "C"] or [1:3].
-* `pacf(A, l, method)`: Compute partial autocorrelation of an array `A` at lag(s) `l`. The computational method acn either be :regression (default) or :yulewalker.
-* `percentile(a)`: Compute the percentiles (0%, 10%, ..., 100%) of `a`.
-* `quantile(a)`: Compute any desired quantile of `a`.
-* `quartile(a): Compute the quartiles of `a`.
-* `quintile(a)`: Compute the quintiles of `a`.
-* `minmax(a)`: Compute the min and max of `a`.
-* `range(a)`: Compute the length of range, i.e. ``max(a) - min(a)``.
-* `rle(a)`: Compute a run-length encoding of `a`.
-* `sem(a)`: Compute the standard error of the mean of `a`.
-* `skewness(a)`: Compute the skewness of `a`.
-* `table(a): Produce a hash table containing counts of the unique elements of `a`.
-* `tiedrank(a)`: Compute the rank of `a`.
-* `variation(a)`: Compute the coefficient of variation of `a`.
-* `weighted_mean(a, w)`: Compute the weighted mean of `a` using weights `w`.
+
