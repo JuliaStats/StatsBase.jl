@@ -89,6 +89,7 @@ module Stats
     include("ranking.jl")
     include("toeplitzsolvers.jl")
     include("corr.jl")
+    include("rankcorr.jl")
     include("statmodels.jl")
     include("others.jl")
 

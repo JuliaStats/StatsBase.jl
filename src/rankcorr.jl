@@ -11,34 +11,33 @@
 #######################################
 
 # spearman correlation between two vectors
-function cor_spearman(x::AbstractVector, y::AbstractVector)
-    if any(isnan(x)) || any(isnan(y)) return NaN end
-    return cor(tiedrank(x), tiedrank(y))
-end
+cor_spearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
 
 # spearman correlation over all pairs of columns of two matrices
-function cor_spearman(X::AbstractMatrix, Y::AbstractMatrix)
+function cor_spearman(X::RealMatrix, Y::RealMatrix)
     return cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
 end
-function cor_spearman(X::AbstractMatrix, y::AbstractVector)
+
+function cor_spearman(X::RealMatrix, y::RealVector)
     return cor(mapslices(tiedrank, X, 1), tiedrank(y))
 end
-function cor_spearman(x::AbstractVector, Y::AbstractMatrix)
+
+function cor_spearman(x::RealVector, Y::RealMatrix)
     return cor(tiedrank(x), mapslices(tiedrank, Y, 1))
 end
 
 # spearman correlation over all pairs of columns of a matrix
-function cor_spearman(X::AbstractMatrix)
-    csp = cor(mapslices(tiedrank, X, 1))
-    nanindex = vec(mapslices(any, isnan(X), 1))
-    csp[nanindex, :] = NaN
-    csp[:, nanindex] = NaN
-    return csp
+function cor_spearman(X::RealMatrix)
+	Z = mapslices(tiedrank, X, 1)
+	cor(Z, Z)
 end
 
+
+#######################################
 #
-# Kendall's rank correlation
+#   Kendall correlation
 #
+#######################################
 
 # Knigh JASA (1966)
 function cor_kendall!{T<:Real,S<:Real}(x::AbstractVector{T}, y::AbstractVector{S})
