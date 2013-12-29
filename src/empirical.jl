@@ -81,7 +81,7 @@ immutable BivariateKDE
 end
 
 # Algorithm AS 176 for calculating univariate KDE
-function kde(data::RealVector, width::Float64=NaN, npoints::Integer=2048)
+function kde(data::RealVector; width::Float64=NaN, npoints::Integer=2048)
     # Determine length of data
     ndata = length(data)
 
@@ -147,7 +147,7 @@ end
 
 
 # Algorithm from MASS Chapter 5 for calculating 2D KDE
-function kde(x::RealVector, y::RealVector; width::Float64=NaN, resolution::Int= 25)
+function kde(x::RealVector, y::RealVector; width::Float64=NaN, resolution::Int=25)
     n = length(x)
 
     if length(y) != n
