@@ -68,35 +68,6 @@ function findat(a::AbstractArray, b::AbstractArray)
 end
 
 
-## Empirical cummulative density function
-function ecdf{T}(X::AbstractVector{T})
-    Xs = sort(X)
-    isnan(Xs[end]) && error("ecdf undefined in presence of NaNs")
-    n = length(X)
-    e(x::Real) = searchsortedlast(Xs, x) / n
-    function e(v::Vector)
-        ord = sortperm(v)
-        m = length(v)
-        r = Array(T, m)
-        r0 = 0
-        i = 1
-        for x in Xs
-            while i <= m && x > v[ord[i]]
-                r[ord[i]] = r0
-                i += 1
-            end
-            r0 += 1
-            if i > m break end
-        end
-        while i <= m
-            r[ord[i]] = n
-            i += 1
-        end
-        return r / n
-    end
-    return e
-end
-
 function indicators{T}(input::AbstractMatrix{T},
                        categories::Array{Any,1}={};
                        sparse::Bool=false)

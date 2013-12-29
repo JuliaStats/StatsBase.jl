@@ -56,6 +56,9 @@ module Stats
     # rankcorr
     cor_spearman,
     cor_kendall,
+
+    # empirical
+    ecdf, kde,
         
     # statistical models
     StatisticalModel,
@@ -88,6 +91,7 @@ module Stats
     include("toeplitzsolvers.jl")
     include("corr.jl")
     include("rankcorr.jl")
+    include("empirical.jl")
     include("statmodels.jl")
     include("misc.jl")
 
