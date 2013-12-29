@@ -50,13 +50,13 @@ module Stats
     autocor!, autocor,      # auto correlation
     crosscov!, crosscov,    # cross covariance
     crosscor!, crosscor,    # cross correlation
+    partial_autocor!, partial_autocor,  # partial auto-correlation
+    acf, ccf, pacf,
 
-    acf,
-    ccf,
+    # rankcorr
     cor_spearman,
     cor_kendall,
-    pacf,    
-
+        
     # others
     ## Types
     StatisticalModel,

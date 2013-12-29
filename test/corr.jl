@@ -105,4 +105,19 @@ c22 = crosscor(x2, x2)
 @test_approx_eq crosscor(x,  x)  cat(3, [c11 c21], [c12 c22])
 
 
+## pacf
+
+rpacfr =  [-0.218158122381419,
+            0.195015316828711,
+            0.144315804606139,
+           -0.199791229449779]
+
+@test_approx_eq partial_autocor(x[:,1], 1:4) rpacfr
+
+rpacfy = [-0.221173011668873,
+           0.189683314308021,
+           0.111857020733719,
+          -0.175020669835420]
+
+@test_approx_eq partial_autocor(x[:,1], 1:4, method=:yulewalker) rpacfy
 

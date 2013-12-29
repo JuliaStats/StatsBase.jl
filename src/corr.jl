@@ -366,192 +366,68 @@ crosscor{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscor(
 ccf = crosscor
 
 
-
 #######################################
 #
-#   Spearman correlation
+#   Partial auto-correlations
+#
+#   TODO: the codes below need cleanup.
 #
 #######################################
 
-# spearman correlation between two vectors
-function cor_spearman(x::AbstractVector, y::AbstractVector)
-    if any(isnan(x)) || any(isnan(y)) return NaN end
-    return cor(tiedrank(x), tiedrank(y))
-end
-
-# spearman correlation over all pairs of columns of two matrices
-function cor_spearman(X::AbstractMatrix, Y::AbstractMatrix)
-    return cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
-end
-function cor_spearman(X::AbstractMatrix, y::AbstractVector)
-    return cor(mapslices(tiedrank, X, 1), tiedrank(y))
-end
-function cor_spearman(x::AbstractVector, Y::AbstractMatrix)
-    return cor(tiedrank(x), mapslices(tiedrank, Y, 1))
-end
-
-# spearman correlation over all pairs of columns of a matrix
-function cor_spearman(X::AbstractMatrix)
-    csp = cor(mapslices(tiedrank, X, 1))
-    nanindex = vec(mapslices(any, isnan(X), 1))
-    csp[nanindex, :] = NaN
-    csp[:, nanindex] = NaN
-    return csp
-end
-
-#
-# Kendall's rank correlation
-#
-
-# Knigh JASA (1966)
-function cor_kendall!{T<:Real,S<:Real}(x::AbstractVector{T}, y::AbstractVector{S})
-    if any(isnan(x)) || any(isnan(y)) return NaN end
-    n = length(x)
-    if n != length(y) error("Vectors must have same length") end
-    
-    # Initial sorting
-    pm = sortperm(y)
-    x[:] = x[pm]
-    y[:] = y[pm]
-    pm[:] = sortperm(x)
-    x[:] = x[pm]
-
-    # Counting ties in x and y
-    iT = 1
-    nT = 0
-    iU = 1
-    nU = 0
-    for i = 2:n
-        if x[i] == x[i-1] 
-            iT += 1
-        else
-            nT += iT*(iT - 1)
-            iT = 1
+function partial_autocor_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer)
+    lx = size(X, 1)
+    tmpX = ones(T, lx, mk + 1)
+    for j = 1 : size(X,2)
+        for l = 1 : mk
+            for i = 1+l:lx
+                tmpX[i,l+1] = X[i-l,j]
+            end
         end
-        if y[i] == y[i-1]
-            iU += 1
-        else
-            nU += iU*(iU - 1)
-            iU = 1
+        for i = 1 : length(lags)
+            l = lags[i]
+            sX = sub(tmpX, 1+l:lx, 1:l+1)
+            r[i,j] = (cholfact!(sX'sX)\(sX'sub(X, 1+l:lx, j)))[end]
+        end
+    end 
+    r   
+end
+
+function partial_autocor_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector, mk::Integer)
+    tmp = Array(T, mk)
+    for j = 1 : size(X,2)
+        acfs = acf(X[:,j], 1:mk)
+        for i = 1 : length(lags)
+            l = lags[i]
+            r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(sub(acfs, 1:l), tmp)[l]
         end
     end
-    if iT > 1 nT += iT*(iT - 1) end
-    nT = div(nT,2)
-    if iU > 1 nU += iU*(iU - 1) end
-    nU = div(nU,2)
-
-    # Sort y after x
-    y[:] = y[pm]
-
-    # Calculate double ties
-    iV = 1
-    nV = 0
-    jV = 1
-    for i = 2:n
-        if x[i] == x[i-1] && y[i] == y[i-1] 
-            iV += 1
-        else
-            nV += iV*(iV - 1)
-            iV = 1
-        end
-    end
-    if iV > 1 nV += iV*(iV - 1) end
-    nV = div(nV,2)
-
-    nD = div(n*(n - 1),2)
-    return (nD - nT - nU + nV - 2swaps!(y))/sqrt((nD - nT)*(nD - nU))
-end
-cor_kendall(x::AbstractVector, y::AbstractVector) = cor_kendall!(copy(x), copy(y))
-cor_kendall(x::AbstractVector, Y::AbstractMatrix) = [cor_kendall(x, Y[:,i]) for i in 1:size(Y, 2)]
-cor_kendall(X::AbstractMatrix, y::AbstractVector) = [cor_kendall(X[:,i], y) for i in 1:size(X, 2)]
-cor_kendall(X::AbstractMatrix, Y::AbstractMatrix) = [cor_kendall(X[:,i], Y[:,j]) for i in 1:size(X, 2), j in 1:size(Y, 2)]
-function cor_kendall(X::AbstractMatrix)
-    n = size(X, 2)
-    C = eye(n)
-    for j = 2:n
-        for i = 1:j-1
-            C[i,j] = cor_kendall!(X[:,i],X[:,j])
-            C[j,i] = C[i,j]
-        end
-    end
-    return C
 end
 
-# Auxilliary functions for Kendall's rank correlation
-function swaps!(x::AbstractVector)
-    n = length(x)
-    if n == 1 return 0 end
-    n2 = div(n, 2)
-    xl = sub(x, 1:n2)
-    xr = sub(x, n2+1:n)
-    nsl = swaps!(xl)
-    nsr = swaps!(xr)
-    sort!(xl)
-    sort!(xr)
-    return nsl + nsr + mswaps(xl,xr)
-end
+function partial_autocor!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
+    lx = size(X, 1)
+    m = length(lags)
+    minlag, maxlag = minmax(lags)
+    (0 <= minlag && 2maxlag < lx) || error("Invalid lag value.")
+    size(r) == (m, size(X,2)) || raise_dimerror()
 
-function mswaps(x::AbstractVector, y::AbstractVector)
-    i = 1
-    j = 1
-    nSwaps = 0
-    n = length(x)
-    while i <= n && j <= length(y)
-        if y[j] < x[i]
-            nSwaps += n - i + 1
-            j += 1
-        else
-            i += 1
-        end
-    end
-    return nSwaps
-end
-
-
-# Partial autoroccelation
-function pacf{T<:BlasReal}(X::AbstractMatrix{T}, lags::AbstractVector{Int} = 0:min(size(X,1)-1, int(10log10(size(X,1)))); 
-    method::Symbol = :regression)
-    n, p = size(X)
-    nk = length(lags)
-    mk = maximum(lags)
-    if minimum(lags) < 0 error("Negative autoroccelations not allowed") end
-    if 2mk >= n error("Can at most calculate pacf for $(div(n,2) - 1) lags, you requested $mk") end
-    val = Array(T, nk, p)
     if method == :regression
-        tmpX = ones(T, n, mk + 1)
-        for j = 1:p
-            for l = 1:mk
-                for i = 1+l:n
-                    tmpX[i,l+1] = X[i-l,j]
-                end
-            end
-            i = 1
-            for l in lags
-                sX = sub(tmpX, 1+l:n, 1:l+1)
-                val[i,j] = (cholfact!(sX'sX)\(sX'sub(X, 1+l:n, j)))[end]
-                i += 1
-            end
-        end
+        partial_autocor_regress!(r, X, lags, maxlag)        
     elseif method == :yulewalker
-        tmp = Array(T, mk)
-        for j = 1:p
-            acfs = acf(sub(X,1:n,j),1:mk)
-            i = 1
-            for l in lags
-                if l == 0
-                    val[i,j] = one(T)
-                elseif l == 1
-                    val[i,j] = acfs[i]
-                else
-                    val[i,j] = -durbin!(sub(acfs, 1:l), tmp)[l]
-                end
-                i += 1
-            end
-        end
+        partial_autocor_yulewalker!(r, X, lags, maxlag)
     else
-        error("No such method")
+        error("Invalid method: $method")
     end
-    return val
+    return r
 end
-pacf{T<:Real}(X::AbstractMatrix{T}, args1...; args2...) = pacf(float(X), args1...; args2...)
-pacf(x::AbstractVector, args1...; args2...) = squeeze(pacf(reshape(x, length(x), 1), args1...; args2...),2)
+
+function partial_autocor{T<:Real}(X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
+    partial_autocor!(Array(fptype(T), length(lags), size(X,2)), float(X), lags; method=method)
+end
+
+function partial_autocor{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
+    vec(partial_autocor(reshape(x, length(x), 1), lags, method=method))
+end
+
+const pacf = partial_autocor
+
+
