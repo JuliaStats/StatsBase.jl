@@ -129,6 +129,3 @@ function _indicatormat_sparse{T}(x::AbstractArray{T}, c::AbstractArray{T})
     return sparse(rinds, 1:n, true, m, n)
 end
 
-const indicators = indicatormat
-
-

@@ -85,6 +85,7 @@ module Stats
     model_response
 
 
+    # source files
 
     include("common.jl")
     include("means.jl")
@@ -97,6 +98,8 @@ module Stats
     include("empirical.jl")
     include("misc.jl")
     include("statmodels.jl")
+
+    include("deprecates.jl")
     
 
 end # module

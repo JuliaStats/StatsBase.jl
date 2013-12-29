@@ -126,9 +126,6 @@ end
 
 autocor{T<:Real}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
 
-const acf = autocor
-
-
 
 #######################################
 #
@@ -363,8 +360,6 @@ end
 
 crosscor{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscor(x, y, default_crosslags(size(x,1)); demean=demean)
 
-ccf = crosscor
-
 
 #######################################
 #
@@ -395,7 +390,7 @@ end
 function partial_autocor_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector, mk::Integer)
     tmp = Array(T, mk)
     for j = 1 : size(X,2)
-        acfs = acf(X[:,j], 1:mk)
+        acfs = autocor(X[:,j], 1:mk)
         for i = 1 : length(lags)
             l = lags[i]
             r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(sub(acfs, 1:l), tmp)[l]
@@ -427,7 +422,4 @@ end
 function partial_autocor{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
     vec(partial_autocor(reshape(x, length(x), 1), lags, method=method))
 end
-
-const pacf = partial_autocor
-
 

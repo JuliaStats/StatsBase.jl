@@ -9,7 +9,6 @@ function geomean(a::RealArray)
     end
     return exp(s / n)
 end
-gmean(a::RealArray) = geomean(a)
 
 
 # Harmonic mean
@@ -21,7 +20,6 @@ function harmmean(a::RealArray)
     end
     return n / s
 end
-hmean(a::RealArray) = harmmean(a)
 
 
 # Trimmed mean
