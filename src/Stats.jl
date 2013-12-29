@@ -8,10 +8,10 @@ module Stats
     WeightVec, weights,
 
     # means
-    geomean, gmean,     # geometric mean
-    harmmean, hmean,    # harmonic mean
-    trimmean,           # trimmed mean
-    wmean,              # weighted mean
+    geomean,     # geometric mean
+    harmmean,    # harmonic mean
+    trimmean,    # trimmed mean
+    wmean,       # weighted mean
 
     # scalar_stats 
     skewness,   # (standardized) skewness
@@ -51,7 +51,6 @@ module Stats
     crosscov!, crosscov,    # cross covariance
     crosscor!, crosscor,    # cross correlation
     partial_autocor!, partial_autocor,  # partial auto-correlation
-    acf, ccf, pacf,
 
     # rankcorr
     cor_spearman,       # spearman's rank correlation

@@ -1,8 +1,37 @@
 ## Stats.jl
 
-Basic statistics functions for Julia. [![Build Status](https://travis-ci.org/JuliaStats/Stats.jl.png?branch=master)](https://travis-ci.org/JuliaStats/Stats.jl)
+Functions for statistics in Julia. [![Build Status](https://travis-ci.org/JuliaStats/Stats.jl.png?branch=master)](https://travis-ci.org/JuliaStats/Stats.jl)
 
 ## List of Functions
+
+The following is a list of functions by categories.
+
+#### Weight vectors
+
+This package introduce a type ``WeightVec``, which is used to wrap a real vector into a *weight vector*. This is a shallow wrapper, introduced for two purposes:
+
+* indicator that an input vector is a weight vector when it is input as an argument
+* maintain the sum of weights, which is usually useful in statistical routines
+
+For example, one can write:
+```julia
+r = mean(x, weights(w))  # the inline function weights wraps w into a weight vector
+```
+
+#### Means
+
+* **geomean**(x)
+
+  Compute the geometric mean of ``x``.
+
+
+
+
+
+
+
+#### Old documents
+
 
 * `acf(A, l)`: Compute the autocorrelation of an array `A` at lag(s) `l`.
 * `ccf(A, B, l)`: Compute the crosscorrelation of array `A` and `B` at lag(s) `l`.
