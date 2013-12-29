@@ -15,3 +15,7 @@ vals, lens = rle(z)
 @test lens == [2, 2, 1, 1, 3]
 @test inverse_rle(vals, lens) == z
 
+# findat
+
+findat([2, 4, 6, 8, 10], [8, 6, 4]) == [4, 3, 2]
+findat([2, 4, 6, 8, 10], [2, 3, 4]) == [1, 0, 2]

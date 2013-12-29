@@ -48,29 +48,31 @@ function inverse_rle{T}(vals::AbstractVector{T}, lens::IntegerVector)
     return r
 end
 
-# TODO: Support slicing along any dimensions
-function findat!{T}(indices::Vector{Int},
-                    a::AbstractArray,
-                    b::AbstractArray{T})
-    inds = Dict{T, Int}()
-    for i in 1:length(b)
-        tmp = b[i]
-        if !haskey(inds, tmp)
-            inds[tmp] = i
+
+# findat (get positions (within a) for elements in b)
+
+function indexmap{T}(a::AbstractArray{T})
+    d = (T=>Int)[]
+    for i = 1 : length(a)
+        @inbounds k = a[i]
+        if !haskey(d, k)
+            d[k] = i
         end
     end
-    for i = 1:length(a)
-        indices[i] = get(inds, a[i], 0)
-    end
-    return
+    return d
 end
 
-# TODO: Support slicing along any dimensions
-function findat(a::AbstractArray, b::AbstractArray)
-    indices = Array(Int, length(a))
-    findat!(indices, a, b)
-    return indices
+function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
+    length(r) == length(b) || raise_dimerror()
+    d = indexmap(a)
+    @inbounds for i = 1 : length(b)
+        r[i] = get(d, b[i], 0)
+    end
+    return r
 end
+
+findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
+
 
 
 function indicators{T}(input::AbstractMatrix{T},

@@ -58,7 +58,8 @@ module Stats
     cor_kendall,
 
     # empirical
-    ecdf, kde,
+    ecdf, 
+    kde,
         
     # statistical models
     StatisticalModel,
@@ -79,7 +80,7 @@ module Stats
     # misc
     rle,
     inverse_rle,
-    ecdf,
+    indexmap,
     findat,
     indicators
 
