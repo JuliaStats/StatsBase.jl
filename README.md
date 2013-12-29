@@ -6,7 +6,17 @@ Functions for statistics in Julia. [![Build Status](https://travis-ci.org/JuliaS
 
 The following is a list of functions by categories.
 
-#### Weight vectors
+* [Weight Vectors](https://github.com/JuliaStats/Stats.jl#weight-vectors)
+* [Means](https://github.com/JuliaStats/Stats.jl#means)
+* [Scalar Statistics](https://github.com/JuliaStats/Stats.jl#scalar-statistics)
+* [Counts](https://github.com/JuliaStats/Stats.jl#counts)
+* [Ranking](https://github.com/JuliaStats/Stats.jl#ranking)
+* [Covariances and Correlations](https://github.com/JuliaStats/Stats.jl#covariances-and-correlations)
+* [Empirical Estimation](https://github.com/JuliaStats/Stats.jl#empirical-estimation)
+* [Miscelleneous Functions](https://github.com/JuliaStats/Stats.jl#miscelleneous-functions)
+
+
+#### Weight Vectors
 
 This package introduce a type ``WeightVec``, which is used to wrap a real vector into a *weight vector*. This is a shallow wrapper, introduced for two purposes:
 
