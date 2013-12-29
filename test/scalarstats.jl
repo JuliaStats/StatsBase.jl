@@ -3,14 +3,20 @@ using Base.Test
 
 ## moments
 
+wv = weights(ones(5) * 2.0)
+
 @test_approx_eq skewness(1:5) 0.0
 @test_approx_eq skewness([1, 2, 3, 4, 5]) 0.0
 @test_approx_eq skewness([1, 2, 2, 2, 5]) 1.1731251294063556
 @test_approx_eq skewness([1, 4, 4, 4, 5]) -1.1731251294063556
 
+@test_approx_eq skewness([1, 2, 2, 2, 5], wv) 1.1731251294063556
+
 @test_approx_eq kurtosis(1:5) -1.3
 @test_approx_eq kurtosis([1, 2, 3, 4, 5]) -1.3
 @test_approx_eq kurtosis([1, 2, 3, 3, 2]) -1.1530612244897953
+
+@test_approx_eq kurtosis([1, 2, 3, 4, 5], wv) -1.3
 
 ## variability
 

@@ -9,7 +9,7 @@
 
 # Skewness
 # This is Type 1 definition according to Joanes and Gill (1998)
-function skewness{T<:Real}(v::AbstractVector{T}, m::Real)
+function skewness(v::RealArray, m::Real)
     n = length(v)
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment
@@ -25,11 +25,33 @@ function skewness{T<:Real}(v::AbstractVector{T}, m::Real)
     return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
 end
 
-skewness{T<:Real}(v::AbstractVector{T}) = skewness(v, mean(v))
+function skewness(v::RealArray, wv::WeightVec, m::Real)
+    n = length(v)
+    length(wv) == n || raise_dimerror()
+    cm2 = 0.0   # empirical 2nd centered moment (variance)
+    cm3 = 0.0   # empirical 3rd centered moment    
+    w = values(wv)
+
+    @inbounds for i = 1 : n
+        x_i = v[i]
+        w_i = w[i]
+        z = x_i - m
+        z2w = z * z * w_i
+        cm2 += z2w
+        cm3 += z2w * z
+    end
+    sw = sum(wv)
+    cm3 /= sw
+    cm2 /= sw
+    return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
+end
+
+skewness(v::RealArray) = skewness(v, mean(v))
+skewness(v::RealArray, wv::WeightVec) = skewness(v, wv, mean(v, wv))
 
 # (excessive) Kurtosis
 # This is Type 1 definition according to Joanes and Gill (1998)
-function kurtosis{T<:Real}(v::AbstractVector{T}, m::Real)
+function kurtosis(v::RealArray, m::Real)
     n = length(v)
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
@@ -44,8 +66,30 @@ function kurtosis{T<:Real}(v::AbstractVector{T}, m::Real)
     return (cm4 / (cm2 * cm2)) - 3.0
 end
 
-kurtosis{T<:Real}(v::AbstractVector{T}) = kurtosis(v, mean(v))
+function kurtosis(v::RealArray, wv::WeightVec, m::Real)
+    n = length(v)
+    length(wv) == n || raise_dimerror()
+    cm2 = 0.0  # empirical 2nd centered moment (variance)
+    cm4 = 0.0  # empirical 4th centered moment
+    w = values(wv)
 
+    @inbounds for i = 1 : n
+        x_i = v[i]
+        w_i = w[i]
+        z = x_i - m
+        z2 = z * z
+        z2w = z2 * w_i
+        cm2 += z2w
+        cm4 += z2w * z2
+    end
+    sw = sum(wv)
+    cm4 /= sw
+    cm2 /= sw
+    return (cm4 / (cm2 * cm2)) - 3.0
+end
+
+kurtosis(v::RealArray) = kurtosis(v, mean(v))
+kurtosis(v::RealArray, wv::WeightVec) = kurtosis(v, wv, mean(v, wv))
 
 #############################
 #

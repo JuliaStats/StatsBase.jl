@@ -57,13 +57,17 @@ r = mean(x, weights(w))  # the inline function weights wraps w into a weight vec
 
 The following functions are for computing statistics over an array of scalar real numbers.  
 
-* **skewness**(x)
+* **skewness**(x[, wv])
 
   Compute the (standardized) skewness of ``x``. [Wikipedia](http://en.wikipedia.org/wiki/Skewness)
 
-* **kurtosis**(x)
+  One can optionally supply a weight vector of type ``WeightVec``, as ``weights(w)``.
+
+* **kurtosis**(x[, wv])
 
   Compute the (excessive) kurtosis of ``x``. [Wikipedia](http://en.wikipedia.org/wiki/Kurtosis)
+
+  One can optionally supply a weight vector of type ``WeightVec``, as ``weights(w)``.
 
 * **variation**(x)
 
