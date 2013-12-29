@@ -263,3 +263,13 @@ This package implements various stragies for computing ranks. Please refer to [W
 
   Write the computed partial auto-correlation to ``r``.
 
+
+* **cor_spearman**(x, y)
+
+  Spearman's rank correlation. Here, ``x`` and ``y`` can be either real vectors or matrices. When ``xx`` and ``y`` are matrices, it computes the correlations between their columns (pairwisely).
+
+* **cor_kendall**(x, y)  	
+
+  Kendall's rank correlation. Here, ``x`` and ``y`` can be either real vectors or matrices. When ``xx`` and ``y`` are matrices, it computes the correlations between their columns (pairwisely).
+
+
