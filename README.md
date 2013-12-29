@@ -177,7 +177,26 @@ The following functions are for computing statistics over an array of scalar rea
 * **addcounts!**(dict, x[, weights(w)])
 
   Add counts based on ``x`` to a count map. New entries will be added if new values come up.
-  
 
+
+#### Ranking
+
+This package implements various stragies for computing ranks. Please refer to [Wikipedia](http://en.wikipedia.org/wiki/Ranking) for details of these ranking strategies.
+
+* **ordinalrank**(x)
+
+  Compute ordinal ranking (*1 2 3 4* ranking) for ``x``. 
+
+* **competerank**(x)
+
+  Compute competition ranking (*1 2 2 4* ranking) for ``x``.
+
+* **denserank**(x)
+
+  Compute dense ranking (*1 2 2 3* ranking) for ``x``.
+
+* **tiedrank**(x)
+
+  Compute tied (fractional) ranking (*1 2.5 2.5 4* ranking) for ``x``.
 
 
