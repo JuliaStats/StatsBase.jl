@@ -266,23 +266,23 @@ This package implements various stragies for computing ranks. Please refer to [W
 
   Write the computed cross-correlation to ``r``.   
 
-* **partial_autocor**(x, lags[; method={:regression}/:yulewalker])
+* **pacf**(x, lags[; method={:regression}/:yulewalker])
 
   Compute partial auto-correlation of ``x`` at specified lags. If ``x`` is a vector, it returns a vector of th same length of ``lags``. If ``x`` is a matrix, it returns a matrix of size ``(length(lags), size(x,2))``, where each column in the result corresponding to a column in ``x``. 
 
   Here, ``method`` is a keyword argument to specify the choice of algorithm, which can be either ``:regresion`` or ``:yulewalker``. The default value is ``:regression``. 
 
 
-* **partial_autocor!**(r, x, lags[; method={:regression}/:yulewalker])
+* **pacf!**(r, x, lags[; method={:regression}/:yulewalker])
 
   Write the computed partial auto-correlation to ``r``.
 
 
-* **cor_spearman**(x, y)
+* **corspearman**(x, y)
 
   Spearman's rank correlation. Here, ``x`` and ``y`` can be either real vectors or matrices. When ``xx`` and ``y`` are matrices, it computes the correlations between their columns (pairwisely).
 
-* **cor_kendall**(x, y)  	
+* **corkendall**(x, y)  	
 
   Kendall's rank correlation. Here, ``x`` and ``y`` can be either real vectors or matrices. When ``xx`` and ``y`` are matrices, it computes the correlations between their columns (pairwisely).
 
