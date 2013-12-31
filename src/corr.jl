@@ -369,7 +369,7 @@ crosscor{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscor(
 #
 #######################################
 
-function partial_autocor_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer)
+function pacf_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer)
     lx = size(X, 1)
     tmpX = ones(T, lx, mk + 1)
     for j = 1 : size(X,2)
@@ -387,7 +387,7 @@ function partial_autocor_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}
     r   
 end
 
-function partial_autocor_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector, mk::Integer)
+function pacf_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector, mk::Integer)
     tmp = Array(T, mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
@@ -398,7 +398,7 @@ function partial_autocor_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lag
     end
 end
 
-function partial_autocor!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
+function pacf!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
     lx = size(X, 1)
     m = length(lags)
     minlag, maxlag = minmax(lags)
@@ -406,20 +406,20 @@ function partial_autocor!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerV
     size(r) == (m, size(X,2)) || raise_dimerror()
 
     if method == :regression
-        partial_autocor_regress!(r, X, lags, maxlag)        
+        pacf_regress!(r, X, lags, maxlag)        
     elseif method == :yulewalker
-        partial_autocor_yulewalker!(r, X, lags, maxlag)
+        pacf_yulewalker!(r, X, lags, maxlag)
     else
         error("Invalid method: $method")
     end
     return r
 end
 
-function partial_autocor{T<:Real}(X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
-    partial_autocor!(Array(fptype(T), length(lags), size(X,2)), float(X), lags; method=method)
+function pacf{T<:Real}(X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
+    pacf!(Array(fptype(T), length(lags), size(X,2)), float(X), lags; method=method)
 end
 
-function partial_autocor{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
-    vec(partial_autocor(reshape(x, length(x), 1), lags, method=method))
+function pacf{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
+    vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
 

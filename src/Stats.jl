@@ -50,7 +50,7 @@ module Stats
     autocor!, autocor,      # auto correlation
     crosscov!, crosscov,    # cross covariance
     crosscor!, crosscor,    # cross correlation
-    partial_autocor!, partial_autocor,  # partial auto-correlation
+    pacf!, pacf,  # partial auto-correlation
 
     # rankcorr
     cor_spearman,       # spearman's rank correlation

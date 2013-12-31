@@ -5,6 +5,5 @@ import Base.@deprecate
 
 @deprecate acf autocor
 @deprecate ccf crosscor
-@deprecate pacf partial_autocor
 
 @deprecate indicators indicatormat
