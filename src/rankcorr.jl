@@ -10,13 +10,13 @@
 #
 #######################################
 
-cor_spearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
+corspearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
 
-cor_spearman(X::RealMatrix, Y::RealMatrix) = cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
-cor_spearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, 1), tiedrank(y))
-cor_spearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, 1))
+corspearman(X::RealMatrix, Y::RealMatrix) = cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
+corspearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, 1), tiedrank(y))
+corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, 1))
 
-cor_spearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
+corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
 
 
 #######################################
@@ -27,7 +27,7 @@ cor_spearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
 
 # Knigh JASA (1966)
 
-function cor_kendall!(x::RealVector, y::RealVector)
+function corkendall!(x::RealVector, y::RealVector)
     if any(isnan(x)) || any(isnan(y)) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
@@ -86,20 +86,20 @@ function cor_kendall!(x::RealVector, y::RealVector)
 end
 
 
-cor_kendall(x::RealVector, y::RealVector) = cor_kendall!(float(copy(x)), float(copy(y)))
+corkendall(x::RealVector, y::RealVector) = corkendall!(float(copy(x)), float(copy(y)))
 
-cor_kendall(X::RealMatrix, y::RealVector) = [cor_kendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
+corkendall(X::RealMatrix, y::RealVector) = [corkendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
 
-cor_kendall(x::RealVector, Y::RealMatrix) = (n = size(Y,2); reshape([cor_kendall!(float(copy(x)), float(Y[:,i])) for i in 1:n], 1, n))
+corkendall(x::RealVector, Y::RealMatrix) = (n = size(Y,2); reshape([corkendall!(float(copy(x)), float(Y[:,i])) for i in 1:n], 1, n))
 
-cor_kendall(X::RealMatrix, Y::RealMatrix) = [cor_kendall!(float(X[:,i]), float(Y[:,j])) for i in 1:size(X, 2), j in 1:size(Y, 2)]
+corkendall(X::RealMatrix, Y::RealMatrix) = [corkendall!(float(X[:,i]), float(Y[:,j])) for i in 1:size(X, 2), j in 1:size(Y, 2)]
 
-function cor_kendall(X::RealMatrix)
+function corkendall(X::RealMatrix)
     n = size(X, 2)
     C = eye(n)
     for j = 2:n
         for i = 1:j-1
-            C[i,j] = cor_kendall!(X[:,i],X[:,j])
+            C[i,j] = corkendall!(X[:,i],X[:,j])
             C[j,i] = C[i,j]
         end
     end

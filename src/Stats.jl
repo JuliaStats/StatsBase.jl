@@ -53,8 +53,8 @@ module Stats
     pacf!, pacf,  # partial auto-correlation
 
     # rankcorr
-    cor_spearman,       # spearman's rank correlation
-    cor_kendall,        # kendall's rank correlation
+    corspearman,       # spearman's rank correlation
+    corkendall,        # kendall's rank correlation
 
     # empirical
     ecdf,           # empirical cumulative distribution function
