@@ -129,3 +129,20 @@ function _indicatormat_sparse{T}(x::AbstractArray{T}, c::AbstractArray{T})
     return sparse(rinds, 1:n, true, m, n)
 end
 
+# Principal Component Analysis
+# Performs PCA on the NxM data matrix X and returns the principal component coefficients and scores.
+# Rows of X correspond to observations, columns to variables. This function will subtract the column 
+# means of X, but will not normalize the variances. To get PCA with "standardized variables", use 
+# pca(zscore(X))
+function pca(x)
+    x .-= mean(x, 1)
+    # compute by singular value decomposition.
+    u,s,v = svd(x, true)
+    scores = scale(u, s) # equivalent to: x * v, but more efficient
+    v, scores
+end
+
+# zscore(x) computes the centered, scaled version of x. When x is a vector, this is just 
+# z = (x - mean(x)) ./ std(x). For array inputs, the mean and standard deviation are computed
+# along the given dimension.
+zscore(x, dim=1) =  (x .- mean(x, dim)) ./ std(x, dim)
