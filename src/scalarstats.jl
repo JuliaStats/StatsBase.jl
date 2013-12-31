@@ -171,7 +171,7 @@ range{T<:Real}(a::AbstractArray{T}) = ((m0, m1) = minmax(a); m1 - m0)
 #
 #############################
 
-prctile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
+percentile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
 iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
 
 quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])

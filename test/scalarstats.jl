@@ -50,8 +50,8 @@ wv = weights(ones(5) * 2.0)
 @test_approx_eq nquantile(1:5, 2) [1, 3, 5]
 @test_approx_eq nquantile(1:5, 4) [1:5] 
 
-@test_approx_eq prctile([1:5], 25) 2.0
-@test_approx_eq prctile([1:5], [25, 50, 75]) [2.0, 3.0, 4.0]
+@test_approx_eq percentile([1:5], 25) 2.0
+@test_approx_eq percentile([1:5], [25, 50, 75]) [2.0, 3.0, 4.0]
 @test_approx_eq iqr(1:5) 2.0
 
 # mode & modes

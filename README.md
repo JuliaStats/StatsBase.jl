@@ -97,7 +97,7 @@ The following functions are for computing statistics over an array of scalar rea
 
   Compute the difference between ``maximum(x)`` and ``minimum(x)``.
 
-* **prctile**(x, p)
+* **percentile**(x, p)
 
   Compute quantiles using percentage, *i.e.* ``quantile(x, p / 100)``.
 

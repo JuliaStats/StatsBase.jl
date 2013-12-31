@@ -23,7 +23,7 @@ module Stats
     middle,     # the mean of two real numbers
     midrange,   # the mean of minimum and maximum
     range,      # the difference between maximum and minimum
-    prctile,    # quantile using percentage (instead of fraction) as argument
+    percentile, # quantile using percentage (instead of fraction) as argument
     iqr,        # interquatile range 
     nquantile,  # quantiles at [0:n]/n
     mode,       # find a mode from data 
