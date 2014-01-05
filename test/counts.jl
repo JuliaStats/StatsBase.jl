@@ -99,6 +99,3 @@ pm = proportionmap(x, y, weights(w))
 @test pm[("b", 2)] == 2.0 / 28.0
 @test pm[("c", 2)] == 6.0 / 28.0
 
-
-
-
