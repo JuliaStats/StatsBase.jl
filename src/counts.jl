@@ -48,7 +48,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1, wv::We
 	return r
 end
 
-function addcounts!{T,I<:Integer}(r::AbstractArray, x::AbstractArray{T}, imap::Associative{T,I})
+function addcounts!{T}(r::AbstractArray, x::AbstractArray{T}, imap::Associative{T,Int})
 	k = length(r)
 	for i = 1 : length(x)
 		@inbounds xi = x[i]
@@ -60,7 +60,7 @@ function addcounts!{T,I<:Integer}(r::AbstractArray, x::AbstractArray{T}, imap::A
 	return r
 end
 
-function addcounts!{T,I<:Integer}(r::AbstractArray, x::AbstractArray{T}, imap::Associative{T,I}, wv::WeightVec)
+function addcounts!{T}(r::AbstractArray, x::AbstractArray{T}, imap::Associative{T,Int}, wv::WeightVec)
 	k = length(r)
 	length(r) == k || raise_dimerror()
 
@@ -95,6 +95,9 @@ proportions(x::AbstractArray, levels::LevelCollection, wv::WeightVec) = counts(x
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
 	# add counts of integers from x to r
 
+	n = length(x)
+	length(y) == n || raise_dimerror()
+
 	xlevels, ylevels = levels
 
 	kx = length(xlevels)
@@ -109,7 +112,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 	bx = mx0 - 1
 	by = my0 - 1
 	
-	for i in 1 : length(x)
+	for i = 1:n
 		xi = x[i]
 		yi = y[i]
 		if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -121,6 +124,9 @@ end
 
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
 	# add counts of integers from x to r
+
+	n = length(x)
+	length(y) == length(wv) == n || raise_dimerror()
 
 	xlevels, ylevels = levels
 
@@ -137,7 +143,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 	by = my0 - 1
 	w = values(wv)
 	
-	for i in 1 : length(x)
+	for i = 1:n
 		xi = x[i]
 		yi = y[i]
 		if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -145,6 +151,59 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 		end
 	end
 	return r
+end
+
+function addcounts!{T1,T2}(r::AbstractArray, x::AbstractArray{T1}, y::AbstractArray{T2}, 
+	imap::(Associative{T1,Int}, Associative{T2,Int}))
+
+	n = length(x)
+	length(y) == n || raise_dimerror()
+
+	kx = size(r, 1)
+	ky = size(r, 2)
+	ximap, yimap = imap
+
+	for i = 1 : length(x)
+		@inbounds xi = x[i]
+		@inbounds yi = y[i]
+		u = get(ximap, xi, 0)
+		v = get(yimap, yi, 0)
+		if 1 <= u <= kx && 1 <= v <= ky
+			r[u,v] += 1
+		end
+	end
+	return r
+end
+
+function addcounts!{T1,T2}(r::AbstractArray, x::AbstractArray{T1}, y::AbstractArray{T2},
+ 	imap::(Associative{T1,Int}, Associative{T2,Int}), wv::WeightVec)
+
+	n = length(x)
+	length(y) == length(wv) == n || raise_dimerror()
+
+	kx = size(r, 1)
+	ky = size(r, 2)
+	ximap, yimap = imap
+
+	w = values(wv)
+	for i = 1 : n
+		@inbounds xi = x[i]
+		@inbounds yi = y[i]
+		u = get(ximap, xi, 0)
+		v = get(yimap, yi, 0)
+		if 1 <= u <= kx && 1 <= v <= ky
+			@inbounds r[u,v] += w[i]
+		end
+	end
+	return r
+end
+
+function addcounts!{T1,T2}(r::AbstractArray, x::AbstractArray{T1}, y::AbstractArray{T2}, levels::(AbstractVector{T1},AbstractVector{T2}))
+	addcounts!(r, x, y, (indexmap(levels[1]), indexmap(levels[2])))
+end
+
+function addcounts!{T1,T2}(r::AbstractArray, x::AbstractArray{T1}, y::AbstractArray{T2}, levels::(AbstractVector{T1},AbstractVector{T2}), wv::WeightVec)
+	addcounts!(r, x, y, (indexmap(levels[1]), indexmap(levels[2])), wv)
 end
 
 

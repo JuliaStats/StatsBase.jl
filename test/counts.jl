@@ -53,6 +53,16 @@ c0 = Float64[sum(w.values[(x .== i) & (y .== j)]) for i in 1 : 4, j in 1 : 5]
 @test_approx_eq counts(x+2, y+3, (3:6, 4:8), w) c0
 @test_approx_eq proportions(x, y, (1:4, 1:5), w) (c0 ./ sum(w))
 
+x = ["a", "b", "a", "a", "b", "c", "b"]
+y = [ 1,   2,   2,   2,   1,   2,   1]
+w = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+
+levels = (["a", "b", "c"], 1:2)
+@test counts(x, y, levels) == [1 2; 2 1; 0 1]
+@test proportions(x, y, levels) == [1 2; 2 1; 0 1] / 7
+@test counts(x, y, levels, weights(w)) == [1.0 7.0; 12.0 2.0; 0.0 6.0]
+@test proportions(x, y, levels, weights(w)) == [1.0 7.0; 12.0 2.0; 0.0 6.0] / 28.0
+
 # count map
 
 x = ["a", "b", "a", "a", "b", "c"]
