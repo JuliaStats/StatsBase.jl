@@ -87,6 +87,7 @@ module Stats
     # source files
 
     include("common.jl")
+    include("misc.jl")
     include("means.jl")
     include("scalarstats.jl")
     include("counts.jl")
@@ -95,7 +96,7 @@ module Stats
     include("corr.jl")
     include("rankcorr.jl")
     include("empirical.jl")
-    include("misc.jl")
+
     include("statmodels.jl")
 
     include("deprecates.jl")

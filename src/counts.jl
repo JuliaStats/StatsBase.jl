@@ -2,15 +2,12 @@
 
 #################################################
 #
-#  counts on integer ranges
-#
-#  These methods are the most efficient if one
-#  knows that all values fall in a small range
-#  of integers.
+#  counts on given levels
 #  
 #################################################
 
 typealias IntRange1{T<:Integer} Range1{T}
+typealias LevelCollection Union(AbstractVector,Associative,Tuple)
 
 #### functions for counting a single list of integers (1D)
 
@@ -51,11 +48,46 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1, wv::We
 	return r
 end
 
-counts(x::IntegerArray, levels::IntRange1) = addcounts!(zeros(Int, length(levels)), x, levels)
-counts(x::IntegerArray, levels::IntRange1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
+function addcounts!{T,I<:Integer}(r::AbstractArray, x::AbstractArray{T}, imap::Associative{T,I})
+	k = length(r)
+	for i = 1 : length(x)
+		@inbounds xi = x[i]
+		u = get(imap, xi, 0)
+		if 1 <= u <= k
+			r[u] += 1
+		end
+	end
+	return r
+end
 
-proportions(x::IntegerArray, levels::IntRange1) = counts(x, levels) .* inv(length(x))
-proportions(x::IntegerArray, levels::IntRange1, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
+function addcounts!{T,I<:Integer}(r::AbstractArray, x::AbstractArray{T}, imap::Associative{T,I}, wv::WeightVec)
+	k = length(r)
+	length(r) == k || raise_dimerror()
+
+	w = values(wv)
+	for i = 1 : length(x)
+		@inbounds xi = x[i]
+		u = get(imap, xi, 0)
+		if 1 <= u <= k
+			@inbounds r[u] += w[i]
+		end
+	end
+	return r
+end
+
+function addcounts!{T}(r::AbstractArray, x::AbstractArray{T}, levels::AbstractVector{T})
+	addcounts!(r, x, indexmap(levels))
+end
+
+function addcounts!{T}(r::AbstractArray, x::AbstractArray{T}, levels::AbstractVector{T}, wv::WeightVec)
+	addcounts!(r, x, indexmap(levels), wv)
+end
+
+counts(x::AbstractArray, levels::LevelCollection) = addcounts!(zeros(Int, length(levels)), x, levels)
+counts(x::AbstractArray, levels::LevelCollection, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
+
+proportions(x::AbstractArray, levels::LevelCollection) = counts(x, levels) .* inv(length(x))
+proportions(x::AbstractArray, levels::LevelCollection, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
 
 
 #### functions for counting a single list of integers (2D)
@@ -115,26 +147,25 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 	return r
 end
 
-function counts(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
+
+# facet functions
+
+function counts(x::AbstractArray, y::AbstractArray, levels::LevelCollection)
 	addcounts!(zeros(Int, length(levels[1]), length(levels[2])), x, y, levels)
 end
 
-function counts(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
+function counts(x::AbstractArray, y::AbstractArray, levels::LevelCollection, wv::WeightVec)
 	addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
 end
 
-function proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
-	counts(x, y, levels) .* inv(length(x))
-end
+proportions(x::AbstractArray, y::AbstractArray, levels::LevelCollection) = counts(x, y, levels) .* inv(length(x))
+proportions(x::AbstractArray, y::AbstractArray, levels::LevelCollection, wv::WeightVec) = counts(x, y, levels, wv) .* inv(sum(wv))
 
-function proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
-	counts(x, y, levels, wv) .* inv(sum(wv))
-end
 
 
 #################################################
 #
-#  counts on distinct values
+#  countmap on unknown levels
 #
 #  These methods are based on dictionaries, and 
 #  can be used on any kind of hashable values.

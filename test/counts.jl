@@ -24,6 +24,15 @@ c0 = Float64[sum(w.values[x .== i]) for i in 1 : 5]
 @test_approx_eq counts(x+1, 2:6, w) c0
 @test_approx_eq proportions(x, 1:5, w) (c0 ./ sum(w))
 
+x = ["a", "b", "c", "a", "c", "c"]
+w = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+levels = ["a", "b", "c"]
+
+@test counts(x, levels) == [2, 1, 3] 
+@test proportions(x, levels) == [2, 1, 3] / 6
+@test counts(x, levels, weights(w)) == [5.0, 2.0, 14.0]
+@test proportions(x, levels, weights(w)) == [5.0, 2.0, 14.0] / 21.0
+
 # 2D integer counts
 
 x = rand(1:4, n)
