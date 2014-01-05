@@ -10,16 +10,18 @@
 #  
 #################################################
 
+typealias IntRange1{T<:Integer} Range1{T}
+
 #### functions for counting a single list of integers (1D)
 
-function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1)
+function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1)
 	# add counts of integers from x to r
 
-	k = length(rgn)
+	k = length(levels)
 	length(r) == k || raise_dimerror()
 
-	m0 = rgn[1]
-	m1 = rgn[end]
+	m0 = levels[1]
+	m1 = levels[end]
 	b = m0 - 1
 	
 	@inbounds for i in 1 : length(x)
@@ -31,12 +33,12 @@ function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1)
 	return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1, wv::WeightVec)
-	k = length(rgn)
+function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1, wv::WeightVec)
+	k = length(levels)
 	length(r) == k || raise_dimerror()
 
-	m0 = rgn[1]
-	m1 = rgn[end]
+	m0 = levels[1]
+	m1 = levels[end]
 	b = m0 - 1
 	w = values(wv)
 	
@@ -49,26 +51,28 @@ function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1, wv::WeightVe
 	return r
 end
 
-counts(x::IntegerArray, rgn::Range1) = addcounts!(zeros(Int, length(rgn)), x, rgn)
-counts(x::IntegerArray, rgn::Range1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(rgn)), x, rgn, wv)
+counts(x::IntegerArray, levels::IntRange1) = addcounts!(zeros(Int, length(levels)), x, levels)
+counts(x::IntegerArray, levels::IntRange1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
 
-proportions(x::IntegerArray, rgn::Range1) = counts(x, rgn) .* inv(length(x))
-proportions(x::IntegerArray, rgn::Range1, wv::WeightVec) = counts(x, rgn, wv) .* inv(sum(wv))
+proportions(x::IntegerArray, levels::IntRange1) = counts(x, levels) .* inv(length(x))
+proportions(x::IntegerArray, levels::IntRange1, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
 
 
 #### functions for counting a single list of integers (2D)
 
-function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1)
+function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
 	# add counts of integers from x to r
 
-	kx = length(xrgn)
-	ky = length(yrgn)
+	xlevels, ylevels = levels
+
+	kx = length(xlevels)
+	ky = length(ylevels)
 	size(r) == (kx, ky) || raise_dimerror()
 
-	mx0 = xrgn[1]
-	mx1 = xrgn[end]
-	my0 = yrgn[1]
-	my1 = yrgn[end]
+	mx0 = xlevels[1]
+	mx1 = xlevels[end]
+	my0 = ylevels[1]
+	my1 = ylevels[end]
 
 	bx = mx0 - 1
 	by = my0 - 1
@@ -83,17 +87,19 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Ra
 	return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1, wv::WeightVec)
+function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
 	# add counts of integers from x to r
 
-	kx = length(xrgn)
-	ky = length(yrgn)
+	xlevels, ylevels = levels
+
+	kx = length(xlevels)
+	ky = length(ylevels)
 	size(r) == (kx, ky) || raise_dimerror()
 
-	mx0 = xrgn[1]
-	mx1 = xrgn[end]
-	my0 = yrgn[1]
-	my1 = yrgn[end]
+	mx0 = xlevels[1]
+	mx1 = xlevels[end]
+	my0 = ylevels[1]
+	my1 = ylevels[end]
 
 	bx = mx0 - 1
 	by = my0 - 1
@@ -109,17 +115,21 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Ra
 	return r
 end
 
-function counts(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1)
-	addcounts!(zeros(Int, length(xrgn), length(yrgn)), x, y, xrgn, yrgn)
+function counts(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
+	addcounts!(zeros(Int, length(levels[1]), length(levels[2])), x, y, levels)
 end
 
-function counts(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1, wv::WeightVec)
-	addcounts!(zeros(eltype(wv), length(xrgn), length(yrgn)), x, y, xrgn, yrgn, wv)
+function counts(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
+	addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
 end
 
-proportions(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1) = counts(x, y, xrgn, yrgn) .* inv(length(x))
-proportions(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1, wv::WeightVec) = counts(x, y, xrgn, yrgn, wv) .* inv(sum(wv))
+function proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
+	counts(x, y, levels) .* inv(length(x))
+end
 
+function proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
+	counts(x, y, levels, wv) .* inv(sum(wv))
+end
 
 
 #################################################

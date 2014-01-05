@@ -30,19 +30,19 @@ x = rand(1:4, n)
 y = rand(1:5, n)
 w = weights(rand(n))
 
-c = counts(x, y, 1:4, 1:5)
+c = counts(x, y, (1:4, 1:5))
 @test size(c) == (4, 5)
 c0 = Int[nnz((x .== i) & (y .== j)) for i in 1 : 4, j in 1 : 5]
 @test c == c0
-@test counts(x+2, y+3, 3:6, 4:8) == c0
-@test_approx_eq proportions(x, y, 1:4, 1:5) (c0 ./ n)
+@test counts(x+2, y+3, (3:6, 4:8)) == c0
+@test_approx_eq proportions(x, y, (1:4, 1:5)) (c0 ./ n)
 
-c = counts(x, y, 1:4, 1:5, w)
+c = counts(x, y, (1:4, 1:5), w)
 @test size(c) == (4, 5)
 c0 = Float64[sum(w.values[(x .== i) & (y .== j)]) for i in 1 : 4, j in 1 : 5]
 @test_approx_eq c c0
-@test_approx_eq counts(x+2, y+3, 3:6, 4:8, w) c0
-@test_approx_eq proportions(x, y, 1:4, 1:5, w) (c0 ./ sum(w))
+@test_approx_eq counts(x+2, y+3, (3:6, 4:8), w) c0
+@test_approx_eq proportions(x, y, (1:4, 1:5), w) (c0 ./ sum(w))
 
 # count map
 
