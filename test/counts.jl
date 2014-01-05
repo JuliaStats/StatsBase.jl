@@ -49,20 +49,20 @@ c0 = Float64[sum(w.values[(x .== i) & (y .== j)]) for i in 1 : 4, j in 1 : 5]
 x = ["a", "b", "a", "a", "b", "c"]
 w = [1.0, 1.5, 2.0, 2.5, 3.0, 3.5]
 
-cm = counts(x)
+cm = countmap(x)
 @test cm["a"] == 3
 @test cm["b"] == 2
 @test cm["c"] == 1
-pm = proportions(x)
+pm = proportionmap(x)
 @test_approx_eq pm["a"] (1/2)
 @test_approx_eq pm["b"] (1/3)
 @test_approx_eq pm["c"] (1/6)
 
-cm = counts(x, weights(w))
+cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
 @test cm["b"] == 4.5
 @test cm["c"] == 3.5
-pm = proportions(x, weights(w))
+pm = proportionmap(x, weights(w))
 @test_approx_eq pm["a"] (5.5 / 13.5)
 @test_approx_eq pm["b"] (4.5 / 13.5)
 @test_approx_eq pm["c"] (3.5 / 13.5)
@@ -71,22 +71,33 @@ x = ["a", "b", "a", "a", "b", "c", "b"]
 y = [ 1,   2,   2,   2,   1,   2,   1]
 w = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
 
-cm = counts(x, y)
+cm = countmap(x, y)
 @test cm[("a", 1)] == 1
 @test cm[("a", 2)] == 2
 @test cm[("b", 1)] == 2
 @test cm[("b", 2)] == 1
 @test cm[("c", 2)] == 1
 
-pm = proportions(x, y)
+pm = proportionmap(x, y)
 @test_approx_eq pm[("a", 1)] 1/7
 @test_approx_eq pm[("a", 2)] 2/7
 @test_approx_eq pm[("b", 1)] 2/7
 @test_approx_eq pm[("b", 2)] 1/7
 @test_approx_eq pm[("c", 2)] 1/7
 
+cm = countmap(x, y, weights(w))
+@test cm[("a", 1)] == 1.0
+@test cm[("a", 2)] == 7.0
+@test cm[("b", 1)] == 12.0
+@test cm[("b", 2)] == 2.0
+@test cm[("c", 2)] == 6.0
 
-
+pm = proportionmap(x, y, weights(w))
+@test pm[("a", 1)] == 1.0 / 28.0
+@test pm[("a", 2)] == 7.0 / 28.0
+@test pm[("b", 1)] == 12.0 / 28.0
+@test pm[("b", 2)] == 2.0 / 28.0
+@test pm[("c", 2)] == 6.0 / 28.0
 
 
 

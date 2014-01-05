@@ -7,5 +7,3 @@ import Base.@deprecate
 @deprecate ccf crosscor
 
 @deprecate indicators indicatormat
-
-@deprecate countmap counts
