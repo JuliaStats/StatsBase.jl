@@ -31,7 +31,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1)
 	return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, wv::WeightVec, rgn::Range1)
+function addcounts!(r::AbstractArray, x::IntegerArray, rgn::Range1, wv::WeightVec)
 	k = length(rgn)
 	length(r) == k || raise_dimerror()
 
@@ -50,10 +50,10 @@ function addcounts!(r::AbstractArray, x::IntegerArray, wv::WeightVec, rgn::Range
 end
 
 counts(x::IntegerArray, rgn::Range1) = addcounts!(zeros(Int, length(rgn)), x, rgn)
-counts(x::IntegerArray, wv::WeightVec, rgn::Range1) = addcounts!(zeros(eltype(wv), length(rgn)), x, wv, rgn)
+counts(x::IntegerArray, rgn::Range1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(rgn)), x, rgn, wv)
 
 proportions(x::IntegerArray, rgn::Range1) = counts(x, rgn) .* inv(length(x))
-proportions(x::IntegerArray, wv::WeightVec, rgn::Range1) = counts(x, wv, rgn) .* inv(sum(wv))
+proportions(x::IntegerArray, rgn::Range1, wv::WeightVec) = counts(x, rgn, wv) .* inv(sum(wv))
 
 
 #### functions for counting a single list of integers (2D)
@@ -83,7 +83,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Ra
 	return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1)
+function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1, wv::WeightVec)
 	# add counts of integers from x to r
 
 	kx = length(xrgn)
@@ -113,12 +113,12 @@ function counts(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1)
 	addcounts!(zeros(Int, length(xrgn), length(yrgn)), x, y, xrgn, yrgn)
 end
 
-function counts(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1)
-	addcounts!(zeros(eltype(wv), length(xrgn), length(yrgn)), x, y, wv, xrgn, yrgn)
+function counts(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1, wv::WeightVec)
+	addcounts!(zeros(eltype(wv), length(xrgn), length(yrgn)), x, y, xrgn, yrgn, wv)
 end
 
 proportions(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1) = counts(x, y, xrgn, yrgn) .* inv(length(x))
-proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec, xrgn::Range1, yrgn::Range1) = counts(x, y, wv, xrgn, yrgn) .* inv(sum(wv))
+proportions(x::IntegerArray, y::IntegerArray, xrgn::Range1, yrgn::Range1, wv::WeightVec) = counts(x, y, xrgn, yrgn, wv) .* inv(sum(wv))
 
 
 
