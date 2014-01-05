@@ -16,4 +16,4 @@ abstract RegressionModel <: StatisticalModel
 residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
-
+predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")

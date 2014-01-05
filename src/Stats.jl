@@ -80,9 +80,9 @@ module Stats
     stderr,
     vcov,
     predict,
+    predict!,
     residuals,
     model_response
-
 
     # source files
 
