@@ -141,6 +141,18 @@ end
 #  
 #################################################
 
+## auxiliary functions
+
+function _normalize_countmap{T}(cm::Dict{T}, s::Real)
+	r = (T=>Float64)[]
+	for (k, c) in cm
+		r[k] = c / s 
+	end
+	return r
+end
+
+## 1D
+
 function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T})
 	for v in x
 		cm[v] = get(cm, v, 0) + 1
@@ -154,9 +166,9 @@ function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec{W})
 	w = values(wv)
 	z = zero(W)
 
-	@inbounds for i = 1 : n
-		xi = x[i]
-		wi = w[i]
+	for i = 1 : n
+		@inbounds xi = x[i]
+		@inbounds wi = w[i]
 		cm[xi] = get(cm, xi, z) + wi
 	end
 	return cm
@@ -165,15 +177,38 @@ end
 counts{T}(x::AbstractArray{T}) = addcounts!((T=>Int)[], x)
 counts{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!((T=>W)[], x, wv)
 
-function _normalize_countmap{T}(cm::Dict{T}, s::Real)
-	r = (T=>Float64)[]
-	for (k, c) in cm
-		r[k] = c / s 
-	end
-	return r
-end
-
 proportions(x::AbstractArray) = _normalize_countmap(counts(x), length(x))
 proportions(x::AbstractArray, wv::WeightVec) = _normalize_countmap(counts(x, wv), sum(wv))
 
+## 2D
+
+function addcounts!{T1,T2}(cm::Dict{(T1,T2)}, x::AbstractArray{T1}, y::AbstractArray{T2})
+	n = length(x)
+	length(y) == n || raise_dimerror()
+	for i = 1 : n
+		@inbounds v = (x[i], y[i])
+		cm[v] = get(cm, v, 0) + 1
+	end
+	return cm
+end
+
+function addcounts!{T1,T2,W}(cm::Dict{(T1,T2)}, x::AbstractArray{T1}, y::AbstractArray{T2}, wv::WeightVec{W})
+	n = length(x)
+	length(y) == length(wv) == n || raise_dimerror()
+	w = values(wv)
+	z = zero(W)
+
+	for i = 1 : n
+		@inbounds v = (x[i], y[i])
+		@inbounds wi = w[i]
+		cm[v] = get(cm, v, z) + wi
+	end
+	return cm
+end
+
+counts{T1,T2}(x::AbstractArray{T1}, y::AbstractArray{T2}) = addcounts!(((T1,T2)=>Int)[], x, y)
+counts{T1,T2,W}(x::AbstractArray{T1}, y::AbstractArray{T2}, wv::WeightVec{W}) = addcounts!(((T1,T2)=>W)[], x, y, v)
+
+proportions(x::AbstractArray, y::AbstractArray) = _normalize_countmap(counts(x, y), length(x))
+proportions(x::AbstractArray, y::AbstractArray, wv::WeightVec) = _normalize_countmap(counts(x, y, wv), sum(wv))
 
