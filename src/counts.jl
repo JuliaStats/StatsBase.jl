@@ -162,8 +162,8 @@ function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec{W})
 	return cm
 end
 
-countmap{T}(x::AbstractArray{T}) = addcounts!((T=>Int)[], x)
-countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!((T=>W)[], x, wv)
+counts{T}(x::AbstractArray{T}) = addcounts!((T=>Int)[], x)
+counts{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!((T=>W)[], x, wv)
 
 function _normalize_countmap{T}(cm::Dict{T}, s::Real)
 	r = (T=>Float64)[]
@@ -173,7 +173,7 @@ function _normalize_countmap{T}(cm::Dict{T}, s::Real)
 	return r
 end
 
-proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
-proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
+proportions(x::AbstractArray) = _normalize_countmap(counts(x), length(x))
+proportions(x::AbstractArray, wv::WeightVec) = _normalize_countmap(counts(x, wv), sum(wv))
 
 
