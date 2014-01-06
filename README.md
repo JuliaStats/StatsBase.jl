@@ -149,11 +149,11 @@ The following functions are for computing statistics over an array of scalar rea
 
   For example, ``counts([1, 2, 2, 2, 3, 3], 1:3)`` returns ``[1, 3, 2]``. 
 
-* **counts**(x, y, [weights(w),] a:b, c:d)
+* **counts**(x, y, (a:b, c:d)[, weights(w)])
 
   Count the number of times (or total weights if a weight vector is given) pairs of values in ``a:b`` and ``c:d`` that appear in arrays ``x`` and ``y``.
 
-  For example, ``counts([1, 2, 1, 1, 2], [1, 2, 3, 3, 2], 1:2, 1:3)`` returns an array ``r`` of size ``(2, 3)`` as 
+  For example, ``counts([1, 2, 1, 1, 2], [1, 2, 3, 3, 2], (1:2, 1:3))`` returns an array ``r`` of size ``(2, 3)`` as 
   ```julia
   1 0 2
   0 0 2
@@ -166,15 +166,15 @@ The following functions are for computing statistics over an array of scalar rea
 
   Compute the proportions of values in ``a:b`` with respect to ``x``. Equivalent to ``counts(x, a:b) / length(x)``. 
 
-* **proportions**(x, y, [weights(w),] a:b, c:d)
+* **proportions**(x, y, (a:b, c:d)[, weights(w)])
 
-  Equivalent to ``counts(x, y, a:b, c:d) / length(x)``.
+  Equivalent to ``counts(x, y, (a:b, c:d)) / length(x)``.
 
 * **addcounts!**(r, x, a:b[, weights(w)])
 
   Adds the counts of values in ``x`` to an accumulating array ``r``.
 
-* **addcounts!**(r, x, y, [weights(w),] a:b, c:d)
+* **addcounts!**(r, x, y, (a:b, c:d)[, weights(w)])
 
   Adds the counts of pairs in ``x`` and ``y`` to an accumulating matrix ``r``.  
 
