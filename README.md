@@ -149,6 +149,12 @@ The following functions are for computing statistics over an array of scalar rea
 
   For example, ``counts([1, 2, 2, 2, 3, 3], 1:3)`` returns ``[1, 3, 2]``. 
 
+  Convenient forms:
+
+  - ``counts(x, k)`` is equivalent to ``counts(x, 1:k)`` when ``k`` is an integer.
+  - ``counts(x, k, w)`` is equivalent to ``counts(x, 1:k, w)``.
+
+
 * **counts**(x, y, (a:b, c:d)[, weights(w)])
 
   Count the number of times (or total weights if a weight vector is given) pairs of values in ``a:b`` and ``c:d`` that appear in arrays ``x`` and ``y``.
@@ -162,6 +168,16 @@ The following functions are for computing statistics over an array of scalar rea
 
   This function is useful in various applications, *e.g.* computing confusion matrix in evaluating the performance of a classifier.
 
+  Convenient forms:
+
+  - ``counts(x, y, a:b)`` is equivalent to ``counts(x, y, (a:b, a:b))``.
+  - ``counts(x, y, a:b, w)`` is equivalent to ``counts(x, y, (a:b, a:b), w)``.
+  - ``counts(x, y, (kx, ky))`` is equivalent to ``counts(x, y, (1:kx, 1:ky))``.
+  - ``counts(x, y, (kx, ky), w)`` is equivalent to ``counts(x, y, (1:kx, 1:ky), w)``.
+  - ``counts(x, y, k)`` is equivalent to ``counts(x, y, (1:k, 1:k)``.
+  - ``counts(x, y, k, w)`` is equivalent to ``counts(x, y, (1:k, 1:k), w)``.
+
+
 * **proportions**(x, a:b[, weights(w)])  
 
   Compute the proportions of values in ``a:b`` with respect to ``x``. Equivalent to ``counts(x, a:b) / length(x)``. 
@@ -169,6 +185,8 @@ The following functions are for computing statistics over an array of scalar rea
 * **proportions**(x, y, (a:b, c:d)[, weights(w)])
 
   Equivalent to ``counts(x, y, (a:b, c:d)) / length(x)``.
+
+**Note:** all convenient forms for the function ``counts`` are also available to the function ``proportions``.  
 
 * **addcounts!**(r, x, a:b[, weights(w)])
 

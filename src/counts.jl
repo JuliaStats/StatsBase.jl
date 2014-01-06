@@ -47,12 +47,15 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1, wv::We
 	return r
 end
 
-counts(x::AbstractArray, levels::IntRange1) = addcounts!(zeros(Int, length(levels)), x, levels)
-counts(x::AbstractArray, levels::IntRange1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
+counts(x::IntegerArray, levels::IntRange1) = addcounts!(zeros(Int, length(levels)), x, levels)
+counts(x::IntegerArray, levels::IntRange1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
+counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
+counts(x::IntegerArray, k::Integer, wv::WeightVec) = counts(x, 1:k, wv)
 
-proportions(x::AbstractArray, levels::IntRange1) = counts(x, levels) .* inv(length(x))
-proportions(x::AbstractArray, levels::IntRange1, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
-
+proportions(x::IntegerArray, levels::IntRange1) = counts(x, levels) .* inv(length(x))
+proportions(x::IntegerArray, levels::IntRange1, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
+proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
+proportions(x::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, 1:k, wv)
 
 #### functions for counting a single list of integers (2D)
 
@@ -119,16 +122,29 @@ end
 
 # facet functions
 
-function counts(x::AbstractArray, y::AbstractArray, levels::(IntRange1, IntRange1))
+function counts(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1))
 	addcounts!(zeros(Int, length(levels[1]), length(levels[2])), x, y, levels)
 end
 
-function counts(x::AbstractArray, y::AbstractArray, levels::(IntRange1, IntRange1), wv::WeightVec)
+function counts(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec)
 	addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
 end
 
-proportions(x::AbstractArray, y::AbstractArray, levels::(IntRange1, IntRange1)) = counts(x, y, levels) .* inv(length(x))
-proportions(x::AbstractArray, y::AbstractArray, levels::(IntRange1, IntRange1), wv::WeightVec) = counts(x, y, levels, wv) .* inv(sum(wv))
+counts(x::IntegerArray, y::IntegerArray, levels::IntRange1) = counts(x, y, (levels, levels))
+counts(x::IntegerArray, y::IntegerArray, levels::IntRange1, wv::WeightVec) = counts(x, y, (levels, levels), wv)
+
+counts(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer)) = counts(x, y, (1:ks[1], 1:ks[2]))
+counts(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer), wv::WeightVec) = counts(x, y, (1:ks[1], 1:ks[2]), wv)
+counts(x::IntegerArray, y::IntegerArray, k::Integer) = counts(x, y, (1:k, 1:k))
+counts(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = counts(x, y, (1:k, 1:k), wv)
+
+proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1)) = counts(x, y, levels) .* inv(length(x))
+proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec) = counts(x, y, levels, wv) .* inv(sum(wv))
+
+proportions(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer)) = proportions(x, y, (1:ks[1], 1:ks[2]))
+proportions(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer), wv::WeightVec) = proportions(x, y, (1:ks[1], 1:ks[2]), wv)
+proportions(x::IntegerArray, y::IntegerArray, k::Integer) = proportions(x, y, (1:k, 1:k))
+proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, y, (1:k, 1:k), wv)
 
 
 #################################################
