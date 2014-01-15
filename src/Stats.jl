@@ -64,6 +64,7 @@ module Stats
     rle,            # run-length encoding
     inverse_rle,    # inverse run-length encoding
     indexmap,       # construct a map from element to index
+    levelsmap,      # construct a map from n unique elements to [1, ..., n]
     findat,         # find the position within a for elements in b
     indicatormat,   # construct indicator matrix
         

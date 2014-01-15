@@ -353,6 +353,10 @@ This package implements various stragies for computing ranks. Please refer to [W
 
   Inversed run-length encoding. It takes the results of ``rle`` and reconstructs the original sequence. 
 
+* **levelsmap**(x)
+
+  Construct a dictionary that maps each of the ``n`` distinct values in ``x`` to a number between ``1`` and ``n``.
+
 * **indexmap**(x)
 
   Construct a dictionary that maps each distinct value in ``x`` to its first index.

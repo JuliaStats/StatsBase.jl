@@ -62,6 +62,19 @@ function indexmap{T}(a::AbstractArray{T})
     return d
 end
 
+function levelsmap{T}(a::AbstractArray{T})
+    d = (T=>Int)[]
+    index = 1
+    for i = 1 : length(a)
+        @inbounds k = a[i]
+        if !haskey(d, k)
+            d[k] = index
+            index += 1
+        end
+    end
+    return d
+end
+
 function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
     length(r) == length(b) || raise_dimerror()
     d = indexmap(a)
