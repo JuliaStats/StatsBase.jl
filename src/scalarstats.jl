@@ -126,43 +126,15 @@ mad{T<:Real}(v::Range1{T}) = mad!([v])
 #
 #############################
 
-# Minimum and maximum
-function minmax{T<:Real}(x::AbstractArray{T})
-    isempty(x) && error("minmax: x cannot be empty.")
-
-    # find the first non-NaN value
-    x0 = x[1]
-    n = length(x)
-    i = 1
-    while i < n && (x0 != x0)
-        i += 1
-        @inbounds x0 = x[i] 
-    end
-    xmin = xmax = x0
-
-    # deal with the remaining
-    while i < n
-        i += 1
-        @inbounds xi = x[i]
-        if xi < xmin
-            xmin = xi
-        elseif xi > xmax
-            xmax = xi
-        end
-    end
-
-    return xmin, xmax
-end
-
 # middle
 middle{T<:FloatingPoint}(a1::T, a2::T) = (a1 + a2) / convert(T, 2)
 middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
 
 # Mid-range
-midrange{T<:Real}(a::AbstractArray{T}) = middle(minmax(a)...)
+midrange{T<:Real}(a::AbstractArray{T}) = middle(extrema(a)...)
 
 # Range: xmax - xmin
-range{T<:Real}(a::AbstractArray{T}) = ((m0, m1) = minmax(a); m1 - m0)
+range{T<:Real}(a::AbstractArray{T}) = ((m0, m1) = extrema(a); m1 - m0)
 
 
 #############################

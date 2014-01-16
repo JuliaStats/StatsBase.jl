@@ -19,7 +19,6 @@ module Stats
     variation,  # ratio of standard deviation to mean
     sem,        # standard error of the mean, i.e. sqrt(var / n)
     mad,        # median absolute deviation
-    minmax,     # obtain min & max in a single pass
     middle,     # the mean of two real numbers
     midrange,   # the mean of minimum and maximum
     range,      # the difference between maximum and minimum

@@ -162,8 +162,8 @@ function kde(x::RealVector, y::RealVector; width::Float64=NaN, resolution::Int=2
         h2 = width
     end
 
-    min_x, max_x = minmax(x)
-    min_y, max_y = minmax(y)
+    min_x, max_x = extrema(x)
+    min_y, max_y = extrema(y)
 
     grid_x = [min_x:((max_x - min_x) / (resolution - 1)):max_x]
     grid_y = [min_y:((max_y - min_y) / (resolution - 1)):max_y]
