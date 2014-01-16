@@ -81,10 +81,6 @@ The following functions are for computing statistics over an array of scalar rea
 
   Compute the median absolute deviation of ``x``. [Wikipedia](http://en.wikipedia.org/wiki/Median_absolute_deviation)
 
-* **minmax**(x)
-
-  Compute both maximum and minimum of ``x`` in a single pass, and return them in a pair as ``(min, max)``.
-
 * **middle**(a, b)
 
   Compute the middle between ``a`` and ``b``, *i.e.* ``(a + b) / 2``.

@@ -401,7 +401,7 @@ end
 function pacf!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
     lx = size(X, 1)
     m = length(lags)
-    minlag, maxlag = minmax(lags)
+    minlag, maxlag = extrema(lags)
     (0 <= minlag && 2maxlag < lx) || error("Invalid lag value.")
     size(r) == (m, size(X,2)) || raise_dimerror()
 

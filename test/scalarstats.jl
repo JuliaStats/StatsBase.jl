@@ -30,10 +30,6 @@ wv = weights(ones(5) * 2.0)
 
 # min/max related
 
-@test minmax(1:5) == (1,5)
-@test minmax([3, 2, 7, 1, 4]) == (1,7)
-@test minmax([3.0, NaN, 1.0, NaN, 2.0]) == (1.0, 3.0)
-
 @test_approx_eq midrange([1, 2, 3, 4, 5]) 3.0
 @test_approx_eq midrange([1, 2, 2, 2, 5]) 3.0
 @test_approx_eq midrange([1, 4, 4, 4, 5]) 3.0
