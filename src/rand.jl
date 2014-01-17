@@ -1,36 +1,24 @@
 # Internal facilities for fast random number generation
 
-function _randu(Ku::Uint, U::Uint)   # ~ U[0:Ku-1]
-	x = rand(Uint)
-	while x > U
-		x = rand(Uint)
-	end
-	rem(x, Ku)
-end
-
-immutable RandIntSampler
+immutable RandIntSampler  # for generating Int samples in [0, K-1]
 	a::Int
 	Ku::Uint
 	U::Uint
 
-	function RandIntSampler(K::Int) # 1:K
-		Ku = uint(K)
-		U = div(typemax(Uint), Ku) * Ku
-		new(1, Ku, U)
-	end
-
-	function RandIntSampler(a::Int, b::Int)  # a:b
-		Ku = uint(b - a + 1)
-		U = div(typemax(Uint), Ku) * Ku
-		new(a, Ku, U)
-	end
+	RandIntSampler(K::Int) = (Ku = uint(K); new(1, Ku, div(typemax(Uint), Ku) * Ku))
+	RandIntSampler(a::Int, b::Int) = (Ku = uint(b-a+1); new(a, Ku, div(typemax(Uint), Ku) * Ku))
 end
 
-rand(s::RandIntSampler) = int(_randu(s.Ku, s.U)) + s.a
+function rand(s::RandIntSampler)
+	x = rand(Uint)
+	while x >= s.U
+		x = rand(Uint)
+	end
+	s.a + int(rem(x, s.Ku))
+end
 
 randi(K::Int) = rand(RandIntSampler(K))
 randi(a::Int, b::Int) = rand(RandIntSampler(a, b))
-
 
 # draw a number from a binomial distribution
 
