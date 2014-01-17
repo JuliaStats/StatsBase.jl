@@ -57,7 +57,7 @@ module StatsBase
     corkendall,        # kendall's rank correlation
 
     # sampling
-    samplepair,     # draw a pair of distinct elements
+    samplepair,     # draw a pair of distinct elements   
     sample,         # sampling from a population 
     wsample,        # sampling from a population with weights
 

@@ -82,18 +82,17 @@ function ordered_sample!(a::AbstractArray, x::AbstractArray)
     
     while offset < k
         rk = k - offset
-        if n == 1
+        if i == n
             for j = 1 : rk
                 @inbounds x[offset + j] = a[i]
             end
             offset = k
         else
-            m = rand_binom(rk, 1.0 / n)
+            m = rand_binom(rk, 1.0 / (n - i + 1))
             for j = 1 : m
                 @inbounds x[offset + j] = a[i]
             end
             i += 1
-            n -= 1
             offset += m
         end
     end
@@ -160,51 +159,91 @@ end
 #
 ################################################################
 
-function wsample(ws::AbstractArray; wsum::Float64 = sum(ws))
-    t = rand() * wsum
-    i = 0
-    p = 0.
-    while p < t
+function sample(wv::WeightVec)
+    isempty(wv) && error("Input weight vector is empty.")
+    t = rand() * sum(wv)
+    w = values(wv)
+    n = length(w)
+    i = 1
+    @inbounds cw = w[1]
+    while cw < t && i < n
         i += 1
-        p += ws[i]
+        @inbounds cw += w[i]
     end
     return i
 end
 
-wsample(xs::AbstractArray, ws::AbstractArray; wsum::Float64 = sum(ws)) =
-  xs[wsample(ws, wsum=wsum)]
+sample(a::AbstractArray, wv::WeightVec) = a[sample(wv)]
 
 # Author: Mike Innes
-function ordered_wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; wsum::Float64 = sum(ws))
-    n = length(xs)
-    k = length(target)
-    length(ws) == n || throw(ArgumentError("Inconsistent argument dimensions."))
+function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    offset = 0
+    i = 1
+    wsum = sum(wv)
+    w = values(wv)
+    
+    while offset < k
+        rk = k - offset
+        wi = w[i]
 
-    j = 0
-    for i = 1:n
-        k > 0 || break
-        num = i == n ? k : rand_binom(k, ws[i] / wsum) 
-        for _ = 1:num
-            j += 1
-            target[j] = xs[i]
+        if i == n || wi >= wsum
+            for j = 1 : rk
+                @inbounds x[offset + j] = a[i]
+            end
+            offset = k
+        else
+            m = rand_binom(rk, wi / wsum)
+            for j = 1 : m
+                @inbounds x[offset + j] = a[i]
+            end
+            i += 1
+            wsum -= wi
+            offset += m
         end
-        k -= num
-        wsum -= ws[i]
     end
-    return target
+    x
 end
 
-function wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; wsum::Float64 = sum(ws), ordered::Bool = false)
-    k = length(target)
-    ordered && return ordered_wsample!(xs, ws, target, wsum = wsum)
-    k > 100 && return ordered_wsample!(xs, ws, target, wsum = wsum) |> shuffle!
+function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; 
+    replace::Bool=true, ordered::Bool=true)
 
-    for i = 1:k
-        target[i] = wsample(xs)
+    n = length(a)
+    k = length(x)
+
+    if ordered
+        ordered_sample!(a, wv, x)
+    else
+        if k > 100 * n
+            shuffle!(ordered_sample!(a, wv, x))
+        else
+            for i = 1 : k
+                @inbounds x[i] = sample(a, wv)
+            end
+        end
     end
-    return target
+    return x
 end
 
-wsample(xs::AbstractArray, ws::AbstractArray, k; wsum::Float64 = sum(ws), ordered::Bool = false) =
-  wsample!(xs, ws, similar(xs, k), wsum = wsum, ordered = ordered)
+sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; replace::Bool=true, ordered::Bool=false) =
+    sample!(a, wv, Array(T, n); replace=replace, ordered=ordered)
+
+sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; replace::Bool=true, ordered::Bool=false) =
+    sample!(a, wv, Array(T, dims); replace=replace, ordered=ordered)    
+
+# wsample interface
+
+wsample(w::RealVector) = sample(weights(w))
+wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
+
+wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, ordered::Bool=false) = 
+    sample!(a, weights(w), x; replace=replace, ordered=ordered)
+
+wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) = 
+    wsample!(a, w, Array(T, n); replace=replace, ordered=ordered)
+
+wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) = 
+    wsample!(a, w, Array(T, dims); replace=replace, ordered=ordered)    
+
 

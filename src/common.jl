@@ -62,3 +62,4 @@ eltype(wv::WeightVec) = eltype(wv.values)
 length(wv::WeightVec) = length(wv.values)
 values(wv::WeightVec) = wv.values
 sum(wv::WeightVec) = wv.sum
+isempty(wv::WeightVec) = isempty(wv.values)
