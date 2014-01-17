@@ -1,5 +1,6 @@
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, show, quantile
+    import Base: rand, rand!
     import Base.LinAlg: BlasReal
 
     export
@@ -55,6 +56,10 @@ module StatsBase
     corspearman,       # spearman's rank correlation
     corkendall,        # kendall's rank correlation
 
+    # sampling
+    sample,         # sampling from a population 
+    wsample,        # sampling from a population with weights
+
     # empirical
     ecdf,           # empirical cumulative distribution function
     kde,            # kernel density estimation
@@ -95,6 +100,8 @@ module StatsBase
     include("toeplitzsolvers.jl")
     include("corr.jl")
     include("rankcorr.jl")
+    include("rand.jl")
+    include("sampling.jl")
     include("empirical.jl")
 
     include("statmodels.jl")
