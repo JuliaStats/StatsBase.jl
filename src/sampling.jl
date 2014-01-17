@@ -1,38 +1,22 @@
 # Functions for sampling from populations
 
-# Sample from arbitrary arrays
- 
-################################################################
-#
-#  A variety of algorithms for sampling without replacement
-#
-#  They are suited for different cases.
-#
-#  Particularly,
-#  - Fisher-Yates sampler is suited for general cases
-#    where n is not overly large
-#
-#  - Self avoiding sampler is suited for cases where k << n
-#
-################################################################
+### draw a pair of distinct integers in [1:n] 
 
-function pick2!(a::AbstractArray, x::AbstractArray)
-    # Pick a pair of values without replacement
+function samplepair(n::Int)
+    i1 = randi(n)
+    i2 = randi(n-1)
+    return (i1, i2 == i1 ? n : i2)
+end 
 
-    n0 = length(a)
-    i1 = randi(n0)
-    i2 = randi(n0 - 1)
-    if i2 == i1
-        i2 = n0
-    end
-
-    x[1] = a[i1]
-    x[2] = a[i2]
+function samplepair(a::AbstractArray)
+    i1, i2 = samplepair(length(a))
+    return a[i1], a[i2]
 end
 
-## A sampler that implements without-replacement sampling 
-## via Fisher-Yates shuffling
-##
+
+### internal sampling algorithms
+ 
+# Fisher-Yates sampling
 immutable FisherYatesSampler
     n::Int 
     seq::Vector{Int}   # Internal sequence for shuffling
@@ -62,6 +46,7 @@ end
 
 fisher_yates_sample!(a::AbstractArray, x::AbstractArray) = rand!(FisherYatesSampler(length(a)), a, x)
 
+# self-avoiding sampling
 function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     # This algorithm is suitable when length(x) << length(a)
 
@@ -77,7 +62,7 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     # remaining
     for i = 2:length(x)
         idx = rand(rgen)
-        while in(s, idx)
+        while (idx in s)
             idx = rand(rgen)
         end
         x[i] = a[idx]
@@ -87,50 +72,32 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
 end
 
 # Ordered sampling without replacement
-# Author: Mike Innes
+# Original author: Mike Innes
 
-function rand_first_index(n, k)
-    r = rand()
-    p = k/n
+function ordered_sample!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    offset = 0
     i = 1
-    while p < r
-        i += 1
-        p += (1-p)k/(n-(i-1))
-    end
-    return i
-end
-
-function ordered_sample_norep!(xs::AbstractArray, target::AbstractArray)
-    n = length(xs)
-    k = length(target)
-    i = 0
-    for j in 1:k
-        step = rand_first_index(n, k)
-        n -= step
-        i += step
-        target[j] = xs[i]
-        k -= 1
-    end
-    return target
-end
-
-function ordered_sample_rep!(xs::AbstractArray, target::AbstractArray)
-    n = length(xs)
-    n_left = n
-    k = length(target)
-    j = 0
-
-    for i = 1:n
-        k > 0 || break
-        num = i == n ? k : rand(Binomial(k, 1/n_left))
-        for _ = 1:num
-            j += 1
-            target[j] = xs[i]
+    
+    while offset < k
+        rk = k - offset
+        if n == 1
+            for j = 1 : rk
+                @inbounds x[offset + j] = a[i]
+            end
+            offset = k
+        else
+            m = rand_binom(rk, 1.0 / n)
+            for j = 1 : m
+                @inbounds x[offset + j] = a[i]
+            end
+            i += 1
+            n -= 1
+            offset += m
         end
-        k -= num
-        n_left -= 1
     end
-    return target
+    x
 end
 
 ###########################################################
@@ -141,48 +108,48 @@ end
 
 sample(a::AbstractArray) = a[randi(length(a))]
 
-function sample!(a::AbstractArray, x::AbstractArray; replace=true, ordered=false)
+function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
 
-    if !isempty(x)
+    if isempty(x) 
+        return x
+    end
+
+    if replace
         if ordered
-          replace ? ordered_sample_rep!(a, x) : ordered_sample_norep!(a, x)
+            ordered_sample!(a, x)
         else
-            if replace   # with replacement
-                s = RandIntSampler(n)
-                for i = 1:k
-                    x[i] = a[rand(s)]
-                end
-
-            else  # without replacement
-                if k > n
-                    throw(ArgumentError("n exceeds the length of x"))
-                end
-
-                if k == 1
-                    x[1] = sample(a)
-                    
-                elseif k == 2
-                    pick2!(a, x)
-
-                elseif n < k * max(k, 100) 
-                    fisher_yates_sample!(a, x)
-                    
-                else
-                    self_avoid_sample!(a, x)
-                end
+            s = RandIntSampler(n)
+            for i = 1:k
+                @inbounds x[i] = a[rand(s)]
             end
         end
+
+    else  # without replacement
+        k <= n || error("Cannot draw more samples without replacement.")
+
+        if k == 1
+            @inbounds x[1] = sample(a)
+
+        elseif k == 2
+            @inbounds (x[1], x[2]) = samplepair(a)
+
+        elseif n < k * max(k, 100)
+            fisher_yates_sample!(a, x)
+
+        else
+            self_avoid_sample!(a, x)
+        end
     end
-    x
+    return x
 end
 
-function sample{T}(a::AbstractArray{T}, n::Integer; replace=true, ordered=false)
+function sample{T}(a::AbstractArray{T}, n::Integer; replace::Bool=true, ordered::Bool=false)
     sample!(a, Array(T, n); replace=replace, ordered=ordered)
 end
 
-function sample{T}(a::AbstractArray{T}, dims::Dims; replace=true, ordered=false)
+function sample{T}(a::AbstractArray{T}, dims::Dims; replace::Bool=true, ordered::Bool=false)
     sample!(a, Array(T, dims); replace=replace, ordered=ordered)
 end
 
@@ -193,7 +160,7 @@ end
 #
 ################################################################
 
-function wsample(ws::AbstractArray; wsum::Number = sum(ws))
+function wsample(ws::AbstractArray; wsum::Float64 = sum(ws))
     t = rand() * wsum
     i = 0
     p = 0.
@@ -204,17 +171,16 @@ function wsample(ws::AbstractArray; wsum::Number = sum(ws))
     return i
 end
 
-wsample(xs::AbstractArray, ws::AbstractArray; wsum::Number = sum(ws)) =
+wsample(xs::AbstractArray, ws::AbstractArray; wsum::Float64 = sum(ws)) =
   xs[wsample(ws, wsum=wsum)]
 
 # Author: Mike Innes
-function ordered_wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; wsum::Number = sum(ws))
+function ordered_wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; wsum::Float64 = sum(ws))
     n = length(xs)
     k = length(target)
-    j = 0
-
     length(ws) == n || throw(ArgumentError("Inconsistent argument dimensions."))
 
+    j = 0
     for i = 1:n
         k > 0 || break
         num = i == n ? k : rand_binom(k, ws[i] / wsum) 
@@ -228,7 +194,7 @@ function ordered_wsample!(xs::AbstractArray, ws::AbstractArray, target::Abstract
     return target
 end
 
-function wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; wsum::Number = sum(ws), ordered::Bool = false)
+function wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; wsum::Float64 = sum(ws), ordered::Bool = false)
     k = length(target)
     ordered && return ordered_wsample!(xs, ws, target, wsum = wsum)
     k > 100 && return ordered_wsample!(xs, ws, target, wsum = wsum) |> shuffle!
@@ -239,6 +205,6 @@ function wsample!(xs::AbstractArray, ws::AbstractArray, target::AbstractArray; w
     return target
 end
 
-wsample(xs::AbstractArray, ws::AbstractArray, k; wsum::Number = sum(ws), ordered::Bool = false) =
+wsample(xs::AbstractArray, ws::AbstractArray, k; wsum::Float64 = sum(ws), ordered::Bool = false) =
   wsample!(xs, ws, similar(xs, k), wsum = wsum, ordered = ordered)
 
