@@ -301,6 +301,42 @@ This package implements various stragies for computing ranks. Please refer to [W
   Kendall's rank correlation. Here, ``x`` and ``y`` can be either real vectors or matrices. When ``xx`` and ``y`` are matrices, it computes the correlations between their columns (pairwisely).
 
 
+#### Sampling from Population
+
+* **sample**(a)
+
+  Randomly draw an element from an array ``a``.
+
+* **sample**(a, n[; replace={true}/false, ordered=true/{false}])  
+
+  Randomly draw ``n`` elements from ``a``. 
+
+  The option ``replace`` indicates whether to have replacement. 
+  The option ``ordered`` indicates whether the output samples are arranged in ascending order.
+
+* **sample!**(a, x[; replace={true}/false, ordered=true/{false}])
+
+  Draw ``length(x)`` elements from ``a`` and write them to a pre-allocated array ``x``.
+
+* **sample**(weights(w)) 
+
+  Draw an integer in ``1:length(w)`` with probabilities proportional to the given weights.
+
+* **sample**(a, weights(w))
+
+  Draw an element from ``a`` with probabilities proportional to the corresponding weights given in ``w``.
+
+* **sample**(a, weights(w), n[; replace={true}/false, ordered=true/{false}])
+
+  Draw ``n`` elements from ``a`` with probabilities proportional to the corresponding weights given in ``a``.
+
+  The options ``replace`` and ``ordered`` respectively control whether there are replacements and whether the output elements are arranged in ascending order. 
+
+* **sample!**(a, weights(w), x[; replace={true}/false, ordered=true/{false}])
+
+  Weighted sampling with results written to a pre-allocated array ``x``.
+
+
 #### Empirical Estimation
 
 * **ecdf**(x)

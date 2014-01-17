@@ -140,6 +140,10 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
         else
             self_avoid_sample!(a, x)
         end
+
+        if ordered
+            sort!(x)
+        end
     end
     return x
 end
@@ -207,12 +211,12 @@ function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
 end
 
 function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; 
-    replace::Bool=true, ordered::Bool=true)
+    replace::Bool=true, ordered::Bool=false)
 
     n = length(a)
     k = length(x)
 
-    if ordered
+    if ordered && replace
         ordered_sample!(a, wv, x)
     else
         if k > 100 * n
@@ -221,6 +225,10 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
             for i = 1 : k
                 @inbounds x[i] = sample(a, wv)
             end
+        end
+
+        if ordered
+            sort!(x)
         end
     end
     return x
