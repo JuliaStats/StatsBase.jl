@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 using Base.Test
 
 @test_approx_eq mean([1, 2, 3]) 2.0

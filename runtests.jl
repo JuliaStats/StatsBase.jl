@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 
 tests = ["means", "scalarstats", "counts", "ranking", "corr", "empirical", "misc"]
 

@@ -1,5 +1,5 @@
 
-using Stats
+using StatsBase
 using Base.Test
 
 fnecdf = ecdf(randn(10000000))

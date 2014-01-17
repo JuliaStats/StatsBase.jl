@@ -4,7 +4,7 @@
 # The reference results are generated from R. 
 #
 
-using Stats
+using StatsBase
 using Base.Test
 
 

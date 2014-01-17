@@ -1,19 +1,19 @@
-## Stats.jl
+## StatsBase.jl
 
-Functions for statistics in Julia. [![Build Status](https://travis-ci.org/JuliaStats/Stats.jl.png?branch=master)](https://travis-ci.org/JuliaStats/Stats.jl)
+Functions for statistics in Julia. [![Build Status](https://travis-ci.org/JuliaStats/StatsBase.jl.png?branch=master)](https://travis-ci.org/JuliaStats/StatsBase.jl)
 
 ## List of Functions
 
 The following is a list of functions by categories.
 
-* [Weight Vectors](https://github.com/JuliaStats/Stats.jl#weight-vectors)
-* [Means](https://github.com/JuliaStats/Stats.jl#means)
-* [Scalar Statistics](https://github.com/JuliaStats/Stats.jl#scalar-statistics)
-* [Counts](https://github.com/JuliaStats/Stats.jl#counts)
-* [Ranking](https://github.com/JuliaStats/Stats.jl#ranking)
-* [Covariances and Correlations](https://github.com/JuliaStats/Stats.jl#covariances-and-correlations)
-* [Empirical Estimation](https://github.com/JuliaStats/Stats.jl#empirical-estimation)
-* [Miscelleneous Functions](https://github.com/JuliaStats/Stats.jl#miscelleneous-functions)
+* [Weight Vectors](https://github.com/JuliaStats/StatsBase.jl#weight-vectors)
+* [Means](https://github.com/JuliaStats/StatsBase.jl#means)
+* [Scalar Statistics](https://github.com/JuliaStats/StatsBase.jl#scalar-statistics)
+* [Counts](https://github.com/JuliaStats/StatsBase.jl#counts)
+* [Ranking](https://github.com/JuliaStats/StatsBase.jl#ranking)
+* [Covariances and Correlations](https://github.com/JuliaStats/StatsBase.jl#covariances-and-correlations)
+* [Empirical Estimation](https://github.com/JuliaStats/StatsBase.jl#empirical-estimation)
+* [Miscelleneous Functions](https://github.com/JuliaStats/StatsBase.jl#miscelleneous-functions)
 
 
 #### Weight Vectors

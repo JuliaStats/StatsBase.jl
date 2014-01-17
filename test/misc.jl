@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 using Base.Test
 
 # rle & inverse_rle

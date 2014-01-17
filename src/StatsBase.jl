@@ -1,4 +1,4 @@
-module Stats
+module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, show, quantile
     import Base.LinAlg: BlasReal
 

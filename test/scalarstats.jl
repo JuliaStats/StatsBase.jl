@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 using Base.Test
 
 ## moments
@@ -63,7 +63,7 @@ wv = weights(ones(5) * 2.0)
 # summarystats
 
 s = summarystats(1:5)
-@test isa(s, Stats.SummaryStats)
+@test isa(s, StatsBase.SummaryStats)
 @test s.min == 1.0
 @test s.max == 5.0
 @test_approx_eq s.mean 3.0

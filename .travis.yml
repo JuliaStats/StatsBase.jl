@@ -12,6 +12,6 @@ before_install:
     - git config --global user.email "travis@example.net"
 script:
     - julia -e 'versioninfo(); Pkg.init();'
-    - mkdir -p ~/.julia/Stats
-    - cp -R ./* ~/.julia/Stats/
+    - mkdir -p ~/.julia/StatsBase
+    - cp -R ./* ~/.julia/StatsBase/
     - julia ./runtests.jl

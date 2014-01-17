@@ -1,6 +1,6 @@
 # Test rank correlation
 
-using Stats
+using StatsBase
 using Base.Test
 
 X = [1 0; 2 1; 3 0; 4 1; 5 10]
