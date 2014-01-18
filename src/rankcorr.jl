@@ -82,7 +82,7 @@ function corkendall!(x::RealVector, y::RealVector)
     nV = div(nV,2)
 
     nD = div(n*(n - 1),2)
-    return (nD - nT - nU + nV - 2swaps!(y))/sqrt((nD - nT)*(nD - nU))
+    return (nD - nT - nU + nV - 2swaps!(y)) / (sqrt(nD - nT) * sqrt(nD - nU))
 end
 
 
