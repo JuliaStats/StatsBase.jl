@@ -164,12 +164,11 @@ end
 ################################################################
 
 function sample(wv::WeightVec)
-    isempty(wv) && error("Input weight vector is empty.")
     t = rand() * sum(wv)
     w = values(wv)
     n = length(w)
     i = 1
-    @inbounds cw = w[1]
+    cw = w[1]
     while cw < t && i < n
         i += 1
         @inbounds cw += w[i]
@@ -179,7 +178,7 @@ end
 
 sample(a::AbstractArray, wv::WeightVec) = a[sample(wv)]
 
-# Author: Mike Innes
+# Original author: Mike Innes
 function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     n = length(a)
     k = length(x)
@@ -210,13 +209,12 @@ function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     x
 end
 
-function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; 
-    replace::Bool=true, ordered::Bool=false)
 
+function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; ordered::Bool=false)
     n = length(a)
     k = length(x)
 
-    if ordered && replace
+    if ordered
         ordered_sample!(a, wv, x)
     else
         if k > 100 * n
@@ -226,32 +224,28 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
                 @inbounds x[i] = sample(a, wv)
             end
         end
-
-        if ordered
-            sort!(x)
-        end
     end
     return x
 end
 
-sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; replace::Bool=true, ordered::Bool=false) =
-    sample!(a, wv, Array(T, n); replace=replace, ordered=ordered)
+sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; ordered::Bool=false) =
+    sample!(a, wv, Array(T, n); ordered=ordered)
 
-sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; replace::Bool=true, ordered::Bool=false) =
-    sample!(a, wv, Array(T, dims); replace=replace, ordered=ordered)    
+sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; ordered::Bool=false) =
+    sample!(a, wv, Array(T, dims); ordered=ordered)    
 
 # wsample interface
 
 wsample(w::RealVector) = sample(weights(w))
 wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
 
-wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, ordered::Bool=false) = 
-    sample!(a, weights(w), x; replace=replace, ordered=ordered)
+wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; ordered::Bool=false) = 
+    sample!(a, weights(w), x; ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) = 
-    wsample!(a, w, Array(T, n); replace=replace, ordered=ordered)
+wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; ordered::Bool=false) = 
+    wsample!(a, w, Array(T, n); ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) = 
-    wsample!(a, w, Array(T, dims); replace=replace, ordered=ordered)    
+wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; ordered::Bool=false) = 
+    wsample!(a, w, Array(T, dims); ordered=ordered)    
 
 

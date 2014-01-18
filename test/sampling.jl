@@ -3,6 +3,8 @@
 using StatsBase
 using Base.Test
 
+srand(1234)
+
 function est_p(x, K)
 	h = zeros(Int, K)
 	for xi in x
@@ -16,89 +18,118 @@ end
 const randi = StatsBase.randi
 n = 1_000_000
 
-x = Int[randi(10) for i = 1:n]
+x = [randi(10) for i = 1:n]
+@test isa(x, Vector{Int})
 @test minimum(x) == 1
 @test maximum(x) == 10
 
-x = Int[randi(3, 12) for i = 1:n]
+x = [randi(3, 12) for i = 1:n]
+@test isa(x, Vector{Int})
 @test minimum(x) == 3
 @test maximum(x) == 12
 
 
 #### sample with replacement
 
-n = 10^5
-x = sample([10,20,30], n)
-@test isa(x, Vector{Int})
-@test length(x) == n
+## individual
 
-h = [sum(x .== 10), sum(x .== 20), sum(x .== 30)]
-@test sum(h) == n
-ph = h / n
-p0 = fill(1/3, 3)
-@test_approx_eq_eps ph p0 0.02
+x = [sample(1:5) for _ = 1:10^5]
+p = fill(0.2, 5)
+@test isa(x, Vector{Int})
+@test_approx_eq_eps est_p(x, 5) p 0.02
+
+## unordered
+
+x = sample(1:5, 10^5)
+@test isa(x, Vector{Int})
+@test length(x) == 10^5
+@test !issorted(x)  # extremely unlikely to be sorted for n=10^5
+@test_approx_eq_eps est_p(x, 5) p 0.02
+@test_approx_eq_eps est_p(x[1:50000], 5) p 0.03
+
+## ordered
+
+x = sample(1:5, 10^5; ordered=true)
+@test isa(x, Vector{Int})
+@test length(x) == 10^5
+@test issorted(x)
+@test_approx_eq_eps est_p(x, 5) p 0.02
 
 
 #### sample without replacement
 
-# case: K == 2
+## unordered (using samplepair)
 
-n = 10^5
-x = zeros(Int, 2, n)
+x = Array(Int, 2, n)
 for i = 1:n
-	v = sample(11:15, 2; replace=false)
-	@assert v[1] != v[2]
-	x[:,i] = v
+	x[:,i] = sample(1:5, 2; replace=false)
 end
-@test minimum(x) == 11
-@test maximum(x) == 15
 
-x[:] -= 10  # brings x to 1:5
-p0 = fill(1/5, 5)
-@test_approx_eq_eps est_p(x, 5) p0 0.02
+@test all(x[1,:] .!= x[2,:])
+@test_approx_eq_eps est_p(x[1,:], 5) p 0.02
+@test_approx_eq_eps est_p(x[2,:], 5) p 0.02
 
-# case: K == 4 with moderate a (using Fisher-Yates)
+## unordered (using Fisher-Yates)
 
-n = 10^5
-x = zeros(Int, 4, n)
-for i = 1 : n
-	v = sample(11:20, 4; replace=false)
-	sv = sort(v)
-	@assert sv[1] < sv[2] < sv[3] < sv[4]
-	x[:,i] = v
+x = Array(Int, 3, n)
+for i = 1:n
+	x[:,i] = sample(1:5, 3; replace=false)
 end
-@test minimum(x) == 11
-@test maximum(x) == 20
 
-x[:] -= 10
-p0 = fill(0.1, 10)
-@test_approx_eq_eps est_p(x, 10) p0 0.01
+@test all(x[1,:] .!= x[2,:])
+@test all(x[1,:] .!= x[3,:])
+@test all(x[2,:] .!= x[3,:])
+@test_approx_eq_eps est_p(x[1,:], 5) p 0.02
+@test_approx_eq_eps est_p(x[2,:], 5) p 0.02
+@test_approx_eq_eps est_p(x[3,:], 5) p 0.02
 
-# case: K == 4 with very large a (using self-avoid)
+## unordered (using Self-avoid method)
 
-n = 10^4
-x = zeros(Int, 4, n)
-a = 10^7 + 1
-b = 2 * 10^7
-for i = 1 : n
-	v = sample(a:b, 4; replace=false)
-	sv = sort(v)
-	@assert sv[1] < sv[2] < sv[3] < sv[4]
-	x[:,i] = v
+x = Array(Int, 3, 10000)
+for i = 1:10000
+	x[:,i] = sample(1:1000, 3; replace=false)
 end
-@test minimum(x) >= a
-@test maximum(x) <= b
+
+@test all(x[1,:] .!= x[2,:])
+@test all(x[1,:] .!= x[3,:])
+@test all(x[2,:] .!= x[3,:])
+
+## ordered 
+
+x = Array(Int, 3, n)
+for i = 1:n
+	x[:,i] = sample(1:5, 3; replace=false, ordered=true)
+end
+
+@test all(x[1,:] .< x[2,:])
+@test all(x[2,:] .< x[3,:])
+@test_approx_eq_eps est_p(vec(x), 5) p 0.02
 
 
-#### weighted sampling
+#### weighted sample with replacement
 
-w = [2., 5., 3.]
-n = 10^5
-x = wsample([10,20,30], w, n)
+wv = weights([1.0, 2.0, 4.5, 2.5])
+p = [0.10, 0.20, 0.45, 0.25]
 
-h = [sum(x .== 10), sum(x .== 20), sum(x .== 30)]
-@test sum(h) == n
-p0 = w / sum(w)
-ph = h / n
-@test_approx_eq_eps ph p0 0.02
+## individual
+
+x = Int[sample(wv) for _ = 1:10^5]
+@test isa(x, Vector{Int})
+@test_approx_eq_eps est_p(x, 4) p 0.02
+
+## unordered
+
+x = sample(1:5, wv, 10^5)
+@test isa(x, Vector{Int})
+@test length(x) == 10^5
+@test !issorted(x)
+@test_approx_eq_eps est_p(x, 4) p 0.02
+
+## ordered
+
+x = sample(1:5, wv, 10^5; ordered=true)
+@test isa(x, Vector{Int})
+@test length(x) == 10^5
+@test issorted(x)
+@test_approx_eq_eps est_p(x, 4) p 0.02
 
