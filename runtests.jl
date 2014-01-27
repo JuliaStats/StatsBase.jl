@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 
 tests = ["01", "means", "variability", "intstats"]
 

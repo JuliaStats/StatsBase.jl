@@ -1,4 +1,4 @@
-module Stats
+module StatsBase
     import Base.quantile
     import Base.LinAlg: BlasReal
 

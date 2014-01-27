@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 using Base.Test
 
 # Should this be 4 - 2?

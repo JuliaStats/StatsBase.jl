@@ -1,6 +1,6 @@
 # Unit testing of intstats
 
-using Stats
+using StatsBase
 using Base.Test
 
 n = 5000

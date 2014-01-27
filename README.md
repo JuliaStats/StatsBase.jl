@@ -1,4 +1,4 @@
-## Stats.jl
+## StatsBase.jl
 
 Basic statistics functions for Julia
 

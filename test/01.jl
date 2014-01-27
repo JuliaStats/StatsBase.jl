@@ -1,4 +1,4 @@
-using Stats
+using StatsBase
 using Base.Test
 
 @test_approx_eq acf([1, 2, 3, 4, 5]) [1.000000000000000,

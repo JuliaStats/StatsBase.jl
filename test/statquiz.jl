@@ -2,7 +2,7 @@
 
 using Base.Test
 using DataFrames
-using Stats
+using StatsBase
 using GLM
 
 testeps = sqrt(eps())
