@@ -22,4 +22,4 @@ randi(a::Int, b::Int) = rand(RandIntSampler(a, b))
 
 # draw a number from a binomial distribution
 
-rand_binom(n::Real, p::Real) = int(ccall((:rbinom, :libRmath), Float64, (Float64, Float64), n, p))
+rand_binom(n::Real, p::Real) = int(ccall((:rbinom, "libRmath-julia"), Float64, (Float64, Float64), n, p))
