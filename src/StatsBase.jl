@@ -74,6 +74,7 @@ module StatsBase
     indicatormat,   # construct indicator matrix
         
     # statistical models
+    CoefTable,
     StatisticalModel,
     RegressionModel,
 
