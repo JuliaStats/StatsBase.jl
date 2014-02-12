@@ -29,7 +29,7 @@ print("Test math: ")
 println("OK")
 
 print("Test means: ")
-for vars in colnames(nasty)[2:]
+for vars in names(nasty)[2:end]
 	if vars == "miss"
 		@test isna(mean(nasty[vars]))
 	else
@@ -39,7 +39,7 @@ end
 println("OK")
 
 print("Test standard deviation: ")
-for vars in colnames(nasty)[[2,5:9]]
+for vars in names(nasty)[[2,5:9]]
 	@test (@sprintf("%.9e", std(nasty[vars])))[1:10] == "2.73861278"
 end
 println("OK")
@@ -47,7 +47,7 @@ println("OK")
 
 println("\nII D")
 print("Test correlation: ")
-cn = colnames(nasty)[[2,5:9]]
+cn = names(nasty)[[2,5:9]]
 for i in 1:5
 	for j = i+1:6
 	@test_approx_eq cor(nasty[cn[i]], nasty[cn[j]]) 1
@@ -56,17 +56,17 @@ end
 println("OK")
 
 print("Test spearman correlation: ")
-cn = colnames(nasty)[[2,5:9]]
+cn = names(nasty)[[2,5:9]]
 for i in 1:5
 	for j = i+1:6
-	@test_approx_eq cor_spearman(nasty[cn[i]], nasty[cn[j]]) 1
+	@test_approx_eq corspearman(nasty[cn[i]], nasty[cn[j]]) 1
 	end
 end
 println("OK")
 
 println("\nII F")
 print("Testing regression: ")
-@test_approx_eq coef(lm(:(big~x), nasty)) [99999990, 1]
+@test_approx_eq coef(lm(big~x, nasty)) [99999990, 1]
 println("OK")
 
 println("\nIV Regression:\nIV A")
@@ -79,7 +79,7 @@ nasty["x6"] = nasty["x"].^6
 nasty["x7"] = nasty["x"].^7
 nasty["x8"] = nasty["x"].^8
 nasty["x9"] = nasty["x"].^9
-lm(:(x1~x2+x3+x4+x5+x6+x7+x8+x9), nasty)
-@test_approx_eq coef(lm(:(x~x), nasty)) [0,1]
+lm(x1~x2+x3+x4+x5+x6+x7+x8+x9, nasty)
+@test_approx_eq coef(lm(x~x, nasty)) [0,1]
 println("OK")
 
