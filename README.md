@@ -13,7 +13,7 @@ The following is a list of functions by categories.
 * [Ranking](https://github.com/JuliaStats/StatsBase.jl#ranking)
 * [Covariances and Correlations](https://github.com/JuliaStats/StatsBase.jl#covariances-and-correlations)
 * [Empirical Estimation](https://github.com/JuliaStats/StatsBase.jl#empirical-estimation)
-* [Miscelleneous Functions](https://github.com/JuliaStats/StatsBase.jl#miscelleneous-functions)
+* [Miscellaneous Functions](https://github.com/JuliaStats/StatsBase.jl#miscellaneous-functions)
 
 
 #### Weight Vectors
@@ -369,7 +369,7 @@ This package implements various stragies for computing ranks. Please refer to [W
   end
   ```
 
-#### Miscelleneous Functions
+#### Miscellaneous Functions
 
 * **rle**(x)
 
