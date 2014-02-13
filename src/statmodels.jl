@@ -51,7 +51,7 @@ function show(io::IO, ct::CoefTable)
     rnwidth = max(4,maximum([length(nm) for nm in rownms]) + 1)
     rownms = [rpad(nm,rnwidth) for nm in rownms]
     colnms = names(df)
-    widths = [length(cn)::Int for cn in colnms]
+    widths = [length(string(cn))::Int for cn in colnms]
     str = [sprint(showcompact,df[i,j]) for i in 1:nr, j in 1:nc]
     if pvc != 0                         # format the p-values column
         for i in 1:nr
