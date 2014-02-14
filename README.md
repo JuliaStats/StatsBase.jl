@@ -14,7 +14,7 @@ The following is a list of functions by categories.
 * [Covariances and Correlations](https://github.com/JuliaStats/StatsBase.jl#covariances-and-correlations)
 * [Empirical Estimation](https://github.com/JuliaStats/StatsBase.jl#empirical-estimation)
 * [Miscellaneous Functions](https://github.com/JuliaStats/StatsBase.jl#miscellaneous-functions)
-
+* [Statistical Models](https://github.com/JuliaStats/StatsBase.jl#statistical-models)
 
 #### Weight Vectors
 
@@ -435,3 +435,63 @@ This package implements various stragies for computing ranks. Please refer to [W
   Equivalent to ``indicatormap(x, sort(unique(x)); sparse=...)``. 
 
 
+#### Statistical Models
+
+This section defines two abstract types, `StatisticalModel` and `RegressionModel`,
+one concrete type, `CoefTable`, and several placeholder methods.  The names of these functions follow the conventions of [R](http://www.r-project.org).
+
+* **Statistical Model**
+
+  Types that extend `StatisticalModel` usually provide methods for some or all of the following.
+  
+* **coef(obj)**
+
+  Return the estimates of the coefficients, or, more generally, the parameters in the fitted model, `obj`.
+  
+* **coeftable(obj)**
+
+  Return a `CoefTable` object for the fitted model `obj` with rows corresponding to parameters and columns usually including the estimates, their standard errors, a test statistic and a p-value, if appropriate.
+  
+* **confint(obj[, prob])**
+
+  A two-column matrix of confidence intervals on the parameters of the fitted model, `obj`, with coverage probability `prob`, which defaults to `0.95`.
+  
+* **deviance(obj)**
+
+  The deviance of the fitted model, `obj`, at the parameter estimates.
+  
+* **loglikelihood(obj)**
+
+  The log-likelihood of the fitted model, `obj`, at the parameter estimates.
+  
+* **stderr(obj)**
+
+  Standard errors of the parameters in the fitted model, `obj`.  For models based on a linear predictor these are for the coefficient parameters only.
+  
+* **vcov(obj)**
+
+  Estimated covariance matrix of the parameters in the fitted model, `obj`.
+  
+* **Regression Model**
+
+  The characteristic of a `RegressionModel`, an abstract type that extends `StatisticalModel`, is that parameters in the model are estimated to fit a response vector.  Such models usually provides methods for some or all of the following.  
+ 
+* **nobs(obj)**
+
+  The number of data values (observations) in the response to which the model, `obj`, was fit.
+  
+* **model_response(obj)**
+
+  The response vector to which the model, `obj`, was fit.
+  
+* **predict(obj)**
+
+  The fitted values from the model, `obj`.
+  
+* **residuals(obj)**
+
+  The residuals at the parameter estimates for the fitted model, `obj`.
+
+* **CoefTable**
+
+  The `CoefTable` type is defined to provide a `show` method with special handling for a column representing p-values.
