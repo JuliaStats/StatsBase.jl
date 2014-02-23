@@ -71,7 +71,7 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     x
 end
 
-# Ordered sampling without replacement
+# Ordered sampling with replacement
 # Original author: Mike Innes
 
 function ordered_sample!(a::AbstractArray, x::AbstractArray)
