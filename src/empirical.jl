@@ -81,7 +81,7 @@ immutable BivariateKDE
 end
 
 # Algorithm AS 176 for calculating univariate KDE
-function kde(data::RealVector; width::Float64=NaN, npoints::Integer=2048)
+function kde(data::RealVector; width::Float64=NaN, npoints::Integer=2048, dlo::Float64=NaN, dhi::Float64=NaN)
     # Determine length of data
     ndata = length(data)
 
@@ -93,8 +93,12 @@ function kde(data::RealVector; width::Float64=NaN, npoints::Integer=2048)
     end
 
     # Find interval that will contain almost all mass
-    dlo = minimum(data) - 3 * width
-    dhi = maximum(data) + 3 * width
+    if isnan(dlo)
+        dlo = minimum(data) - 3 * width
+    end
+    if isnan(dhi)
+        dhi = maximum(data) + 3 * width
+    end
 
     # Check that interval for estimation is valid
     if dlo >= dhi
