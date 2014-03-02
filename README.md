@@ -38,7 +38,7 @@ r = mean(x, weights(w))  # the inline function weights wraps w into a weight vec
 
   Compute the harmonic mean of ``x``.
 
-* **trimean**(x, p)
+* **trimmean**(x, p)
 
   Compute the trimmed mean of ``x``, with fraction ``p`` of elements ignored.
 
