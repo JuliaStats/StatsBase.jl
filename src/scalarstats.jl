@@ -105,7 +105,7 @@ variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
 sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
-mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v-center))
+mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v .- center))
 
 function mad!{T<:Real}(v::AbstractArray{T}, center::Real)
     for i in 1:length(v)

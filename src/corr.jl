@@ -48,7 +48,7 @@ function autocov!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; d
     length(r) == m || raise_dimerror()
     check_lags(lx, lags)
 
-    z::Vector{T} = demean ? x - mean(x) : x
+    z::Vector{T} = demean ? x .- mean(x) : x
     for k = 1 : m  # foreach lag value
         r[k] = _autodot(z, lx, lags[k]) / lx
     end
@@ -90,7 +90,7 @@ function autocor!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; d
     length(r) == m || raise_dimerror()
     check_lags(lx, lags)
 
-    z::Vector{T} = demean ? x - mean(x) : x
+    z::Vector{T} = demean ? x .- mean(x) : x
     zz = dot(z, z)
     for k = 1 : m  # foreach lag value
         r[k] = _autodot(z, lx, lags[k]) / zz
@@ -145,8 +145,8 @@ function crosscov!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::I
     (length(y) == lx && length(r) == m) || raise_dimerror()
     check_lags(lx, lags)
 
-    zx::Vector{T} = demean ? x - mean(x) : x
-    zy::Vector{T} = demean ? y - mean(y) : y
+    zx::Vector{T} = demean ? x .- mean(x) : x
+    zy::Vector{T} = demean ? y .- mean(y) : y
     for k = 1 : m  # foreach lag value
         r[k] = _crossdot(zx, zy, lx, lags[k]) / lx
     end
@@ -161,7 +161,7 @@ function crosscov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, y::Vector{T}, lags::I
     check_lags(lx, lags)
 
     zx = Array(T, lx)
-    zy::Vector{T} = demean ? y - mean(y) : y
+    zy::Vector{T} = demean ? y .- mean(y) : y
     for j = 1 : ns
         demean_col!(zx, x, j, demean)
         for k = 1 : m
@@ -178,7 +178,7 @@ function crosscov!{T<:RealFP}(r::RealMatrix, x::Vector{T}, y::Matrix{T}, lags::I
     (size(y, 1) == lx && size(r) == (m, ns)) || raise_dimerror()
     check_lags(lx, lags)
 
-    zx::Vector{T} = demean ? x - mean(x) : x
+    zx::Vector{T} = demean ? x .- mean(x) : x
     zy = Array(T, lx)
     for j = 1 : ns
         demean_col!(zy, y, j, demean)
@@ -252,8 +252,8 @@ function crosscor!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::I
     (length(y) == lx && length(r) == m) || raise_dimerror()
     check_lags(lx, lags)
 
-    zx::Vector{T} = demean ? x - mean(x) : x
-    zy::Vector{T} = demean ? y - mean(y) : y
+    zx::Vector{T} = demean ? x .- mean(x) : x
+    zy::Vector{T} = demean ? y .- mean(y) : y
     sc = sqrt(dot(zx, zx) * dot(zy, zy))
     for k = 1 : m  # foreach lag value
         r[k] = _crossdot(zx, zy, lx, lags[k]) / sc
@@ -269,7 +269,7 @@ function crosscor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, y::Vector{T}, lags::I
     check_lags(lx, lags)
 
     zx = Array(T, lx)
-    zy::Vector{T} = demean ? y - mean(y) : y
+    zy::Vector{T} = demean ? y .- mean(y) : y
     yy = dot(zy, zy)
     for j = 1 : ns
         demean_col!(zx, x, j, demean)
@@ -288,7 +288,7 @@ function crosscor!{T<:RealFP}(r::RealMatrix, x::Vector{T}, y::Matrix{T}, lags::I
     (size(y, 1) == lx && size(r) == (m, ns)) || raise_dimerror()
     check_lags(lx, lags)
 
-    zx::Vector{T} = demean ? x - mean(x) : x
+    zx::Vector{T} = demean ? x .- mean(x) : x
     zy = Array(T, lx)
     xx = dot(zx, zx)
     for j = 1 : ns
