@@ -65,7 +65,7 @@ function show(io::IO, ct::CoefTable)
             end
         end
     end
-    widths += 1
+    widths .+= 1
     println(io," " ^ rnwidth *
             join([lpad(string(colnms[i]), widths[i]) for i = 1:nc], ""))
     for i = 1:nr
