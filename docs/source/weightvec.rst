@@ -29,23 +29,23 @@ Methods
 
 Let ``w`` be an instance of ``WeightVec``:
 
-* **eltype**(w)
+- **eltype** (w)
 
     Return the type of weight values.
 
-* **length**(w)
+- **length** (w)
 
     Return the length of the weight vector.
 
-* **isempty**(w)
+- **isempty** (w)
 
     Return whether ``w`` is empty, *i.e.* ``length(w) == 0``.
 
-* **values**(w)
+- **values** (w)
 
     Return the vector of weight values.
 
-* **sum**(w)
+- **sum** (w)
 
     Get the sum of weights. 
 
