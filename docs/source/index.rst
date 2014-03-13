@@ -23,9 +23,8 @@ Welcome to StatsBase.jl's Documentation!
    statmodels.rst
 
 
-Indices and tables
-==================
+**Index:**
 
 * :ref:`genindex`
-* :ref:`search`
+
 
