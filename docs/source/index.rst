@@ -22,9 +22,3 @@ Welcome to StatsBase.jl's Documentation!
    misc.rst
    statmodels.rst
 
-
-**Index:**
-
-* :ref:`genindex`
-
-

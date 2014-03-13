@@ -6,7 +6,7 @@ The package provides functions to count the occurences of distinct values.
 Counting over an Integer Range
 --------------------------------
 
-.. py:function:: counts(x, a:b[, wv])
+- **counts** (x, a:b[, wv])
 
     Count the number of times (or total weights if a weight vector ``wv`` is given) values in ``a:b`` appear in array ``x``. Here, the optional argument ``wv`` should be a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
@@ -35,7 +35,7 @@ Counting over an Integer Range
 
     **Notes:** When the function encounters an value (or pair) that does not fall in the specified range, they simply ignore it (without raising an error or warning).
 
-.. py:function:: counts(x, y, (a:b, c:d)[, wv])
+- **counts** (x, y, (a:b, c:d)[, wv])
 
     Count the number of times (or total weights if a weight vector ``wv`` is given) pairs of values in ``a:b`` and ``c:d`` that appear in arrays ``x`` and ``y``.
 
@@ -67,21 +67,21 @@ Counting over an Integer Range
         
     This function is useful in various applications, *e.g.* computing confusion matrix in evaluating the performance of a classifier.
 
-.. py:function:: proportions(x, a:b[, wv])  
+- **proportions** (x, a:b[, wv])  
 
     Compute the proportions of values in ``a:b`` with respect to ``x``. Equivalent to ``counts(x, a:b) / length(x)``. 
 
-.. py:function:: proportions(x, y, (a:b, c:d)[, wv])
+- **proportions** (x, y, (a:b, c:d)[, wv])
 
     Equivalent to ``counts(x, y, (a:b, c:d)) / length(x)``.
 
     **Note:** all convenient forms for the function ``counts`` are also available to the function ``proportions``.  
 
-.. py:function:: addcounts!(r, x, a:b[, wv])
+- **addcounts!** (r, x, a:b[, wv])
 
     Adds the counts of values in ``x`` to an accumulating array ``r``.
 
-.. py:function:: addcounts!(r, x, y, (a:b, c:d)[, wv])
+- **addcounts!** (r, x, y, (a:b, c:d)[, wv])
 
     Adds the counts of pairs in ``x`` and ``y`` to an accumulating matrix ``r``.  
 
@@ -89,15 +89,15 @@ Counting over an Integer Range
 Counting over arbitrary distinct values
 ---------------------------------------- 
 
-.. py:function:: countmap(x[, wv])
+- **countmap** (x[, wv])
 
     Return a dictionary that maps distinct values in ``x`` to their counts (or total weights).
 
-.. py:function:: proportionmap(x[, wv])
+- **proportionmap** (x[, wv])
 
     Return a dictionary that maps distinct values in ``x`` to their proportions. 
 
-.. py:function:: addcounts!(dict, x[, wv])
+- **addcounts!** (dict, x[, wv])
 
     Add counts based on ``x`` to a count map. New entries will be added if new values come up.
 

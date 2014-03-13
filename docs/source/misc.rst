@@ -1,8 +1,7 @@
 Miscellaneous Functions
 ========================
 
-
-.. py:function:: rle(x)
+- **rle** (x)
 
     Run-length encoding of ``x``. It returns ``(vals, lens)``, a sequence of values and their corresponding chunk length. [Wikipedia](http://en.wikipedia.org/wiki/Run-length_encoding).
 
@@ -14,19 +13,19 @@ Miscellaneous Functions
         ([1,2,3,2],[3,2,4,3])
 
 
-.. py:function:: inverse_rle(vals, lens)
+- **inverse_rle** (vals, lens)
 
     Inversed run-length encoding. It takes the results of ``rle`` and reconstructs the original sequence. 
 
-.. py:function:: levelsmap(x)
+- **levelsmap** (x)
 
     Construct a dictionary that maps each of the ``n`` distinct values in ``x`` to a number between ``1`` and ``n``.
 
-.. py:function:: indexmap(x)
+- **indexmap** (x)
 
     Construct a dictionary that maps each distinct value in ``x`` to its first index.
 
-.. py:function:: findat(a, x)
+- **findat** (a, x)
 
     For each element in ``x``, find its first index in ``a``. If the value does not appear in ``a``, the correspinding index is ``0``. 
 
@@ -40,11 +39,11 @@ Miscellaneous Functions
         0
         2
 
-.. py:function:: findat!(r, a, x)
+- **findat!** (r, a, x)
 
     Write the results of ``findat(a, x)`` to a pre-allocated array ``r``.
 
-.. py:function:: indicatormat(x, k[; sparse=false])  
+- **indicatormat** (x, k[; sparse=false])  
 
     Construct a boolean matrix ``r`` of size ``(k, length(x))`` such that ``r[x[i], i] = true`` and all other elements are set to ``false``.
 
@@ -59,13 +58,13 @@ Miscellaneous Functions
         true   false  false
         false  true   true
 
-.. py:function:: indicatormat(x, c[; sparse=false])
+- **indicatormat** (x, c[; sparse=false])
 
     Construct a boolean matrix ``r`` of size ``(length(c), length(x))``. Let ``ci`` be the index of ``x[i]`` in ``c``, then ``r[ci, i] = true`` and all other elements are zero. 
 
     The keyword argument ``sparse`` controls whether to construct a sparse matrix. By default, it is set to ``false``. 
 
-.. py:function:: indicatormat(x[; sparse=false])
+- **indicatormat** (x[; sparse=false])
 
     Equivalent to ``indicatormap(x, sort(unique(x)); sparse=...)``. 
 

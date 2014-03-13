@@ -4,7 +4,7 @@ Empirical Estimation
 Empirical Cumulative Distribution Function
 -------------------------------------------
 
-.. py:function:: ecdf(x)
+- **ecdf** (x)
 
   Return an empirical cumulative distribution function based on a vector of samples given in ``x``. 
 
@@ -14,7 +14,7 @@ Empirical Cumulative Distribution Function
 Kernel Density Estimation
 ---------------------------
 
-.. py:function:: kde(data[; width=NaN, npoints=2048]) 
+- **kde** (data[; width=NaN, npoints=2048]) 
 
   Kernel density estimation. This function returns an instance of ``UnivariateKDE`` defined as below:
   
@@ -25,13 +25,13 @@ Kernel Density Estimation
         density::Vector{Float64}
     end
 
-  **Keyword arguments***
+  **Keyword arguments**
 
   - ``width``: effective kernel width (default = ``NaN``, indicating that the width is automatically chosen)
   - ``npoints``: the number of sample points
 
 
-.. py:function:: kde(x, y[; width=NaN, resolution=25])
+- **kde** (x, y[; width=NaN, resolution=25])
 
   Two-dimensional kernel density estimation. This function returns an instance of ``BivariateKDE`` defined as below:
   
