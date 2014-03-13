@@ -48,8 +48,8 @@ raise_dimerror() = raise_dimerror("")
 #    a wrapper that indicator a vector representing a sequence of weights
 #
 immutable WeightVec{W<:Real,Vec<:RealVector}
-	values::Vec
-	sum::W
+    values::Vec
+    sum::W
 end
 
 WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
