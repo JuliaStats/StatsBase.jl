@@ -29,23 +29,23 @@ Methods
 
 Let ``w`` be an instance of ``WeightVec``:
 
-.. py:function:: eltype(w)
+* **eltype**(w)
 
     Return the type of weight values.
 
-.. py:function:: length(w)
+* **length**(w)
 
     Return the length of the weight vector.
 
-.. py:function:: isempty(w)
+* **isempty**(w)
 
     Return whether ``w`` is empty, *i.e.* ``length(w) == 0``.
 
-.. py:function:: values(w)
+* **values**(w)
 
     Return the vector of weight values.
 
-.. py:function:: sum(w)
+* **sum**(w)
 
     Get the sum of weights. 
 
