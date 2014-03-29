@@ -10,6 +10,7 @@ loglikelihood(obj::StatisticalModel) = error("loglikelihood is not defined for $
 nobs(obj::StatisticalModel) = size(model_response(obj), 1)
 stderr(obj::StatisticalModel) = sqrt(diag(vcov(obj)))
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
+fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj)).")
 
 abstract RegressionModel <: StatisticalModel
 
