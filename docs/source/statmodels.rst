@@ -20,6 +20,10 @@ Particularly, instances of ``StatisticalModel`` implement the following methods.
 - **deviance** (model)
 
     The deviance of the fitted model at the parameter estimates.
+
+- **fit** (Type{Model}, params...)
+
+    Fit a model to data. If the model can be fit using a design matrix and response vector, the model should implement ``fit(Type{Model}, X, y, params...)``.
   
 - **loglikelihood** (model)
 
