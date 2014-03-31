@@ -82,6 +82,7 @@ module StatsBase
     coeftable,
     confint,
     deviance,
+    fit,
     loglikelihood,
     nobs,
     stderr,
