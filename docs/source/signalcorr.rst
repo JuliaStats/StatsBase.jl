@@ -1,5 +1,5 @@
-Correlation Analysis 
-======================
+Correlation Analysis of Signals
+================================
 
 The package provides functions to perform correlation analysis of sequential signals. 
 

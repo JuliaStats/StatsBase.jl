@@ -16,9 +16,9 @@ Welcome to StatsBase.jl's Documentation!
    scalarstats.rst
    counts.rst
    ranking.rst
-   corr.rst
    sampling.rst
    empirical.rst
+   signalcorr.rst
    misc.rst
    statmodels.rst
 
