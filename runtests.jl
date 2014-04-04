@@ -4,9 +4,10 @@ tests = ["means",
          "scalarstats", 
          "counts", 
          "ranking", 
-         "corr", 
          "sampling", 
          "empirical", 
+         "rankcorr",
+         "signalcorr", 
          "misc"]
 
 println("Running tests:")

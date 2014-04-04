@@ -45,16 +45,16 @@ module StatsBase
     denserank,      # dense ranking ("1 2 2 3" ranking)
     tiedrank,       # tied ranking ("1 2.5 2.5 4" ranking)
 
-    # corr
+    # rankcorr
+    corspearman,       # spearman's rank correlation
+    corkendall,        # kendall's rank correlation
+
+    # signalcorr
     autocov!, autocov,      # auto covariance
     autocor!, autocor,      # auto correlation
     crosscov!, crosscov,    # cross covariance
     crosscor!, crosscor,    # cross correlation
     pacf!, pacf,  # partial auto-correlation
-
-    # rankcorr
-    corspearman,       # spearman's rank correlation
-    corkendall,        # kendall's rank correlation
 
     # sampling
     samplepair,     # draw a pair of distinct elements   
@@ -101,8 +101,8 @@ module StatsBase
     include("counts.jl")
     include("ranking.jl")
     include("toeplitzsolvers.jl")
-    include("corr.jl")
     include("rankcorr.jl")
+    include("signalcorr.jl")
     include("rand.jl")
     include("sampling.jl")
     include("empirical.jl")

@@ -1,4 +1,9 @@
-# Correlation 
+# Correlation analysis of signals
+#
+#  autocorrelation
+#  cross-correlation
+#  partial autocorrelation 
+#
 
 #######################################
 #
