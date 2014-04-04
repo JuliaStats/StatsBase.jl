@@ -19,6 +19,7 @@ Welcome to StatsBase.jl's Documentation!
    sampling.rst
    empirical.rst
    signalcorr.rst
+   canoncorr.rst
    misc.rst
    statmodels.rst
 
