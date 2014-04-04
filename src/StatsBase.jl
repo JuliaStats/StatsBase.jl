@@ -54,7 +54,10 @@ module StatsBase
     autocor!, autocor,      # auto correlation
     crosscov!, crosscov,    # cross covariance
     crosscor!, crosscor,    # cross correlation
-    pacf!, pacf,  # partial auto-correlation
+    pacf!, pacf,            # partial auto-correlation
+
+    # canoncorr
+    canoncor,       # canonical correlation 
 
     # sampling
     samplepair,     # draw a pair of distinct elements   
@@ -103,6 +106,7 @@ module StatsBase
     include("toeplitzsolvers.jl")
     include("rankcorr.jl")
     include("signalcorr.jl")
+    include("canoncorr.jl")
     include("rand.jl")
     include("sampling.jl")
     include("empirical.jl")

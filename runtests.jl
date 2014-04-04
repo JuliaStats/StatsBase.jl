@@ -8,6 +8,7 @@ tests = ["means",
          "empirical", 
          "rankcorr",
          "signalcorr", 
+         "canoncorr",
          "misc"]
 
 println("Running tests:")
