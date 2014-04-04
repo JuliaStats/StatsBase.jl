@@ -35,3 +35,20 @@ The package provides functions to compute means of different kinds.
     w = rand(n)
     x = mean(x, weights(w))
 
+- **mean** (x, w, dim)
+
+  Compute weighted means along a certain dimension.
+
+  Here, ``x`` is a matrix, ``w`` is a weight vector of type ``WeightVec``, and ``dim`` should be either ``1`` or ``2``. 
+
+  Suppose the size of ``x`` is ``(m, n)``: 
+
+  - when ``dim = 1``: it computes weighted mean along each column (across rows). ``length(w)`` should be ``m``, and it returns an array of size ``(1, n)``.
+
+  - when ``dim = 2``: it computes weighted mean along each row (across columns). ``length(w)`` should be ``n``, and it returns an array of size ``(m, 1)``. 
+
+- **mean!** (dst, x, w, dim)
+
+  Compute weighted means along a certain dimension, and write results to a pre-allocated destination vector ``dst``. 
+
+  Here, ``length(dst)`` should be equal to either ``n`` or ``m``, when ``dim`` is ``1`` or ``2``.
