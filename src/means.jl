@@ -42,37 +42,12 @@ function trimmean(x::RealArray, p::FloatingPoint)
     end
 end
 
+# Weighted means
+
+mean{T<:Number}(v::AbstractArray{T}, w::WeightVec) = dot(v, values(w)) / sum(w)
 
 # Weighted mean
-function wmean{T<:Number,W<:Real}(v::AbstractArray{T}, w::AbstractArray{W}; wsum::W=NaN)
-	# wsum is the pre-computed sum of weights
-
-	n = length(v)
-	length(w) == n || raise_dimerror()
-    sv = zero(T)
-
-    if isnan(wsum)
-    	sw = zero(W)
-    	for i = 1 : n
-    		@inbounds wi = w[i]
-        	@inbounds sv += v[i] * wi
-        	sw += wi
-    	end
-    else
-    	for i = 1 : n
-    		@inbounds sv += v[i] * w[i]
-    	end
-    	sw = wsum
-    end
-
-    return sv / sw
+function wmean{T<:Number,W<:Real}(v::AbstractArray{T}, w::AbstractArray{W})
+    Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
+    mean(v, weights(w))
 end
-
-# Weighted mean (fast version for contiguous arrays using BLAS)
-function wmean{T<:BlasReal}(v::Array{T}, w::Array{T}; wsum::T=NaN) 
-	sw = (isnan(wsum) ? sum(w) : wsum)
-	dot(v, w) / sw
-end
-
-mean{T<:Number}(v::AbstractArray{T}, w::WeightVec) = wmean(v, values(w); wsum=sum(w))
-

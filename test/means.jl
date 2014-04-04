@@ -18,21 +18,20 @@ using Base.Test
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.4) 4.0
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.8) 3.0
 
-@test_approx_eq wmean([1.0, 2.0, 3.0], [1/3, 1/3, 1/3]) 2.0
-@test_approx_eq wmean([1.0, 2.0, 3.0], [1.0, 0.0, 0.0]) 1.0
-@test_approx_eq wmean([1.0, 2.0, 3.0], [0.0, 1.0, 0.0]) 2.0
-@test_approx_eq wmean([1.0, 2.0, 3.0], [0.0, 0.0, 1.0]) 3.0
-@test_approx_eq wmean([1.0, 2.0, 3.0], [0.5, 0.0, 0.5]) 2.0
-@test_approx_eq wmean([1.0, 2.0, 3.0], [0.5, 0.5, 0.0]) 1.5
-@test_approx_eq wmean([1.0, 2.0, 3.0], [0.0, 0.5, 0.5]) 2.5
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([1/3, 1/3, 1/3])) 2.0
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([1.0, 0.0, 0.0])) 1.0
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([0.0, 1.0, 0.0])) 2.0
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([0.0, 0.0, 1.0])) 3.0
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([0.5, 0.0, 0.5])) 2.0
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([0.5, 0.5, 0.0])) 1.5
+@test_approx_eq mean([1.0, 2.0, 3.0], weights([0.0, 0.5, 0.5])) 2.5
 
-@test_approx_eq wmean(1:3, [1/3, 1/3, 1/3]) 2.0
-@test_approx_eq wmean(1:3, [1.0, 0.0, 0.0]) 1.0
-@test_approx_eq wmean(1:3, [0.0, 1.0, 0.0]) 2.0
-@test_approx_eq wmean(1:3, [0.0, 0.0, 1.0]) 3.0
-@test_approx_eq wmean(1:3, [0.5, 0.0, 0.5]) 2.0
-@test_approx_eq wmean(1:3, [0.5, 0.5, 0.0]) 1.5
-@test_approx_eq wmean(1:3, [0.0, 0.5, 0.5]) 2.5
-
+@test_approx_eq mean(1:3, weights([1/3, 1/3, 1/3])) 2.0
+@test_approx_eq mean(1:3, weights([1.0, 0.0, 0.0])) 1.0
+@test_approx_eq mean(1:3, weights([0.0, 1.0, 0.0])) 2.0
+@test_approx_eq mean(1:3, weights([0.0, 0.0, 1.0])) 3.0
+@test_approx_eq mean(1:3, weights([0.5, 0.0, 0.5])) 2.0
+@test_approx_eq mean(1:3, weights([0.5, 0.5, 0.0])) 1.5
+@test_approx_eq mean(1:3, weights([0.0, 0.5, 0.5])) 2.5
 @test_approx_eq mean(1:3, weights([1.0, 1.0, 0.5])) 1.8
 
