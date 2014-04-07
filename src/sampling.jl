@@ -157,20 +157,14 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
         k <= n || error("Cannot draw more samples without replacement.")
 
         if ordered && k > n/20
-
             ordered_sample_norep!(a, x)
-
         else
-
             if k == 1
                 @inbounds x[1] = sample(a)
-
             elseif k == 2
                 @inbounds (x[1], x[2]) = samplepair(a)
-
             elseif n < k * max(k, 100)
                 fisher_yates_sample!(a, x)
-
             else
                 self_avoid_sample!(a, x)
             end
@@ -178,7 +172,6 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
             if ordered
                 sort!(x)
             end
-
         end
     end
     return x
