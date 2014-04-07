@@ -47,10 +47,10 @@ end
 fisher_yates_sample!(a::AbstractArray, x::AbstractArray) = rand!(FisherYatesSampler(length(a)), a, x)
 
 # self-avoiding sampling
-function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
+function self_avoid_sample!(a::AbstractArray, x::AbstractArray)
     # This algorithm is suitable when length(x) << length(a)
 
-    s = Set{T}()
+    s = Set{Integer}()
     # sizehint(s, length(x))
     rgen = RandIntSampler(length(a))
 
