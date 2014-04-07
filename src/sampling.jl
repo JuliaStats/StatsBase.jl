@@ -1,12 +1,12 @@
 # Functions for sampling from populations
 
-### draw a pair of distinct integers in [1:n] 
+### draw a pair of distinct integers in [1:n]
 
 function samplepair(n::Int)
     i1 = randi(n)
     i2 = randi(n-1)
     return (i1, i2 == i1 ? n : i2)
-end 
+end
 
 function samplepair(a::AbstractArray)
     i1, i2 = samplepair(length(a))
@@ -15,10 +15,10 @@ end
 
 
 ### internal sampling algorithms
- 
+
 # Fisher-Yates sampling
 immutable FisherYatesSampler
-    n::Int 
+    n::Int
     seq::Vector{Int}   # Internal sequence for shuffling
 
     FisherYatesSampler(n::Int) = new(n, [1:n])
@@ -54,7 +54,7 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     # sizehint(s, length(x))
     rgen = RandIntSampler(length(a))
 
-    # first one    
+    # first one
     idx = rand(rgen)
     x[1] = a[idx]
     push!(s, idx)
@@ -79,7 +79,7 @@ function ordered_sample!(a::AbstractArray, x::AbstractArray)
     k = length(x)
     offset = 0
     i = 1
-    
+
     while offset < k
         rk = k - offset
         if i == n
@@ -99,6 +99,34 @@ function ordered_sample!(a::AbstractArray, x::AbstractArray)
     x
 end
 
+# Ordered sampling without replacement
+# Original author: Mike Innes
+
+function rand_first_index(n, k)
+    r = rand()
+    p = k/n
+    i = 1
+    while p < r
+        i += 1
+        p += (1-p)k/(n-(i-1))
+    end
+    return i
+end
+
+function ordered_sample_norep!(xs::AbstractArray, target::AbstractArray)
+    n = length(xs)
+    k = length(target)
+    i = 0
+    for j in 1:k
+        step = rand_first_index(n, k)
+        n -= step
+        i += step
+        target[j] = xs[i]
+        k -= 1
+    end
+    return target
+end
+
 ###########################################################
 #
 #   Interface functions
@@ -111,7 +139,7 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     n = length(a)
     k = length(x)
 
-    if isempty(x) 
+    if isempty(x)
         return x
     end
 
@@ -128,21 +156,31 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     else  # without replacement
         k <= n || error("Cannot draw more samples without replacement.")
 
-        if k == 1
-            @inbounds x[1] = sample(a)
+        if ordered && k > n/20
 
-        elseif k == 2
-            @inbounds (x[1], x[2]) = samplepair(a)
-
-        elseif n < k * max(k, 100)
-            fisher_yates_sample!(a, x)
+            ordered_sample_norep!(a, x)
 
         else
-            self_avoid_sample!(a, x)
-        end
 
-        if ordered
-            sort!(x)
+            k <= n || error("Cannot draw more samples without replacement.")
+
+            if k == 1
+                @inbounds x[1] = sample(a)
+
+            elseif k == 2
+                @inbounds (x[1], x[2]) = samplepair(a)
+
+            elseif n < k * max(k, 100)
+                fisher_yates_sample!(a, x)
+
+            else
+                self_avoid_sample!(a, x)
+            end
+
+            if ordered
+                sort!(x)
+            end
+
         end
     end
     return x
@@ -186,7 +224,7 @@ function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     i = 1
     wsum = sum(wv)
     w = values(wv)
-    
+
     while offset < k
         rk = k - offset
         wi = w[i]
@@ -232,20 +270,20 @@ sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; ordered::Bool=false) =
     sample!(a, wv, Array(T, n); ordered=ordered)
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; ordered::Bool=false) =
-    sample!(a, wv, Array(T, dims); ordered=ordered)    
+    sample!(a, wv, Array(T, dims); ordered=ordered)
 
 # wsample interface
 
 wsample(w::RealVector) = sample(weights(w))
 wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
 
-wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; ordered::Bool=false) = 
+wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; ordered::Bool=false) =
     sample!(a, weights(w), x; ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; ordered::Bool=false) = 
+wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; ordered::Bool=false) =
     wsample!(a, w, Array(T, n); ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; ordered::Bool=false) = 
-    wsample!(a, w, Array(T, dims); ordered=ordered)    
+wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; ordered::Bool=false) =
+    wsample!(a, w, Array(T, dims); ordered=ordered)
 
 
