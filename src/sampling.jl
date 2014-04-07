@@ -162,8 +162,6 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
 
         else
 
-            k <= n || error("Cannot draw more samples without replacement.")
-
             if k == 1
                 @inbounds x[1] = sample(a)
 
