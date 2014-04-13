@@ -141,7 +141,7 @@ end
 
 
 # Algorithm from MASS Chapter 5 for calculating 2D KDE
-function kde(x::RealVector, y::RealVector; width::Float64=NaN, resolution::Int=25)
+function kde(x::RealVector, y::RealVector, pdf, Normal; width::Float64=NaN, resolution::Int=25)
     n = length(x)
 
     if length(y) != n
