@@ -38,14 +38,6 @@ Measurements of Variation
 
   Compute the middle between ``a`` and ``b``, *i.e.* ``(a + b) / 2``.
 
-- **midrange** (x)
-
-  Compute the middle between ``minimum(x)`` and ``maximum(x)``.  
-
-- **range** (x)
-
-  Compute the difference between ``maximum(x)`` and ``minimum(x)``.
-
 
 Quantile and Friends
 ---------------------

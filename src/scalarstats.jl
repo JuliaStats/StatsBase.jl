@@ -130,12 +130,6 @@ mad{T<:Real}(v::Range1{T}) = mad!([v])
 middle{T<:FloatingPoint}(a1::T, a2::T) = (a1 + a2) / convert(T, 2)
 middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
 
-# Mid-range
-midrange{T<:Real}(a::AbstractArray{T}) = middle(extrema(a)...)
-
-# Range: xmax - xmin
-range{T<:Real}(a::AbstractArray{T}) = ((m0, m1) = extrema(a); m1 - m0)
-
 
 #############################
 #

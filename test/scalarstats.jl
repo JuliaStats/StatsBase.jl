@@ -28,18 +28,6 @@ wv = weights(ones(5) * 2.0)
 @test_approx_eq mad([1:5]) 1.4826
 @test_approx_eq mad(1:5) 1.4826
 
-# min/max related
-
-@test_approx_eq midrange([1, 2, 3, 4, 5]) 3.0
-@test_approx_eq midrange([1, 2, 2, 2, 5]) 3.0
-@test_approx_eq midrange([1, 4, 4, 4, 5]) 3.0
-@test_approx_eq midrange([1:5]) 3.0
-
-@test_approx_eq range([1, 2, 3, 4, 5]) 4.0
-@test_approx_eq range([1, 2, 2, 2, 5]) 4.0
-@test_approx_eq range([1, 4, 4, 4, 5]) 4.0
-@test_approx_eq range([1:15]) 14.0
-
 # quantile & friends
 
 @test_approx_eq quantile(1:5) [1:5]
