@@ -61,7 +61,6 @@ module StatsBase
 
     # empirical
     ecdf,           # empirical cumulative distribution function
-    kde,            # kernel density estimation
 
     # misc
     rle,            # run-length encoding

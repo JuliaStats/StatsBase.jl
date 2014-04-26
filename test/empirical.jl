@@ -10,4 +10,3 @@ fnecdf = ecdf(randn(10000000))
 fnecdf = ecdf([0.5])
 @test fnecdf([zeros(5000), ones(5000)]) == [zeros(5000), ones(5000)]
 
-# TODO: test KDE
