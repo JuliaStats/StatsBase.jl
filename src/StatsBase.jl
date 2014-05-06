@@ -80,6 +80,7 @@ module StatsBase
     confint,
     deviance,
     fit,
+    fitted,
     loglikelihood,
     nobs,
     stderr,

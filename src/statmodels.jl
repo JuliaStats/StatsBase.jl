@@ -14,8 +14,9 @@ fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj
 
 abstract RegressionModel <: StatisticalModel
 
-residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
+fitted(obj::RegressionModel) = error("fitted is not defined for $(typeof(obj)).")
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
+residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
 
