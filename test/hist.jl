@@ -13,6 +13,14 @@
 @test hist(0:99,5;closed=:right).weights == [1,20,20,20,20,19]
 @test hist(0:99,5;closed=:left).weights == [20,20,20,20,20]
 
+@test hist((1:100,1:100),5).weights == diagm([20,20,20,20,20])
+
+@test hist(1:100,weights(ones(100)),5).weights == [20,20,20,20,20]
+@test hist(1:100,weights(2*ones(100)),5).weights == [40,40,40,40,40]
+
+@test eltype(hist(1:100,weights(ones(Int,100)),5).weights) == Int
+@test eltype(hist(1:100,weights(ones(Float64,100)),5).weights) == Float64
+
 import StatsBase.midpoints
 
 @test midpoints(1.0:1.0:10.0) == 1.5:1.0:9.5

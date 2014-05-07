@@ -95,21 +95,28 @@ Histogram{T}(edge::AbstractVector,weights::AbstractVector{T},closed::Symbol=:rig
 Histogram{T}(edge::AbstractVector,::Type{T},closed::Symbol=:right) = Histogram(edge,zeros(T,length(edge)-1),closed)
 Histogram(edge::AbstractVector,closed::Symbol=:right) = Histogram(edge,Int,closed)
 
-function push!{T,E}(h::Histogram{T,1,E}, x::Real)
+function push!{T,E}(h::Histogram{T,1,E}, x::Real,w::Real)
     i = if h.closed == :right 
         searchsortedfirst(h.edges[1], x) - 1 
     else
         searchsortedlast(h.edges[1], x)
     end
     if 1 <= i <= length(h.weights)
-        @inbounds h.weights[i] += one(T)
+        @inbounds h.weights[i] += w
     end
     h
 end
+push!{T,E}(h::Histogram{T,1,E}, x::Real) = push!(h,x,one(T))
 
 function append!{T}(h::Histogram{T,1}, v::AbstractVector)
     for x in v
         push!(h,x)
+    end
+    h
+end
+function append!{T}(h::Histogram{T,1}, v::AbstractVector,wv::WeightVec)
+    for (x,w) in zip(v,wv.values)
+        push!(h,x,w)
     end
     h
 end
@@ -118,23 +125,35 @@ hist(v::AbstractVector, edg::AbstractVector; closed::Symbol=:right) = append!(Hi
 hist(v::AbstractVector, n::Integer; closed::Symbol=:right) = hist(v,histrange(v,n,closed);closed=closed)
 hist(v::AbstractVector; closed::Symbol=:right) = hist(v,sturges(length(v));closed=closed)
 
+hist{W}(v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:right) = append!(Histogram(edg,W,closed),v,wv)
+hist(v::AbstractVector, wv::WeightVec, n::Integer; closed::Symbol=:right) = hist(v,wv,histrange(v,n,closed);closed=closed)
+hist(v::AbstractVector, wv::WeightVec; closed::Symbol=:right) = hist(v,wv,sturges(length(v));closed=closed)
+
 # N-dimensional
-function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real})
+function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
     is = if h.closed == :right
         map((edge, x) -> searchsortedfirst(edge,x) - 1, h.edges, xs)
     else
         map(searchsortedlast, h.edges, xs)
     end
     try
-        h.weights[is...] += one(T)
+        h.weights[is...] += w
     catch e
         isa(e,BoundsError) || rethrow(e)
     end
     h
 end
+push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real}) = push!(h,xs,one(T))
+
 function append!{T,N}(h::Histogram{T,N}, vs::NTuple{N,AbstractVector})
     for xs in zip(vs...)
         push!(h,xs)
+    end
+    h
+end
+function append!{T,N}(h::Histogram{T,N}, vs::NTuple{N,AbstractVector},wv::WeightVec)
+    for (xs,w) in zip(zip(vs...),wv.values)
+        push!(h,xs,w)
     end
     h
 end
@@ -143,3 +162,8 @@ hist{N}(vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::S
 hist{N}(vs::NTuple{N,AbstractVector}, ns::NTuple{N,Integer}; closed::Symbol=:right) = hist(vs, map((v,n) -> histrange(v,n,closed),vs,ns);closed=closed)
 hist{N}(vs::NTuple{N,AbstractVector}, n::Integer; closed::Symbol=:right) = hist(vs, map(v -> histrange(v,n,closed),vs);closed=closed)
 hist{N}(vs::NTuple{N,AbstractVector}; closed::Symbol=:right) = hist(vs, sturges(length(vs[1]));closed=closed)
+
+hist{N,W}(vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = append!(Histogram(edges,W,closed),vs,wv)
+hist{N}(vs::NTuple{N,AbstractVector}, wv::WeightVec, ns::NTuple{N,Integer}; closed::Symbol=:right) = hist(vs, wv, map((v,n) -> histrange(v,n,closed),vs,ns);closed=closed)
+hist{N}(vs::NTuple{N,AbstractVector}, wv::WeightVec, n::Integer; closed::Symbol=:right) = hist(vs, wv, map(v -> histrange(v,n,closed),vs);closed=closed)
+hist{N}(vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:right) = hist(vs, wv, sturges(length(vs[1]));closed=closed)
