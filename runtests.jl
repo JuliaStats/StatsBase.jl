@@ -6,6 +6,7 @@ tests = ["means",
          "ranking", 
          "sampling", 
          "empirical", 
+         "hist", 
          "rankcorr",
          "signalcorr", 
          "misc"]
