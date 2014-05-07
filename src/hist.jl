@@ -1,4 +1,3 @@
-import Base.hist
 import Base.push!
 import Base.append!
 import Base.isequal
