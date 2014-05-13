@@ -1,4 +1,4 @@
-import Base: push!, append!, ==
+import Base: show, ==, push!, append!
 
 ## nice-valued ranges for histograms
 function histrange{T<:FloatingPoint}(v::AbstractArray{T}, n::Integer, closed::Symbol)
@@ -65,6 +65,7 @@ histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbo
 histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) = map(v -> histrange(v,nbins,closed),vs)
 
 
+
 ## midpoints of intervals
 midpoints(r::Range) = r[1:length(r)-1] + 0.5*step(r)
 midpoints(v::AbstractVector) = [0.5*(v[i] + v[i+1]) for i in 1:length(v)-1]
@@ -89,6 +90,16 @@ end
 Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:right) = Histogram{T,N,typeof(edges)}(edges,weights,closed)
 Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:right) = Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),closed)
 Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:right) = Histogram(edges,Int,closed)
+
+function show(io::IO, h::Histogram)
+    println(io, typeof(h))
+    println(io,"edges:")
+    for e in h.edges
+        println(io,"  ",e)
+    end
+    println(io,"weights: ",h.weights)
+    print(io,"closed: ",h.closed)
+end
 
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)
 
