@@ -1,9 +1,7 @@
-import Base.push!
-import Base.append!
-import Base.isequal
+import Base: push!, append!, ==
 
 ## nice-valued ranges for histograms
-function histrange{T<:FloatingPoint,N}(v::AbstractArray{T,N}, n::Integer, closed::Symbol)
+function histrange{T<:FloatingPoint}(v::AbstractArray{T}, n::Integer, closed::Symbol)
     if length(v) == 0
         return 0.0:1.0:0.0
     end
@@ -32,7 +30,7 @@ function histrange{T<:FloatingPoint,N}(v::AbstractArray{T,N}, n::Integer, closed
     start:step:(start + nm1*step)
 end
 
-function histrange{T<:Integer,N}(v::AbstractArray{T,N}, n::Integer, closed::Symbol)
+function histrange{T<:Integer}(v::AbstractArray{T}, n::Integer, closed::Symbol)
     if length(v) == 0
         return 0:1:0
     end
@@ -63,18 +61,22 @@ function histrange{T<:Integer,N}(v::AbstractArray{T,N}, n::Integer, closed::Symb
     start:step:(start + nm1*step)
 end
 
+histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) = map((v,n) -> histrange(v,n,closed),vs,nbins)
+histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) = map(v -> histrange(v,nbins,closed),vs)
+
+
 ## midpoints of intervals
 midpoints(r::Range) = r[1:length(r)-1] + 0.5*step(r)
 midpoints(v::AbstractVector) = [0.5*(v[i] + v[i+1]) for i in 1:length(v)-1]
 
-## hist ##
+## histograms ##
 function sturges(n)  # Sturges' formula
     n==0 && return one(n)
     iceil(log2(n))+1
 end
 
 # N-dimensional histogram object
-immutable Histogram{T<:Real,N,E}
+type Histogram{T<:Real,N,E}
     edges::E
     weights::Array{T,N}
     closed::Symbol
@@ -88,7 +90,7 @@ Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},close
 Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:right) = Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),closed)
 Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:right) = Histogram(edges,Int,closed)
 
-isequal(h1::Histogram,h2::Histogram) = isequal(h1.edges,h2.edges) && isequal(h1.weights,h2.weights) && isequal(h1.closed,h2.closed)
+(==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)
 
 # 1-dimensional
 Histogram{T}(edge::AbstractVector,weights::AbstractVector{T},closed::Symbol=:right) = Histogram{T,1,(typeof(edge),)}((edge,),weights,closed)
@@ -121,13 +123,15 @@ function append!{T}(h::Histogram{T,1}, v::AbstractVector,wv::WeightVec)
     h
 end
 
-hist(v::AbstractVector, edg::AbstractVector; closed::Symbol=:right) = append!(Histogram(edg,closed),v)
-hist(v::AbstractVector, n::Integer; closed::Symbol=:right) = hist(v,histrange(v,n,closed);closed=closed)
-hist(v::AbstractVector; closed::Symbol=:right) = hist(v,sturges(length(v));closed=closed)
+fit(::Type{Histogram},v::AbstractVector, edg::AbstractVector; closed::Symbol=:right) = 
+    append!(Histogram(edg,closed), v)
+fit(::Type{Histogram},v::AbstractVector; closed::Symbol=:right, nbins=sturges(length(v))) = 
+    fit(Histogram, v, histrange(v,nbins,closed); closed=closed)
 
-hist{W}(v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:right) = append!(Histogram(edg,W,closed),v,wv)
-hist(v::AbstractVector, wv::WeightVec, n::Integer; closed::Symbol=:right) = hist(v,wv,histrange(v,n,closed);closed=closed)
-hist(v::AbstractVector, wv::WeightVec; closed::Symbol=:right) = hist(v,wv,sturges(length(v));closed=closed)
+fit{W}(::Type{Histogram},v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:right) = 
+    append!(Histogram(edg,W,closed), v, wv)
+fit(::Type{Histogram},v::AbstractVector, wv::WeightVec; closed::Symbol=:right, nbins=sturges(length(v))) = 
+    fit(Histogram, v, wv, histrange(v,nbins,closed); closed=closed)
 
 # N-dimensional
 function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
@@ -158,12 +162,12 @@ function append!{T,N}(h::Histogram{T,N}, vs::NTuple{N,AbstractVector},wv::Weight
     h
 end
 
-hist{N}(vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = append!(Histogram(edges,closed),vs)
-hist{N}(vs::NTuple{N,AbstractVector}, ns::NTuple{N,Integer}; closed::Symbol=:right) = hist(vs, map((v,n) -> histrange(v,n,closed),vs,ns);closed=closed)
-hist{N}(vs::NTuple{N,AbstractVector}, n::Integer; closed::Symbol=:right) = hist(vs, map(v -> histrange(v,n,closed),vs);closed=closed)
-hist{N}(vs::NTuple{N,AbstractVector}; closed::Symbol=:right) = hist(vs, sturges(length(vs[1]));closed=closed)
+fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = 
+    append!(Histogram(edges,closed), vs)
+fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}; closed::Symbol=:right, nbins=sturges(length(vs[1]))) = 
+    fit(Histogram, vs, histrange(vs,nbins,closed); closed=closed)
 
-hist{N,W}(vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = append!(Histogram(edges,W,closed),vs,wv)
-hist{N}(vs::NTuple{N,AbstractVector}, wv::WeightVec, ns::NTuple{N,Integer}; closed::Symbol=:right) = hist(vs, wv, map((v,n) -> histrange(v,n,closed),vs,ns);closed=closed)
-hist{N}(vs::NTuple{N,AbstractVector}, wv::WeightVec, n::Integer; closed::Symbol=:right) = hist(vs, wv, map(v -> histrange(v,n,closed),vs);closed=closed)
-hist{N}(vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:right) = hist(vs, wv, sturges(length(vs[1]));closed=closed)
+fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = 
+    append!(Histogram(edges,W,closed), vs, wv)
+fit{N}(::Type{Histogram},vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:right, nbins=sturges(length(vs[1]))) = 
+    fit(Histogram, vs, wv, histrange(vs,nbins,closed); closed=closed)
