@@ -62,6 +62,11 @@ module StatsBase
     # empirical
     ecdf,           # empirical cumulative distribution function
 
+    Histogram,
+    hist,
+    histrange,
+    midpoints,
+
     # misc
     rle,            # run-length encoding
     inverse_rle,    # inverse run-length encoding
@@ -104,6 +109,7 @@ module StatsBase
     include("rand.jl")
     include("sampling.jl")
     include("empirical.jl")
+    include("hist.jl")
 
     include("statmodels.jl")
 
