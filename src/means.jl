@@ -51,30 +51,58 @@ function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractArray)
     mean(v, weights(w))
 end
 
-function mean!{T<:Number,W<:Real}(r::AbstractVector, v::AbstractMatrix{T}, w::WeightVec{W}, dim::Int)
+import Base.Cartesian: @ngenerate, @nloops, @nref
+@ngenerate N typeof(r) function _wsum!{T<:Number,N,W<:Real}(r::Union(Array, AbstractVector), v::AbstractArray{T,N},
+                                                            values::AbstractVector{W}, dim::Int)
+    for i = 1:N
+        i == dim || size(r, i) == size(v, i) || error(DimensionMismatch(""))
+    end
+    fill!(r, 0)
+    weight = zero(W)
+    @nloops N i v d->(if d == dim
+                           weight = values[i_d]
+                           j_d = 1
+                       else
+                           j_d = i_d
+                       end) @inbounds (@nref N r j) += (@nref N v i)*weight
+    r
+end
+
+function mean!{T<:Number,W<:Real}(r::Union(Array, AbstractVector), v::AbstractMatrix{T}, w::WeightVec{W}, dim::Int)
     m, n = size(v)
     if dim == 1
         (length(r) == n && length(w) == m) || throw(DimensionMismatch("Dimensions mismatch"))
-        At_mul_B!(r, v, values(w))
+        At_mul_B!(vec(r), v, values(w))
     elseif dim == 2        
         (length(r) == m && length(w) == n) || throw(DimensionMismatch("Dimensions mismatch"))
-        A_mul_B!(r, v, values(w))
+        A_mul_B!(vec(r), v, values(w))
     else
         error("Invalid value of dim.")
     end
     return scale!(r, inv(sum(w)))
 end
 
-function mean{T<:Number,W<:Real}(v::AbstractMatrix{T}, w::WeightVec{W}, dim::Int)
-    R = typeof(float(one(T) * one(W)))
+function mean!{S,N,T<:Number,W<:Real}(r::AbstractArray{S,N}, v::AbstractArray{T,N}, w::WeightVec{W}, dim::Int)
     m, n = size(v)
-    dim == 1 ? reshape(mean!(Array(R, n), v, w, 1), 1, n) :
-    dim == 2 ? reshape(mean!(Array(R, m), v, w, 2), m, 1) :
-    error("Invalid value of dim.")
+    if dim == 1 && isa(v, Array) && isa(r, Array)
+        m = size(v, 1)
+        n = div(length(v), m)
+        (length(r) == n && length(w) == m) || throw(DimensionMismatch("Dimensions mismatch"))
+        At_mul_B!(vec(r), reshape(v, m, n), values(w))
+    elseif dim == ndims(v) && isa(v, Array) && isa(r, Array)
+        n = size(v, ndims(v))
+        m = div(length(v), n)
+        (length(r) == m && length(w) == n) || throw(DimensionMismatch("Dimensions mismatch"))
+        A_mul_B!(vec(r), reshape(v, m, n), values(w))
+    elseif 1 <= dim <= ndims(v)
+        n = size(v, dim)
+        (length(r) == div(length(v), n) && length(w) == n) || throw(DimensionMismatch("Dimensions mismatch"))
+        _wsum!(r, v, values(w), dim)
+    else
+        error("Invalid value of dim.")
+    end
+    return scale!(r, inv(sum(w)))
 end
 
-
-
-
-
-
+mean{T<:Number,W<:Real}(v::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
+    mean!(Array(typeof(one(T) / one(W)), Base.reduced_dims(size(v), dim)), v, w, dim)

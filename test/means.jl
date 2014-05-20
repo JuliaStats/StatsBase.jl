@@ -46,3 +46,14 @@ a = [1. 2. 3.; 4. 5. 6.]
 @test_approx_eq mean(a, weights([1.0, 1.0, 1.0]), 2) [2.0, 5.0]
 @test_approx_eq mean(a, weights([1.0, 0.0, 0.0]), 2) [1.0, 4.0]
 @test_approx_eq mean(a, weights([0.0, 0.0, 1.0]), 2) [3.0, 6.0]
+
+@test_throws ErrorException mean(a, weights(ones(3)), 3)
+
+a = reshape(1.0:27.0, 3, 3, 3)
+
+for wt in ([1.0, 1.0, 1.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0])
+	@test_approx_eq mean(a, weights(wt), 1) sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
+	@test_approx_eq mean(a, weights(wt), 2) sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
+	@test_approx_eq mean(a, weights(wt), 3) sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
+	@test_throws ErrorException mean(a, weights(wt), 4)
+end
