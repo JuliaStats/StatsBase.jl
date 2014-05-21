@@ -1,6 +1,7 @@
 using StatsBase
 
-tests = ["means", 
+tests = ["mathfuns", 
+         "means", 
          "scalarstats", 
          "counts", 
          "ranking", 
