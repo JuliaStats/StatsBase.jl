@@ -21,6 +21,9 @@ module StatsBase
     sem,        # standard error of the mean, i.e. sqrt(var / n)
     mad,        # median absolute deviation
     middle,     # the mean of two real numbers
+    entropy,    # the entropy of a probability vector
+    crossentropy,   # cross entropy between two probability vectors
+    kldivergence,   # K-L divergence between two probability vectors
     percentile, # quantile using percentage (instead of fraction) as argument
     iqr,        # interquatile range 
     nquantile,  # quantiles at [0:n]/n

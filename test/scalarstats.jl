@@ -28,6 +28,15 @@ wv = weights(ones(5) * 2.0)
 @test_approx_eq mad([1:5]) 1.4826
 @test_approx_eq mad(1:5) 1.4826
 
+## entropy
+
+@test_approx_eq entropy([0.5, 0.5]) 0.6931471805599453
+@test_approx_eq entropy([0.2, 0.3, 0.5]) 1.0296530140645737
+
+@test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]) 1.1176681825904018
+
+@test_approx_eq kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]) 0.08801516852582819
+
 # quantile & friends
 
 @test_approx_eq quantile(1:5) [1:5]

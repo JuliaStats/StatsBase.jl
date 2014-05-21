@@ -133,6 +133,54 @@ middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
 
 #############################
 #
+#   entropy and friends
+#
+#############################
+
+function entropy{T<:Real}(p::AbstractArray{T})
+    s = 0.
+    z = zero(T)
+    for i = 1:length(p)
+        @inbounds pi = p[i]
+        if pi > z
+            s += pi * log(pi)
+        end
+    end
+    return -s
+end
+
+function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
+    length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
+    s = 0.
+    z = zero(T)
+    for i = 1:length(p)
+        @inbounds pi = p[i]
+        @inbounds qi = q[i]
+        if pi > z
+            s += pi * log(qi)
+        end
+    end
+    return -s
+end
+
+function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
+    length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
+    s = 0.
+    z = zero(T)
+    for i = 1:length(p)
+        @inbounds pi = p[i]
+        @inbounds qi = q[i]
+        if pi > z
+            s += pi * log(pi / qi)
+        end
+    end
+    return s
+end
+
+
+
+#############################
+#
 #   quantile and friends
 #
 #############################

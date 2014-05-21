@@ -39,6 +39,22 @@ Measurements of Variation
   Compute the middle between ``a`` and ``b``, *i.e.* ``(a + b) / 2``.
 
 
+Entropy and Friends
+---------------------
+
+- *entropy*(p)
+
+  Compute the entropy of the probability vector ``p``.
+
+- **crossentropy**(p, q)
+
+  Compute the cross entropy between two probability vectors ``p`` and ``q``.
+
+- **kldivergence**(p, q)
+
+  Compute the Kullback-Leibler divergence between ``p`` and ``q``.
+
+
 Quantile and Friends
 ---------------------
 
