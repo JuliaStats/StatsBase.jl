@@ -9,15 +9,20 @@ The package provides a set of math functions that are related to statistical com
 
 - **logistic**(x): ``1 / (1 + exp(-x))``.
 
-- **logit(x)**: ``log(x / (1 - x))``.
+- **logit**(x): ``log(x / (1 - x))``.
 
-- **softplus(x)**: ``log(1 + exp(x))``.
+- **softplus**(x): ``log(1 + exp(x))``.
 
-- **invsoftplus(x)**: ``log(exp(x) - 1)``.
+- **invsoftplus**(x): ``log(exp(x) - 1)``.
 
 **Note:** all functions listed above have vectorized versions.
 
-- **logsumexp(x, y)**: ``log(exp(x) + exp(y))``.
+- **logsumexp**(x, y): ``log(exp(x) + exp(y))``.
 
-- **logsumexp(x)**: ``log(sum(exp(x)))`` when ``x`` is an array.
+- **logsumexp**(x): ``log(sum(exp(x)))`` when ``x`` is an array.
 
+- **softmax**(x): ``exp(x) ./ sum(exp(x))`` for a given array ``x``.
+
+- **softmax!**(r, x): write the results of ``softmax`` to ``r``.
+
+- **softmax!**(x): write the results of ``softmax`` inplace to ``x``.

@@ -16,6 +16,8 @@ module StatsBase
     softplus,    # log(1 + exp(x))
     invsoftplus, # log(exp(x) - 1)
     logsumexp,   # log(exp(x) + exp(y)) or log(sum(exp(x)))
+    softmax,
+    softmax!,
 
     # means
     geomean,     # geometric mean

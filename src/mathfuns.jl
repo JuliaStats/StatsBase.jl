@@ -43,3 +43,23 @@ function logsumexp{T<:Real}(x::AbstractArray{T})
     end
     log(s) + u
 end
+
+## softmax
+
+function softmax!{T<:Real}(r::AbstractArray, x::AbstractArray{T})
+	n = length(x)
+	length(r) == n || throw(DimensionMismatch("Inconsistent array lengths."))
+	u = maximum(x)
+	s = 0.
+	for i = 1:n
+		@inbounds s += (r[i] = exp(x[i] - u))
+	end
+	for i = 1:n
+		r[i] /= s
+	end
+	r
+end
+
+softmax!{T<:FloatingPoint}(x::AbstractArray{T}) = softmax!(x, x)
+softmax{T<:Real}(x::AbstractArray{T}) = softmax!(Array(Float64, size(x)), x)
+

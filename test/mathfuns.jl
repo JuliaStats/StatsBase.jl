@@ -24,3 +24,9 @@ using Base.Test
 
 @test_approx_eq logsumexp([1.0, 2.0, 3.0]) 3.40760596444438
 @test_approx_eq logsumexp([1.0, 2.0, 3.0] .+ 1000.) 1003.40760596444438
+
+x = [1.0, 2.0, 3.0]
+r = exp(x) ./ sum(exp(x))
+@test_approx_eq softmax([1.0, 2.0, 3.0]) r
+softmax!(x)
+@test_approx_eq x r
