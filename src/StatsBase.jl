@@ -1,12 +1,19 @@
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
-    import Base: rand, rand!
-    import Base.LinAlg: BlasReal
+    import Base: rand, rand!, add!
+    import Base.LinAlg: BlasReal, BlasFloat
 
     export
 
     # common
     WeightVec, weights,
+
+    # basiccomp
+    negate!,     # x <- -x (inplace)
+    add!,        # y <- y + x (inplace)
+    subtract!,   # y <- y - x (inplace)
+    addscale!,   # y <- y + x * c (inplace)
+    addscale,    # return y + x * c (a new copy)
 
     # mathfuns
     xlogx,       # x * log(x)
@@ -112,6 +119,7 @@ module StatsBase
     # source files
 
     include("common.jl")
+    include("basiccomp.jl")
     include("mathfuns.jl")
     include("misc.jl")
     include("means.jl")
