@@ -13,6 +13,8 @@ module StatsBase
     harmmean,    # harmonic mean
     trimmean,    # trimmed mean
     wmean,       # weighted mean
+    wsum,        # weighted sum with vector as second argument
+    wsum!,       # in-place weighted sum across dimensions
 
     # scalar_stats 
     skewness,   # (standardized) skewness
