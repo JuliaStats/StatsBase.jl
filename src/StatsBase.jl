@@ -21,7 +21,6 @@ module StatsBase
     maxabsdiff,  # maximum of absolute differences
     sumabs2diff, # sum of squared absolute differences
 
-    # mathfuns
     xlogx,       # x * log(x)
     xlogy,       # x * log(y)
     logistic,    # 1 / (1 + exp(-x))
@@ -126,7 +125,6 @@ module StatsBase
 
     include("common.jl")
     include("basiccomp.jl")
-    include("mathfuns.jl")
     include("misc.jl")
     include("means.jl")
     include("scalarstats.jl")
