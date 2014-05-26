@@ -71,6 +71,44 @@ end
 addscale(y::AbstractArray, x::AbstractArray, c::Number) = addscale!(copy(y), x, c)
 
 
+## other math functions applied inplace
+
+function abs!(x::AbstractArray)
+    for i = 1:length(x)
+        @inbounds x[i] = abs(x[i])
+    end
+    x
+end
+
+function abs2!(x::AbstractArray)
+    for i = 1:length(x)
+        @inbounds x[i] = abs2(x[i])
+    end
+    x
+end
+
+function sqrt!(x::AbstractArray)
+    for i = 1:length(x)
+        @inbounds x[i] = sqrt(x[i])
+    end
+    x
+end
+
+function exp!(x::AbstractArray)
+    for i = 1:length(x)
+        @inbounds x[i] = exp(x[i])
+    end
+    x
+end
+
+function log!(x::AbstractArray)
+    for i = 1:length(x)
+        @inbounds x[i] = log(x[i])
+    end
+    x
+end
+
+
 ## some statistics computation
 
 sumzero{T<:Number}(::Type{T}) = float(real(zero(T) + zero(T)))

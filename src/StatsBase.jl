@@ -14,6 +14,13 @@ module StatsBase
     subtract!,   # y <- y - x (inplace)
     addscale!,   # y <- y + x * c (inplace)
     addscale,    # return y + x * c (a new copy)
+
+    abs!,        # inplace abs
+    abs2!,       # inplace abs2
+    sqrt!,       # inplace sqrt
+    exp!,        # inplace exp
+    log!,        # inplace log
+
     sumabs,      # sum of absolute values
     maxabs,      # maximum of absolute values
     sumabs2,     # sum of squared absolute values
