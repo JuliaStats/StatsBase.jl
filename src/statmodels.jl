@@ -40,9 +40,11 @@ end
 ## format numbers in the p-value column
 function format_pvc(pv::Number)
     0. <= pv <= 1. || error("p-values must be in [0.,1.]")
-    pv >= eps() || return "< eps()"
-    ifloor(log10(pv)) >= -3 && return sprint(Base.Grisu._show,pv,Base.Grisu.FIXED,4,true)
-    sprint(Base.Grisu._show,pv,Base.Grisu.PRECISION,2,true)
+    if pv >= 1e-4
+        return @sprintf("%.4f", pv)
+    else
+        return @sprintf("<1e%2.2d", max(iceil(nextfloat(log10(pv))), -99))
+    end
 end
 
 function show(io::IO, ct::CoefTable)
