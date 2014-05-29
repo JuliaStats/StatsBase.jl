@@ -11,7 +11,7 @@ Welcome to StatsBase.jl's Documentation!
 .. toctree::
    :maxdepth: 2
 
-   mathfuns.rst
+   basiccomp.rst
    weightvec.rst
    means.rst
    scalarstats.rst

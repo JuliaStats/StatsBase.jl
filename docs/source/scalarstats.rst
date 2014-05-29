@@ -42,15 +42,15 @@ Measurements of Variation
 Entropy and Friends
 ---------------------
 
-- *entropy*(p)
+- **entropy** (p)
 
   Compute the entropy of the probability vector ``p``.
 
-- **crossentropy**(p, q)
+- **crossentropy** (p, q)
 
   Compute the cross entropy between two probability vectors ``p`` and ``q``.
 
-- **kldivergence**(p, q)
+- **kldivergence** (p, q)
 
   Compute the Kullback-Leibler divergence between ``p`` and ``q``.
 
