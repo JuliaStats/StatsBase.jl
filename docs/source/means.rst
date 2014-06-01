@@ -3,15 +3,15 @@ Mean Functions
 
 The package provides functions to compute means of different kinds.
 
-- **geomean** (x)
+.. function:: geomean(x)
 
   Compute the geometric mean of ``x``.
 
-- **harmmean** (x)
+.. function:: harmmean(x)
 
   Compute the harmonic mean of ``x``.
 
-- **trimmean** (x, p)
+.. function:: trimmean(x, p)
 
   Compute the trimmed mean of ``x``, with fraction ``p`` of elements ignored.
 
@@ -24,7 +24,7 @@ The package provides functions to compute means of different kinds.
 
     trimmean(x, 0.2)
 
-- **mean** (x, w)
+.. function:: mean(x, w)
 
   The ``mean`` function is also extended to accept a weight vector of type ``WeightVec`` (see :ref:`weightvec`) to compute weighted mean. 
 
@@ -35,20 +35,12 @@ The package provides functions to compute means of different kinds.
     w = rand(n)
     x = mean(x, weights(w))
 
-- **mean** (x, w, dim)
+.. function:: mean(x, w, dim)
 
-  Compute weighted means along a certain dimension.
+  Compute weighted means of ``x`` along a certain dimension (specified by an integer ``dim``). The weights are given by a wegitht vector ``w`` (of type ``WeightVec``).
 
-  Here, ``x`` is a matrix, ``w`` is a weight vector of type ``WeightVec``, and ``dim`` should be either ``1`` or ``2``. 
-
-  Suppose the size of ``x`` is ``(m, n)``: 
-
-  - when ``dim = 1``: it computes weighted mean along each column (across rows). ``length(w)`` should be ``m``, and it returns an array of size ``(1, n)``.
-
-  - when ``dim = 2``: it computes weighted mean along each row (across columns). ``length(w)`` should be ``n``, and it returns an array of size ``(m, 1)``. 
-
-- **mean!** (dst, x, w, dim)
+.. function:: mean!(dst, x, w, dim)
 
   Compute weighted means along a certain dimension, and write results to a pre-allocated destination vector ``dst``. 
 
-  Here, ``length(dst)`` should be equal to either ``n`` or ``m``, when ``dim`` is ``1`` or ``2``.
+  
