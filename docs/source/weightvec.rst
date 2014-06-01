@@ -29,27 +29,27 @@ Methods
 
 Let ``w`` be an instance of ``WeightVec``:
 
-- **eltype** (w)
+.. function:: eltype(w)
 
-    Return the type of weight values.
+    Get the type of weight values.
 
-- **length** (w)
+.. function:: length(w)
 
-    Return the length of the weight vector.
+    Get the length of the weight vector.
 
-- **isempty** (w)
+.. function:: isempty(w)
 
-    Return whether ``w`` is empty, *i.e.* ``length(w) == 0``.
+    Test whether ``w`` is empty, *i.e.* ``length(w) == 0``.
 
-- **values** (w)
+.. function:: values(w)
 
-    Return the vector of weight values.
+    Get the vector of weight values.
 
-- **sum** (w)
+.. function:: sum(w)
 
     Get the sum of weights. 
 
-    :note: The sum of weights is maintained by the weight vector, and thus this function can immediately retrieve and return the value. 
+    :note: The sum of weights is maintained by the weight vector, and thus this function can immediately return the value in ``O(1)`` (without computation).
 
 
 Why we want a WeightVec type
