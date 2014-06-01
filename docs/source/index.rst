@@ -22,4 +22,3 @@ Welcome to StatsBase.jl's Documentation!
    signalcorr.rst
    misc.rst
    statmodels.rst
-   hist.rst
