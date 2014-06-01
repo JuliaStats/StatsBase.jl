@@ -3,26 +3,48 @@ Statistics-related Math functions
 
 The package provides a set of math functions that are related to statistical computation:
 
-- **xlogx(x)** (x): ``x * log(x)`` when ``x > 0``, or zero otherwise.
+.. function:: xlogx(x)
 
-- **xlogy(x, y)** (x, y): ``x * log(y)`` when ``x > 0``, or zero otherwise.
+    ``x * log(x)`` when ``x > 0``, or ``0`` otherwise.
 
-- **logistic** (x): ``1 / (1 + exp(-x))``.
+.. function:: xlogy(x, y)
 
-- **logit** (x): ``log(x / (1 - x))``.
+    ``x * log(y)`` when ``x > 0``, or ``0`` otherwise.
 
-- **softplus** (x): ``log(1 + exp(x))``.
+.. function:: logistic(x)
 
-- **invsoftplus** (x): ``log(exp(x) - 1)``.
+    Logistic function: ``1 / (1 + exp(-x))``.
+
+.. function:: logit(x) 
+
+    Logit function: ``log(x / (1 - x))``.
+
+.. function:: softplus(x)
+
+    Softplus function: ``log(1 + exp(x))``.
+
+.. function:: invsoftplus(x)
+
+    Inverse softplus function: ``log(exp(x) - 1)``.
 
 **Note:** all functions listed above have vectorized versions.
 
-- **logsumexp** (x, y): ``log(exp(x) + exp(y))``.
+.. function:: logsumexp(x, y)
 
-- **logsumexp** (x): ``log(sum(exp(x)))`` when ``x`` is an array.
+    Logarithm of sum of exponents: ``log(exp(x) + exp(y))``, computed in a numerically stable way.
 
-- **softmax** (x): ``exp(x) ./ sum(exp(x))`` for a given array ``x``.
+.. function:: logsumexp(x)
 
-- **softmax!** (r, x): write the results of ``softmax`` to ``r``.
+    Logarithm of sum of exponents of all elements in ``x``, *i.e.* ``log(sum(exp(x)))``. Here, ``x`` is an array.
 
-- **softmax!** (x): write the results of ``softmax`` inplace to ``x``.
+.. function:: softmax(x)
+
+    Softmax function: ``exp(x) ./ sum(exp(x))`` for a given array ``x``.
+
+.. function:: softmax!(r, x)
+
+    Compute the softmax function over ``x`` and write the results to ``r``. Here, ``r`` should have the same size as ``x``.
+
+.. function:: softmax!(x)
+
+    Compute the softmax function over ``x`` and write the results inplace to ``x``.
