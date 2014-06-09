@@ -73,7 +73,9 @@ module StatsBase
     # sampling
     samplepair,     # draw a pair of distinct elements   
     sample,         # sampling from a population 
+    sample!,        # sampling from a population, with pre-allocated output
     wsample,        # sampling from a population with weights
+    wsample!,       # weighted sampling, with pre-allocated output
 
     # empirical
     ecdf,           # empirical cumulative distribution function
