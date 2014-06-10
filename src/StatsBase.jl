@@ -117,6 +117,8 @@ module StatsBase
 
     include("common.jl")
     include("mathfuns.jl")
+    include("weights.jl")
+    
     include("misc.jl")
     include("means.jl")
     include("scalarstats.jl")

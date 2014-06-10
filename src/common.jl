@@ -1,11 +1,13 @@
 # common utilities
 
-
 ## convenient type alias
 #
 #  These types signficantly reduces the need of using
 #  type parameters in functions (which are often just
 #  for the purpose of restricting the arrays to real)
+#
+# These could be removed when the Base supports
+# covariant type notation, i.e. AbstractVector{<:Real}
 #
 
 typealias RealArray{T<:Real,N} AbstractArray{T,N}
@@ -20,46 +22,7 @@ typealias RealFP Union(Float32, Float64)
 
 ## conversion from real to fp types
 
-fptype(::Type{Float32}) = Float32
-fptype(::Type{Float64}) = Float64
-fptype(::Type{Bool}) = Float32
-fptype(::Type{Int8}) = Float32
-fptype(::Type{Uint8}) = Float32
-fptype(::Type{Int16}) = Float32
-fptype(::Type{Uint16}) = Float32
-fptype(::Type{Int32}) = Float64
-fptype(::Type{Uint32}) = Float64
-fptype(::Type{Int64}) = Float64
-fptype(::Type{Uint64}) = Float64
-fptype(::Type{Int128}) = Float64
-fptype(::Type{Uint128}) = Float64
-
-## consistent way to raise error
-#
-# only change this, if we decide to change to way that
-# dimension errors are raised
-#
-
-raise_dimerror(msg::String) = throw(DimensionMismatch(msg))
-raise_dimerror() = raise_dimerror("")
-
-# weight vector: 
-#
-#    a wrapper that indicator a vector representing a sequence of weights
-#
-immutable WeightVec{W<:Real,Vec<:RealVector}
-    values::Vec
-    sum::W
-end
-
-WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
-WeightVec(vs::RealVector) = WeightVec(vs, sum(vs))
-
-weights(vs::RealVector) = WeightVec(vs)
-weights(vs::RealArray) = WeightVec(vec(vs))
-
-eltype(wv::WeightVec) = eltype(wv.values)
-length(wv::WeightVec) = length(wv.values)
-values(wv::WeightVec) = wv.values
-sum(wv::WeightVec) = wv.sum
-isempty(wv::WeightVec) = isempty(wv.values)
+fptype{T<:Union(Float32,Bool,Int8,Uint8,Int16,Uint16)}(::Type{T}) = Float32
+fptype{T<:Union(Float64,Int64,Uint64,Int128,Uint128)}(::Type{T}) = Float64
+fptype(::Type{Complex64}) = Complex64
+fptype(::Type{Complex128}) = Complex128
