@@ -21,11 +21,15 @@ isempty(wv::WeightVec) = isempty(wv.values)
 
 ##### Weighted sum #####
 
-# 1D weighted sum/mean
+## weighted sum over vectors
+
+wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
+
+# Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
 Base.sum(v::BitArray, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::SparseMatrixCSC, w::WeightVec) = wsum(v, values(w))
-Base.sum(v::AbstractArray, w::WeightVec) = wsum(v, values(w))
+Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
 
 # General Cartesian-based weighted sum across dimensions
 import Base.Cartesian: @ngenerate, @nloops, @nref
