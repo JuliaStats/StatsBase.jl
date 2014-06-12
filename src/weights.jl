@@ -32,7 +32,6 @@ Base.sum(v::SparseMatrixCSC, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
 
 # General Cartesian-based weighted sum across dimensions
-import Base.Cartesian: @ngenerate, @nloops, @nref
 @ngenerate N typeof(r) function wsum!{T,N,S,W<:Real}(r::AbstractArray{T,N}, v::AbstractArray{S,N},
                                                      w::AbstractVector{W}, dim::Int)
     1 <= dim <= N || error("dim = $dim not in range [1,$N]")
