@@ -44,6 +44,13 @@ end
 
 # Weighted means
 
+function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractArray)
+    Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
+    mean(v, weights(w))
+end
+
+Base.mean(v::AbstractArray, w::WeightVec) = sum(v, w) / sum(w)
+
 Base.mean!(r::AbstractArray, v::AbstractArray, w::WeightVec, dim::Int) =
     scale!(Base.sum!(r, v, w, dim), inv(sum(w)))
 

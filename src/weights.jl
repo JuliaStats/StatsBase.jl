@@ -26,12 +26,6 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 Base.sum(v::BitArray, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::SparseMatrixCSC, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::WeightVec) = wsum(v, values(w))
-Base.mean(v::AbstractArray, w::WeightVec) = sum(v, w) / sum(w)
-
-function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractArray)
-    Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
-    mean(v, weights(w))
-end
 
 # General Cartesian-based weighted sum across dimensions
 import Base.Cartesian: @ngenerate, @nloops, @nref
