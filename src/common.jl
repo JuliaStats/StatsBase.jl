@@ -26,14 +26,3 @@ fptype{T<:Union(Float32,Bool,Int8,Uint8,Int16,Uint16)}(::Type{T}) = Float32
 fptype{T<:Union(Float64,Int64,Uint64,Int128,Uint128)}(::Type{T}) = Float64
 fptype(::Type{Complex64}) = Complex64
 fptype(::Type{Complex128}) = Complex128
-
-## auxiliary functions
-
-function numslices(A::AbstractArray, d::Int) # the number of d-dimensional slices
-    ns = 1
-    for i=d+1:ndims(A)
-        ns *= size(A,i)
-    end
-    return ns::Int
-end
-
