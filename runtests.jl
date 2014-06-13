@@ -1,6 +1,7 @@
 using StatsBase
 
 tests = ["mathfuns", 
+         "weights",
          "means", 
          "scalarstats", 
          "counts", 
