@@ -1,8 +1,10 @@
 module StatsBase
+    using ArrayViews
+
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
-    import Base.LinAlg: BlasReal
-    import Base.Cartesian: @ngenerate, @nloops, @nref
+    import Base.LinAlg: BlasReal, BlasFloat
+    import Base.Cartesian: @ngenerate, @nloops, @nref, @nextract
 
     export
 
