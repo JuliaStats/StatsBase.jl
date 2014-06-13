@@ -172,6 +172,7 @@ _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bo
 ## wsum! and wsum
 
 wsumtype{T,W}(::Type{T}, ::Type{W}) = typeof(zero(T) * zero(W) + zero(T) * zero(W))
+wsumtype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
 function wsum!{T,N}(R::AbstractArray, A::AbstractArray{T,N}, w::AbstractVector, dim::Int; init::Bool=true)
     1 <= dim <= N || error("dim should be within [1, $N]")
@@ -192,4 +193,24 @@ Base.sum!{W<:Real}(R::AbstractArray, A::AbstractArray, w::WeightVec{W}, dim::Int
     wsum!(R, A, values(w), dim; init=init)
 
 Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = wsum(A, values(w), dim)
+
+
+###### Weighted means #####
+
+function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
+    Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
+    mean(v, weights(w))
+end
+
+Base.mean(v::AbstractArray, w::WeightVec) = sum(v, w) / sum(w)
+
+Base.mean!(R::AbstractArray, A::AbstractArray, w::WeightVec, dim::Int) =
+    scale!(Base.sum!(R, A, w, dim), inv(sum(w)))
+
+wmeantype{T,W}(::Type{T}, ::Type{W}) = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
+wmeantype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
+
+Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
+    mean!(Array(wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
+
 
