@@ -1,4 +1,48 @@
-# Statistics for an array of scalars
+# Descriptive Statistics
+
+
+#############################
+#
+#   About Location
+#
+#############################
+
+# Geometric mean
+function geomean(a::RealArray)
+    s = 0.0
+    n = length(a)
+    for i = 1 : n
+        @inbounds s += log(a[i])
+    end
+    return exp(s / n)
+end
+
+# Harmonic mean
+function harmmean(a::RealArray)
+    s = 0.0
+    n = length(a)
+    for i in 1 : n
+        @inbounds s += inv(a[i])
+    end
+    return n / s
+end
+
+# Trimmed mean
+function trimmean(x::RealArray, p::Real)
+    n = length(x)
+    n > 0 || error("x can not be empty.")
+    0 <= p < 1 || error("p must be non-negative and less than 1.")
+    rn = min(iround(n * p), n-1)
+
+    sx = sort(x)
+    nl = rn >> 1
+    nh = (rn - nl)
+    s = 0.0
+    for i = (1+nl) : (n-nh)
+        @inbounds s += x[i]
+    end
+    return s / (n - rn)
+end
 
 
 #############################

@@ -123,7 +123,6 @@ module StatsBase
     include("weights.jl")
     
     include("misc.jl")
-    include("means.jl")
     include("scalarstats.jl")
     include("counts.jl")
     include("ranking.jl")
