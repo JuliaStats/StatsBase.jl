@@ -18,6 +18,8 @@ values(wv::WeightVec) = wv.values
 sum(wv::WeightVec) = wv.sum
 isempty(wv::WeightVec) = isempty(wv.values)
 
+Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
+
 
 ##### Weighted sum #####
 
