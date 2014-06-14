@@ -5,6 +5,42 @@
 #
 ###########################################################
 
+### Algorithms for sampling with replacement
+
+function direct_sample!(a::AbstractArray, x::AbstractArray)
+    s = RandIntSampler(length(a))
+    for i = 1:length(x)
+        @inbounds x[i] = a[rand(s)]
+    end
+    x
+end
+
+function ordered_sample!(a::AbstractArray, x::AbstractArray)
+    # Original author: Mike Innes
+    n = length(a)
+    k = length(x)
+    offset = 0
+    i = 1
+    while offset < k
+        rk = k - offset
+        if i == n
+            for j = 1 : rk
+                @inbounds x[offset + j] = a[i]
+            end
+            offset = k
+        else
+            m = rand_binom(rk, 1.0 / (n - i + 1))
+            for j = 1 : m
+                @inbounds x[offset + j] = a[i]
+            end
+            i += 1
+            offset += m
+        end
+    end
+    x
+end
+
+
 ### draw a pair of distinct integers in [1:n]
 
 function samplepair(n::Int)
@@ -18,8 +54,7 @@ function samplepair(a::AbstractArray)
     return a[i1], a[i2]
 end
 
-
-### internal sampling algorithms
+### Algorithm for 
 
 # Fisher-Yates sampling
 immutable FisherYatesSampler
@@ -73,33 +108,6 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     x
 end
 
-# Ordered sampling with replacement
-# Original author: Mike Innes
-function ordered_sample!(a::AbstractArray, x::AbstractArray)
-    n = length(a)
-    k = length(x)
-    offset = 0
-    i = 1
-
-    while offset < k
-        rk = k - offset
-        if i == n
-            for j = 1 : rk
-                @inbounds x[offset + j] = a[i]
-            end
-            offset = k
-        else
-            m = rand_binom(rk, 1.0 / (n - i + 1))
-            for j = 1 : m
-                @inbounds x[offset + j] = a[i]
-            end
-            i += 1
-            offset += m
-        end
-    end
-    x
-end
-
 # Ordered sampling without replacement
 # Original author: Mike Innes
 function rand_first_index(n, k)
@@ -136,18 +144,13 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     n = length(a)
     k = length(x)
 
-    if isempty(x)
-        return x
-    end
+    n == 0 && return x
 
-    if replace
+    if replace  # direct sample
         if ordered
             ordered_sample!(a, x)
         else
-            s = RandIntSampler(n)
-            for i = 1:k
-                @inbounds x[i] = a[rand(s)]
-            end
+            direct_sample!(a, x)
         end
 
     else  # without replacement
