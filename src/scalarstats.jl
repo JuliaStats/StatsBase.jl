@@ -154,6 +154,18 @@ end
 
 #############################
 #
+#   quantile and friends
+#
+#############################
+
+percentile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
+
+quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
+nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
+
+
+#############################
+#
 #   Dispersion
 #
 #############################
@@ -180,7 +192,8 @@ mad!{T<:Real}(v::AbstractArray{T}) = mad!(v, median!(v))
 mad{T<:Real}(v::AbstractArray{T}) = mad!(copy(v))
 mad{T<:Real}(v::Range{T}) = mad!([v])
 
-
+# Interquartile range
+iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
 
 
 #############################
@@ -319,30 +332,6 @@ function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     end
     return s
 end
-
-
-
-#############################
-#
-#   quantile and friends
-#
-#############################
-
-percentile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
-iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
-
-quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
-nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
-
-
-#############################
-#
-#   mode & modes
-#
-#############################
-
-
-
 
 
 #############################
