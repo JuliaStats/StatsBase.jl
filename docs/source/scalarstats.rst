@@ -18,6 +18,13 @@ Moments
 
   One can optionally supply a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
+.. function:: moment(x, k[, m][, wv])
+
+  Compute the ``k``-th order central moment of the values in `x`. It is the sample mean of 
+  ``(x - mean(x)).^k``. 
+
+  One can optionally supply the center ``m``, and/or a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
+
 
 Measurements of Variation
 ---------------------------
