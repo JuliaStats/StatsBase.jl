@@ -24,13 +24,13 @@ function ordered_sample!(a::AbstractArray, x::AbstractArray)
     while offset < k
         rk = k - offset
         if i == n
-            for j = 1 : rk
+            for j = 1:rk
                 @inbounds x[offset + j] = a[i]
             end
             offset = k
         else
             m = rand_binom(rk, 1.0 / (n - i + 1))
-            for j = 1 : m
+            for j = 1:m
                 @inbounds x[offset + j] = a[i]
             end
             i += 1
@@ -54,7 +54,8 @@ function samplepair(a::AbstractArray)
     return a[i1], a[i2]
 end
 
-### Algorithm for 
+
+### Algorithm for sampling without replacement
 
 # Fisher-Yates sampling
 immutable FisherYatesSampler
@@ -143,12 +144,15 @@ sample(a::AbstractArray) = a[randi(length(a))]
 function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
-
     n == 0 && return x
 
-    if replace  # direct sample
+    if replace  # with replacement
         if ordered
-            ordered_sample!(a, x)
+            if k > 10 * n
+                ordered_sample!(a, x)
+            else
+                sort!(direct_sample!(a, x))
+            end
         else
             direct_sample!(a, x)
         end
@@ -156,8 +160,12 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     else  # without replacement
         k <= n || error("Cannot draw more samples without replacement.")
 
-        if ordered && k > n/20
-            ordered_sample_norep!(a, x)
+        if ordered
+            if k * 20 > n
+                ordered_sample_norep!(a, x)
+            else
+                sort!(sample!(a, x; replace=false, ordered=false))
+            end
         else
             if k == 1
                 @inbounds x[1] = sample(a)
@@ -167,10 +175,6 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
                 fisher_yates_sample!(a, x)
             else
                 self_avoid_sample!(a, x)
-            end
-
-            if ordered
-                sort!(x)
             end
         end
     end
