@@ -45,6 +45,7 @@ module StatsBase
 
     skewness,   # (standardized) skewness
     kurtosis,   # (excessive) kurtosis
+    moment,     # central moment of given order
     
     entropy,        # the entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors

@@ -208,8 +208,8 @@ function skewness(v::RealArray, m::Real)
     n = length(v)
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment
-    for x_i in v
-        z = x_i - m
+    for i = 1:n
+        @inbounds z = v[i] - m
         z2 = z * z
 
         cm2 += z2
@@ -222,12 +222,12 @@ end
 
 function skewness(v::RealArray, wv::WeightVec, m::Real)
     n = length(v)
-    length(wv) == n || raise_dimerror()
+    length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment    
     w = values(wv)
 
-    @inbounds for i = 1 : n
+    @inbounds for i = 1:n
         x_i = v[i]
         w_i = w[i]
         z = x_i - m
@@ -250,8 +250,8 @@ function kurtosis(v::RealArray, m::Real)
     n = length(v)
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
-    for x_i in v
-        z = x_i - m
+    for i = 1:n
+        @inbounds z = v[i] - m
         z2 = z * z
         cm2 += z2
         cm4 += z2 * z2
@@ -263,7 +263,7 @@ end
 
 function kurtosis(v::RealArray, wv::WeightVec, m::Real)
     n = length(v)
-    length(wv) == n || raise_dimerror()
+    length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
     w = values(wv)
@@ -285,6 +285,109 @@ end
 
 kurtosis(v::RealArray) = kurtosis(v, mean(v))
 kurtosis(v::RealArray, wv::WeightVec) = kurtosis(v, wv, mean(v, wv))
+
+# general central moment
+
+function _moment2(v::RealArray, m::Real)
+    n = length(v)
+    s = 0.0
+    for i = 1:n
+        @inbounds z = v[i] - m
+        s += z * z
+    end
+    s / n
+end
+
+function _moment2(v::RealArray, m::Real, wv::WeightVec)
+    n = length(v)
+    s = 0.0
+    w = values(wv)
+    for i = 1:n
+        @inbounds z = v[i] - m
+        @inbounds s += (z * z) * w[i]
+    end
+    s / sum(wv)
+end
+
+function _moment3(v::RealArray, m::Real)
+    n = length(v)
+    s = 0.0
+    for i = 1:n
+        @inbounds z = v[i] - m
+        s += z * z * z
+    end
+    s / n
+end
+
+function _moment3(v::RealArray, m::Real, wv::WeightVec)
+    n = length(v)
+    s = 0.0
+    w = values(wv)
+    for i = 1:n
+        @inbounds z = v[i] - m
+        @inbounds s += (z * z * z) * w[i]
+    end
+    s / sum(wv)
+end
+
+function _moment4(v::RealArray, m::Real)
+    n = length(v)
+    s = 0.0
+    for i = 1:n
+        @inbounds z = v[i] - m
+        s += abs2(z * z)
+    end
+    s / n
+end
+
+function _moment4(v::RealArray, m::Real, wv::WeightVec)
+    n = length(v)
+    s = 0.0
+    w = values(wv)
+    for i = 1:n
+        @inbounds z = v[i] - m
+        @inbounds s += abs2(z * z) * w[i]
+    end
+    s / sum(wv)
+end
+
+function _momentk(v::RealArray, k::Int, m::Real)
+    n = length(v)
+    s = 0.0
+    for i = 1:n
+        @inbounds z = v[i] - m
+        s += (z ^ k)
+    end
+    s / n
+end
+
+function _momentk(v::RealArray, k::Int, m::Real, wv::WeightVec)
+    n = length(v)
+    s = 0.0
+    w = values(wv)
+    for i = 1:n
+        @inbounds z = v[i] - m
+        @inbounds s += (z ^ k) * w[i]
+    end
+    s / sum(wv)
+end
+
+function moment(v::RealArray, k::Int, m::Real)
+    k == 2 ? _moment2(v, m) :
+    k == 3 ? _moment3(v, m) :
+    k == 4 ? _moment4(v, m) :
+    _momentk(v, k, m)
+end
+
+function moment(v::RealArray, k::Int, m::Real, wv::WeightVec)
+    k == 2 ? _moment2(v, m, wv) :
+    k == 3 ? _moment3(v, m, wv) :
+    k == 4 ? _moment4(v, m, wv) :
+    _momentk(v, k, m, wv)
+end
+
+moment(v::RealArray, k::Int) = moment(v, k, mean(v))
+moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, mean(v, wv), wv)
 
 
 #############################
