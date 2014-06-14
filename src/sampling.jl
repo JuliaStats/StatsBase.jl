@@ -1,11 +1,16 @@
-# Functions for sampling from populations
+
+###########################################################
+#
+#   (non-weighted) sampling
+#
+###########################################################
 
 ### draw a pair of distinct integers in [1:n]
 
 function samplepair(n::Int)
     i1 = randi(n)
     i2 = randi(n-1)
-    return (i1, i2 == i1 ? n : i2)
+    return (i1, ifelse(i2 == i1, n, i2))
 end
 
 function samplepair(a::AbstractArray)
@@ -26,12 +31,9 @@ end
 
 function rand!(s::FisherYatesSampler, a::AbstractArray, x::AbstractArray)
     # draw samples without-replacement to x
-
     n::Int = s.n
     k::Int = length(x)
-    if k > n
-        throw(ArgumentError("Cannot draw more than n samples without replacement."))
-    end
+    k <= n || throw(ArgumentError("Cannot draw more than n samples without replacement."))
 
     seq::Vector{Int} = s.seq
     for i = 1:k
@@ -51,7 +53,7 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     # This algorithm is suitable when length(x) << length(a)
 
     s = Set{Int}()
-    # sizehint(s, length(x))
+    sizehint(s, length(x))
     rgen = RandIntSampler(length(a))
 
     # first one
@@ -73,7 +75,6 @@ end
 
 # Ordered sampling with replacement
 # Original author: Mike Innes
-
 function ordered_sample!(a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
@@ -101,7 +102,6 @@ end
 
 # Ordered sampling without replacement
 # Original author: Mike Innes
-
 function rand_first_index(n, k)
     r = rand()
     p = k/n
@@ -127,11 +127,8 @@ function ordered_sample_norep!(xs::AbstractArray, target::AbstractArray)
     return target
 end
 
-###########################################################
-#
-#   Interface functions
-#
-###########################################################
+
+### Interface functions (poly-algorithms)
 
 sample(a::AbstractArray) = a[randi(length(a))]
 
