@@ -3,7 +3,7 @@
 
 #############################
 #
-#   About Location
+#   Location
 #
 #############################
 
@@ -43,6 +43,144 @@ function trimmean(x::RealArray, p::Real)
     end
     return s / (n - rn)
 end
+
+# middle: (min + max) / 2
+middle{T<:FloatingPoint}(a1::T, a2::T) = (a1 + a2) / convert(T, 2)
+middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
+middle(a::RealArray) = middle(extrema(a)...)
+
+# compute mode, given the range of integer values
+function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
+    isempty(a) && error("mode: input array cannot be empty.")
+    len = length(a)
+    r0 = rgn[1]  
+    r1 = rgn[end]
+    cnts = zeros(Int, length(rgn))
+    mc = 0    # maximum count
+    mv = r0   # a value corresponding to maximum count
+    for i = 1:len
+        @inbounds x = a[i]
+        if r0 <= x <= r1
+            @inbounds c = (cnts[x - r0 + 1] += 1)
+            if c > mc
+                mc = c
+                mv = x
+            end
+        end
+    end
+    return mv
+end
+
+function modes{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
+    r0 = rgn[1]  
+    r1 = rgn[end]
+    n = length(rgn)
+    cnts = zeros(Int, n)
+    # find the maximum count
+    mc = 0 
+    for i = 1:length(a)
+        @inbounds x = a[i]
+        if r0 <= x <= r1
+            @inbounds c = (cnts[x - r0 + 1] += 1)
+            if c > mc
+                mc = c
+            end
+        end
+    end
+    # find all values corresponding to maximum count
+    ms = T[]
+    for i = 1:n
+        @inbounds if cnts[i] == mc
+            push!(ms, rgn[i])
+        end
+    end
+    return ms
+end
+
+# compute mode over arbitrary array
+function mode{T}(a::AbstractArray{T})
+    isempty(a) && error("mode: input array cannot be empty.")
+    cnts = (T=>Int)[]
+    # first element
+    mc = 1
+    mv = a[1]
+    cnts[mv] = 1
+    # find the mode along with table construction
+    for i = 2 : length(a)
+        @inbounds x = a[i]
+        if haskey(cnts, x)
+            c = (cnts[x] += 1)
+            if c > mc
+                mc = c
+                mv = x
+            end
+        else
+            cnts[x] = 1
+            # in this case: c = 1, and thus c > mc won't happen
+        end
+    end
+    return mv
+end
+
+function modes{T}(a::AbstractArray{T})
+    isempty(a) && error("modes: input array cannot be empty.")
+    cnts = (T=>Int)[]
+    # first element
+    mc = 1
+    cnts[a[1]] = 1
+    # find the mode along with table construction
+    for i = 2 : length(a)
+        @inbounds x = a[i]
+        if haskey(cnts, x)
+            c = (cnts[x] += 1)
+            if c > mc
+                mc = c
+            end
+        else
+            cnts[x] = 1
+            # in this case: c = 1, and thus c > mc won't happen
+        end
+    end
+    # find values corresponding to maximum counts
+    ms = T[]
+    for (x, c) in cnts
+        if c == mc
+            push!(ms, x)
+        end
+    end
+    return ms
+end
+
+
+#############################
+#
+#   Dispersion
+#
+#############################
+
+# Variation coefficient: std / mean
+variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m
+variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
+
+# Standard error of the mean: std(a) / sqrt(len)
+sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
+
+# Median absolute deviation
+mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v .- center))
+
+function mad!{T<:Real}(v::AbstractArray{T}, center::Real)
+    for i in 1:length(v)
+        v[i] = abs(v[i]-center)
+    end
+    1.4826 * median!(v, checknan=false)
+end
+
+mad!{T<:Real}(v::AbstractArray{T}) = mad!(v, median!(v))
+
+mad{T<:Real}(v::AbstractArray{T}) = mad!(copy(v))
+mad{T<:Real}(v::Range{T}) = mad!([v])
+
+
 
 
 #############################
@@ -135,45 +273,6 @@ end
 kurtosis(v::RealArray) = kurtosis(v, mean(v))
 kurtosis(v::RealArray, wv::WeightVec) = kurtosis(v, wv, mean(v, wv))
 
-#############################
-#
-#   Variability measurements
-#
-#############################
-
-# Variation: std / mean
-variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m
-variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
-
-# Standard error of the mean: std(a)
-sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
-
-# Median absolute deviation
-mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v .- center))
-
-function mad!{T<:Real}(v::AbstractArray{T}, center::Real)
-    for i in 1:length(v)
-        v[i] = abs(v[i]-center)
-    end
-    1.4826 * median!(v, checknan=false)
-end
-
-mad!{T<:Real}(v::AbstractArray{T}) = mad!(v, median!(v))
-
-mad{T<:Real}(v::AbstractArray{T}) = mad!(copy(v))
-mad{T<:Real}(v::Range1{T}) = mad!([v])
-
-
-#############################
-#
-#   min/max related
-#
-#############################
-
-# middle
-middle{T<:FloatingPoint}(a1::T, a2::T) = (a1 + a2) / convert(T, 2)
-middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
-
 
 #############################
 #
@@ -242,119 +341,7 @@ nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 #
 #############################
 
-# compute mode, given the range of integer values
-function mode{T<:Integer}(a::AbstractArray{T}, rgn::Range1{T})
-    isempty(a) && error("mode: input array cannot be empty.")
 
-    r0 = rgn[1]  
-    r1 = rgn[end]
-    cnts = zeros(Int, length(rgn))
-
-    mc = 0    # maximum count
-    mv = r0   # a value corresponding to maximum count
-
-    for x in a
-        if r0 <= x <= r1
-            @inbounds c = (cnts[x - r0 + 1] += 1)
-            if c > mc
-                mc = c
-                mv = x
-            end
-        end
-    end
-
-    return mv
-end
-
-function modes{T<:Integer}(a::AbstractArray{T}, rgn::Range1{T})
-    r0 = rgn[1]  
-    r1 = rgn[end]
-    n = length(rgn)
-    cnts = zeros(Int, n)
-
-    # find the maximum count
-    mc = 0 
-    for x in a
-        if r0 <= x <= r1
-            @inbounds c = (cnts[x - r0 + 1] += 1)
-            if c > mc
-                mc = c
-            end
-        end
-    end
-
-    # find all values corresponding to maximum count
-    ms = T[]
-    for i = 1 : n
-        @inbounds if cnts[i] == mc
-            push!(ms, rgn[i])
-        end
-    end
-
-    return ms
-end
-
-function mode{T}(a::AbstractArray{T})
-    isempty(a) && error("mode: input array cannot be empty.")
-
-    cnts = (T=>Int)[]
-
-    # first element
-    mc = 1
-    mv = a[1]
-    cnts[mv] = 1
-
-    # find the mode along with table construction
-    for i = 2 : length(a)
-        @inbounds x = a[i]
-        if haskey(cnts, x)
-            c = (cnts[x] += 1)
-            if c > mc
-                mc = c
-                mv = x
-            end
-        else
-            cnts[x] = 1
-            # in this case: c = 1, and thus c > mc won't happen
-        end
-    end
-
-    return mv
-end
-
-function modes{T}(a::AbstractArray{T})
-    isempty(a) && error("modes: input array cannot be empty.")
-
-    cnts = (T=>Int)[]
-
-    # first element
-    mc = 1
-    cnts[a[1]] = 1
-
-    # find the mode along with table construction
-    for i = 2 : length(a)
-        @inbounds x = a[i]
-        if haskey(cnts, x)
-            c = (cnts[x] += 1)
-            if c > mc
-                mc = c
-            end
-        else
-            cnts[x] = 1
-            # in this case: c = 1, and thus c > mc won't happen
-        end
-    end
-
-    # find values corresponding to maximum counts
-    ms = T[]
-    for (x, c) in cnts
-        if c == mc
-            push!(ms, x)
-        end
-    end
-
-    return ms
-end
 
 
 
