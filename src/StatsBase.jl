@@ -78,9 +78,28 @@ module StatsBase
     autocor!, autocor,      # auto correlation
     crosscov!, crosscov,    # cross covariance
     crosscor!, crosscor,    # cross correlation
-    pacf!, pacf,  # partial auto-correlation
+    pacf!, pacf,            # partial auto-correlation
 
     ## sampling
+    VariateForm,
+    ValueSupport,
+    Univariate,
+    Multivariate,
+    Matrixvariate,
+    Discrete,
+    Continuous,
+
+    Sampler,
+    UnivariateSampler,
+    MultivariateSampler,
+    MatrixSampler,
+    DiscreteUnivariateSampler,
+    ContinuousUnivariateSampler,
+    DiscreteMultivariateSampler,
+    ContinuousMultivariateSampler,
+    DiscreteMatrixSampler,
+    ContinuousMatrixSampler,
+
     samplepair,     # draw a pair of distinct elements   
     sample,         # sampling from a population 
     sample!,        # sampling from a population, with pre-allocated output
