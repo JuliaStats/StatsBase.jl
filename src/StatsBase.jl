@@ -154,10 +154,12 @@ module StatsBase
     include("rankcorr.jl")
     include("signalcorr.jl")
     include("rand.jl")
-    include("sampling.jl")
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
+
+    include("samplebase.jl")
+    include("sampling.jl")
 
     include("statmodels.jl")
 
