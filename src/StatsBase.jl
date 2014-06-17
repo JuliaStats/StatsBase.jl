@@ -160,6 +160,7 @@ module StatsBase
 
     include("samplebase.jl")
     include("sampling.jl")
+    include("categoricalsamplers.jl")
 
     include("statmodels.jl")
 
