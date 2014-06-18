@@ -16,7 +16,7 @@ tests = ["mathfuns",
 println("Running tests:")
 
 for t in tests
-    tfile = joinpath("test", "$(t).jl")
+    tfile = string(t, ".jl")
     println(" * $(tfile) ...")
     include(tfile)
 end
