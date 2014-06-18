@@ -159,10 +159,7 @@ module StatsBase
     include("hist.jl")
     include("misc.jl")
 
-    include("samplebase.jl")
-    include("samplers/categoricalsamplers.jl")
     include("sampling.jl")
-
     include("statmodels.jl")
 
     include("deprecates.jl")

@@ -10,8 +10,7 @@ tests = ["mathfuns",
          "rankcorr",
          "signalcorr", 
          "misc", 
-         "sampling",
-         "categoricalsamplers",]
+         "sampling"]
 
 println("Running tests:")
 
