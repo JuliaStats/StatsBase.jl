@@ -4,13 +4,14 @@ tests = ["mathfuns",
          "weights",
          "scalarstats", 
          "counts", 
-         "ranking", 
-         "sampling", 
+         "ranking",  
          "empirical", 
          "hist", 
          "rankcorr",
          "signalcorr", 
-         "misc"]
+         "misc", 
+         "sampling",
+         "categoricalsamplers",]
 
 println("Running tests:")
 

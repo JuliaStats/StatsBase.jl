@@ -105,6 +105,7 @@ module StatsBase
     sample!,        # sampling from a population, with pre-allocated output
     wsample,        # sampling from a population with weights
     wsample!,       # weighted sampling, with pre-allocated output
+    numcategories,  # the number of categories of a categorical sampler/distribution
 
     ## empirical
     ecdf,           # empirical cumulative distribution function
@@ -159,8 +160,8 @@ module StatsBase
     include("misc.jl")
 
     include("samplebase.jl")
+    include("samplers/categoricalsamplers.jl")
     include("sampling.jl")
-    include("categoricalsamplers.jl")
 
     include("statmodels.jl")
 
