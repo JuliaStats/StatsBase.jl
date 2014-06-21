@@ -7,16 +7,43 @@
 
 ### Algorithms for sampling with replacement
 
+# Direct sampling
+#
+#   for each i, draw an index from 1:length(a), and
+#   pick the corresponding element from a.
+#
+#   x[i] and x[j] are independent, when i != j
+#
+function direct_sample!(a::UnitRange, x::AbstractArray)
+    s = RandIntSampler(length(a))
+    b = a[1] - 1
+    if b == 0
+        for i = 1:length(x)
+            @inbounds x[i] = rand(s)
+        end
+    else
+        for i = 1:length(x)
+            @inbounds x[i] = b + rand(s)
+        end
+    end
+    return x
+end
+
 function direct_sample!(a::AbstractArray, x::AbstractArray)
     s = RandIntSampler(length(a))
     for i = 1:length(x)
         @inbounds x[i] = a[rand(s)]
     end
-    x
+    return x
 end
 
-function ordered_sample!(a::AbstractArray, x::AbstractArray)
-    # Original author: Mike Innes
+# Expanded Multinomial sampling
+#
+#   for each element in a, we draw the number of its
+#   occurrences, and fill this element to x for 
+#   this number of times. 
+#
+function xmultinom_sample!(a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
     offset = 0
@@ -24,17 +51,21 @@ function ordered_sample!(a::AbstractArray, x::AbstractArray)
     while offset < k
         rk = k - offset
         if i == n
+            @inbounds ai = a[i]
             for j = 1:rk
-                @inbounds x[offset + j] = a[i]
+                @inbounds x[offset + j] = ai
             end
             offset = k
         else
             m = rand_binom(rk, 1.0 / (n - i + 1))
-            for j = 1:m
-                @inbounds x[offset + j] = a[i]
+            if m > 0
+                @inbounds ai = a[i]
+                for j = 1:m
+                    @inbounds x[offset + j] = a[i]
+                end
+                offset += m
             end
-            i += 1
-            offset += m
+            i += 1            
         end
     end
     x
@@ -149,7 +180,7 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     if replace  # with replacement
         if ordered
             if k > 10 * n
-                ordered_sample!(a, x)
+                xmultinom_sample!(a, x)
             else
                 sort!(direct_sample!(a, x))
             end
