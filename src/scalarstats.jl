@@ -44,11 +44,6 @@ function trimmean(x::RealArray, p::Real)
     return s / (n - rn)
 end
 
-# middle: (min + max) / 2
-middle{T<:FloatingPoint}(a1::T, a2::T) = (a1 + a2) / convert(T, 2)
-middle{T<:Integer}(a1::T, a2::T) = (a1 + a2) / 2
-middle(a::RealArray) = middle(extrema(a)...)
-
 # compute mode, given the range of integer values
 function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
     isempty(a) && error("mode: input array cannot be empty.")

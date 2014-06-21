@@ -41,10 +41,6 @@ Measurements of Variation
 
   Compute the `median absolute deviation <http://en.wikipedia.org/wiki/Median_absolute_deviation>`_ of ``x``.
 
-.. function:: middle(a, b)
-
-  Compute the middle between ``a`` and ``b``, *i.e.* ``(a + b) / 2``.
-
 
 Entropy and Friends
 ---------------------

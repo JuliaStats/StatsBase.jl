@@ -23,11 +23,6 @@ using Base.Test
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.4) 4.0
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.8) 3.0
 
-## middle
-
-@test middle(1, 3) == 2
-@test middle(1:6) == 3.5
-
 ## mode & modes
 
 @test mode([1, 2, 3, 3, 2, 2, 1], 1:3) == 2
