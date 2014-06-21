@@ -81,31 +81,11 @@ module StatsBase
     pacf!, pacf,            # partial auto-correlation
 
     ## sampling
-    VariateForm,
-    ValueSupport,
-    Univariate,
-    Multivariate,
-    Matrixvariate,
-    Discrete,
-    Continuous,
-
-    Sampler,
-    UnivariateSampler,
-    MultivariateSampler,
-    MatrixSampler,
-    DiscreteUnivariateSampler,
-    ContinuousUnivariateSampler,
-    DiscreteMultivariateSampler,
-    ContinuousMultivariateSampler,
-    DiscreteMatrixSampler,
-    ContinuousMatrixSampler,
-
     samplepair,     # draw a pair of distinct elements   
     sample,         # sampling from a population 
     sample!,        # sampling from a population, with pre-allocated output
     wsample,        # sampling from a population with weights
     wsample!,       # weighted sampling, with pre-allocated output
-    numcategories,  # the number of categories of a categorical sampler/distribution
 
     ## empirical
     ecdf,           # empirical cumulative distribution function
