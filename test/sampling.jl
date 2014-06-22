@@ -141,7 +141,11 @@ for j = 1:size(a,2)
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
+a = sample(3:12, 5; replace=false)
+check_sample_norep(a, (3, 12), 0; ordered=false)
 
+a = sample(3:12, 5; replace=false, ordered=true)
+check_sample_norep(a, (3, 12), 0; ordered=true)
 
 
 
