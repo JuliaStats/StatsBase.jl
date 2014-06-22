@@ -434,6 +434,7 @@ end
 
 function xmultinom_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
     offset = 0
     i = 1
@@ -463,52 +464,85 @@ function xmultinom_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
 end
 
 
-function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; ordered::Bool=false)
+function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    k = length(x)
+
+    w = Array(Float64, n)
+    copy!(w, values(wv))
+    wsum = sum(wv)
+
+    for i = 1:k
+        u = rand() * wsum
+        j = 1
+        c = w[1]
+        while c < u && j < n
+            @inbounds c += w[j+=1]
+        end
+        @inbounds x[i] = a[j]
+
+        @inbounds wsum -= w[j]
+        @inbounds w[j] = 0.0
+    end
+    return x
+end
+
+
+function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; 
+                 replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
 
-    if ordered
-        if k < n && k < 256
-            sort!(direct_sample!(a, wv, x))
-        else
-            xmultinom_sample!(a, wv, x)
-        end
-    else
-        if k > 3 * n
-            shuffle!(xmultinom_sample!(a, wv, x))
-        else
-            if n < 40
-                direct_sample!(a, wv, x)
+    if replace
+        if ordered
+            if k < n && k < 256
+                sort!(direct_sample!(a, wv, x))
             else
-                t = ifelse(n < 500, 64, 32)
-                if k < t
+                xmultinom_sample!(a, wv, x)
+            end
+        else
+            if k > 3 * n
+                shuffle!(xmultinom_sample!(a, wv, x))
+            else
+                if n < 40
                     direct_sample!(a, wv, x)
                 else
-                    alias_sample!(a, wv, x)
+                    t = ifelse(n < 500, 64, 32)
+                    if k < t
+                        direct_sample!(a, wv, x)
+                    else
+                        alias_sample!(a, wv, x)
+                    end
                 end
             end
+        end
+    else
+        naive_wsample_norep!(a, wv, x)
+        if ordered
+            sort!(x)
         end
     end
     return x
 end
 
-sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; ordered::Bool=false) =
-    sample!(a, wv, Array(T, n); ordered=ordered)
+sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; replace::Bool=true, ordered::Bool=false) =
+    sample!(a, wv, Array(T, n); replace=replace, ordered=ordered)
 
-sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; ordered::Bool=false) =
-    sample!(a, wv, Array(T, dims); ordered=ordered)
+sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; replace::Bool=true, ordered::Bool=false) =
+    sample!(a, wv, Array(T, dims); replace=replace, ordered=ordered)
 
 # wsample interface
 
 wsample(w::RealVector) = sample(weights(w))
 wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
 
-wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; ordered::Bool=false) =
-    sample!(a, weights(w), x; ordered=ordered)
+wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, ordered::Bool=false) =
+    sample!(a, weights(w), x; replace=replace, ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; ordered::Bool=false) =
-    wsample!(a, w, Array(T, n); ordered=ordered)
+wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
+    wsample!(a, w, Array(T, n); replace=replace, ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; ordered::Bool=false) =
-    wsample!(a, w, Array(T, dims); ordered=ordered)
+wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) =
+    wsample!(a, w, Array(T, dims); replace=replace, ordered=ordered)
 
