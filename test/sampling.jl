@@ -6,6 +6,19 @@ import Base: maxabs
 
 srand(1234)
 
+#### auxiliary 
+
+function norepeat(a::AbstractArray)
+    sa = sort(a)
+    for i = 2:length(a)
+        if a[i] == a[i-1]
+            return false
+        end
+    end
+    return true
+end
+
+
 #### randi
 
 const randi = StatsBase.randi
@@ -24,54 +37,59 @@ x = [randi(3, 12) for i = 1:n]
 
 #### sample with replacement
 
+function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+    vmin, vmax = vrgn
+    (amin, amax) = extrema(a)
+    @test vmin <= amin <= amax <= vmax
+    n = vmax - vmin + 1
+    p0 = fill(1/n, n)
+    if ordered
+        @test issorted(a)
+        if ptol > 0
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+        end
+    else
+        @test !issorted(a)
+        ncols = size(a,2)
+        if ncols == 1
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+        else
+            for j = 1:ncols
+                aj = view(a, :, j)
+                @test_approx_eq_eps proportions(aj, vmin:vmax) p0 ptol
+            end
+        end
+    end
+end
+
 import StatsBase: direct_sample!, xmultinom_sample!
 
 a = direct_sample!(1:10, zeros(Int, n, 3))
-for j = 1:size(a,2)
-    aj = a[:,j]
-    @test extrema(aj) == (1, 10)
-    @test_approx_eq_eps proportions(aj, 1:10) fill(0.1, 10) 5.0e-3
-end
+check_sample_wrep(a, (1, 10), 5.0e-3; ordered=false)
 
 a = direct_sample!(3:12, zeros(Int, n, 3))
-for j = 1:size(a,2)
-    aj = a[:,j]
-    @test extrema(aj) == (3, 12)
-    @test_approx_eq_eps proportions(aj, 3:12) fill(0.1, 10) 5.0e-3
-end
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = direct_sample!([11:20], zeros(Int, n, 3))
-for j = 1:size(a,2)
-    aj = a[:,j]
-    @test extrema(aj) == (11, 20)
-    @test_approx_eq_eps proportions(aj, 11:20) fill(0.1, 10) 5.0e-3
-end
+check_sample_wrep(a, (11, 20), 5.0e-3; ordered=false)
 
 a = xmultinom_sample!(3:12, zeros(Int, n))
-@test issorted(a)
-@test a[1] == 3 && a[end] == 12
-@test_approx_eq_eps proportions(a, 3:12) fill(0.1, 10) 5.0e-3
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
 
 a = xmultinom_sample!(101:200, zeros(Int, 10))
-@test issorted(a)
-@test 101 <= minimum(a) <= maximum(a) <= 200
+check_sample_wrep(a, (101, 200), 0; ordered=true)
 
 a = sample(3:12, n)
-@test !issorted(a)
-@test extrema(a) == (3, 12)
-@test_approx_eq_eps proportions(a, 3:12) fill(0.1, 10) 5.0e-3
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = sample(3:12, n; ordered=true)
-@test issorted(a)
-@test extrema(a) == (3, 12)
-@test_approx_eq_eps proportions(a, 3:12) fill(0.1, 10) 5.0e-3
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
 
 a = sample(3:12, 10; ordered=true)
-@test issorted(a)
-@test 3 <= minimum(a) <= maximum(a) <= 12
+check_sample_wrep(a, (3, 12), 0; ordered=true)
 
 
-
+#### sample without replacement
 
 
 
