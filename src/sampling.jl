@@ -99,10 +99,10 @@ function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=tr
 
     # initialize
     for i = 1:k
-        x[i] = a[i]
+        @inbounds x[i] = a[i]
     end
     if initshuffle
-        for j = 1:k
+        @inbounds for j = 1:k
             l = randi(j, k)
             if l != j
                 t = x[j]
@@ -116,7 +116,7 @@ function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=tr
     s = RandIntSampler(k)
     for i = k+1:n
         if rand() * i < k  # keep it with probability k / i
-            x[rand(s)] = a[i]            
+            @inbounds x[rand(s)] = a[i]            
         end
     end
     return x
@@ -183,37 +183,93 @@ function self_avoid_sample!(a::AbstractArray, x::AbstractArray)
         x[i] = a[idx]
         push!(s, idx)
     end
-    x
+    return x
 end
 
 
+# Random subsequence sampling
+#
+#  References: 
+#
+#   Jeffrey Scott Vitter.
+#   "Faster Methods for Random Sampling"
+#   Communications of the ACM, 27 (7), July 1984
+#
+#
+# This paper presents three algorithms, respectively
+# named Algorithm A, C, and D.
+#
+# These algorithms are for sequential sampling, and the
+# outputs are ordered. They are implemented below
+#
 
-# Ordered sampling without replacement
-# Original author: Mike Innes
-function rand_first_index(n, k)
-    r = rand()
-    p = k/n
-    i = 1
-    while p < r
-        i += 1
-        p += (1-p)k/(n-(i-1))
-    end
-    return i
-end
+## Algorithm A (page 714)
+#
+#  Require O(n) random numbers.
+#
+function seqsample_a!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
 
-function ordered_sample_norep!(xs::AbstractArray, target::AbstractArray)
-    n = length(xs)
-    k = length(target)
     i = 0
-    for j in 1:k
-        step = rand_first_index(n, k)
-        n -= step
-        i += step
-        target[j] = xs[i]
+    j = 0
+    while k > 1
+        u = rand()
+        q = (n - k) / n
+        while q > u  # skip
+            i += 1
+            n -= 1
+            q *= (n - k) / n
+        end
+        @inbounds x[j+=1] = a[i+=1]
+        n -= 1
         k -= 1
     end
-    return target
+
+    if k > 0  # checking k > 0 is necessary: x can be empty
+        s = itrunc(n * rand())
+        x[j+1] = a[i+(s+1)]
+    end
+    return x
 end
+
+## Algorithm C (page 715)
+#
+#  Require O(k^2) random numbers
+#
+function seqsample_c!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
+
+    i = 0
+    j = 0
+    while k > 1
+        l = n - k + 1
+        minv = l
+        u = n
+        while u >= l
+            v = u * rand()
+            if v < minv
+                minv = v
+            end
+            u -= 1
+        end
+        s = itrunc(minv) + 1
+        x[j+=1] = a[i+=s]
+        n -= s
+        k -= 1
+    end
+
+    if k > 0 
+        s = itrunc(n * rand())
+        x[j+1] = a[i+(s+1)]
+    end
+    return x
+end
+
+## TODO: implement Algorithm D (page 716 - 717)
 
 
 ### Interface functions (poly-algorithms)

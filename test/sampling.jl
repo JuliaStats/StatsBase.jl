@@ -110,7 +110,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
     if ptol > 0 
         p0 = fill(1/n, n)
         if ordered
-            @test_approx_eq_eps proportions(a, vmin:vmax) p0 tol
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
         else
             b = transpose(a)
             for j = 1:size(b,2)
@@ -122,6 +122,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
 end
 
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
+import StatsBase: seqsample_a!, seqsample_c!
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
@@ -141,6 +142,17 @@ for j = 1:size(a,2)
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    seqsample_a!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
+
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    seqsample_c!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 
 
