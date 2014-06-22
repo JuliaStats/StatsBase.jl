@@ -121,7 +121,13 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
     end
 end
 
-import StatsBase: fisher_yates_sample!, self_avoid_sample!
+import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
+
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    knuths_sample!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)

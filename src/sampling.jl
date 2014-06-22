@@ -88,6 +88,40 @@ end
 
 ### Algorithm for sampling without replacement
 
+# Knuth's Algorithm S
+#
+#   Reference: The Art of Computer Programming, Vol 2, 3.4.2, p.142
+#
+function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=true) 
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
+
+    # initialize
+    for i = 1:k
+        x[i] = a[i]
+    end
+    if initshuffle
+        for j = 1:k
+            l = randi(j, k)
+            if l != j
+                t = x[j]
+                x[j] = x[l]
+                x[l] = t
+            end
+        end
+    end
+
+    # scan remaining
+    s = RandIntSampler(k)
+    for i = k+1:n
+        if rand() * i < k  # keep it with probability k / i
+            x[rand(s)] = a[i]            
+        end
+    end
+    return x
+end
+
 # Fisher-Yates sampling
 #
 #   create an array of index inds = [1:n] 
@@ -109,7 +143,7 @@ function fisher_yates_sample!(a::AbstractArray, x::AbstractArray)
         @inbounds inds[i] = i
     end
 
-    for i = 1:k
+    @inbounds for i = 1:k
         j = randi(i, n)
         t = inds[j]
         inds[j] = inds[i]
