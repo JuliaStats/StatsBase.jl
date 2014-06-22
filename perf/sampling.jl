@@ -71,7 +71,7 @@ const ks = 2 .^ [1:16]
 
 const procs1 = Proc[ SampleProc{Direct}(), 
                      SampleProc{Sample_WRep}(),
-                     SampleProc{Xmultinom}(),                     
+                     SampleProc{Xmultinom}(), 
                      SampleProc{Sample_WRep_Ord}() ]
 
 const cfgs1 = vec([(n, k) for k in ks, n in ns])
