@@ -279,7 +279,7 @@ sample(a::AbstractArray) = a[randi(length(a))]
 function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
-    n == 0 && return x
+    k == 0 && return x
 
     if replace  # with replacement
         if ordered
@@ -296,17 +296,17 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
         k <= n || error("Cannot draw more samples without replacement.")
 
         if ordered
-            if k * 20 > n
-                ordered_sample_norep!(a, x)
+            if n > 10 * k * k
+                seqsample_c!(a, x)
             else
-                sort!(sample!(a, x; replace=false, ordered=false))
+                seqsample_a!(a, x)
             end
         else
             if k == 1
                 @inbounds x[1] = sample(a)
             elseif k == 2
                 @inbounds (x[1], x[2]) = samplepair(a)
-            elseif n < k * max(k, 100)
+            elseif n < k * 24
                 fisher_yates_sample!(a, x)
             else
                 self_avoid_sample!(a, x)
