@@ -432,12 +432,7 @@ function alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     return x
 end
 
-
-
-
-
-# Original author: Mike Innes
-function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function xmultinom_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     n = length(a)
     k = length(x)
     offset = 0
@@ -464,7 +459,7 @@ function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
             offset += m
         end
     end
-    x
+    return x
 end
 
 
