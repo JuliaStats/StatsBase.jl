@@ -468,13 +468,24 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; ordered::Boo
     k = length(x)
 
     if ordered
-        ordered_sample!(a, wv, x)
-    else
-        if k > 100 * n
-            shuffle!(ordered_sample!(a, wv, x))
+        if k < n && k < 256
+            sort!(direct_sample!(a, wv, x))
         else
-            for i = 1 : k
-                @inbounds x[i] = sample(a, wv)
+            xmultinom_sample!(a, wv, x)
+        end
+    else
+        if k > 3 * n
+            shuffle!(xmultinom_sample!(a, wv, x))
+        else
+            if n < 40
+                direct_sample!(a, wv, x)
+            else
+                t = ifelse(n < 500, 64, 32)
+                if k < t
+                    direct_sample!(a, wv, x)
+                else
+                    alias_sample!(a, wv, x)
+                end
             end
         end
     end

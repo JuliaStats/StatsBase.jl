@@ -48,3 +48,8 @@ check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
 a = xmultinom_sample!(4:7, wv, zeros(Int, n))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
 
+a = sample(4:7, wv, n; ordered=false)
+check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = sample(4:7, wv, n; ordered=true)
+check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)

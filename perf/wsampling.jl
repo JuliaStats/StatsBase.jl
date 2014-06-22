@@ -27,6 +27,13 @@ tsample!(s::Xmultinom, wv, x) = xmultinom_sample!(1:length(wv), wv, x)
 type Direct_S <: WithRep end
 tsample!(s::Direct_S, wv, x) = sort!(direct_sample!(1:length(wv), wv, x))
 
+type Sample_WRep <: WithRep end
+tsample!(s::Sample_WRep, wv, x) = sample!(1:length(wv), wv, x; ordered=false)
+
+type Sample_WRep_Ord <: WithRep end
+tsample!(s::Sample_WRep_Ord, wv, x) = sample!(1:length(wv), wv, x; ordered=true)
+
+
 # config is in the form of (n, k)
 
 Base.string{Alg}(p::WSampleProc{Alg}) = lowercase(string(Alg))
@@ -56,8 +63,10 @@ const ks = 2 .^ [1:16]
 const procs1 = Proc[ WSampleProc{Direct}(), 
                      WSampleProc{Alias}(),
                      WSampleProc{Xmultinom_S}(),
+                     WSampleProc{Sample_WRep}(),
                      WSampleProc{Xmultinom}(),
-                     WSampleProc{Direct_S}() ]
+                     WSampleProc{Direct_S}(),
+                     WSampleProc{Sample_WRep_Ord}() ]
 
 const cfgs1 = vec([(n, k) for k in ks, n in ns])
 
