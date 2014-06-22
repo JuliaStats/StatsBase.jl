@@ -504,4 +504,3 @@ wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; ordered::Bool=false) 
 wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; ordered::Bool=false) =
     wsample!(a, w, Array(T, dims); ordered=ordered)
 
-

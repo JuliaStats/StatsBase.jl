@@ -3,25 +3,12 @@
 using StatsBase
 using Base.Test
 import Base: maxabs
+import StatsBase: norepeat, randi
 
 srand(1234)
 
-#### auxiliary 
-
-function norepeat(a::AbstractArray)
-    sa = sort(a)
-    for i = 2:length(a)
-        if a[i] == a[i-1]
-            return false
-        end
-    end
-    return true
-end
-
-
 #### randi
 
-const randi = StatsBase.randi
 n = 10^5
 
 x = [randi(10) for i = 1:n]
