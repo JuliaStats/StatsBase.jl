@@ -52,7 +52,7 @@ Algorithms
 
 Internally, this package implements multiple algorithms, and the ``sample`` (and ``sample!``) methods integrate them into a poly-algorithm, which chooses a specific algorithm based on inputs.
 
-Note that the choices made in ``sample`` are decided based on extensive benchmarking. It performs reasonably fast for most cases. That being said, if you know that a certain algorithm is particularly suitable for your context, directly calling an internal algorithm function might be slightly more efficient.
+Note that the choices made in ``sample`` are decided based on extensive benchmarking (see ``perf/sampling.jl`` and ``perf/wsampling.jl``). It performs reasonably fast for most cases. That being said, if you know that a certain algorithm is particularly suitable for your context, directly calling an internal algorithm function might be slightly more efficient.
 
 Here are a list of algorithms implemented in the package. The functions below are not exported (one can still import them from ``StatsBase`` using ``import`` though).
 
@@ -67,7 +67,7 @@ Here are a list of algorithms implemented in the package. The functions below ar
 All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
 
-**Sampling Algorithms ((Non-Weighted):**
+**Sampling Algorithms (Non-Weighted):**
 
 .. function:: direct_sample!(a, x)
 
