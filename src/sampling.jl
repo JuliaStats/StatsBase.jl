@@ -89,39 +89,51 @@ end
 ### Algorithm for sampling without replacement
 
 # Fisher-Yates sampling
-immutable FisherYatesSampler
-    n::Int
-    seq::Vector{Int}   # Internal sequence for shuffling
+#
+#   create an array of index inds = [1:n] 
+#
+#   for i = 1:k
+#       swap inds[i] with a random one in inds[i:n]
+#       set x[i] = a[inds[i]]
+#   end
+#
+#   O(n) for initialization + O(k) for random shuffling
+#
+function fisher_yates_sample!(a::AbstractArray, x::AbstractArray) 
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
 
-    FisherYatesSampler(n::Int) = new(n, [1:n])
-end
+    inds = Array(Int, n)
+    for i = 1:n
+        @inbounds inds[i] = i
+    end
 
-function rand!(s::FisherYatesSampler, a::AbstractArray, x::AbstractArray)
-    # draw samples without-replacement to x
-    n::Int = s.n
-    k::Int = length(x)
-    k <= n || throw(ArgumentError("Cannot draw more than n samples without replacement."))
-
-    seq::Vector{Int} = s.seq
     for i = 1:k
         j = randi(i, n)
-        sj = seq[j]
-        x[i] = a[sj]
-        seq[j] = seq[i]
-        seq[i] = sj
+        t = inds[j]
+        inds[j] = inds[i]
+        inds[i] = t
+        x[i] = a[t]
     end
-    x
+    return x
 end
 
-fisher_yates_sample!(a::AbstractArray, x::AbstractArray) = rand!(FisherYatesSampler(length(a)), a, x)
-
-# self-avoiding sampling
-function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
-    # This algorithm is suitable when length(x) << length(a)
+# Self-avoid sampling
+#
+#   Use a set to maintain the index that has been sampled,
+#
+#   each time draw a new index, if the index has already
+#   been sampled, redraw until it draws an unsampled one.  
+#
+function self_avoid_sample!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
 
     s = Set{Int}()
-    sizehint(s, length(x))
-    rgen = RandIntSampler(length(a))
+    sizehint(s, k)
+    rgen = RandIntSampler(n)
 
     # first one
     idx = rand(rgen)
@@ -129,9 +141,9 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     push!(s, idx)
 
     # remaining
-    for i = 2:length(x)
+    for i = 2:k
         idx = rand(rgen)
-        while (idx in s)
+        while idx in s
             idx = rand(rgen)
         end
         x[i] = a[idx]
@@ -139,6 +151,8 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     end
     x
 end
+
+
 
 # Ordered sampling without replacement
 # Original author: Mike Innes

@@ -91,109 +91,52 @@ check_sample_wrep(a, (3, 12), 0; ordered=true)
 
 #### sample without replacement
 
+function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+    # each column of a for one run
+
+    vmin, vmax = vrgn
+    (amin, amax) = extrema(a)
+    @test vmin <= amin <= amax <= vmax
+    n = vmax - vmin + 1
+
+    for j = 1:size(a,2)
+        aj = view(a,:,j)
+        @assert norepeat(aj)
+        if ordered
+            @assert issorted(aj)
+        end
+    end
+
+    if ptol > 0 
+        p0 = fill(1/n, n)
+        if ordered
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 tol
+        else
+            b = transpose(a)
+            for j = 1:size(b,2)
+                bj = view(b,:,j)
+                @test_approx_eq_eps proportions(bj, vmin:vmax) p0 ptol
+            end
+        end
+    end
+end
+
+import StatsBase: fisher_yates_sample!, self_avoid_sample!
+
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    fisher_yates_sample!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
+
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    self_avoid_sample!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
 
-#### sample with replacement
-
-# ## individual
-
-# x = [sample(1:5) for _ = 1:10^5]
-# p = fill(0.2, 5)
-# @test isa(x, Vector{Int})
-# @test_approx_eq_eps est_p(x, 5) p 0.02
-
-# ## unordered
-
-# x = sample(1:5, 10^5)
-# @test isa(x, Vector{Int})
-# @test length(x) == 10^5
-# @test !issorted(x)  # extremely unlikely to be sorted for n=10^5
-# @test_approx_eq_eps est_p(x, 5) p 0.02
-# @test_approx_eq_eps est_p(x[1:50000], 5) p 0.03
-
-# ## ordered
-
-# x = sample(1:5, 10^5; ordered=true)
-# @test isa(x, Vector{Int})
-# @test length(x) == 10^5
-# @test issorted(x)
-# @test_approx_eq_eps est_p(x, 5) p 0.02
 
 
-# #### sample without replacement
 
-# ## unordered (using samplepair)
-
-# x = Array(Int, 2, n)
-# for i = 1:n
-#   x[:,i] = sample(1:5, 2; replace=false)
-# end
-
-# @test all(x[1,:] .!= x[2,:])
-# @test_approx_eq_eps est_p(x[1,:], 5) p 0.02
-# @test_approx_eq_eps est_p(x[2,:], 5) p 0.02
-
-# ## unordered (using Fisher-Yates)
-
-# x = Array(Int, 3, n)
-# for i = 1:n
-#   x[:,i] = sample(1:5, 3; replace=false)
-# end
-
-# @test all(x[1,:] .!= x[2,:])
-# @test all(x[1,:] .!= x[3,:])
-# @test all(x[2,:] .!= x[3,:])
-# @test_approx_eq_eps est_p(x[1,:], 5) p 0.02
-# @test_approx_eq_eps est_p(x[2,:], 5) p 0.02
-# @test_approx_eq_eps est_p(x[3,:], 5) p 0.02
-
-# ## unordered (using Self-avoid method)
-
-# x = Array(Int, 3, 10000)
-# for i = 1:10000
-#   x[:,i] = sample(1:1000, 3; replace=false)
-# end
-
-# @test all(x[1,:] .!= x[2,:])
-# @test all(x[1,:] .!= x[3,:])
-# @test all(x[2,:] .!= x[3,:])
-
-# ## ordered 
-
-# x = Array(Int, 3, n)
-# for i = 1:n
-#   x[:,i] = sample(1:5, 3; replace=false, ordered=true)
-# end
-
-# @test all(x[1,:] .< x[2,:])
-# @test all(x[2,:] .< x[3,:])
-# @test_approx_eq_eps est_p(vec(x), 5) p 0.02
-
-
-# #### weighted sample with replacement
-
-# wv = weights([1.0, 2.0, 4.5, 2.5])
-# p = [0.10, 0.20, 0.45, 0.25]
-
-# ## individual
-
-# x = Int[sample(wv) for _ = 1:10^5]
-# @test isa(x, Vector{Int})
-# @test_approx_eq_eps est_p(x, 4) p 0.02
-
-# ## unordered
-
-# x = sample(1:5, wv, 10^5)
-# @test isa(x, Vector{Int})
-# @test length(x) == 10^5
-# @test !issorted(x)
-# @test_approx_eq_eps est_p(x, 4) p 0.02
-
-# ## ordered
-
-# x = sample(1:5, wv, 10^5; ordered=true)
-# @test isa(x, Vector{Int})
-# @test length(x) == 10^5
-# @test issorted(x)
-# @test_approx_eq_eps est_p(x, 4) p 0.02
 
