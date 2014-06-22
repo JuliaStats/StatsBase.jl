@@ -2,134 +2,159 @@
 
 using StatsBase
 using Base.Test
+import Base: maxabs
 
 srand(1234)
 
-function est_p(x, K)
-	h = zeros(Int, K)
-	for xi in x
-		h[xi] += 1
-	end
-	p = h / length(x)
+#### auxiliary 
+
+function norepeat(a::AbstractArray)
+    sa = sort(a)
+    for i = 2:length(a)
+        if a[i] == a[i-1]
+            return false
+        end
+    end
+    return true
 end
+
 
 #### randi
 
 const randi = StatsBase.randi
-n = 1_000_000
+n = 10^5
 
 x = [randi(10) for i = 1:n]
 @test isa(x, Vector{Int})
-@test minimum(x) == 1
-@test maximum(x) == 10
+@test extrema(x) == (1, 10)
+@test_approx_eq_eps proportions(x, 1:10) fill(0.1, 10) 5.0e-3
+
 
 x = [randi(3, 12) for i = 1:n]
 @test isa(x, Vector{Int})
-@test minimum(x) == 3
-@test maximum(x) == 12
-
+@test extrema(x) == (3, 12)
+@test_approx_eq_eps proportions(x, 3:12) fill(0.1, 10) 5.0e-3
 
 #### sample with replacement
 
-## individual
+function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+    vmin, vmax = vrgn
+    (amin, amax) = extrema(a)
+    @test vmin <= amin <= amax <= vmax
+    n = vmax - vmin + 1
+    p0 = fill(1/n, n)
+    if ordered
+        @test issorted(a)
+        if ptol > 0
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+        end
+    else
+        @test !issorted(a)
+        ncols = size(a,2)
+        if ncols == 1
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+        else
+            for j = 1:ncols
+                aj = view(a, :, j)
+                @test_approx_eq_eps proportions(aj, vmin:vmax) p0 ptol
+            end
+        end
+    end
+end
 
-x = [sample(1:5) for _ = 1:10^5]
-p = fill(0.2, 5)
-@test isa(x, Vector{Int})
-@test_approx_eq_eps est_p(x, 5) p 0.02
+import StatsBase: direct_sample!, xmultinom_sample!
 
-## unordered
+a = direct_sample!(1:10, zeros(Int, n, 3))
+check_sample_wrep(a, (1, 10), 5.0e-3; ordered=false)
 
-x = sample(1:5, 10^5)
-@test isa(x, Vector{Int})
-@test length(x) == 10^5
-@test !issorted(x)  # extremely unlikely to be sorted for n=10^5
-@test_approx_eq_eps est_p(x, 5) p 0.02
-@test_approx_eq_eps est_p(x[1:50000], 5) p 0.03
+a = direct_sample!(3:12, zeros(Int, n, 3))
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
-## ordered
+a = direct_sample!([11:20], zeros(Int, n, 3))
+check_sample_wrep(a, (11, 20), 5.0e-3; ordered=false)
 
-x = sample(1:5, 10^5; ordered=true)
-@test isa(x, Vector{Int})
-@test length(x) == 10^5
-@test issorted(x)
-@test_approx_eq_eps est_p(x, 5) p 0.02
+a = xmultinom_sample!(3:12, zeros(Int, n))
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
+
+a = xmultinom_sample!(101:200, zeros(Int, 10))
+check_sample_wrep(a, (101, 200), 0; ordered=true)
+
+a = sample(3:12, n)
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
+
+a = sample(3:12, n; ordered=true)
+check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
+
+a = sample(3:12, 10; ordered=true)
+check_sample_wrep(a, (3, 12), 0; ordered=true)
 
 
 #### sample without replacement
 
-## unordered (using samplepair)
+function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+    # each column of a for one run
 
-x = Array(Int, 2, n)
-for i = 1:n
-	x[:,i] = sample(1:5, 2; replace=false)
+    vmin, vmax = vrgn
+    (amin, amax) = extrema(a)
+    @test vmin <= amin <= amax <= vmax
+    n = vmax - vmin + 1
+
+    for j = 1:size(a,2)
+        aj = view(a,:,j)
+        @assert norepeat(aj)
+        if ordered
+            @assert issorted(aj)
+        end
+    end
+
+    if ptol > 0 
+        p0 = fill(1/n, n)
+        if ordered
+            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+        else
+            b = transpose(a)
+            for j = 1:size(b,2)
+                bj = view(b,:,j)
+                @test_approx_eq_eps proportions(bj, vmin:vmax) p0 ptol
+            end
+        end
+    end
 end
 
-@test all(x[1,:] .!= x[2,:])
-@test_approx_eq_eps est_p(x[1,:], 5) p 0.02
-@test_approx_eq_eps est_p(x[2,:], 5) p 0.02
+import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
+import StatsBase: seqsample_a!, seqsample_c!
 
-## unordered (using Fisher-Yates)
-
-x = Array(Int, 3, n)
-for i = 1:n
-	x[:,i] = sample(1:5, 3; replace=false)
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    knuths_sample!(3:12, view(a,:,j))
 end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
-@test all(x[1,:] .!= x[2,:])
-@test all(x[1,:] .!= x[3,:])
-@test all(x[2,:] .!= x[3,:])
-@test_approx_eq_eps est_p(x[1,:], 5) p 0.02
-@test_approx_eq_eps est_p(x[2,:], 5) p 0.02
-@test_approx_eq_eps est_p(x[3,:], 5) p 0.02
-
-## unordered (using Self-avoid method)
-
-x = Array(Int, 3, 10000)
-for i = 1:10000
-	x[:,i] = sample(1:1000, 3; replace=false)
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    fisher_yates_sample!(3:12, view(a,:,j))
 end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
-@test all(x[1,:] .!= x[2,:])
-@test all(x[1,:] .!= x[3,:])
-@test all(x[2,:] .!= x[3,:])
-
-## ordered 
-
-x = Array(Int, 3, n)
-for i = 1:n
-	x[:,i] = sample(1:5, 3; replace=false, ordered=true)
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    self_avoid_sample!(3:12, view(a,:,j))
 end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
-@test all(x[1,:] .< x[2,:])
-@test all(x[2,:] .< x[3,:])
-@test_approx_eq_eps est_p(vec(x), 5) p 0.02
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    seqsample_a!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
+
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    seqsample_c!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 
-#### weighted sample with replacement
 
-wv = weights([1.0, 2.0, 4.5, 2.5])
-p = [0.10, 0.20, 0.45, 0.25]
 
-## individual
-
-x = Int[sample(wv) for _ = 1:10^5]
-@test isa(x, Vector{Int})
-@test_approx_eq_eps est_p(x, 4) p 0.02
-
-## unordered
-
-x = sample(1:5, wv, 10^5)
-@test isa(x, Vector{Int})
-@test length(x) == 10^5
-@test !issorted(x)
-@test_approx_eq_eps est_p(x, 4) p 0.02
-
-## ordered
-
-x = sample(1:5, wv, 10^5; ordered=true)
-@test isa(x, Vector{Int})
-@test length(x) == 10^5
-@test issorted(x)
-@test_approx_eq_eps est_p(x, 4) p 0.02
 

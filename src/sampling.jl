@@ -7,16 +7,43 @@
 
 ### Algorithms for sampling with replacement
 
+# Direct sampling
+#
+#   for each i, draw an index from 1:length(a), and
+#   pick the corresponding element from a.
+#
+#   x[i] and x[j] are independent, when i != j
+#
+function direct_sample!(a::UnitRange, x::AbstractArray)
+    s = RandIntSampler(length(a))
+    b = a[1] - 1
+    if b == 0
+        for i = 1:length(x)
+            @inbounds x[i] = rand(s)
+        end
+    else
+        for i = 1:length(x)
+            @inbounds x[i] = b + rand(s)
+        end
+    end
+    return x
+end
+
 function direct_sample!(a::AbstractArray, x::AbstractArray)
     s = RandIntSampler(length(a))
     for i = 1:length(x)
         @inbounds x[i] = a[rand(s)]
     end
-    x
+    return x
 end
 
-function ordered_sample!(a::AbstractArray, x::AbstractArray)
-    # Original author: Mike Innes
+# Expanded Multinomial sampling
+#
+#   for each element in a, we draw the number of its
+#   occurrences, and fill this element to x for 
+#   this number of times. 
+#
+function xmultinom_sample!(a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
     offset = 0
@@ -24,17 +51,21 @@ function ordered_sample!(a::AbstractArray, x::AbstractArray)
     while offset < k
         rk = k - offset
         if i == n
+            @inbounds ai = a[i]
             for j = 1:rk
-                @inbounds x[offset + j] = a[i]
+                @inbounds x[offset + j] = ai
             end
             offset = k
         else
             m = rand_binom(rk, 1.0 / (n - i + 1))
-            for j = 1:m
-                @inbounds x[offset + j] = a[i]
+            if m > 0
+                @inbounds ai = a[i]
+                for j = 1:m
+                    @inbounds x[offset + j] = a[i]
+                end
+                offset += m
             end
-            i += 1
-            offset += m
+            i += 1            
         end
     end
     x
@@ -57,40 +88,86 @@ end
 
 ### Algorithm for sampling without replacement
 
-# Fisher-Yates sampling
-immutable FisherYatesSampler
-    n::Int
-    seq::Vector{Int}   # Internal sequence for shuffling
+# Knuth's Algorithm S
+#
+#   Reference: The Art of Computer Programming, Vol 2, 3.4.2, p.142
+#
+function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=true) 
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
 
-    FisherYatesSampler(n::Int) = new(n, [1:n])
-end
-
-function rand!(s::FisherYatesSampler, a::AbstractArray, x::AbstractArray)
-    # draw samples without-replacement to x
-    n::Int = s.n
-    k::Int = length(x)
-    k <= n || throw(ArgumentError("Cannot draw more than n samples without replacement."))
-
-    seq::Vector{Int} = s.seq
+    # initialize
     for i = 1:k
-        j = randi(i, n)
-        sj = seq[j]
-        x[i] = a[sj]
-        seq[j] = seq[i]
-        seq[i] = sj
+        @inbounds x[i] = a[i]
     end
-    x
+    if initshuffle
+        @inbounds for j = 1:k
+            l = randi(j, k)
+            if l != j
+                t = x[j]
+                x[j] = x[l]
+                x[l] = t
+            end
+        end
+    end
+
+    # scan remaining
+    s = RandIntSampler(k)
+    for i = k+1:n
+        if rand() * i < k  # keep it with probability k / i
+            @inbounds x[rand(s)] = a[i]            
+        end
+    end
+    return x
 end
 
-fisher_yates_sample!(a::AbstractArray, x::AbstractArray) = rand!(FisherYatesSampler(length(a)), a, x)
+# Fisher-Yates sampling
+#
+#   create an array of index inds = [1:n] 
+#
+#   for i = 1:k
+#       swap inds[i] with a random one in inds[i:n]
+#       set x[i] = a[inds[i]]
+#   end
+#
+#   O(n) for initialization + O(k) for random shuffling
+#
+function fisher_yates_sample!(a::AbstractArray, x::AbstractArray) 
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
 
-# self-avoiding sampling
-function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
-    # This algorithm is suitable when length(x) << length(a)
+    inds = Array(Int, n)
+    for i = 1:n
+        @inbounds inds[i] = i
+    end
+
+    @inbounds for i = 1:k
+        j = randi(i, n)
+        t = inds[j]
+        inds[j] = inds[i]
+        inds[i] = t
+        x[i] = a[t]
+    end
+    return x
+end
+
+# Self-avoid sampling
+#
+#   Use a set to maintain the index that has been sampled,
+#
+#   each time draw a new index, if the index has already
+#   been sampled, redraw until it draws an unsampled one.  
+#
+function self_avoid_sample!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
 
     s = Set{Int}()
-    sizehint(s, length(x))
-    rgen = RandIntSampler(length(a))
+    sizehint(s, k)
+    rgen = RandIntSampler(n)
 
     # first one
     idx = rand(rgen)
@@ -98,43 +175,101 @@ function self_avoid_sample!{T}(a::AbstractArray{T}, x::AbstractArray)
     push!(s, idx)
 
     # remaining
-    for i = 2:length(x)
+    for i = 2:k
         idx = rand(rgen)
-        while (idx in s)
+        while idx in s
             idx = rand(rgen)
         end
         x[i] = a[idx]
         push!(s, idx)
     end
-    x
+    return x
 end
 
-# Ordered sampling without replacement
-# Original author: Mike Innes
-function rand_first_index(n, k)
-    r = rand()
-    p = k/n
-    i = 1
-    while p < r
-        i += 1
-        p += (1-p)k/(n-(i-1))
-    end
-    return i
-end
 
-function ordered_sample_norep!(xs::AbstractArray, target::AbstractArray)
-    n = length(xs)
-    k = length(target)
+# Random subsequence sampling
+#
+#  References: 
+#
+#   Jeffrey Scott Vitter.
+#   "Faster Methods for Random Sampling"
+#   Communications of the ACM, 27 (7), July 1984
+#
+#
+# This paper presents three algorithms, respectively
+# named Algorithm A, C, and D.
+#
+# These algorithms are for sequential sampling, and the
+# outputs are ordered. They are implemented below
+#
+
+## Algorithm A (page 714)
+#
+#  Require O(n) random numbers.
+#
+function seqsample_a!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
+
     i = 0
-    for j in 1:k
-        step = rand_first_index(n, k)
-        n -= step
-        i += step
-        target[j] = xs[i]
+    j = 0
+    while k > 1
+        u = rand()
+        q = (n - k) / n
+        while q > u  # skip
+            i += 1
+            n -= 1
+            q *= (n - k) / n
+        end
+        @inbounds x[j+=1] = a[i+=1]
+        n -= 1
         k -= 1
     end
-    return target
+
+    if k > 0  # checking k > 0 is necessary: x can be empty
+        s = itrunc(n * rand())
+        x[j+1] = a[i+(s+1)]
+    end
+    return x
 end
+
+## Algorithm C (page 715)
+#
+#  Require O(k^2) random numbers
+#
+function seqsample_c!(a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
+
+    i = 0
+    j = 0
+    while k > 1
+        l = n - k + 1
+        minv = l
+        u = n
+        while u >= l
+            v = u * rand()
+            if v < minv
+                minv = v
+            end
+            u -= 1
+        end
+        s = itrunc(minv) + 1
+        x[j+=1] = a[i+=s]
+        n -= s
+        k -= 1
+    end
+
+    if k > 0 
+        s = itrunc(n * rand())
+        x[j+1] = a[i+(s+1)]
+    end
+    return x
+end
+
+## TODO: implement Algorithm D (page 716 - 717)
 
 
 ### Interface functions (poly-algorithms)
@@ -144,12 +279,12 @@ sample(a::AbstractArray) = a[randi(length(a))]
 function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
-    n == 0 && return x
+    k == 0 && return x
 
     if replace  # with replacement
         if ordered
             if k > 10 * n
-                ordered_sample!(a, x)
+                xmultinom_sample!(a, x)
             else
                 sort!(direct_sample!(a, x))
             end
@@ -161,17 +296,17 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
         k <= n || error("Cannot draw more samples without replacement.")
 
         if ordered
-            if k * 20 > n
-                ordered_sample_norep!(a, x)
+            if n > 10 * k * k
+                seqsample_c!(a, x)
             else
-                sort!(sample!(a, x; replace=false, ordered=false))
+                seqsample_a!(a, x)
             end
         else
             if k == 1
                 @inbounds x[1] = sample(a)
             elseif k == 2
                 @inbounds (x[1], x[2]) = samplepair(a)
-            elseif n < k * max(k, 100)
+            elseif n < k * 24
                 fisher_yates_sample!(a, x)
             else
                 self_avoid_sample!(a, x)

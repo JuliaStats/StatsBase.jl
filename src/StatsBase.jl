@@ -8,6 +8,9 @@ module StatsBase
 
     export
 
+    # reexport from ArrayViews
+    view,
+
     ## mathfuns
     xlogx,       # x * log(x)
     xlogy,       # x * log(y)
