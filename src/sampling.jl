@@ -346,6 +346,94 @@ end
 
 sample(a::AbstractArray, wv::WeightVec) = a[sample(wv)]
 
+function direct_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    for i = 1:length(x)
+        x[i] = a[sample(wv)]
+    end
+    return x
+end
+
+function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64, 
+                           a::AbstractVector{Float64},
+                           alias::AbstractVector{Int})
+    # Arguments:
+    #
+    #   w [in]:         input weights
+    #   wsum [in]:      pre-computed sum(w)
+    #
+    #   a [out]:        acceptance probabilities
+    #   alias [out]:    alias table      
+    #
+    # Note: a and w can be the same way, then that away will be
+    #       overriden inplace by acceptance probabilities
+    #
+    # Returns nothing
+    #
+
+    n = length(w)
+    length(a) == length(alias) == n || 
+        throw(DimensionMismatch("Inconsistent array lengths."))
+
+    ac = n / wsum
+    for i = 1:n
+        @inbounds a[i] = w[i] * ac
+    end
+
+    larges = Int[]
+    smalls = Int[]
+
+    for i = 1:n
+        @inbounds ai = a[i] 
+        if ai > 1.0 
+            push!(larges, i)
+        elseif ai < 1.0
+            push!(smalls, i)
+        end
+    end
+
+    while !isempty(larges) && !isempty(smalls)
+        s = pop!(smalls)
+        l = pop!(larges)
+        @inbounds alias[s] = l
+        @inbounds a[l] = (a[l] - 1.0) + a[s]
+        if a[l] > 1
+            push!(larges,l)
+        else
+            push!(smalls,l)
+        end
+    end
+
+    # this loop should be redundant, except for rounding
+    for s in smalls
+        @inbounds a[s] = 1.0
+    end
+    nothing
+end
+
+function alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+
+    # create alias table
+    ap = Array(Float64, n)
+    alias = Array(Int, n)
+    make_alias_table!(values(wv), sum(wv), ap, alias)
+
+    # sampling
+    s = RandIntSampler(n)
+    for i = 1:length(x)
+        j = rand(s)
+        x[i] = rand() < ap[j] ? a[j] : a[alias[j]]
+    end
+    return x
+end
+
+
+
+
+
 # Original author: Mike Innes
 function ordered_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     n = length(a)

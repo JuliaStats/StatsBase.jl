@@ -1,5 +1,16 @@
 # Miscelleneous stuff
 
+# test whether a contains no repeated elements
+function norepeat(a::AbstractArray)
+    sa = sort(a)
+    for i = 2:length(a)
+        if a[i] == a[i-1]
+            return false
+        end
+    end
+    return true
+end
+
 # run-length encoding
 function rle{T}(v::Vector{T})
     n = length(v)
