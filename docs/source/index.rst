@@ -15,6 +15,7 @@ Welcome to StatsBase.jl's Documentation!
    weightvec.rst
    means.rst
    scalarstats.rst
+   cov.rst
    counts.rst
    ranking.rst
    sampling.rst
