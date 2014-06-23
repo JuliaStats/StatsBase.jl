@@ -57,6 +57,8 @@ module StatsBase
     summarystats,   # summary statistics
     describe,       # print the summary statistics
 
+    # cov
+    scattermat,     # scatter matrix (i.e. unnormalized covariance)
 
     ## counts
     addcounts!,     # add counts to an accumulating array or map
@@ -132,6 +134,7 @@ module StatsBase
     include("mathfuns.jl")
     include("weights.jl")
     include("scalarstats.jl")
+    include("cov.jl")
     include("counts.jl")
     include("ranking.jl")
     include("toeplitzsolvers.jl")
