@@ -6,6 +6,20 @@ The package implements functions for computing various statistics over an array 
 Moments
 ---------
 
+.. function:: var(x, wv[; mean=...])
+
+  Compute weighted variance. 
+
+  One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
+
+  **Note:** the result is normalized by ``sum(wv)`` without correction.
+
+.. function:: std(x, wv[; mean=...])
+
+  Compute weighted standard deviation. 
+
+  One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
+
 .. function:: skewness(x[, wv])
 
   Compute the (standardized) `skewness <http://en.wikipedia.org/wiki/Skewness>`_ of ``x``. 

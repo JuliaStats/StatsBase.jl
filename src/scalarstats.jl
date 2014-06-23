@@ -384,6 +384,31 @@ end
 moment(v::RealArray, k::Int) = moment(v, k, mean(v))
 moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, mean(v, wv), wv)
 
+## weighted var & std
+
+function Base.varzm(v::RealArray, wv::WeightVec) 
+    n = length(v)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
+    w = values(wv)
+    s = 0.0
+    for i = 1:n
+        @inbounds s += w[i] * abs2(v[i])
+    end
+    return s / sum(wv)
+end
+
+Base.varm(v::RealArray, m::Real, wv::WeightVec) = _moment2(v, m, wv)
+
+Base.stdm(v::RealArray, m::Real, wv::WeightVec) = sqrt(varm(v, m, wv))
+
+function Base.var(v::RealArray, wv::WeightVec; mean=nothing) 
+    mean == 0 ? Base.varzm(v, wv) :
+    mean == nothing ? varm(v, Base.mean(v, wv), wv) :
+    varm(v, mean, wv)
+end
+
+Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt(var(v, wv; mean=mean))
+
 
 #############################
 #

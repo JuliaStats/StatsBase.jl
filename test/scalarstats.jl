@@ -93,6 +93,21 @@ x2 = float64([2:6])
 @test_approx_eq moment(x, 5, w) sum((x2 .- 4).^5) / 5
 
 
+##### weighted var & std
+
+x = rand(10)
+wv = weights(rand(10))
+m = mean(x, wv)
+
+@test_approx_eq var(x, wv) sum(abs2(x .- m), wv) ./ sum(wv)
+@test_approx_eq var(x, wv; mean=0) sum(abs2(x), wv) ./ sum(wv)
+@test_approx_eq var(x, wv; mean=1.0) sum(abs2(x .- 1.0), wv) ./ sum(wv)
+
+@test_approx_eq std(x, wv) sqrt(var(x, wv))
+@test_approx_eq std(x, wv; mean=0) sqrt(var(x, wv; mean=0))
+@test_approx_eq std(x, wv; mean=1.0) sqrt(var(x, wv; mean=1.0))
+
+
 ##### entropy
 
 @test_approx_eq entropy([0.5, 0.5]) 0.6931471805599453
