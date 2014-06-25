@@ -14,11 +14,19 @@ Moments
 
   **Note:** the result is normalized by ``sum(wv)`` without correction.
 
+.. function:: var(x, wv, dim[; mean=...])
+
+  Weighted variance along a specific dimension.
+
 .. function:: std(x, wv[; mean=...])
 
   Compute weighted standard deviation. 
 
   One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
+
+.. function:: std(x, wv, dim[; mean=...])
+
+  Weighted standard deviation along a specific dimension.
 
 .. function:: skewness(x[, wv])
 
