@@ -2,6 +2,7 @@ using StatsBase
 
 tests = ["mathfuns", 
          "weights",
+         "moments",
          "scalarstats", 
          "counts", 
          "ranking",  

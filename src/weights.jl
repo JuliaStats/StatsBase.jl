@@ -125,13 +125,13 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::St
             _wsum2_blas!(view(Rv,:,i), view(A,:,:,i), w, dim, init)
         end
     else
-        _wsum_general!(R, A, w, dim, init)
+        _wsum_general!(R, IdFun(), A, w, dim, init)
     end
     return R
 end
 
 # General Cartesian-based weighted sum across dimensions
-@ngenerate N typeof(R) function _wsum_general!{T,RT,WT,N}(R::AbstractArray{RT}, 
+@ngenerate N typeof(R) function _wsum_general!{T,RT,WT,N}(R::AbstractArray{RT}, f::Func{1},
                                                           A::AbstractArray{T,N}, w::AbstractVector{WT}, dim::Int, init::Bool)
     init && fill!(R, zero(RT))
     wi = zero(WT)
@@ -141,7 +141,7 @@ end
         @nloops N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
             @inbounds r = (@nref N R j)
             for i_1 = 1:sizA1
-                @inbounds r += (@nref N A i) * w[i_1]
+                @inbounds r += evaluate(f, (@nref N A i)) * w[i_1]
             end
             @inbounds (@nref N R j) = r
         end 
@@ -151,7 +151,7 @@ end
                                j_d = 1
                            else
                                j_d = i_d
-                           end) @inbounds (@nref N R j) += (@nref N A i) * wi
+                           end) @inbounds (@nref N R j) += evaluate(f, (@nref N A i)) * wi
     end
     return R
 end
@@ -169,7 +169,7 @@ _wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,2}, w::StridedVector{
 _wsum!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) = 
     _wsumN!(R, A, w, dim, init)
 
-_wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) = _wsum_general!(R, A, w, dim, init)
+_wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) = _wsum_general!(R, IdFun(), A, w, dim, init)
 
 ## wsum! and wsum
 

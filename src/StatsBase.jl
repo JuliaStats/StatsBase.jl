@@ -3,6 +3,7 @@ module StatsBase
 
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
+    import Base: Func, evaluate, IdFun, Abs2Fun
     import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @ngenerate, @nloops, @nref, @nextract
 
@@ -133,6 +134,7 @@ module StatsBase
     include("common.jl")
     include("mathfuns.jl")
     include("weights.jl")
+    include("moments.jl")
     include("scalarstats.jl")
     include("cov.jl")
     include("counts.jl")
