@@ -1,5 +1,7 @@
 ##### Weighted var & std
 
+## var
+
 function Base.varzm(v::RealArray, wv::WeightVec) 
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
@@ -13,15 +15,51 @@ end
 
 Base.varm(v::RealArray, m::Real, wv::WeightVec) = _moment2(v, m, wv)
 
-Base.stdm(v::RealArray, m::Real, wv::WeightVec) = sqrt(varm(v, m, wv))
-
 function Base.var(v::RealArray, wv::WeightVec; mean=nothing) 
     mean == 0 ? Base.varzm(v, wv) :
     mean == nothing ? varm(v, Base.mean(v, wv), wv) :
     varm(v, mean, wv)
 end
 
+## var along dim
+
+Base.varzm!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int) = 
+    scale!(_wsum_general!(R, Abs2Fun(), A, values(wv), dim, true), inv(sum(wv)))
+
+Base.varm!(R::AbstractArray, A::RealArray, M::RealArray, wv::WeightVec, dim::Int) = 
+    scale!(_wsum_centralize!(R, Abs2Fun(), A, M, values(wv), dim, true), inv(sum(wv)))
+
+function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=nothing)
+    if mean == 0
+        Base.varzm!(R, A, wv, dim)
+    elseif mean == nothing
+        Base.varm!(R, A, Base.mean(A, wv, dim), wv, dim)
+    else
+        # check size of mean
+        for i = 1:ndims(A)
+            dA = size(A,i)
+            dM = size(mean,i)
+            if i == dim
+                dM == 1 || throw(DimensionMismatch("Incorrect size of mean."))
+            else
+                dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
+            end
+        end
+        Base.varm!(R, A, mean, wv, dim)
+    end
+end
+
+Base.varm(A::RealArray, M::RealArray, wv::WeightVec, dim::Int) = 
+    Base.varm!(Array(Float64, Base.reduced_dims(A, dim)), A, M, wv, dim)
+
+Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) = 
+    var!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, dim; mean=mean)
+
+Base.stdm(v::RealArray, m::Real, wv::WeightVec) = sqrt(varm(v, m, wv))
+Base.stdm(v::RealArray, m::Real, wv::WeightVec, dim::Int) = sqrt!(varm(v, m, wv, dim))
+
 Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt(var(v, wv; mean=mean))
+Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, dim; mean=mean))
 
 
 ##### General central moment

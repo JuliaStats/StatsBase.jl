@@ -15,6 +15,30 @@ m = mean(x, wv)
 @test_approx_eq std(x, wv; mean=0) sqrt(var(x, wv; mean=0))
 @test_approx_eq std(x, wv; mean=1.0) sqrt(var(x, wv; mean=1.0))
 
+x = rand(5, 6)
+w1 = rand(5)
+w2 = rand(6)
+wv1 = weights(w1)
+wv2 = weights(w2)
+m1 = mean(x, wv1, 1)
+m2 = mean(x, wv2, 2)
+
+@test_approx_eq var(x, wv1, 1; mean=0) sum(abs2(x) .* w1, 1) ./ sum(wv1)
+@test_approx_eq var(x, wv2, 2; mean=0) sum(abs2(x) .* w2', 2) ./ sum(wv2)
+
+@test_approx_eq var(x, wv1, 1; mean=m1) sum(abs2(x .- m1) .* w1, 1) ./ sum(wv1)
+@test_approx_eq var(x, wv2, 2; mean=m2) sum(abs2(x .- m2) .* w2', 2) ./ sum(wv2)
+
+@test_approx_eq var(x, wv1, 1) sum(abs2(x .- m1) .* w1, 1) ./ sum(wv1)
+@test_approx_eq var(x, wv2, 2) sum(abs2(x .- m2) .* w2', 2) ./ sum(wv2)
+
+@test_approx_eq std(x, wv1, 1) sqrt(var(x, wv1, 1))
+@test_approx_eq std(x, wv2, 2) sqrt(var(x, wv2, 2))
+@test_approx_eq std(x, wv1, 1; mean=0) sqrt(var(x, wv1, 1; mean=0))
+@test_approx_eq std(x, wv2, 2; mean=0) sqrt(var(x, wv2, 2; mean=0))
+@test_approx_eq std(x, wv1, 1; mean=m1) sqrt(var(x, wv1, 1; mean=m1))
+@test_approx_eq std(x, wv2, 2; mean=m2) sqrt(var(x, wv2, 2; mean=m2))
+
 
 ##### skewness & kurtosis
 
