@@ -37,6 +37,7 @@ module StatsBase
     moment,         # central moment of given order
     mean_and_var,   # (mean, var)
     mean_and_std,   # (mean, std)
+    mean_and_cov,   # (mean, cov)
 
     ## scalarstats 
     geomean,     # geometric mean

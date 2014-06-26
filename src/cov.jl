@@ -45,3 +45,6 @@ end
 Base.cov(x::DenseMatrix, wv::WeightVec; mean=nothing, vardim::Int=1) = 
     scale!(scattermat(x, wv; mean=mean, vardim=vardim), inv(sum(wv)))
 
+mean_and_cov(x::DenseMatrix; vardim::Int=1) = (m = mean(x, vardim); (m, Base.covm(x, m; vardim=vardim)))
+mean_and_cov(x::DenseMatrix, wv::WeightVec; vardim::Int=1) = 
+    (m = mean(x, wv, vardim); (m, Base.cov(x, wv; mean=m, vardim=vardim)))

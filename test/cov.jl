@@ -71,3 +71,21 @@ Sz2w = X * diagm(w2) * X'
 @test_approx_eq cov(X, wv1; mean=zeros(1,8)) Sz1w ./ sum(wv1)
 @test_approx_eq cov(X, wv2; mean=zeros(3), vardim=2) Sz2w ./ sum(wv2)
 
+# mean_and_cov
+
+(m, C) = mean_and_cov(X; vardim=1)
+@test m == mean(X, 1)
+@test C == cov(X; vardim=1)
+
+(m, C) = mean_and_cov(X; vardim=2)
+@test m == mean(X, 2)
+@test C == cov(X; vardim=2)
+
+(m, C) = mean_and_cov(X, wv1; vardim=1)
+@test m == mean(X, wv1, 1)
+@test C == cov(X, wv1; vardim=1)
+
+(m, C) = mean_and_cov(X, wv2; vardim=2)
+@test m == mean(X, wv2, 2)
+@test C == cov(X, wv2; vardim=2)
+
