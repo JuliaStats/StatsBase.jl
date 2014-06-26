@@ -30,3 +30,6 @@ This package implements functions for computing scatter matrix, as well as weigh
 
     **Note:** By default, the covariance is normalized by the sum of weights, that is, ``cov(X, wv)`` is equal to ``scatter(X, wv) / sum(wv)``.
 
+.. function:: mean_and_cov(x[, wv][; vardim=...])
+
+  Jointly compute the mean and covariance of ``x``. 

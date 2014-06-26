@@ -28,6 +28,14 @@ Moments
 
   Weighted standard deviation along a specific dimension.
 
+.. function:: mean_and_var(x[, wv][, dim])
+
+  Jointly compute the mean and variance of ``x``. 
+
+.. function:: mean_and_std(x[, wv][, dim])
+
+  Jointly compute the mean and standard deviation of ``x``.
+
 .. function:: skewness(x[, wv])
 
   Compute the (standardized) `skewness <http://en.wikipedia.org/wiki/Skewness>`_ of ``x``. 
