@@ -55,11 +55,29 @@ Base.varm(A::RealArray, M::RealArray, wv::WeightVec, dim::Int) =
 Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) = 
     var!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, dim; mean=mean)
 
-Base.stdm(v::RealArray, m::Real, wv::WeightVec) = sqrt(varm(v, m, wv))
-Base.stdm(v::RealArray, m::Real, wv::WeightVec, dim::Int) = sqrt!(varm(v, m, wv, dim))
+## std
 
+Base.stdm(v::RealArray, m::Real, wv::WeightVec) = sqrt(varm(v, m, wv))
 Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt(var(v, wv; mean=mean))
+
+Base.stdm(v::RealArray, m::RealArray, dim::Int) = Base.sqrt!(varm(v, m, dim))
+Base.stdm(v::RealArray, m::RealArray, wv::WeightVec, dim::Int) = sqrt(varm(v, m, wv, dim))
 Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, dim; mean=mean))
+
+
+##### Fused statistics
+
+mean_and_var(A::RealArray) = (m = mean(A); (m, varm(A, m)))
+mean_and_std(A::RealArray) = (m = mean(A); (m, stdm(A, m)))
+
+mean_and_var(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, varm(A, m, wv)))
+mean_and_std(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, stdm(A, m, wv)))
+
+mean_and_var(A::RealArray, dim::Int) = (m = mean(A, dim); (m, varm(A, m, dim)))
+mean_and_std(A::RealArray, dim::Int) = (m = mean(A, dim); (m, stdm(A, m, dim)))
+
+mean_and_var(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, varm(A, m, wv, dim)))
+mean_and_std(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, stdm(A, m, wv, dim)))
 
 
 ##### General central moment

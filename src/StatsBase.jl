@@ -31,6 +31,13 @@ module StatsBase
     wmean,       # weighted mean
     wmean!,      # weighted mean across dimensions with provided storage
 
+    ## moments
+    skewness,       # (standardized) skewness
+    kurtosis,       # (excessive) kurtosis
+    moment,         # central moment of given order
+    mean_and_var,   # (mean, var)
+    mean_and_std,   # (mean, std)
+
     ## scalarstats 
     geomean,     # geometric mean
     harmmean,    # harmonic mean
@@ -47,10 +54,6 @@ module StatsBase
     mad,        # median absolute deviation
     iqr,        # interquatile range 
 
-    skewness,   # (standardized) skewness
-    kurtosis,   # (excessive) kurtosis
-    moment,     # central moment of given order
-    
     entropy,        # the entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors
     kldivergence,   # K-L divergence between two probability vectors
