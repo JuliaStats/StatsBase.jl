@@ -27,7 +27,7 @@ Miscellaneous Functions
 
 .. function:: findat(a, x)
 
-    For each element in ``x``, find its first index in ``a``. If the value does not appear in ``a``, the correspinding index is ``0``. 
+    For each element in ``x``, find its first index in ``a``. If the value does not appear in ``a``, the corresponding index is ``0``. 
 
     **Examples:**
   
