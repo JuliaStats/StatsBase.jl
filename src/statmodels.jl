@@ -43,7 +43,7 @@ function format_pvc(pv::Number)
     if pv >= 1e-4
         return @sprintf("%.4f", pv)
     else
-        return @sprintf("<1e%2.2d", max(iceil(nextfloat(log10(pv))), -99))
+        return @sprintf("<1e%2.2d", iceil(max(nextfloat(log10(pv)), -99)))
     end
 end
 
