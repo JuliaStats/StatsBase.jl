@@ -47,6 +47,9 @@ module StatsBase
     mode,        # find a mode from data (the first one)
     modes,       # find all modes from data
 
+    zscore,      # compute Z-scores
+    zscore!,     # compute Z-scores inplace or to a pre-allocated array
+
     percentile,  # quantile using percentage (instead of fraction) as argument
     nquantile,   # quantiles at [0:n]/n
 

@@ -33,6 +33,29 @@ using Base.Test
 @test modes([1, 2, 3, 3, 2, 2, 1]) == [2]
 @test sort(modes([1, 3, 2, 3, 3, 2, 2, 1])) == [2, 3]
 
+## zscores
+
+@test zscore([-3:3], 1.5, 0.5) == [-9.0:2.0:3.0]
+
+a = [3 4 5 6; 7 8 1 2; 6 9 3 0]
+z1 = [4. 6. 8. 10.; 5. 6. -1. 0.; 1.5 3.0 0.0 -1.5]
+z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
+
+@test_approx_eq zscore(a, [1, 2, 3], [0.5, 1.0, 2.0]) z1
+@test_approx_eq zscore(a, [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
+
+@test zscore!(float64([-3:3]), 1.5, 0.5) == [-9.0:2.0:3.0]
+@test_approx_eq zscore!(float64(a), [1, 2, 3], [0.5, 1.0, 2.0]) z1
+@test_approx_eq zscore!(float64(a), [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
+
+@test zscore!(zeros(7), [-3:3], 1.5, 0.5) == [-9.0:2.0:3.0]
+@test_approx_eq zscore!(zeros(size(a)), a, [1, 2, 3], [0.5, 1.0, 2.0]) z1
+@test_approx_eq zscore!(zeros(size(a)), a, [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
+
+@test_approx_eq zscore(a) zscore(a, mean(a), std(a))
+@test_approx_eq zscore(a, 1) zscore(a, mean(a,1), std(a,1))
+@test_approx_eq zscore(a, 2) zscore(a, mean(a,2), std(a,2))
+
 
 ###### quantile & friends
 

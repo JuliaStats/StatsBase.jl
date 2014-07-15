@@ -193,6 +193,89 @@ iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
 
 #############################
 #
+#   Z-scores
+#
+#############################
+
+function _zscore!(Z::AbstractArray, X::AbstractArray, μ::Real, σ::Real)
+    # Z and X are assumed to have the same size
+    iσ = inv(σ)
+    if μ == zero(μ)
+        for i = 1 : length(X)
+            @inbounds Z[i] = X[i] * iσ
+        end
+    else
+        for i = 1 : length(X)
+            @inbounds Z[i] = (X[i] - μ) * iσ
+        end
+    end
+    return Z
+end
+
+@ngenerate N typeof(Z) function _zscore!{S,T,N}(Z::AbstractArray{S,N}, X::AbstractArray{T,N}, μ::AbstractArray, σ::AbstractArray)
+    # Z and X are assumed to have the same size
+    # μ and σ are assumed to have the same size, that is compatible with size(X)
+    siz1 = size(X, 1)
+    @nextract N ud d->size(μ, d)
+    if size(μ, 1) == 1 && siz1 > 1
+        @nloops N i d->(d>1 ? (1:size(X,d)) : (1:1)) d->(j_d = ud_d ==1 ? 1 : i_d) begin
+            v = (@nref N μ j)
+            c = inv(@nref N σ j)
+            for i_1 = 1:siz1
+                (@nref N Z i) = ((@nref N X i) - v) * c
+            end
+        end
+    else
+        @nloops N i X d->(j_d = ud_d ==1 ? 1 : i_d) begin
+            (@nref N Z i) = ((@nref N X i) - (@nref N μ j)) / (@nref N σ j)
+        end
+    end
+    return Z
+end
+
+function _zscore_chksize(X::AbstractArray, μ::AbstractArray, σ::AbstractArray)
+    size(μ) == size(σ) || throw(DimensionMismatch("μ and σ should have the same size."))
+    for i=1:ndims(X)
+        dμ_i = size(μ,i)
+        (dμ_i == 1 || dμ_i == size(X,i)) || throw(DimensionMismatch("X and μ have incompatible sizes."))
+    end
+end
+
+function zscore!{ZT<:FloatingPoint,T<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real)
+    size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
+    _zscore!(Z, X, μ, σ)
+end
+
+function zscore!{ZT<:FloatingPoint,T<:Real,U<:Real,S<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, 
+                                                            μ::AbstractArray{U}, σ::AbstractArray{S})
+    size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
+    _zscore_chksize(X, μ, σ)
+    _zscore!(Z, X, μ, σ)
+end
+
+zscore!{T<:FloatingPoint}(X::AbstractArray{T}, μ::Real, σ::Real) = _zscore!(X, X, μ, σ)
+
+zscore!{T<:FloatingPoint,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) = 
+    (_zscore_chksize(X, μ, σ); _zscore!(X, X, μ, σ))
+
+function zscore{T<:Real}(X::AbstractArray{T}, μ::Real, σ::Real)
+    ZT = typeof((zero(T) - zero(μ)) / one(σ))
+    _zscore!(Array(ZT, size(X)), X, μ, σ)
+end
+
+function zscore{T<:Real,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S})
+    _zscore_chksize(X, μ, σ)
+    ZT = typeof((zero(T) - zero(U)) / one(S))
+    _zscore!(Array(ZT, size(X)), X, μ, σ)
+end
+
+zscore{T<:Real}(X::AbstractArray{T}) = ((μ, σ) = mean_and_std(X); zscore(X, μ, σ))
+zscore{T<:Real}(X::AbstractArray{T}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); zscore(X, μ, σ))
+
+
+
+#############################
+#
 #   entropy and friends
 #
 #############################
