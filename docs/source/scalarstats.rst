@@ -72,20 +72,52 @@ Measurements of Variation
   Compute the `median absolute deviation <http://en.wikipedia.org/wiki/Median_absolute_deviation>`_ of ``x``.
 
 
+Z-scores
+----------
+
+.. function:: zscore(X, μ, σ)
+
+    Compute the Z-scores, given the mean ``μ`` and standard deviation ``σ``, which is defined as ``(x - μ) / σ``.
+
+    This function returns an array ``Z`` of the same size as ``X``. 
+
+    Here, ``μ`` and ``σ`` should be both scalars or both arrays. The computation is broadcasting. 
+    In particular, when ``μ`` and ``σ`` are arrays, they should have the same size, and 
+    ``size(μ, i) == 1  || size(μ, i) == size(X, i)`` for each dimension.
+
+.. function:: zscore!(X, μ, σ)
+
+    Compute the Z-scores inplace, given the mean ``μ`` and standard deviation ``σ``.
+
+.. function:: zscore!(Z, X, μ, σ)
+
+    Compute the Z-scores, given the mean ``μ`` and standard deviation ``σ``, and write the results to a pre-allocated
+    array ``Z``. Here, ``Z`` and ``X`` should have the same size.
+
+.. function:: zscore(X)
+
+    Compute the Z-scores for ``X``. The mean and standard deviation will be computed within the function.
+
+.. function:: zscore(X, dim)
+
+    Compute the Z-scores for ``X`` along a specific dimension. The mean and standard deviation will be computed within the function.
+
+
+
 Entropy and Friends
 ---------------------
 
 .. function:: entropy(p)
 
-  Compute the entropy of the probability vector ``p``.
+   Compute the entropy of the probability vector ``p``.
 
 .. function:: crossentropy(p, q)
 
-  Compute the cross entropy between two probability vectors ``p`` and ``q``.
+   Compute the cross entropy between two probability vectors ``p`` and ``q``.
 
 .. function:: kldivergence(p, q)
 
-  Compute the Kullback-Leibler divergence between ``p`` and ``q``.
+   Compute the Kullback-Leibler divergence between ``p`` and ``q``.
 
 
 Quantile and Friends
