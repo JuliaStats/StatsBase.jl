@@ -5,5 +5,5 @@
 [![Build Status](https://travis-ci.org/JuliaStats/StatsBase.jl.svg?branch=master)](https://travis-ci.org/JuliaStats/StatsBase.jl)
 [![Coverage Status](https://coveralls.io/repos/JuliaStats/StatsBase.jl/badge.png)](https://coveralls.io/r/JuliaStats/StatsBase.jl)
 
-[Here](http://statsbasejl.readthedocs.org/en/latest/) is the detailed documentation.
-
+- **Documentation:**: <http://statsbasejl.readthedocs.org/en/latest/>
+- **Release Notes:**: <https://github.com/JuliaStats/StatsBase.jl/blob/master/NEWS.md>
