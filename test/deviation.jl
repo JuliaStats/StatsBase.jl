@@ -1,6 +1,12 @@
 using StatsBase
 using Base.Test
 
+a = [1, 2, 3, 4, 5, 6, 7]
+b = [1, 3, 3, 4, 6, 7, 8]
+
+@test counteq(a, b) == 3
+@test countne(a, b) == 4
+
 a = rand(5, 6)
 b = rand(5, 6)
 

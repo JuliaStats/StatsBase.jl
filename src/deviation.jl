@@ -1,5 +1,31 @@
 # Computing deviation in a variety of ways
 
+## count the number of equal/non-equal pairs
+
+function counteq(a::AbstractArray, b::AbstractArray)
+    n = length(a)
+    length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    c = 0
+    for i = 1:n
+        @inbounds if a[i] == b[i]
+            c += 1
+        end
+    end
+    return c
+end
+
+function countne(a::AbstractArray, b::AbstractArray)
+    n = length(a)
+    length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    c = 0
+    for i = 1:n
+        @inbounds if a[i] != b[i]
+            c += 1
+        end
+    end
+    return c
+end
+
 # squared L2 distance
 function sqL2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)

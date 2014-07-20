@@ -66,6 +66,8 @@ module StatsBase
     describe,       # print the summary statistics
 
     # deviation
+    counteq,        # count the number of equal pairs
+    countne,        # count the number of non-equal pairs
     sqL2dist,       # squared L2 distance between two arrays
     L2dist,         # L2 distance between two arrays
     L1dist,         # L1 distance between two arrays
