@@ -19,7 +19,7 @@
 * New function ``zscore``: computation of z-scores.
 
 
-## Changes from v0.6 to v0.7
+### Changes from v0.6 to v0.7
 
 * Remove functions deprecated before v0.5: ``gmean``, ``hmean``, ``kde``, ``acf``, ``ccf`` and ``indicators``.
 
