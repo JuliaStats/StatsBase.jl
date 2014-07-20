@@ -65,6 +65,18 @@ module StatsBase
     summarystats,   # summary statistics
     describe,       # print the summary statistics
 
+    # deviation
+    sqL2dist,       # squared L2 distance between two arrays
+    L2dist,         # L2 distance between two arrays
+    L1dist,         # L1 distance between two arrays
+    Linfdist,       # L-inf distance between two arrays
+    gkldiv,         # (Generalized) Kullback-Leibler divergence between two vectors
+    meanad,         # mean absolute deviation
+    maxad,          # maximum absolute deviation
+    msd,            # mean squared deviation
+    rmsd,           # root mean squared deviation
+    psnr,           # peak signal-to-noise ratio (in dB)
+
     # cov
     scattermat,     # scatter matrix (i.e. unnormalized covariance)
 
@@ -143,6 +155,7 @@ module StatsBase
     include("weights.jl")
     include("moments.jl")
     include("scalarstats.jl")
+    include("deviation.jl")
     include("cov.jl")
     include("counts.jl")
     include("ranking.jl")
