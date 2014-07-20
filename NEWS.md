@@ -24,5 +24,5 @@
 * Remove functions deprecated before v0.5: ``gmean``, ``hmean``, ``kde``, ``acf``, ``ccf`` and ``indicators``.
 
 * Add functions to compute deviations (moved from [MLBase](https://github.com/JuliaStats/MLBase.jl)): 
-  ``sqL2dist``, ``L2dist``, ``L1dist``, ``Linfdist``, ``gkldiv``, ``meanad``, ``maxad``, ``msd``, ``rmsd``, and ``psnr`` (See [documentation here](http://statsbasejl.readthedocs.org/en/latest/deviation.html)).
+  ``countne``, ``counteq``, ``sqL2dist``, ``L2dist``, ``L1dist``, ``Linfdist``, ``gkldiv``, ``meanad``, ``maxad``, ``msd``, ``rmsd``, and ``psnr`` (See [documentation here](http://statsbasejl.readthedocs.org/en/latest/deviation.html)).
 

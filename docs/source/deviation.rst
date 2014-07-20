@@ -3,6 +3,14 @@ Computing Deviations
 
 This package provides functions to compute various deviations between arrays in a variety of ways:
 
+.. function:: counteq(a, b)
+
+    Count the number of equal pairs of elements in ``a`` and ``b``, *i.e* ``countnz(a .== b)``.
+
+.. function:: countne(a, b)
+
+    Count the number of non-equal pairs of elements in ``a`` and ``b``, *i.e* ``countnz(a .!= b)``.
+
 .. function:: sqL2dist(a, b)
 
     Squared L2 distance between ``a`` and ``b``, as :math:`\sum_{i=1}^n |a_i - b_i|^2`.
