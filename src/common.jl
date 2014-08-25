@@ -23,6 +23,6 @@ typealias RealFP Union(Float32, Float64)
 ## conversion from real to fp types
 
 fptype{T<:Union(Float32,Bool,Int8,Uint8,Int16,Uint16)}(::Type{T}) = Float32
-fptype{T<:Union(Float64,Int64,Uint64,Int128,Uint128)}(::Type{T}) = Float64
+fptype{T<:Union(Float64,Int32,Uint32,Int64,Uint64,Int128,Uint128)}(::Type{T}) = Float64
 fptype(::Type{Complex64}) = Complex64
 fptype(::Type{Complex128}) = Complex128
