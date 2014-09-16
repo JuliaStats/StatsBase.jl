@@ -1,7 +1,7 @@
 
 ###### Weight vector #####
 
-immutable WeightVec{W<:Real,Vec<:RealVector}
+immutable WeightVec{W,Vec<:RealVector}
     values::Vec
     sum::W
 end
