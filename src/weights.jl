@@ -243,3 +243,51 @@ Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
     mean!(Array(wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
 
 
+###### Weighted median #####
+
+function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
+    isempty(v) && error("median of an empty array is undefined")
+    if length(v) != length(w)
+        error("data and weight vectors must be the same size")
+    end
+    @inbounds for x in w.values
+        isnan(x) && error("weight vector cannot contain NaN entries")
+    end
+    @inbounds for x in v
+        isnan(x) && return x
+    end
+    mask = w.values .!= 0
+    if any(mask)
+        if all(w.values .<= 0)
+            error("no positive weights found")
+        end
+        v = v[mask]
+        wt = w[mask]
+        midpoint = w.sum / 2
+        maxval, maxind = findmax(wt)
+        if maxval > midpoint
+            v[maxind]
+        else
+            permute = sortperm(v)
+            cumulative_weight = zero(eltype(wt))
+            i = 0
+            for (i, p) in enumerate(permute)
+                if cumulative_weight > midpoint
+                    cumulative_weight -= wt[p]
+                    break
+                end
+                cumulative_weight += wt[p]
+            end
+            if cumulative_weight == midpoint
+                middle(v[permute[i-2]], v[permute[i-1]])
+            else
+                middle(v[permute[i-1]])
+            end
+        end
+    else
+        error("no nonzero weights found")
+    end
+end
+
+wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
+wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
