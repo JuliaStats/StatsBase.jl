@@ -1,6 +1,6 @@
 # test hist
 @test sum(fit(Histogram,[1,2,3]).weights) == 3
-@test fit(Histogram,[]).weights == []
+@test fit(Histogram,Int[]).weights == Int[]
 @test fit(Histogram,[1]).weights == [1]
 @test fit(Histogram,[1,2,3],[0,2,4]) == Histogram([0,2,4],[2,1])
 @test fit(Histogram,[1,2,3],[0,2,4]) != Histogram([0,2,4],[1,1])
