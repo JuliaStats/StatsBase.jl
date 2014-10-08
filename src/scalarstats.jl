@@ -179,7 +179,7 @@ function mad!{T<:Real}(v::AbstractArray{T}, center::Real)
     for i in 1:length(v)
         v[i] = abs(v[i]-center)
     end
-    1.4826 * median!(v, checknan=false)
+    1.4826 * median!(v)
 end
 
 mad!{T<:Real}(v::AbstractArray{T}) = mad!(v, median!(v))
