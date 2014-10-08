@@ -63,7 +63,7 @@ end
 # findat (get positions (within a) for elements in b)
 
 function indexmap{T}(a::AbstractArray{T})
-    d = Dict{T,Int}[]
+    d = Dict{T,Int}()
     for i = 1 : length(a)
         @inbounds k = a[i]
         if !haskey(d, k)
@@ -74,7 +74,7 @@ function indexmap{T}(a::AbstractArray{T})
 end
 
 function levelsmap{T}(a::AbstractArray{T})
-    d = Dict{T,Int}[]
+    d = Dict{T,Int}()
     index = 1
     for i = 1 : length(a)
         @inbounds k = a[i]

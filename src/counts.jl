@@ -159,7 +159,7 @@ proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = propo
 ## auxiliary functions
 
 function _normalize_countmap{T}(cm::Dict{T}, s::Real)
-	r = Dict{T,Float64}[]
+	r = Dict{T,Float64}()
 	for (k, c) in cm
 		r[k] = c / s 
 	end
@@ -189,8 +189,8 @@ function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec{W})
 	return cm
 end
 
-countmap{T}(x::AbstractArray{T}) = addcounts!(Dict{T,Int}[], x)
-countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}[], x, wv)
+countmap{T}(x::AbstractArray{T}) = addcounts!(Dict{T,Int}(), x)
+countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}(), x, wv)
 
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
