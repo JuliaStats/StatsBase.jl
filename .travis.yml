@@ -4,9 +4,9 @@ compiler:
 notifications:
   email: false
 env:
-  matrix: 
-#    - JULIAVERSION="juliareleases" 
-    - JULIAVERSION="julianightlies" 
+  matrix:
+    - JULIAVERSION="juliareleases"
+    - JULIAVERSION="julianightlies"
 before_install:
   - sudo add-apt-repository ppa:staticfloat/julia-deps -y
   - sudo add-apt-repository ppa:staticfloat/${JULIAVERSION} -y
@@ -14,6 +14,7 @@ before_install:
   - sudo apt-get install libpcre3-dev julia -y
 script:
   - julia -e 'Pkg.init(); run(`ln -s $(pwd()) $(Pkg.dir("StatsBase"))`); Pkg.pin("StatsBase"); Pkg.resolve()'
-  - julia --code-coverage ./test/runtests.jl
+  - if [ $JULIAVERSION = "julianightlies" ]; then julia -e 'Pkg.test("StatsBase", coverage=true)'; fi
+  - if [ $JULIAVERSION = "juliareleases" ]; then julia -e 'Pkg.test("StatsBase")'; fi
 after_success:
-  - julia -e 'cd(Pkg.dir("StatsBase")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+  - if [ $JULIAVERSION = "julianightlies" ]; julia -e 'cd(Pkg.dir("StatsBase")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'; fi
