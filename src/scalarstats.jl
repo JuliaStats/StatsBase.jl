@@ -95,7 +95,7 @@ end
 # compute mode over arbitrary array
 function mode{T}(a::AbstractArray{T})
     isempty(a) && error("mode: input array cannot be empty.")
-    cnts = (T=>Int)[]
+    cnts = Dict{T,Int}()
     # first element
     mc = 1
     mv = a[1]
@@ -119,7 +119,7 @@ end
 
 function modes{T}(a::AbstractArray{T})
     isempty(a) && error("modes: input array cannot be empty.")
-    cnts = (T=>Int)[]
+    cnts = Dict{T,Int}()
     # first element
     mc = 1
     cnts[a[1]] = 1
