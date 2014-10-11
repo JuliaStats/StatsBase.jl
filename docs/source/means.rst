@@ -37,10 +37,8 @@ The package provides functions to compute means of different kinds.
 
 .. function:: mean(x, w, dim)
 
-  Compute weighted means of ``x`` along a certain dimension (specified by an integer ``dim``). The weights are given by a wegitht vector ``w`` (of type ``WeightVec``).
+  Compute weighted means of ``x`` along a certain dimension (specified by an integer ``dim``). The weights are given by a weight vector ``w`` (of type ``WeightVec``).
 
 .. function:: mean!(dst, x, w, dim)
 
   Compute weighted means along a certain dimension, and write results to a pre-allocated destination vector ``dst``. 
-
-  

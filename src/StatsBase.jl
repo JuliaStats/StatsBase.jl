@@ -30,6 +30,7 @@ module StatsBase
     wsum!,       # weighted sum across dimensions with provided storage
     wmean,       # weighted mean
     wmean!,      # weighted mean across dimensions with provided storage
+    wmedian,     # weighted median
 
     ## moments
     skewness,       # (standardized) skewness

@@ -149,3 +149,82 @@ for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
 	@test_throws ErrorException mean(a, weights(wt), 4)
 end
 
+# Weighted median tests
+data = (
+    [7, 1, 2, 4, 10],
+    [7, 1, 2, 4, 10],
+    [7, 1, 2, 4, 10, 15],
+    [1, 2, 4, 7, 10, 15],
+    [0, 10, 20, 30],
+    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5],
+    [30, 40, 50, 60, 35],
+    [2, 0.6, 1.3, 0.3, 0.3, 1.7, 0.7, 1.7, 0.4],
+    [3.7, 3.3, 3.5, 2.8],
+    [100, 125, 123, 60, 45, 56, 66],
+    [2, 2, 2, 2, 2, 2],
+    [2.3],
+    [-2, -3, 1, 2, -10],
+    [1, 2, 3, 4, 5],
+    [5, 4, 3, 2, 1],
+    [-2, 2, -1, 3, 6],
+    [-10, 1, 1, -10, -10],
+)
+wt = (
+    [1, 1/3, 1/3, 1/3, 1],
+    [1, 1, 1, 1, 1],
+    [1, 1/3, 1/3, 1/3, 1, 1],
+    [1/3, 1/3, 1/3, 1, 1, 1],
+    [30, 191, 9, 0],
+    [10, 1, 1, 1, 9],
+    [10, 1, 1, 1, 900],
+    [1, 3, 5, 4, 2],
+    [2, 2, 0, 1, 2, 2, 1, 6, 0],
+    [5, 5, 4, 1],
+    [30, 56, 144, 24, 55, 43, 67],
+    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+    [12],
+    [7, 1, 1, 1, 6],
+    [1, 0, 0, 0, 2],
+    [1, 2, -3, 4, -5],
+    [0.1, 0.2, 0.3, -0.2, 0.1],
+    [-1, -1, -1, -1, 1],
+)
+median_answers = (7.0,   4.0,   8.5,
+                  8.5,  10.0,   2.5,
+                  5.0,  50.0,   1.7,
+                  3.5, 100.0,   2.0,
+                  2.3,  -2.0,   5.0,
+                  2.0,  -1.0, -10.0)
+num_tests = length(data)
+for i = 1:num_tests
+    @test wmedian(data[i], wt[i]) == median_answers[i]
+    @test wmedian(data[i], weights(wt[i])) == median_answers[i]
+    @test median(data[i], weights(wt[i])) == median_answers[i]
+    for j = 1:100
+        # Make sure the weighted median does not change if the data
+        # and weights are reordered.
+        reorder = sortperm(rand(length(data[i])))
+        @test median(data[i][reorder], weights(wt[i][reorder])) == median_answers[i]
+    end
+end
+data = [4, 3, 2, 1]
+wt = [0, 0, 0, 0]
+@test_throws MethodError wmedian(data[1])
+@test_throws ErrorException median(data, weights(wt))
+@test_throws ErrorException wmedian(data, wt)
+@test_throws ErrorException median((Float64)[], weights((Float64)[]))
+wt = [1, 2, 3, 4, 5]
+@test_throws ErrorException median(data, weights(wt))
+@test_throws MethodError median([4 3 2 1 0], weights(wt))
+@test_throws MethodError median([[1 2];[4 5];[7 8];[10 11];[13 14]], weights(wt))
+data = [1, 3, 2, NaN, 2]
+@test isnan(median(data, weights(wt)))
+wt = [1, 2, NaN, 4, 5]
+@test_throws ErrorException median(data, weights(wt))
+data = [1, 3, 2, 1, 2]
+@test_throws ErrorException median(data, weights(wt))
+wt = [-1, -1, -1, -1, -1]
+@test_throws ErrorException median(data, weights(wt))
+wt = [-1, -1, -1, 0, 0]
+@test_throws ErrorException median(data, weights(wt))
