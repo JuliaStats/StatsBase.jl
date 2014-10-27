@@ -67,9 +67,11 @@ Measurements of Variation
 
   Compute the standard error of the mean for ``x``, *i.e.* ``sqrt(var(x) / length(x))``.
 
-.. function:: mad(x)
+.. function:: mad(x[, center][; constant=1.4826])
 
   Compute the `median absolute deviation <http://en.wikipedia.org/wiki/Median_absolute_deviation>`_ of ``x``.
+
+  One can optionally supply the ``center``. By default, ``constant=1.4826`` for consistent estimation of the standard deviation of a normal distribution.
 
 
 Z-scores
