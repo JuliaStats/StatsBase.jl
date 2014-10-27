@@ -173,19 +173,15 @@ variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
 sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
-mad{T<:Real}(v::AbstractArray{T}, center::Real) = 1.4826 * median!(abs(v .- center))
+mad{T<:Real}(v::AbstractArray{T}, args...;arg...) = mad!(copy(v), args...;arg...)
+mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v], args...;arg...)
 
-function mad!{T<:Real}(v::AbstractArray{T}, center::Real)
+function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
     for i in 1:length(v)
-        v[i] = abs(v[i]-center)
+        @inbounds v[i] = abs(v[i]-center)
     end
-    1.4826 * median!(v)
+    constant * median!(v)
 end
-
-mad!{T<:Real}(v::AbstractArray{T}) = mad!(v, median!(v))
-
-mad{T<:Real}(v::AbstractArray{T}) = mad!(copy(v))
-mad{T<:Real}(v::Range{T}) = mad!([v])
 
 # Interquartile range
 iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
