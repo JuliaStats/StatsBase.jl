@@ -3,9 +3,19 @@ module StatsBase
 
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
-    import Base: Func, evaluate, IdFun, Abs2Fun
+    import Base: Func, IdFun, Abs2Fun
     import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @ngenerate, @nloops, @nref, @nextract
+
+    ## tackle compatibility issues
+
+    if VERSION < v"0.4.0-dev+1258"
+        import Base: evaluate
+    else
+        evaluate(f::Func{1}, x) = call(f, x)
+        evaluate(f::Func{2}, x, y) = call(f, x, y)
+    end
+
 
     export
 
