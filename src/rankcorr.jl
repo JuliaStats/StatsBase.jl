@@ -88,11 +88,11 @@ end
 
 corkendall(x::RealVector, y::RealVector) = corkendall!(float(copy(x)), float(copy(y)))
 
-corkendall(X::RealMatrix, y::RealVector) = [corkendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
+corkendall(X::RealMatrix, y::RealVector) = Float64[corkendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
 
-corkendall(x::RealVector, Y::RealMatrix) = (n = size(Y,2); reshape([corkendall!(float(copy(x)), float(Y[:,i])) for i in 1:n], 1, n))
+corkendall(x::RealVector, Y::RealMatrix) = (n = size(Y,2); reshape(Float64[corkendall!(float(copy(x)), float(Y[:,i])) for i in 1:n], 1, n))
 
-corkendall(X::RealMatrix, Y::RealMatrix) = [corkendall!(float(X[:,i]), float(Y[:,j])) for i in 1:size(X, 2), j in 1:size(Y, 2)]
+corkendall(X::RealMatrix, Y::RealMatrix) = Float64[corkendall!(float(X[:,i]), float(Y[:,j])) for i in 1:size(X, 2), j in 1:size(Y, 2)]
 
 function corkendall(X::RealMatrix)
     n = size(X, 2)
