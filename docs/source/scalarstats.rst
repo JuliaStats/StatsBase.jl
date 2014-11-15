@@ -141,7 +141,7 @@ Quantile and Friends
 
   Extended method of *quantile*. Equivalent to ``nquantile(x, 4)``, which returns a vector of quantiles at ``0.0, 0.25, 0.50, 0.75, 1.0``. 
 
-.. function:: median(x, w[; checknan=true])
+.. function:: median(x, w)
 
   Compute the weighted median of ``x``, using weights given by a weight vector ``w`` (of type ``WeightVec``).  The weight and data vectors must have the same length.  The weighted median :math:`x_k` is the element of ``x`` that satisfies :math:`\sum_{x_i < x_k} w_i \le \frac{1}{2} \sum_{j} w_j` and :math:`\sum_{x_i > x_k} w_i \le \frac{1}{2} \sum_{j} w_j`.  If a weight has value zero, then its associated data point is ignored.  If none of the weights are positive, an error is thrown.  ``NaN`` is returned if ``x`` contains any ``NaN`` values.  An error is raised if ``w`` contains any ``NaN`` values.
 
