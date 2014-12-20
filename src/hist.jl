@@ -76,8 +76,10 @@ function sturges(n)  # Sturges' formula
     iceil(log2(n))+1
 end
 
+abstract AbstractHistogram{T<:Real,N,E}
+
 # N-dimensional histogram object
-type Histogram{T<:Real,N,E}
+type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     edges::E
     weights::Array{T,N}
     closed::Symbol
@@ -91,7 +93,7 @@ Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},close
 Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:right) = Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),closed)
 Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:right) = Histogram(edges,Int,closed)
 
-function show(io::IO, h::Histogram)
+function show(io::IO, h::AbstractHistogram)
     println(io, typeof(h))
     println(io,"edges:")
     for e in h.edges
@@ -119,15 +121,15 @@ function push!{T,E}(h::Histogram{T,1,E}, x::Real,w::Real)
     end
     h
 end
-push!{T,E}(h::Histogram{T,1,E}, x::Real) = push!(h,x,one(T))
+push!{T,E}(h::AbstractHistogram{T,1,E}, x::Real) = push!(h,x,one(T))
 
-function append!{T}(h::Histogram{T,1}, v::AbstractVector)
+function append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector)
     for x in v
         push!(h,x)
     end
     h
 end
-function append!{T}(h::Histogram{T,1}, v::AbstractVector,wv::WeightVec)
+function append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector,wv::WeightVec)
     for (x,w) in zip(v,wv.values)
         push!(h,x,w)
     end
@@ -158,15 +160,15 @@ function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
     end
     h
 end
-push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real}) = push!(h,xs,one(T))
+push!{T,N}(h::AbstractHistogram{T,N},xs::NTuple{N,Real}) = push!(h,xs,one(T))
 
-function append!{T,N}(h::Histogram{T,N}, vs::NTuple{N,AbstractVector})
+function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector})
     for xs in zip(vs...)
         push!(h,xs)
     end
     h
 end
-function append!{T,N}(h::Histogram{T,N}, vs::NTuple{N,AbstractVector},wv::WeightVec)
+function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector},wv::WeightVec)
     for (xs,w) in zip(zip(vs...),wv.values)
         push!(h,xs,w)
     end
