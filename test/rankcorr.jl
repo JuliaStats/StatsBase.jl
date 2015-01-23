@@ -3,7 +3,7 @@
 using StatsBase
 using Base.Test
 
-X = [1 0; 2 1; 3 0; 4 1; 5 10]
+X = Float64[1 0; 2 1; 3 0; 4 1; 5 10]
 
 x1 = X[:,1]
 x2 = X[:,2]

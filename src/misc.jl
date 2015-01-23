@@ -112,8 +112,7 @@ function indicatormat(x::AbstractArray, c::AbstractArray; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
 end
 
-indicatormat{T<:Union(Real,String)}(x::AbstractArray{T}; sparse::Bool=false) = indicatormat(x, sort!(unique(x)); sparse=sparse)
-indicatormat(x::AbstractArray; sparse::Bool=false) = indicatormat(x, unique(x); sparse=sparse)
+indicatormat(x::AbstractArray; sparse::Bool=false) = indicatormat(x, sort!(unique(x)); sparse=sparse)
 
 
 function _indicatormat_dense(x::IntegerArray, k::Integer)
