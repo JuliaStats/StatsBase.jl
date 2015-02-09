@@ -32,7 +32,7 @@ function trimmean(x::RealArray, p::Real)
     n = length(x)
     n > 0 || error("x can not be empty.")
     0 <= p < 1 || error("p must be non-negative and less than 1.")
-    rn = min(iround(n * p), n-1)
+    rn = min(round(Int, n * p), n-1)
 
     sx = sort(x)
     nl = rn >> 1

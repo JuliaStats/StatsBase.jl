@@ -22,10 +22,10 @@ function histrange{T<:FloatingPoint}(v::AbstractArray{T}, n::Integer, closed::Sy
     end
     if closed == :right
         start = step*(ceil(lo/step)-1)
-        nm1 = iceil((hi - start)/step)       
+        nm1 = ceil(Integer, (hi - start)/step)
     else
         start = step*floor(lo/step)
-        nm1 = ifloor((hi - start)/step)+1    
+        nm1 = floor(Integer, (hi - start)/step)+1
     end
     start:step:(start + nm1*step)
 end
@@ -39,7 +39,7 @@ function histrange{T<:Integer}(v::AbstractArray{T}, n::Integer, closed::Symbol)
         step = 1
     else
         bw = (hi - lo) / n
-        e = int(10^max(0,ifloor(log10(bw))))
+        e = int(10^max(0,floor(Integer, log10(bw))))
         r = bw / e
         if r <= 1
             step = e
@@ -52,11 +52,11 @@ function histrange{T<:Integer}(v::AbstractArray{T}, n::Integer, closed::Symbol)
         end
     end
     if closed == :right
-        start = step*(iceil(lo/step)-1)
-        nm1 = iceil((hi - start)/step)
+        start = step*(ceil(Integer, lo/step)-1)
+        nm1 = ceil(Integer, (hi - start)/step)
     else
-        start = step*ifloor(lo/step)
-        nm1 = ifloor((hi - start)/step)+1
+        start = step*floor(Integer, lo/step)
+        nm1 = floor(Integer, (hi - start)/step)+1
     end
     start:step:(start + nm1*step)
 end
@@ -73,7 +73,7 @@ midpoints(v::AbstractVector) = [0.5*(v[i] + v[i+1]) for i in 1:length(v)-1]
 ## histograms ##
 function sturges(n)  # Sturges' formula
     n==0 && return one(n)
-    iceil(log2(n))+1
+    ceil(Integer, log2(n))+1
 end
 
 # N-dimensional histogram object

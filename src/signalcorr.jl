@@ -204,7 +204,7 @@ function crosscov!{T<:RealFP}(r::AbstractArray{T,3}, x::Matrix{T}, y::Matrix{T},
 
     # cached (centered) columns of x
     zxs = Array(Vector{T}, 0)
-    sizehint(zxs, nx)
+    sizehint!(zxs, nx)
     for j = 1 : nx
         xj = x[:,j]
         if demean
@@ -316,7 +316,7 @@ function crosscor!{T<:RealFP}(r::AbstractArray{T,3}, x::Matrix{T}, y::Matrix{T},
 
     # cached (centered) columns of x
     zxs = Array(Vector{T}, 0)
-    sizehint(zxs, nx)
+    sizehint!(zxs, nx)
     xxs = Array(T, nx)
 
     for j = 1 : nx
