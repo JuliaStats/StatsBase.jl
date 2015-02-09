@@ -1,11 +1,14 @@
 module StatsBase
-    using ArrayViews
+    using ArrayViews, Compat
 
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
     import Base: Func, IdFun, Abs2Fun
     import Base.LinAlg: BlasReal, BlasFloat
-    import Base.Cartesian: @ngenerate, @nloops, @nref, @nextract
+    if VERSION < v"0.4.0-dev+3184"
+        import Base.Cartesian: @ngenerate
+    end
+    import Base.Cartesian: @nloops, @nref, @nextract
 
     ## tackle compatibility issues
 
