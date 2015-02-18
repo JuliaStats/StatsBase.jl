@@ -35,7 +35,7 @@ using Base.Test
 
 ## zscores
 
-@test zscore([-3:3], 1.5, 0.5) == [-9.0:2.0:3.0]
+@test zscore([-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]
 
 a = [3 4 5 6; 7 8 1 2; 6 9 3 0]
 z1 = [4. 6. 8. 10.; 5. 6. -1. 0.; 1.5 3.0 0.0 -1.5]
@@ -44,11 +44,11 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test_approx_eq zscore(a, [1, 2, 3], [0.5, 1.0, 2.0]) z1
 @test_approx_eq zscore(a, [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
 
-@test zscore!(float64([-3:3]), 1.5, 0.5) == [-9.0:2.0:3.0]
+@test zscore!(float64([-3:3;]), 1.5, 0.5) == [-9.0:2.0:3.0;]
 @test_approx_eq zscore!(float64(a), [1, 2, 3], [0.5, 1.0, 2.0]) z1
 @test_approx_eq zscore!(float64(a), [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
 
-@test zscore!(zeros(7), [-3:3], 1.5, 0.5) == [-9.0:2.0:3.0]
+@test zscore!(zeros(7), [-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]
 @test_approx_eq zscore!(zeros(size(a)), a, [1, 2, 3], [0.5, 1.0, 2.0]) z1
 @test_approx_eq zscore!(zeros(size(a)), a, [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
 
@@ -59,25 +59,25 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 ###### quantile & friends
 
-@test_approx_eq quantile(1:5) [1:5]
+@test_approx_eq quantile(1:5) [1:5;]
 @test_approx_eq nquantile(1:5, 2) [1, 3, 5]
-@test_approx_eq nquantile(1:5, 4) [1:5] 
+@test_approx_eq nquantile(1:5, 4) [1:5;] 
 
-@test_approx_eq percentile([1:5], 25) 2.0
-@test_approx_eq percentile([1:5], [25, 50, 75]) [2.0, 3.0, 4.0]
+@test_approx_eq percentile([1:5;], 25) 2.0
+@test_approx_eq percentile([1:5;], [25, 50, 75]) [2.0, 3.0, 4.0]
 
 
 ##### Dispersion
 
-@test_approx_eq variation([1:5]) 0.527046276694730
+@test_approx_eq variation([1:5;]) 0.527046276694730
 
-@test_approx_eq sem([1:5]) 0.707106781186548
+@test_approx_eq sem([1:5;]) 0.707106781186548
 
-@test_approx_eq mad([1:5], 3) 1.4826
-@test_approx_eq mad([1:5]) 1.4826
+@test_approx_eq mad([1:5;], 3) 1.4826
+@test_approx_eq mad([1:5;]) 1.4826
 @test_approx_eq mad(1:5) 1.4826
-@test_approx_eq mad([1:5], constant=1.0) 1.0
-@test_approx_eq mad([1:5], 3, constant=1.0) 1.0
+@test_approx_eq mad([1:5;], constant=1.0) 1.0
+@test_approx_eq mad([1:5;], 3, constant=1.0) 1.0
 
 @test_approx_eq iqr(1:5) 2.0
 

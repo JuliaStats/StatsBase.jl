@@ -103,7 +103,7 @@ wv = weights(ones(5) * 2.0)
 
 ##### general moments
 
-x = float64([2:8])
+x = float64([2:8;])
 @test_approx_eq moment(x, 2) sum((x .- 5).^2) / length(x)
 @test_approx_eq moment(x, 3) sum((x .- 5).^3) / length(x)
 @test_approx_eq moment(x, 4) sum((x .- 5).^4) / length(x)
@@ -115,7 +115,7 @@ x = float64([2:8])
 @test_approx_eq moment(x, 5, 4.0) sum((x .- 4).^5) / length(x)
 
 w = weights([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
-x2 = float64([2:6])
+x2 = float64([2:6;])
 @test_approx_eq moment(x, 2, w) sum((x2 .- 4).^2) / 5
 @test_approx_eq moment(x, 3, w) sum((x2 .- 4).^3) / 5
 @test_approx_eq moment(x, 4, w) sum((x2 .- 4).^4) / 5

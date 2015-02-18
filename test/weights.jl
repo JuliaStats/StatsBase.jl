@@ -135,7 +135,7 @@ r = ones(8, 6)
 @test_approx_eq sum([1.0, 2.0, 3.0], weights([1.0, 0.5, 0.5])) 3.5
 @test_approx_eq sum(1:3, weights([1.0, 1.0, 0.5])) 4.5
 
-@test_approx_eq mean([1:3], weights([1.0, 1.0, 0.5])) 1.8
+@test_approx_eq mean([1:3;], weights([1.0, 1.0, 0.5])) 1.8
 @test_approx_eq mean(1:3, weights([1.0, 1.0, 0.5])) 1.8
 
 a = reshape(1.0:27.0, 3, 3, 3)

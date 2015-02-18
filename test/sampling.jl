@@ -57,7 +57,7 @@ check_sample_wrep(a, (1, 10), 5.0e-3; ordered=false)
 a = direct_sample!(3:12, zeros(Int, n, 3))
 check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
-a = direct_sample!([11:20], zeros(Int, n, 3))
+a = direct_sample!([11:20;], zeros(Int, n, 3))
 check_sample_wrep(a, (11, 20), 5.0e-3; ordered=false)
 
 a = xmultinom_sample!(3:12, zeros(Int, n))

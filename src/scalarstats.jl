@@ -174,7 +174,7 @@ sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 mad{T<:Real}(v::AbstractArray{T}, args...;arg...) = mad!(copy(v), args...;arg...)
-mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v], args...;arg...)
+mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v;], args...;arg...)
 
 function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
     for i in 1:length(v)
