@@ -11,6 +11,7 @@ nobs(obj::StatisticalModel) = size(model_response(obj), 1)
 stderr(obj::StatisticalModel) = sqrt(diag(vcov(obj)))
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj)).")
+fit!(obj::StatisticalModel, data...) = error("fit! is not defined for $(typeof(obj)).")
 
 abstract RegressionModel <: StatisticalModel
 
@@ -43,14 +44,14 @@ function format_pvc(pv::Number)
     if pv >= 1e-4
         return @sprintf("%.4f", pv)
     else
-        return @sprintf("<1e%2.2d", iceil(max(nextfloat(log10(pv)), -99)))
+        return @sprintf("<1e%2.2d", ceil(Integer, max(nextfloat(log10(pv)), -99)))
     end
 end
 
 function show(io::IO, ct::CoefTable)
     mat = ct.mat; nr,nc = size(mat); rownms = ct.rownms; colnms = ct.colnms; pvc = ct.pvalcol
     if length(rownms) == 0
-        rownms = [lpad("[$i]",ifloor(log10(nr))+3)::String for i in 1:nr]
+        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3)::String for i in 1:nr]
     end
     rnwidth = max(4,maximum([length(nm) for nm in rownms]) + 1)
     rownms = [rpad(nm,rnwidth) for nm in rownms]

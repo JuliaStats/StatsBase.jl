@@ -155,6 +155,7 @@ module StatsBase
     confint,
     deviance,
     fit,
+    fit!,
     fitted,
     loglikelihood,
     nobs,
