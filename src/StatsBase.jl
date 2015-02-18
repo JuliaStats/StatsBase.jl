@@ -131,6 +131,7 @@ module StatsBase
     ## empirical
     ecdf,           # empirical cumulative distribution function
 
+    AbstractHistogram,
     Histogram,
     hist,
     histrange,
