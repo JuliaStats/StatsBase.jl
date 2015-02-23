@@ -51,11 +51,15 @@ counts(x::IntegerArray, levels::IntRange1) = addcounts!(zeros(Int, length(levels
 counts(x::IntegerArray, levels::IntRange1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
 counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
 counts(x::IntegerArray, k::Integer, wv::WeightVec) = counts(x, 1:k, wv)
+counts(x::IntegerArray) = counts(x, minimum(x):maximum(x))
+counts(x::IntegerArray, wv::WeightVec) = counts(x, minimum(x):maximum(x), wv)
 
 proportions(x::IntegerArray, levels::IntRange1) = counts(x, levels) .* inv(length(x))
 proportions(x::IntegerArray, levels::IntRange1, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
 proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
 proportions(x::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, 1:k, wv)
+proportions(x::IntegerArray) = proportions(x, minimum(x):maximum(x))
+proportions(x::IntegerArray, wv::WeightVec) = proportions(x, minimum(x):maximum(x), wv)
 
 #### functions for counting a single list of integers (2D)
 
@@ -137,6 +141,8 @@ counts(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer)) = counts(x, y, 
 counts(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer), wv::WeightVec) = counts(x, y, (1:ks[1], 1:ks[2]), wv)
 counts(x::IntegerArray, y::IntegerArray, k::Integer) = counts(x, y, (1:k, 1:k))
 counts(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = counts(x, y, (1:k, 1:k), wv)
+counts(x::IntegerArray, y::IntegerArray) = counts(x, y, (minimum(x):maximum(x), minimum(y):maximum(y)))
+counts(x::IntegerArray, y::IntegerArray, wv::WeightVec) = counts(x, y, (minimum(x):maximum(x),minimum(y):maximum(y)), wv)
 
 proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1)) = counts(x, y, levels) .* inv(length(x))
 proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec) = counts(x, y, levels, wv) .* inv(sum(wv))
@@ -145,6 +151,8 @@ proportions(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer)) = proporti
 proportions(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer), wv::WeightVec) = proportions(x, y, (1:ks[1], 1:ks[2]), wv)
 proportions(x::IntegerArray, y::IntegerArray, k::Integer) = proportions(x, y, (1:k, 1:k))
 proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, y, (1:k, 1:k), wv)
+proportions(x::IntegerArray, y::IntegerArray) = proportions(x, y, (minimum(x):maximum(x), minimum(y):maximum(y)))
+proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec) = proportions(x, y, (minimum(x):maximum(x),minimum(y):maximum(y)), wv)
 
 
 #################################################
