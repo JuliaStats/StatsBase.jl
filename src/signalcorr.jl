@@ -11,7 +11,7 @@
 #
 #######################################
 
-@compat default_laglen(lx::Int) = min(lx-1, Int(10log10(lx)))
+default_laglen(lx::Int) = min(lx-1, round(Int,10*log10(lx)))
 check_lags(lx::Int, lags::AbstractVector) = (maximum(lags) < lx || error("lags must be less than the sample length."))
 
 function demean_col!{T<:RealFP}(z::Vector{T}, x::Matrix{T}, j::Int, demean::Bool)

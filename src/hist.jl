@@ -39,7 +39,7 @@ function histrange{T<:Integer}(v::AbstractArray{T}, n::Integer, closed::Symbol)
         step = 1
     else
         bw = (hi - lo) / n
-        e = 10^max(0,floor(Int,log10(bw))))
+        e = 10^max(0,floor(Int,log10(bw)))
         r = bw / e
         if r <= 1
             step = e
@@ -103,7 +103,7 @@ function show(io::IO, h::AbstractHistogram)
     print(io,"closed: ",h.closed)
 end
 
-(==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)s
+(==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)
 
 # 1-dimensional
 Histogram{T}(edge::AbstractVector,weights::AbstractVector{T},closed::Symbol=:right) = Histogram{T,1,(typeof(edge),)}((edge,),weights,closed)

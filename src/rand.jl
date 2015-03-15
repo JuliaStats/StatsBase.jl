@@ -14,7 +14,7 @@ function rand(s::RandIntSampler)
     while x >= s.U
 	x = rand(UInt)
     end
-    s.a + Int(rem(x, s.Ku))
+    @compat s.a + Int(rem(x, s.Ku))
 end
 
 randi(K::Int) = rand(RandIntSampler(K))
