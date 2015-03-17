@@ -44,9 +44,9 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test_approx_eq zscore(a, [1, 2, 3], [0.5, 1.0, 2.0]) z1
 @test_approx_eq zscore(a, [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
 
-@test zscore!(float64([-3:3;]), 1.5, 0.5) == [-9.0:2.0:3.0;]
-@test_approx_eq zscore!(float64(a), [1, 2, 3], [0.5, 1.0, 2.0]) z1
-@test_approx_eq zscore!(float64(a), [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
+@test zscore!(collect(-3.0:3.0), 1.5, 0.5) == [-9.0:2.0:3.0;]
+@test_approx_eq zscore!(float(a), [1, 2, 3], [0.5, 1.0, 2.0]) z1
+@test_approx_eq zscore!(float(a), [1 3 2 4], [0.25 0.5 1.0 2.0]) z2
 
 @test zscore!(zeros(7), [-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]
 @test_approx_eq zscore!(zeros(size(a)), a, [1, 2, 3], [0.5, 1.0, 2.0]) z1
