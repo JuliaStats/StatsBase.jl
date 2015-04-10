@@ -61,13 +61,15 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 @test_approx_eq quantile(1:5) [1:5;]
 @test_approx_eq nquantile(1:5, 2) [1, 3, 5]
-@test_approx_eq nquantile(1:5, 4) [1:5;] 
+@test_approx_eq nquantile(1:5, 4) [1:5;]
 
 @test_approx_eq percentile([1:5;], 25) 2.0
 @test_approx_eq percentile([1:5;], [25, 50, 75]) [2.0, 3.0, 4.0]
 
 
 ##### Dispersion
+
+@test span([3, 4, 5, 6, 2]) == (2:6)
 
 @test_approx_eq variation([1:5;]) 0.527046276694730
 
@@ -102,5 +104,3 @@ s = summarystats(1:5)
 @test_approx_eq s.median 3.0
 @test_approx_eq s.q25 2.0
 @test_approx_eq s.q75 4.0
-
-

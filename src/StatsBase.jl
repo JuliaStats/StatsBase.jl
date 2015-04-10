@@ -53,7 +53,7 @@ module StatsBase
     mean_and_std,   # (mean, std)
     mean_and_cov,   # (mean, cov)
 
-    ## scalarstats 
+    ## scalarstats
     geomean,     # geometric mean
     harmmean,    # harmonic mean
     trimmean,    # trimmed mean
@@ -67,15 +67,16 @@ module StatsBase
     percentile,  # quantile using percentage (instead of fraction) as argument
     nquantile,   # quantiles at [0:n]/n
 
-    variation,  # ratio of standard deviation to mean
-    sem,        # standard error of the mean, i.e. sqrt(var / n)
-    mad,        # median absolute deviation
-    iqr,        # interquatile range 
+    span,        # The range minimum(x):maximum(x)
+    variation,   # ratio of standard deviation to mean
+    sem,         # standard error of the mean, i.e. sqrt(var / n)
+    mad,         # median absolute deviation
+    iqr,         # interquatile range
 
     entropy,        # the entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors
     kldivergence,   # K-L divergence between two probability vectors
-    
+
     summarystats,   # summary statistics
     describe,       # print the summary statistics
 
@@ -99,10 +100,10 @@ module StatsBase
     ## counts
     addcounts!,     # add counts to an accumulating array or map
     counts,         # count integer values in given arrays
-    proportions,    # proportions of integer values in given arrays 
-                    # (normalized version of counts)                    
+    proportions,    # proportions of integer values in given arrays
+                    # (normalized version of counts)
     countmap,       # count distinct values and return a map
-    proportionmap,  # proportions of distinct values returned as a map                     
+    proportionmap,  # proportions of distinct values returned as a map
 
     ## ranking
     ordinalrank,    # ordinal ranking ("1234" ranking)
@@ -123,7 +124,7 @@ module StatsBase
 
     ## sampling
     samplepair,     # draw a pair of distinct elements   
-    sample,         # sampling from a population 
+    sample,         # sampling from a population
     sample!,        # sampling from a population, with pre-allocated output
     wsample,        # sampling from a population with weights
     wsample!,       # weighted sampling, with pre-allocated output
@@ -144,7 +145,7 @@ module StatsBase
     levelsmap,      # construct a map from n unique elements to [1, ..., n]
     findat,         # find the position within a for elements in b
     indicatormat,   # construct indicator matrix
-        
+
     # statistical models
     CoefTable,
     StatisticalModel,
@@ -189,5 +190,5 @@ module StatsBase
     include("statmodels.jl")
 
     include("deprecates.jl")
-    
+
 end # module

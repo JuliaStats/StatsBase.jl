@@ -3,7 +3,7 @@
 #################################################
 #
 #  counts on given levels
-#  
+#
 #################################################
 
 typealias IntRange1{T<:Integer} Range1{T}
@@ -19,11 +19,11 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1)
 	m0 = levels[1]
 	m1 = levels[end]
 	b = m0 - 1
-	
+
 	@inbounds for i in 1 : length(x)
 		xi = x[i]
 		if m0 <= xi <= m1
-			r[xi - b] += 1  
+			r[xi - b] += 1
 		end
 	end
 	return r
@@ -37,11 +37,11 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntRange1, wv::We
 	m1 = levels[end]
 	b = m0 - 1
 	w = values(wv)
-	
+
 	@inbounds for i in 1 : length(x)
 		xi = x[i]
 		if m0 <= xi <= m1
-			r[xi - b] += w[i]  
+			r[xi - b] += w[i]
 		end
 	end
 	return r
@@ -51,15 +51,15 @@ counts(x::IntegerArray, levels::IntRange1) = addcounts!(zeros(Int, length(levels
 counts(x::IntegerArray, levels::IntRange1, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
 counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
 counts(x::IntegerArray, k::Integer, wv::WeightVec) = counts(x, 1:k, wv)
-counts(x::IntegerArray) = counts(x, minimum(x):maximum(x))
-counts(x::IntegerArray, wv::WeightVec) = counts(x, minimum(x):maximum(x), wv)
+counts(x::IntegerArray) = counts(x, span(x))
+counts(x::IntegerArray, wv::WeightVec) = counts(x, span(x), wv)
 
 proportions(x::IntegerArray, levels::IntRange1) = counts(x, levels) .* inv(length(x))
 proportions(x::IntegerArray, levels::IntRange1, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
 proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
 proportions(x::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, 1:k, wv)
-proportions(x::IntegerArray) = proportions(x, minimum(x):maximum(x))
-proportions(x::IntegerArray, wv::WeightVec) = proportions(x, minimum(x):maximum(x), wv)
+proportions(x::IntegerArray) = proportions(x, span(x))
+proportions(x::IntegerArray, wv::WeightVec) = proportions(x, span(x), wv)
 
 #### functions for counting a single list of integers (2D)
 
@@ -82,12 +82,12 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 
 	bx = mx0 - 1
 	by = my0 - 1
-	
+
 	for i = 1:n
 		xi = x[i]
 		yi = y[i]
 		if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
-			r[xi - bx, yi - by] += 1  
+			r[xi - bx, yi - by] += 1
 		end
 	end
 	return r
@@ -113,12 +113,12 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 	bx = mx0 - 1
 	by = my0 - 1
 	w = values(wv)
-	
+
 	for i = 1:n
 		xi = x[i]
 		yi = y[i]
 		if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
-			r[xi - bx, yi - by] += w[i] 
+			r[xi - bx, yi - by] += w[i]
 		end
 	end
 	return r
@@ -141,8 +141,8 @@ counts(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer)) = counts(x, y, 
 counts(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer), wv::WeightVec) = counts(x, y, (1:ks[1], 1:ks[2]), wv)
 counts(x::IntegerArray, y::IntegerArray, k::Integer) = counts(x, y, (1:k, 1:k))
 counts(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = counts(x, y, (1:k, 1:k), wv)
-counts(x::IntegerArray, y::IntegerArray) = counts(x, y, (minimum(x):maximum(x), minimum(y):maximum(y)))
-counts(x::IntegerArray, y::IntegerArray, wv::WeightVec) = counts(x, y, (minimum(x):maximum(x),minimum(y):maximum(y)), wv)
+counts(x::IntegerArray, y::IntegerArray) = counts(x, y, (span(x), span(y)))
+counts(x::IntegerArray, y::IntegerArray, wv::WeightVec) = counts(x, y, (span(x), span(y)), wv)
 
 proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1)) = counts(x, y, levels) .* inv(length(x))
 proportions(x::IntegerArray, y::IntegerArray, levels::(IntRange1, IntRange1), wv::WeightVec) = counts(x, y, levels, wv) .* inv(sum(wv))
@@ -151,17 +151,17 @@ proportions(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer)) = proporti
 proportions(x::IntegerArray, y::IntegerArray, ks::(Integer, Integer), wv::WeightVec) = proportions(x, y, (1:ks[1], 1:ks[2]), wv)
 proportions(x::IntegerArray, y::IntegerArray, k::Integer) = proportions(x, y, (1:k, 1:k))
 proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, y, (1:k, 1:k), wv)
-proportions(x::IntegerArray, y::IntegerArray) = proportions(x, y, (minimum(x):maximum(x), minimum(y):maximum(y)))
-proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec) = proportions(x, y, (minimum(x):maximum(x),minimum(y):maximum(y)), wv)
+proportions(x::IntegerArray, y::IntegerArray) = proportions(x, y, (span(x), span(y)))
+proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec) = proportions(x, y, (span(x), span(y)), wv)
 
 
 #################################################
 #
 #  countmap on unknown levels
 #
-#  These methods are based on dictionaries, and 
+#  These methods are based on dictionaries, and
 #  can be used on any kind of hashable values.
-#  
+#
 #################################################
 
 ## auxiliary functions
@@ -169,7 +169,7 @@ proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec) = proportions(x, y,
 function _normalize_countmap{T}(cm::Dict{T}, s::Real)
 	r = Dict{T,Float64}()
 	for (k, c) in cm
-		r[k] = c / s 
+		r[k] = c / s
 	end
 	return r
 end
@@ -202,4 +202,3 @@ countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}(), x
 
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
-

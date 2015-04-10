@@ -48,7 +48,7 @@ end
 function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
     isempty(a) && error("mode: input array cannot be empty.")
     len = length(a)
-    r0 = rgn[1]  
+    r0 = rgn[1]
     r1 = rgn[end]
     cnts = zeros(Int, length(rgn))
     mc = 0    # maximum count
@@ -67,12 +67,12 @@ function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
 end
 
 function modes{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
-    r0 = rgn[1]  
+    r0 = rgn[1]
     r1 = rgn[end]
     n = length(rgn)
     cnts = zeros(Int, n)
     # find the maximum count
-    mc = 0 
+    mc = 0
     for i = 1:length(a)
         @inbounds x = a[i]
         if r0 <= x <= r1
@@ -165,6 +165,9 @@ nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 #
 #############################
 
+# span, i.e. the range minimum(x):maximum(x)
+span{T<:Integer}(x::AbstractArray{T}) = ((a, b) = extrema(x); a:b)
+
 # Variation coefficient: std / mean
 variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m
 variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
@@ -242,7 +245,7 @@ function zscore!{ZT<:FloatingPoint,T<:Real}(Z::AbstractArray{ZT}, X::AbstractArr
     _zscore!(Z, X, μ, σ)
 end
 
-function zscore!{ZT<:FloatingPoint,T<:Real,U<:Real,S<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, 
+function zscore!{ZT<:FloatingPoint,T<:Real,U<:Real,S<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T},
                                                             μ::AbstractArray{U}, σ::AbstractArray{S})
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
     _zscore_chksize(X, μ, σ)
@@ -251,7 +254,7 @@ end
 
 zscore!{T<:FloatingPoint}(X::AbstractArray{T}, μ::Real, σ::Real) = _zscore!(X, X, μ, σ)
 
-zscore!{T<:FloatingPoint,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) = 
+zscore!{T<:FloatingPoint,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) =
     (_zscore_chksize(X, μ, σ); _zscore!(X, X, μ, σ))
 
 function zscore{T<:Real}(X::AbstractArray{T}, μ::Real, σ::Real)
@@ -326,18 +329,18 @@ end
 immutable SummaryStats{T<:FloatingPoint}
     mean::T
     min::T
-    q25::T    
-    median::T    
+    q25::T
+    median::T
     q75::T
     max::T
 end
 
 function summarystats{T<:Real}(a::AbstractArray{T})
     m = mean(a)
-    qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])    
+    qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
     R = typeof(convert(FloatingPoint, zero(T)))
     SummaryStats{R}(
-        convert(R, m), 
+        convert(R, m),
         convert(R, qs[1]),
         convert(R, qs[2]),
         convert(R, qs[3]),
@@ -356,4 +359,3 @@ function Base.show(io::IO, ss::SummaryStats)
 end
 
 describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))
-
