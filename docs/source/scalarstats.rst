@@ -1,14 +1,14 @@
 Scalar Statistics
 ===================
 
-The package implements functions for computing various statistics over an array of scalar real numbers.  
+The package implements functions for computing various statistics over an array of scalar real numbers.
 
 Moments
 ---------
 
 .. function:: var(x, wv[; mean=...])
 
-  Compute weighted variance. 
+  Compute weighted variance.
 
   One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
 
@@ -20,7 +20,7 @@ Moments
 
 .. function:: std(x, wv[; mean=...])
 
-  Compute weighted standard deviation. 
+  Compute weighted standard deviation.
 
   One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
 
@@ -30,7 +30,7 @@ Moments
 
 .. function:: mean_and_var(x[, wv][, dim])
 
-  Jointly compute the mean and variance of ``x``. 
+  Jointly compute the mean and variance of ``x``.
 
 .. function:: mean_and_std(x[, wv][, dim])
 
@@ -38,26 +38,32 @@ Moments
 
 .. function:: skewness(x[, wv])
 
-  Compute the (standardized) `skewness <http://en.wikipedia.org/wiki/Skewness>`_ of ``x``. 
+  Compute the (standardized) `skewness <http://en.wikipedia.org/wiki/Skewness>`_ of ``x``.
 
   One can optionally supply a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
 .. function:: kurtosis(x[, wv])
 
-  Compute the (excessive) `kurtosis <http://en.wikipedia.org/wiki/Kurtosis>`_ of ``x``. 
+  Compute the (excessive) `kurtosis <http://en.wikipedia.org/wiki/Kurtosis>`_ of ``x``.
 
   One can optionally supply a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
 .. function:: moment(x, k[, m][, wv])
 
-  Compute the ``k``-th order central moment of the values in `x`. It is the sample mean of 
-  ``(x - mean(x)).^k``. 
+  Compute the ``k``-th order central moment of the values in `x`. It is the sample mean of
+  ``(x - mean(x)).^k``.
 
   One can optionally supply the center ``m``, and/or a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
 
 Measurements of Variation
 ---------------------------
+
+.. function:: span(x)
+
+  Get the range ``minimum(x):maximum(x)``.
+
+  **Note:** Here, the minimum and maximum of ``x`` are computed in one-pass using ``extrema``.
 
 .. function:: variation(x)
 
@@ -81,10 +87,10 @@ Z-scores
 
     Compute the Z-scores, given the mean ``μ`` and standard deviation ``σ``, which is defined as ``(x - μ) / σ``.
 
-    This function returns an array ``Z`` of the same size as ``X``. 
+    This function returns an array ``Z`` of the same size as ``X``.
 
-    Here, ``μ`` and ``σ`` should be both scalars or both arrays. The computation is broadcasting. 
-    In particular, when ``μ`` and ``σ`` are arrays, they should have the same size, and 
+    Here, ``μ`` and ``σ`` should be both scalars or both arrays. The computation is broadcasting.
+    In particular, when ``μ`` and ``σ`` are arrays, they should have the same size, and
     ``size(μ, i) == 1  || size(μ, i) == size(X, i)`` for each dimension.
 
 .. function:: zscore!(X, μ, σ)
@@ -137,9 +143,9 @@ Quantile and Friends
 
   Compute quantiles at ``[0:n]/n``. For example, ``nquantiles(x, 5)`` returns a vector of quantiles, respectively at ``0.0, 0.2, 0.4, 0.6, 0.8, 1.0``.
 
-.. function:: quantile(x)    
+.. function:: quantile(x)
 
-  Extended method of *quantile*. Equivalent to ``nquantile(x, 4)``, which returns a vector of quantiles at ``0.0, 0.25, 0.50, 0.75, 1.0``. 
+  Extended method of *quantile*. Equivalent to ``nquantile(x, 4)``, which returns a vector of quantiles at ``0.0, 0.25, 0.50, 0.75, 1.0``.
 
 .. function:: median(x, w)
 
@@ -156,9 +162,9 @@ Quantile and Friends
 Mode and Modes
 ---------------
 
-.. function:: mode(x)  
+.. function:: mode(x)
 
-  Return the mode of ``x``, one of the numbers that appear the most times in ``x``. 
+  Return the mode of ``x``, one of the numbers that appear the most times in ``x``.
 
 .. function:: modes(x)
 
@@ -177,13 +183,12 @@ Summary of Statistics
     immutable SummaryStats{T<:FloatingPoint}
         mean::T
         min::T
-        q25::T    
-        median::T    
+        q25::T
+        median::T
         q75::T
         max::T
     end
 
-.. function:: describe(x)  
+.. function:: describe(x)
 
-  Print a summary of stats of ``x``. 
-
+  Print a summary of stats of ``x``.
