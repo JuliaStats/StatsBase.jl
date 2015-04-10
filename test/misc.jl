@@ -22,10 +22,9 @@ findat([2, 4, 6, 8, 10], [2, 3, 4]) == [1, 0, 2]
 
 # indicatormat
 
-I = map(Bool,
-    [0 1 0 0 0;
-     1 0 0 0 1;
-     0 0 1 1 0])
+I = [false true  false false false;
+     true  false false false true;
+     false false true  true  false]
 
 x = [2, 1, 3, 3, 2]
 @test indicatormat(x, 3) == I
