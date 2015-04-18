@@ -1,3 +1,6 @@
+using StatsBase
+using Base.Test
+
 # test hist
 @test sum(fit(Histogram,[1,2,3]).weights) == 3
 @test fit(Histogram,Int[]).weights == Int[]
@@ -27,4 +30,3 @@ import StatsBase.midpoints
 @test midpoints(1.0:1.0:10.0) == 1.5:1.0:9.5
 @test midpoints(1:10) == 1.5:9.5
 @test midpoints(Float64[1.0:1.0:10.0;]) == Float64[1.5:1.0:9.5;]
-

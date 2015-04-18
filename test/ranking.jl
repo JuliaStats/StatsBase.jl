@@ -1,5 +1,3 @@
-# Tests of rankings
-
 using StatsBase
 using Base.Test
 

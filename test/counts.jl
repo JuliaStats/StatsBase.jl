@@ -1,5 +1,3 @@
-# Unit testing of intstats
-
 using StatsBase
 using Base.Test
 
@@ -95,4 +93,3 @@ pm = proportionmap(x, weights(w))
 @test_approx_eq pm["a"] (5.5 / 13.5)
 @test_approx_eq pm["b"] (4.5 / 13.5)
 @test_approx_eq pm["c"] (3.5 / 13.5)
-

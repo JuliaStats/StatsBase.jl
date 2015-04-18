@@ -1,5 +1,3 @@
-# Test rank correlation
-
 using StatsBase
 using Base.Test
 
@@ -42,4 +40,3 @@ c22 = corkendall(x2, x2)
 @test_approx_eq c22 1.0
 @test_approx_eq corkendall(X, X) [c11 c12; c12 c22]
 @test_approx_eq corkendall(X)    [c11 c12; c12 c22]
-

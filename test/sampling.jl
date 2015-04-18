@@ -1,5 +1,3 @@
-# Test sample functions
-
 using StatsBase
 using Base.Test
 import Base: maxabs
@@ -94,7 +92,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
         end
     end
 
-    if ptol > 0 
+    if ptol > 0
         p0 = fill(1/n, n)
         if ordered
             @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
@@ -146,6 +144,3 @@ check_sample_norep(a, (3, 12), 0; ordered=false)
 
 a = sample(3:12, 5; replace=false, ordered=true)
 check_sample_norep(a, (3, 12), 0; ordered=true)
-
-
-

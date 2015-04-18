@@ -1,5 +1,3 @@
-## WeightVec
-
 using ArrayViews
 using StatsBase
 using Base.Test
@@ -15,9 +13,9 @@ wv = weights(w)
 @test length(wv) == 3
 @test values(wv) === w
 @test sum(wv) == 6.0
-@test !isempty(wv) 
+@test !isempty(wv)
 
-## wsum 
+## wsum
 
 x = [6., 8., 9.]
 w = [2., 3., 4.]

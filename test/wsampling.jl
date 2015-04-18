@@ -1,5 +1,3 @@
-# Test weighted sampling
-
 using StatsBase
 using Base.Test
 import Base: maxabs
@@ -73,7 +71,7 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; 
         end
     end
 
-    if ptol > 0 
+    if ptol > 0
         p0 = values(wv) ./ sum(wv)
         @test_approx_eq_eps proportions(a[1,:], vmin:vmax) p0 ptol
     end
@@ -89,4 +87,3 @@ for j = 1:n
     naive_wsample_norep!(4:7, wv, view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-
