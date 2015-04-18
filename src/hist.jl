@@ -89,9 +89,15 @@ type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
         new(edges,weights,closed)
     end
 end
-Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:right) = Histogram{T,N,typeof(edges)}(edges,weights,closed)
-Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:right) = Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),closed)
-Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:right) = Histogram(edges,Int,closed)
+
+Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:right) =
+    Histogram{T,N,typeof(edges)}(edges,weights,closed)
+
+Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:right) =
+    Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),closed)
+
+Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:right) =
+    Histogram(edges,Int,closed)
 
 function show(io::IO, h::AbstractHistogram)
     println(io, typeof(h))
@@ -106,13 +112,18 @@ end
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)
 
 # 1-dimensional
-Histogram{T}(edge::AbstractVector,weights::AbstractVector{T},closed::Symbol=:right) = Histogram{T,1,(typeof(edge),)}((edge,),weights,closed)
-Histogram{T}(edge::AbstractVector,::Type{T},closed::Symbol=:right) = Histogram(edge,zeros(T,length(edge)-1),closed)
-Histogram(edge::AbstractVector,closed::Symbol=:right) = Histogram(edge,Int,closed)
+Histogram{T}(edge::AbstractVector, weights::AbstractVector{T}, closed::Symbol=:right) =
+    Histogram((edge,), weights, closed)
+
+Histogram{T}(edge::AbstractVector, ::Type{T}, closed::Symbol=:right) =
+    Histogram(edge, zeros(T,length(edge)-1), closed)
+
+Histogram(edge::AbstractVector,closed::Symbol=:right) =
+    Histogram(edge, Int, closed)
 
 function push!{T,E}(h::Histogram{T,1,E}, x::Real,w::Real)
-    i = if h.closed == :right 
-        searchsortedfirst(h.edges[1], x) - 1 
+    i = if h.closed == :right
+        searchsortedfirst(h.edges[1], x) - 1
     else
         searchsortedlast(h.edges[1], x)
     end
@@ -136,14 +147,14 @@ function append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector,wv::WeightVec)
     h
 end
 
-fit(::Type{Histogram},v::AbstractVector, edg::AbstractVector; closed::Symbol=:right) = 
+fit(::Type{Histogram},v::AbstractVector, edg::AbstractVector; closed::Symbol=:right) =
     append!(Histogram(edg,closed), v)
-fit(::Type{Histogram},v::AbstractVector; closed::Symbol=:right, nbins=sturges(length(v))) = 
+fit(::Type{Histogram},v::AbstractVector; closed::Symbol=:right, nbins=sturges(length(v))) =
     fit(Histogram, v, histrange(v,nbins,closed); closed=closed)
 
-fit{W}(::Type{Histogram},v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:right) = 
+fit{W}(::Type{Histogram},v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:right) =
     append!(Histogram(edg,W,closed), v, wv)
-fit(::Type{Histogram},v::AbstractVector, wv::WeightVec; closed::Symbol=:right, nbins=sturges(length(v))) = 
+fit(::Type{Histogram},v::AbstractVector, wv::WeightVec; closed::Symbol=:right, nbins=sturges(length(v))) =
     fit(Histogram, v, wv, histrange(v,nbins,closed); closed=closed)
 
 # N-dimensional
@@ -175,12 +186,12 @@ function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector},wv
     h
 end
 
-fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = 
+fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) =
     append!(Histogram(edges,closed), vs)
-fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}; closed::Symbol=:right, nbins=sturges(length(vs[1]))) = 
+fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}; closed::Symbol=:right, nbins=sturges(length(vs[1]))) =
     fit(Histogram, vs, histrange(vs,nbins,closed); closed=closed)
 
-fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) = 
+fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:right) =
     append!(Histogram(edges,W,closed), vs, wv)
-fit{N}(::Type{Histogram},vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:right, nbins=sturges(length(vs[1]))) = 
+fit{N}(::Type{Histogram},vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:right, nbins=sturges(length(vs[1]))) =
     fit(Histogram, vs, wv, histrange(vs,nbins,closed); closed=closed)
