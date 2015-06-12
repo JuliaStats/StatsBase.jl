@@ -253,25 +253,25 @@ data = (
 
 
 wt = (
-    [1, 1/3, 1/3, 1/3, 1],
-    [1, 1, 1, 1, 1],
-    [1, 1/3, 1/3, 1/3, 1, 1],
-    [1/3, 1/3, 1/3, 1, 1, 1],
-    [30, 191, 9, 0],
-    [10, 1, 1, 1, 9],
-    [10, 1, 1, 1, 900],
-    [1, 3, 5, 4, 2],
-    [2, 2, 5, 1, 2, 2, 1, 6],
-    [0.1, 0.1, 0.8],
-    [5, 5, 4, 1],
-    [30, 56, 144, 24, 55, 43, 67],
-    [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
-    [12],
-    [7, 1, 1, 1, 6],
-    [1, 0, 0, 0, 2],
-    [1, 2, 3, 4, 5],
-    [0.1, 0.2, 0.3, 0.2, 0.1],
-    [1, 1, 1, 1, 1],
+    weights([1, 1/3, 1/3, 1/3, 1]),
+    weights([1, 1, 1, 1, 1]),
+    weights([1, 1/3, 1/3, 1/3, 1, 1]),
+    weights([1/3, 1/3, 1/3, 1, 1, 1]),
+    weights([30, 191, 9, 0]),
+    weights([10, 1, 1, 1, 9]),
+    weights([10, 1, 1, 1, 900]),
+    weights([1, 3, 5, 4, 2]),
+    weights([2, 2, 5, 1, 2, 2, 1, 6]),
+    weights([0.1, 0.1, 0.8]),
+    weights([5, 5, 4, 1]),
+    weights([30, 56, 144, 24, 55, 43, 67]),
+    weights([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
+    weights([12]),
+    weights([7, 1, 1, 1, 6]),
+    weights([1, 0, 0, 0, 2]),
+    weights([1, 2, 3, 4, 5]),
+    weights([0.1, 0.2, 0.3, 0.2, 0.1]),
+    weights([1, 1, 1, 1, 1]),
 )
 quantile_answers = (    
     [1.0,3.6000000000000005,6.181818181818182,8.2,10.0],
@@ -299,26 +299,26 @@ p = [0.0, 0.25, 0.5, 0.75, 1.0]
 srand(10)
 # w = 1 corresponds to base quantile
 for i = 1:length(data)
-    @test_approx_eq wquantile(data[i], p, ones(Int64, length(data[i]))) quantile(data[i], p)
+    @test_approx_eq quantile(data[i], weights(ones(Int64, length(data[i]))), p) quantile(data[i], p)
     for j = 1:10
         prandom = rand(4)
-        @test_approx_eq wquantile(data[i], prandom, ones(Int64, length(data[i]))) quantile(data[i], prandom)
+        @test_approx_eq quantile(data[i], weights(ones(Int64, length(data[i]))),  prandom) quantile(data[i], prandom)
     end
 end
 
 for i = 1:length(data)
-    @test_approx_eq wquantile(data[i], p, wt[i]) quantile_answers[i]
+    @test_approx_eq quantile(data[i], wt[i], p) quantile_answers[i]
     for j = 1:10
         # order of q does not matter
         reorder = sortperm(rand(length(p)))
-        @test_approx_eq wquantile(data[i], p[reorder], wt[i]) quantile_answers[i][reorder]
-        @test_approx_eq wquantile(data[i], p[reorder], weights(wt[i])) quantile_answers[i][reorder]
-        @test_approx_eq quantile(data[i], p[reorder], weights(wt[i])) quantile_answers[i][reorder]
+        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
+        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
+        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
     end
     for j = 1:10
         # Make sure the weighted quantile does not change if the data
         # and weights are reordered.
         reorder = sortperm(rand(length(data[i])))
-        @test_approx_eq wquantile(data[i][reorder], p, weights(wt[i][reorder])) quantile_answers[i]
+        @test_approx_eq quantile(data[i][reorder], weights(wt[i][reorder]), p) quantile_answers[i]
     end
 end

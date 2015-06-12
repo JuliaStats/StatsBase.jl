@@ -243,6 +243,7 @@ Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
     mean!(Array(wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
 
 
+
 ###### Weighted median #####
 
 function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
@@ -297,7 +298,7 @@ wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 ###### Weighted quantile #####
 
 # Definition from http://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
-function Base.quantile{W<:Real}(v::RealVector, p::RealVector, w::WeightVec{W})
+function Base.quantile{T, W<:Real}(v::RealVector{T},w::WeightVec{W}, p::RealVector)
 
     isempty(v) && error("quantile of an empty array is undefined")
     isempty(p) && throw(ArgumentError("empty quantile array"))
@@ -326,7 +327,7 @@ function Base.quantile{W<:Real}(v::RealVector, p::RealVector, w::WeightVec{W})
     wt = w.values
     vpermute = sortperm(v)
     index = p * (lv-1) * w.sum
-    out = Array(Float64, lp)
+    out = Array(typeof(convert(FloatingPoint, zero(T))), lp)
     cumulative_weight = zero(w.sum)
     k = 1
     i = 0
@@ -388,8 +389,4 @@ end
 
 
 
-Base.quantile(v::AbstractVector, q::Number, w::RealVector) = quantile(v, [q], weights(w))[1]
-wquantile(v::RealVector, q::RealVector, w::RealVector) = quantile(v, q, weights(w))
-wquantile(v::AbstractVector, q::Number, w::RealVector) = quantile(v, [q], weights(w))[1]
-wquantile{W<:Real}(v::RealVector, q::RealVector, w::WeightVec{W}) = quantile(v, q, w)
-wquantile{W<:Real}(v::RealVector, q::Number, w::WeightVec{W}) = quantile(v, [q] , w)[1]
+Base.quantile(v::RealVector, w::WeightVec, q::Number) = quantile(v, w, [q])[1]
