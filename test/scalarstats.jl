@@ -102,5 +102,5 @@ s = summarystats(1:5)
 @test s.max == 5.0
 @test_approx_eq s.mean 3.0
 @test_approx_eq s.median 3.0
-@test_approx_eq s.q25 2.0
-@test_approx_eq s.q75 4.0
+@test_approx_eq s.p25 2.0
+@test_approx_eq s.p75 4.0
