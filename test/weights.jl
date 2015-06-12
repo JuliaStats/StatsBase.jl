@@ -300,7 +300,7 @@ srand(10)
 # w = 1 corresponds to base quantile
 for i = 1:length(data)
     @test_approx_eq wquantile(data[i], p, ones(Int64, length(data[i]))) quantile(data[i], p)
-    for j = 1:100
+    for j = 1:10
         prandom = rand(4)
         @test_approx_eq wquantile(data[i], prandom, ones(Int64, length(data[i]))) quantile(data[i], prandom)
     end
@@ -308,14 +308,14 @@ end
 
 for i = 1:length(data)
     @test_approx_eq wquantile(data[i], p, wt[i]) quantile_answers[i]
-    for j = 1:100
+    for j = 1:10
         # order of q does not matter
         reorder = sortperm(rand(length(p)))
         @test_approx_eq wquantile(data[i], p[reorder], wt[i]) quantile_answers[i][reorder]
         @test_approx_eq wquantile(data[i], p[reorder], weights(wt[i])) quantile_answers[i][reorder]
         @test_approx_eq quantile(data[i], p[reorder], weights(wt[i])) quantile_answers[i][reorder]
     end
-    for j = 1:100
+    for j = 1:10
         # Make sure the weighted quantile does not change if the data
         # and weights are reordered.
         reorder = sortperm(rand(length(data[i])))
