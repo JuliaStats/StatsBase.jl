@@ -342,7 +342,7 @@ function Base.quantile{W<:Real}(v::RealVector, p::RealVector, w::WeightVec{W})
                 # Find the highest weight among x = lo
                 wright = wt[vpermute[i+1]]
                 l = 2
-                while (i + l <= lv) && (v[vpermute[i+l]] == hi[k])
+                while ((i + l) <= lv) && (v[vpermute[i+l]] == hi[k])
                     wright = min(wright, wt[vpermute[i+l]])
                     l += 1
                 end
@@ -351,11 +351,11 @@ function Base.quantile{W<:Real}(v::RealVector, p::RealVector, w::WeightVec{W})
                 end
                 wleft = wt[vpermute[i]]
                 l = 1
-                while (i - l >= 1) && (v[vpermute[i-l]] == lo[k])
+                while ((i - l) >= 1) && (v[vpermute[i-l]] == lo[k])
                     wleft = max(wleft, wt[vpermute[i-l]])
                     l += 1
                 end
-                S2 = i *  wright + (lv-1) * cumulative_weight
+                S2 = i *  wright + (lv - 1) * cumulative_weight
                 S1 = (i - 1) * wleft + (lv - 1) * (cumulative_weight - wleft)
                 g[k] = (index[k] - S1)/(S2-S1)
             end
@@ -373,8 +373,6 @@ function Base.quantile{W<:Real}(v::RealVector, p::RealVector, w::WeightVec{W})
     end
     return(out)
 end
-
-
 
 
 
