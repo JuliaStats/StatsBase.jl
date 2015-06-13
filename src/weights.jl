@@ -157,7 +157,7 @@ end
 end
 
 @ngenerate N typeof(R) function _wsum_centralize!{T,RT,WT,N}(R::AbstractArray{RT}, f::Func{1},
-                                                             A::AbstractArray{T,N}, means, w::AbstractVector{WT}, 
+                                                             A::AbstractArray{T,N}, w::AbstractVector{WT}, means,
                                                              dim::Int, init::Bool)
     init && fill!(R, zero(RT))
     wi = zero(WT)

@@ -13,27 +13,27 @@ function Base.varzm(v::RealArray, wv::WeightVec)
     return s / sum(wv)
 end
 
-Base.varm(v::RealArray, m::Real, wv::WeightVec) = _moment2(v, m, wv)
+Base.varm(v::RealArray, wv::WeightVec, m::Real) = _moment2(v, wv, m)
 
 function Base.var(v::RealArray, wv::WeightVec; mean=nothing) 
     mean == 0 ? Base.varzm(v, wv) :
-    mean == nothing ? varm(v, Base.mean(v, wv), wv) :
-    varm(v, mean, wv)
+    mean == nothing ? varm(v, wv, Base.mean(v, wv)) :
+    varm(v, wv, mean)
 end
 
 ## var along dim
 
-Base.varzm!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int) = 
+Base.varzm!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int) =
     scale!(_wsum_general!(R, Abs2Fun(), A, values(wv), dim, true), inv(sum(wv)))
 
-Base.varm!(R::AbstractArray, A::RealArray, M::RealArray, wv::WeightVec, dim::Int) = 
-    scale!(_wsum_centralize!(R, Abs2Fun(), A, M, values(wv), dim, true), inv(sum(wv)))
+Base.varm!(R::AbstractArray, A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
+    scale!(_wsum_centralize!(R, Abs2Fun(), A, values(wv), M, dim, true), inv(sum(wv)))
 
 function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=nothing)
     if mean == 0
         Base.varzm!(R, A, wv, dim)
     elseif mean == nothing
-        Base.varm!(R, A, Base.mean(A, wv, dim), wv, dim)
+        Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -45,23 +45,23 @@ function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=noth
                 dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
             end
         end
-        Base.varm!(R, A, mean, wv, dim)
+        Base.varm!(R, A, wv, mean, dim)
     end
 end
 
-Base.varm(A::RealArray, M::RealArray, wv::WeightVec, dim::Int) = 
-    Base.varm!(Array(Float64, Base.reduced_dims(A, dim)), A, M, wv, dim)
+Base.varm(A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
+    Base.varm!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, M, dim)
 
 Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) = 
     var!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, dim; mean=mean)
 
 ## std
 
-Base.stdm(v::RealArray, m::Real, wv::WeightVec) = sqrt(varm(v, m, wv))
+Base.stdm(v::RealArray, wv::WeightVec, m::Real) = sqrt(varm(v, wv, m))
 Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt(var(v, wv; mean=mean))
 
 Base.stdm(v::RealArray, m::RealArray, dim::Int) = Base.sqrt!(varm(v, m, dim))
-Base.stdm(v::RealArray, m::RealArray, wv::WeightVec, dim::Int) = sqrt(varm(v, m, wv, dim))
+Base.stdm(v::RealArray, wv::WeightVec, m::RealArray, dim::Int) = sqrt(varm(v, wv, m, dim))
 Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, dim; mean=mean))
 
 
@@ -70,14 +70,14 @@ Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, 
 mean_and_var(A::RealArray) = (m = mean(A); (m, varm(A, m)))
 mean_and_std(A::RealArray) = (m = mean(A); (m, stdm(A, m)))
 
-mean_and_var(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, varm(A, m, wv)))
-mean_and_std(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, stdm(A, m, wv)))
+mean_and_var(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, varm(A, wv, m)))
+mean_and_std(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, stdm(A, wv, m)))
 
 mean_and_var(A::RealArray, dim::Int) = (m = mean(A, dim); (m, varm(A, m, dim)))
 mean_and_std(A::RealArray, dim::Int) = (m = mean(A, dim); (m, stdm(A, m, dim)))
 
-mean_and_var(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, varm(A, m, wv, dim)))
-mean_and_std(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, stdm(A, m, wv, dim)))
+mean_and_var(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, varm(A, wv, m, dim)))
+mean_and_std(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, stdm(A, wv, m, dim)))
 
 
 ##### General central moment
@@ -92,7 +92,7 @@ function _moment2(v::RealArray, m::Real)
     s / n
 end
 
-function _moment2(v::RealArray, m::Real, wv::WeightVec)
+function _moment2(v::RealArray, wv::WeightVec, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -113,7 +113,7 @@ function _moment3(v::RealArray, m::Real)
     s / n
 end
 
-function _moment3(v::RealArray, m::Real, wv::WeightVec)
+function _moment3(v::RealArray, wv::WeightVec, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -134,7 +134,7 @@ function _moment4(v::RealArray, m::Real)
     s / n
 end
 
-function _moment4(v::RealArray, m::Real, wv::WeightVec)
+function _moment4(v::RealArray, wv::WeightVec, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -155,7 +155,7 @@ function _momentk(v::RealArray, k::Int, m::Real)
     s / n
 end
 
-function _momentk(v::RealArray, k::Int, m::Real, wv::WeightVec)
+function _momentk(v::RealArray, k::Int, wv::WeightVec, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -173,15 +173,15 @@ function moment(v::RealArray, k::Int, m::Real)
     _momentk(v, k, m)
 end
 
-function moment(v::RealArray, k::Int, m::Real, wv::WeightVec)
-    k == 2 ? _moment2(v, m, wv) :
-    k == 3 ? _moment3(v, m, wv) :
-    k == 4 ? _moment4(v, m, wv) :
-    _momentk(v, k, m, wv)
+function moment(v::RealArray, k::Int, wv::WeightVec, m::Real)
+    k == 2 ? _moment2(v, wv, m) :
+    k == 3 ? _moment3(v, wv, m) :
+    k == 4 ? _moment4(v, wv, m) :
+    _momentk(v, k, wv, m)
 end
 
 moment(v::RealArray, k::Int) = moment(v, k, mean(v))
-moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, mean(v, wv), wv)
+moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, wv, mean(v, wv))
 
 
 ##### Skewness and Kurtosis 
