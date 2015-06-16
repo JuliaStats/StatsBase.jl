@@ -298,7 +298,7 @@ wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 ###### Weighted quantile #####
 
 # Definition from http://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
-function Base.quantile{T, W<:Real}(v::RealVector{T},w::WeightVec{W}, p::RealVector)
+function Base.quantile{T, W<:Real}(v::RealVector{T}, w::WeightVec{W}, p::RealVector)
 
     isempty(v) && error("quantile of an empty array is undefined")
     isempty(p) && throw(ArgumentError("empty quantile array"))
@@ -327,7 +327,7 @@ function Base.quantile{T, W<:Real}(v::RealVector{T},w::WeightVec{W}, p::RealVect
     wt = w.values
     vpermute = sortperm(v)
     index = p * (lv-1) * w.sum
-    out = Array(typeof(convert(FloatingPoint, zero(T))), lp)
+    out = Array(promote_type(T, FloatingPoint), lp)
     cumulative_weight = zero(w.sum)
     k = 1
     i = 0
@@ -379,7 +379,7 @@ end
 
 
 # from julia base
-function bound_quantiles(qs::AbstractVector)
+function bound_quantiles(qs::RealVector)
     epsilon = 100*eps()
     if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
         throw(ArgumentError("quantiles out of [0,1] range"))
@@ -388,5 +388,11 @@ function bound_quantiles(qs::AbstractVector)
 end
 
 
+Base.quantile(v::RealVector, w::WeightVec, p::Number) = quantile(v, w, [p])[1]
 
-Base.quantile(v::RealVector, w::WeightVec, q::Number) = quantile(v, w, [q])[1]
+wquantile(v::RealVector, w::WeightVec, p::RealVector) = quantile(v, w, p)
+wquantile(v::RealVector, w::WeightVec, p::Number) = quantile(v, w, [p])[1]
+
+wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
+wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
+
