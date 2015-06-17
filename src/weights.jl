@@ -327,7 +327,7 @@ function Base.quantile{T, W<:Real}(v::RealVector{T}, w::WeightVec{W}, p::RealVec
     wt = w.values
     vpermute = sortperm(v)
     index = p * (lv-1) * w.sum
-    out = Array(typeof(zero(T/1)), lp)
+    out = Array(typeof(zero(T)/1), lp)
     cumulative_weight = zero(w.sum)
     k = 1
     i = 0
