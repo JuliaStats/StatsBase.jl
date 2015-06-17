@@ -392,7 +392,7 @@ function summarystats{T<:Real}(a::AbstractArray{T})
     m = mean(a)
     std = stdm(a, m)
     qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
-    R = promote_type(T, FloatingPoint)
+    R = typeof(zero(T)/1)
     SummaryStats{R}(
         convert(R, m),
         convert(R, std),
@@ -407,7 +407,7 @@ function summarystats{T, W<:Real}(a::RealVector{T}, w::WeightVec{W})
     m = mean(a, w)
     std = stdm(a, m, w)
     qs = quantile(a, w, [0.00, 0.25, 0.50, 0.75, 1.00])
-    R = promote_type(T, FloatingPoint)
+    R = typeof(zero(T)/1)
     WeightedSummaryStats{R, W}(
         convert(R, m),
         convert(R, std),
@@ -426,7 +426,7 @@ function detailedsummarystats{T<:Real}(a::AbstractArray{T})
     sk = skewness(a, m)
     ku = kurtosis(a, m)
     qs = quantile(a, [0.00, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1.00])
-    R = promote_type(T, FloatingPoint)
+    R = typeof(zero(T)/1)
     DetailedSummaryStats{R}(
         convert(R, m),
         convert(R, std),
@@ -451,7 +451,7 @@ function detailedsummarystats{T, W<:Real}(a::RealVector{T}, w::WeightVec{W})
     sk = skewness(a, w, m)
     ku = kurtosis(a, w, m)
     qs = quantile(a, w, [0.00, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1.00])
-    R = promote_type(T, FloatingPoint)
+    R = typeof(zero(T)/1)
     WeightedDetailedSummaryStats{R, W}(
         convert(R, m),
         convert(R, std),
