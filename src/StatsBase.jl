@@ -155,6 +155,7 @@ module StatsBase
     coeftable,
     confint,
     deviance,
+    df_residuals,
     fit,
     fit!,
     fitted,

@@ -20,7 +20,7 @@ model_response(obj::RegressionModel) = error("model_response is not defined for 
 residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
-
+df_residuals(obj::RegressionModel) = error("df_residuals is not defined for $(typeof(obj)).")
 ## coefficient tables with specialized show method
 
 ## Nms are the coefficient names, corresponding to rows in the table
