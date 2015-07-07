@@ -257,35 +257,37 @@ function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
         isnan(x) && return x
     end
     mask = w.values .!= 0
-    if any(mask)
-        if all(w.values .<= 0)
-            error("no positive weights found")
-        end
-        v = v[mask]
-        wt = w[mask]
-        midpoint = w.sum / 2
-        maxval, maxind = findmax(wt)
-        if maxval > midpoint
-            v[maxind]
-        else
-            permute = sortperm(v)
-            cumulative_weight = zero(eltype(wt))
-            i = 0
-            for (i, p) in enumerate(permute)
-                if cumulative_weight > midpoint
-                    cumulative_weight -= wt[p]
-                    break
-                end
-                cumulative_weight += wt[p]
-            end
-            if cumulative_weight == midpoint
-                middle(v[permute[i-2]], v[permute[i-1]])
-            else
-                middle(v[permute[i-1]])
-            end
-        end
+    if !any(mask)
+        error("all weights are zero")
+    end
+    if all(w.values .<= 0)
+        error("no positive weights found")
+    end
+    v = v[mask]
+    wt = w[mask]
+    midpoint = w.sum / 2
+    maxval, maxind = findmax(wt)
+    if maxval > midpoint
+        v[maxind]
     else
-        error("no nonzero weights found")
+        permute = sortperm(v)
+        cumulative_weight = zero(eltype(wt))
+        i = 0
+        for (i, p) in enumerate(permute)
+            if cumulative_weight == midpoint
+                i += 1
+                break
+            elseif cumulative_weight > midpoint
+                cumulative_weight -= wt[p]
+                break
+            end
+            cumulative_weight += wt[p]
+        end
+        if cumulative_weight == midpoint
+            middle(v[permute[i-2]], v[permute[i-1]])
+        else
+            middle(v[permute[i-1]])
+        end
     end
 end
 
