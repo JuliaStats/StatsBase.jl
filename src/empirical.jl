@@ -4,10 +4,10 @@
 ## Empirical CDF
 
 function ecdf{T<:Real}(X::RealVector{T})
-    Xs = sort(X)
+    sort!(X)
     n = length(X)
 
-    ef(x::Real) = searchsortedlast(Xs, x) / n
+    ef(x::Real) = searchsortedlast(X, x) / n
 
     function ef(v::RealVector)
         ord = sortperm(v)
@@ -16,7 +16,7 @@ function ecdf{T<:Real}(X::RealVector{T})
         r0 = 0
 
         i = 1
-        for x in Xs
+        for x in X
             while i <= m && x > v[ord[i]]
                 r[ord[i]] = r0
                 i += 1
