@@ -1,5 +1,7 @@
 module StatsBase
-    using ArrayViews, Compat
+    using Compat
+    using ArrayViews
+    using StatsFuns
 
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
@@ -19,13 +21,17 @@ module StatsBase
         evaluate(f::Func{2}, x, y) = call(f, x, y)
     end
 
+    ## import mathfuns, which were migrated to StatsFuns
+    import StatsFuns: xlogx, xlogy, logistic, logit,
+                      softplus, invsoftplus,
+                      logsumexp, softmax, softmax!
 
     export
 
     # reexport from ArrayViews
     view,
 
-    ## mathfuns
+    ## mathfuns (TODO: removed after a certain period)
     xlogx,       # x * log(x)
     xlogy,       # x * log(y)
     logistic,    # 1 / (1 + exp(-x))
@@ -170,7 +176,6 @@ module StatsBase
     # source files
 
     include("common.jl")
-    include("mathfuns.jl")
     include("weights.jl")
     include("moments.jl")
     include("scalarstats.jl")

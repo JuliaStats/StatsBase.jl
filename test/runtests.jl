@@ -1,18 +1,17 @@
 using StatsBase
 
-tests = ["mathfuns", 
-         "weights",
+tests = ["weights",
          "moments",
-         "scalarstats", 
+         "scalarstats",
          "deviation",
          "cov",
-         "counts", 
-         "ranking",  
-         "empirical", 
-         "hist", 
+         "counts",
+         "ranking",
+         "empirical",
+         "hist",
          "rankcorr",
-         "signalcorr", 
-         "misc", 
+         "signalcorr",
+         "misc",
          "sampling",
          "wsampling"]
 
@@ -23,4 +22,3 @@ for t in tests
     println(" * $(tfile) ...")
     include(tfile)
 end
-
