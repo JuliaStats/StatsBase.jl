@@ -325,22 +325,77 @@ end
 #   summary
 #
 #############################
-
-immutable SummaryStats{T<:FloatingPoint}
+abstract AbstractSummaryStats
+immutable SummaryStats{T<:FloatingPoint} <: AbstractSummaryStats
     mean::T
+    std::T
     min::T
-    q25::T
+    p25::T
     median::T
-    q75::T
+    p75::T
     max::T
 end
 
+immutable WeightedSummaryStats{T<:FloatingPoint, W<:Real} <: AbstractSummaryStats
+    mean::T
+    std::T
+    min::T
+    p25::T
+    median::T
+    p75::T
+    max::T 
+    wsum::W
+end
+
+abstract AbstractDetailedSummaryStats
+
+immutable DetailedSummaryStats{T<:FloatingPoint}  <: AbstractDetailedSummaryStats
+    mean::T
+    std::T
+    skewness::T
+    kurtosis::T
+    min::T
+    p1::T
+    p5::T
+    p10::T
+    p25::T
+    median::T
+    p75::T
+    p90::T
+    p95::T
+    p99::T
+    max::T
+end
+
+immutable WeightedDetailedSummaryStats{T<:FloatingPoint, W<:Real} <: AbstractDetailedSummaryStats
+    mean::T
+    std::T
+    skewness::T
+    kurtosis::T
+    min::T
+    p1::T
+    p5::T
+    p10::T
+    p25::T
+    median::T
+    p75::T
+    p90::T
+    p95::T
+    p99::T
+    max::T
+    wsum::W
+end
+
+
+
 function summarystats{T<:Real}(a::AbstractArray{T})
     m = mean(a)
+    std = stdm(a, m)
     qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
-    R = typeof(convert(FloatingPoint, zero(T)))
+    R = typeof(zero(T)/1)
     SummaryStats{R}(
         convert(R, m),
+        convert(R, std),
         convert(R, qs[1]),
         convert(R, qs[2]),
         convert(R, qs[3]),
@@ -348,14 +403,127 @@ function summarystats{T<:Real}(a::AbstractArray{T})
         convert(R, qs[5]))
 end
 
-function Base.show(io::IO, ss::SummaryStats)
-    println(io, "Summary Stats:")
-    @printf(io, "Mean:         %.6f\n", ss.mean)
-    @printf(io, "Minimum:      %.6f\n", ss.min)
-    @printf(io, "1st Quartile: %.6f\n", ss.q25)
-    @printf(io, "Median:       %.6f\n", ss.median)
-    @printf(io, "3rd Quartile: %.6f\n", ss.q75)
-    @printf(io, "Maximum:      %.6f\n", ss.max)
+function summarystats{T, W<:Real}(a::RealVector{T}, w::WeightVec{W})
+    m = mean(a, w)
+    std = stdm(a, m, w)
+    qs = quantile(a, w, [0.00, 0.25, 0.50, 0.75, 1.00])
+    R = typeof(zero(T)/1)
+    WeightedSummaryStats{R, W}(
+        convert(R, m),
+        convert(R, std),
+        convert(R, qs[1]),
+        convert(R, qs[2]),
+        convert(R, qs[3]),
+        convert(R, qs[4]),
+        convert(R, qs[5]),
+        w.sum)
 end
 
-describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))
+
+function detailedsummarystats{T<:Real}(a::AbstractArray{T})
+    m = mean(a)
+    std = stdm(a, m)
+    sk = skewness(a, m)
+    ku = kurtosis(a, m)
+    qs = quantile(a, [0.00, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1.00])
+    R = typeof(zero(T)/1)
+    DetailedSummaryStats{R}(
+        convert(R, m),
+        convert(R, std),
+        convert(R, sk),
+        convert(R, ku),
+        convert(R, qs[1]),
+        convert(R, qs[2]),
+        convert(R, qs[3]),
+        convert(R, qs[4]),
+        convert(R, qs[5]),
+        convert(R, qs[6]),
+        convert(R, qs[7]),
+        convert(R, qs[8]),
+        convert(R, qs[9]),
+        convert(R, qs[10]),
+        convert(R, qs[11]))
+end
+
+function detailedsummarystats{T, W<:Real}(a::RealVector{T}, w::WeightVec{W})
+    m = mean(a, w)
+    std = stdm(a, m, w)
+    sk = skewness(a, w, m)
+    ku = kurtosis(a, w, m)
+    qs = quantile(a, w, [0.00, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1.00])
+    R = typeof(zero(T)/1)
+    WeightedDetailedSummaryStats{R, W}(
+        convert(R, m),
+        convert(R, std),
+        convert(R, sk),
+        convert(R, ku),
+        convert(R, qs[1]),
+        convert(R, qs[2]),
+        convert(R, qs[3]),
+        convert(R, qs[4]),
+        convert(R, qs[5]),
+        convert(R, qs[6]),
+        convert(R, qs[7]),
+        convert(R, qs[8]),
+        convert(R, qs[9]),
+        convert(R, qs[10]),
+        convert(R, qs[11]),
+        w.sum)
+end
+
+
+
+
+function Base.show{T<:AbstractSummaryStats}(io::IO, ss::T)
+    println(io, "Summary Stats:")
+    @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std:            %.6f\n", ss.std)
+    @printf(io, "Minimum:        %.6f\n", ss.min)
+    @printf(io, "1st Quartile:   %.6f\n", ss.p25)
+    @printf(io, "Median:         %.6f\n", ss.median)
+    @printf(io, "3rd Quartile:   %.6f\n", ss.p75)
+    @printf(io, "Maximum:        %.6f\n", ss.max)
+    if T <: WeightedSummaryStats
+    print("\n")  
+    @printf(io, "Sum of weights: %.6f\n", ss.wsum)
+    end
+end
+
+
+
+function Base.show{T<:AbstractDetailedSummaryStats}(io::IO, ss::T)
+    println(io, "Summary Stats:")
+    @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std:            %.6f\n", ss.std)
+    @printf(io, "Skewness:       %.6f\n", ss.skewness)
+    @printf(io, "Kurtosis:       %.6f\n", ss.kurtosis)
+    print("\n")  
+    @printf(io, "Minimum:        %.6f\n", ss.min)
+    @printf(io, "p1:             %.6f\n", ss.p1)
+    @printf(io, "p5:             %.6f\n", ss.p5)
+    @printf(io, "p10:            %.6f\n", ss.p10)
+    @printf(io, "p25:            %.6f\n", ss.p25)
+    @printf(io, "Median:         %.6f\n", ss.median)
+    @printf(io, "p75             %.6f\n", ss.p75)
+    @printf(io, "p90:            %.6f\n", ss.p90)
+    @printf(io, "p95:            %.6f\n", ss.p95)
+    @printf(io, "p99:            %.6f\n", ss.p99)
+    @printf(io, "Maximum:        %.6f\n", ss.max)
+    if T <: WeightedDetailedSummaryStats
+    print("\n")  
+    @printf(io, "Sum of weights: %.6f\n", ss.wsum)
+    end
+end
+
+
+
+
+function describe{T<:Real}(a::AbstractArray{T}; detail = false) 
+    detail ? show(detailedsummarystats(a)) : show(summarystats(a))
+end
+function describe{T, W<:Real}(a::RealVector{T}, w::WeightVec{W}; detail = false) 
+    detail ? show(detailedsummarystats(a, w)) : show(summarystats(a, w))
+end
+
+
+

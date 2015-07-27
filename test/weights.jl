@@ -233,3 +233,99 @@ wt = [-1, -1, -1, -1, -1]
 @test_throws ErrorException median(data, weights(wt))
 wt = [-1, -1, -1, 0, 0]
 @test_throws ErrorException median(data, weights(wt))
+
+
+# Weighted quantile tests
+data = (
+    [7, 1, 2, 4, 10],
+    [7, 1, 2, 4, 10],
+    [7, 1, 2, 4, 10, 15],
+    [1, 2, 4, 7, 10, 15],
+    [0, 10, 20, 30],
+    [1, 2, 3, 4, 5],
+    [1, 2, 3, 4, 5],
+    [30, 40, 50, 60, 35],
+    [2, 0.6, 1.3, 0.3, 0.3, 1.7, 0.7, 1.7],
+    [1, 2, 2],
+    [3.7, 3.3, 3.5, 2.8],
+    [100, 125, 123, 60, 45, 56, 66],
+    [2, 2, 2, 2, 2, 2],
+    [2.3],
+    [-2, -3, 1, 2, -10],
+    [1, 2, 3, 4, 5],
+    [5, 4, 3, 2, 1],
+    [-2, 2, -1, 3, 6],
+    [-10, 1, 1, -10, -10],
+)
+
+
+wt = (
+    weights([1, 1/3, 1/3, 1/3, 1]),
+    weights([1, 1, 1, 1, 1]),
+    weights([1, 1/3, 1/3, 1/3, 1, 1]),
+    weights([1/3, 1/3, 1/3, 1, 1, 1]),
+    weights([30, 191, 9, 0]),
+    weights([10, 1, 1, 1, 9]),
+    weights([10, 1, 1, 1, 900]),
+    weights([1, 3, 5, 4, 2]),
+    weights([2, 2, 5, 1, 2, 2, 1, 6]),
+    weights([0.1, 0.1, 0.8]),
+    weights([5, 5, 4, 1]),
+    weights([30, 56, 144, 24, 55, 43, 67]),
+    weights([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
+    weights([12]),
+    weights([7, 1, 1, 1, 6]),
+    weights([1, 0, 0, 0, 2]),
+    weights([1, 2, 3, 4, 5]),
+    weights([0.1, 0.2, 0.3, 0.2, 0.1]),
+    weights([1, 1, 1, 1, 1]),
+)
+quantile_answers = (    
+    [1.0,3.6000000000000005,6.181818181818182,8.2,10.0],
+    [1.0,2.0,4.0,7.0,10.0],
+    [1.0,4.75,8.0,10.833333333333334,15.0],
+    [1.0,4.75,8.0,10.833333333333334,15.0],
+    [0.0,6.1387900355871885,11.600000000000001,15.912500000000001,30.0],
+    [1.0,1.5365853658536586,2.5999999999999996,4.405405405405405,5.0],
+    [1.0,4.239377950569287,4.492918633712858,4.746459316856429,5.0],
+    [30.0,38.75,45.714285714285715,52.85714285714286,60.0],
+    [0.3,0.6903846153846154,1.484,1.7,2.0],
+    [1.0,2.0,2.0,2.0,2.0],
+    [2.8,3.3361111111111112,3.4611111111111112,3.581578947368421,3.7],
+    [45.0,59.88593155893536,100.08846153846153,118.62115384615385,125.0],
+    [2.0,2.0,2.0,2.0,2.0],
+    [2.3,2.3,2.3,2.3,2.3],
+    [-10.0,-5.52,-2.5882352941176467,-0.9411764705882351,2.0],
+    [1.0,1.75,4.25,4.625,5.0],
+    [1.0,1.625,2.3333333333333335,3.25,5.0],
+    [-2.0,-0.5384615384615388,1.5384615384615383,2.6999999999999997,6.0],
+    [-10.0,-10.0,-10.0,1.0,1.0]
+)
+p = [0.0, 0.25, 0.5, 0.75, 1.0]
+
+srand(10)
+# w = 1 corresponds to base quantile
+for i = 1:length(data)
+    @test_approx_eq quantile(data[i], weights(ones(Int64, length(data[i]))), p) quantile(data[i], p)
+    for j = 1:10
+        prandom = rand(4)
+        @test_approx_eq quantile(data[i], weights(ones(Int64, length(data[i]))),  prandom) quantile(data[i], prandom)
+    end
+end
+
+for i = 1:length(data)
+    @test_approx_eq quantile(data[i], wt[i], p) quantile_answers[i]
+    for j = 1:10
+        # order of q does not matter
+        reorder = sortperm(rand(length(p)))
+        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
+        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
+        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
+    end
+    for j = 1:10
+        # Make sure the weighted quantile does not change if the data
+        # and weights are reordered.
+        reorder = sortperm(rand(length(data[i])))
+        @test_approx_eq quantile(data[i][reorder], weights(wt[i][reorder]), p) quantile_answers[i]
+    end
+end

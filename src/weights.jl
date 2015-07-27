@@ -243,6 +243,7 @@ Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
     mean!(Array(wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
 
 
+
 ###### Weighted median #####
 
 function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
@@ -293,3 +294,107 @@ end
 
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
+
+
+
+###### Weighted quantile #####
+
+# Definition from http://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
+function Base.quantile{T, W<:Real}(v::RealVector{T}, w::WeightVec{W}, p::RealVector)
+
+    isempty(v) && error("quantile of an empty array is undefined")
+    isempty(p) && throw(ArgumentError("empty quantile array"))
+
+    ppermute = sortperm(p)
+    p = p[ppermute]
+
+    # make sure the quantiles are in [0,1]
+    p = bound_quantiles(p)
+
+    if w.sum == 0
+        error("weight vector cannot sum to zero")
+    end
+    if length(v) != length(w)
+        error("data and weight vectors must be the same size, got $(length(v)) and $(length(w))")
+    end
+    for x in w.values
+        isnan(x) && error("weight vector cannot contain NaN entries")
+        x < 0 && error("weight vector cannot contain negative entries")
+    end
+    for x in v
+        isnan(x) && return x
+    end
+    lv = length(v)
+    lp = length(p)
+    wt = w.values
+    vpermute = sortperm(v)
+    index = p * (lv-1) * w.sum
+    out = Array(typeof(zero(T)/1), lp)
+    cumulative_weight = zero(w.sum)
+    k = 1
+    i = 0
+    while k <= lp
+        if i == lv
+            out[ppermute[k]] =  v[vpermute[end]]
+            k += 1
+        elseif (i * wt[vpermute[i+1]] + (lv - 1) * cumulative_weight) > index[k]
+            hi = v[vpermute[i+1]]
+            lo = v[vpermute[i]]           
+            if lo == hi 
+                out[ppermute[k]] = hi
+                k += 1
+            else
+                # We meed to compute the weight on each lo and hi
+                # Find the smallest weight whi among x = hi
+                # Find the highest weight wlo among x = lo
+                whi = wt[vpermute[i+1]]
+                l = 1
+                while ((i + 1 + l) <= lv) && (v[vpermute[i+1+l]] == hi)
+                    whi = min(whi, wt[vpermute[i+1+l]])
+                    l += 1
+                end
+                shi = i  *  whi + (lv - 1) * cumulative_weight
+                if shi <= index[k]
+                    out[ppermute[k]] = hi
+                    k += 1
+                else
+                    wlo = wt[vpermute[i]]
+                    l = 1
+                    while ((i - l) >= 1) && (v[vpermute[i-l]] == lo)
+                        wlo = max(wlo, wt[vpermute[i-l]])
+                        l += 1
+                    end
+                    slo = (i - 1) * wlo + (lv - 1) * (cumulative_weight - wlo)
+                    g = (index[k] - slo)/(shi-slo)
+                    out[ppermute[k]] = (1.0 - g) * lo + g * hi   
+                    k += 1  
+                end
+            end
+        else
+            i += 1
+            cumulative_weight += wt[vpermute[i]]
+        end
+    end
+    return(out)
+end
+
+
+
+# from julia base
+function bound_quantiles(qs::RealVector)
+    epsilon = 100*eps()
+    if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
+        throw(ArgumentError("quantiles out of [0,1] range"))
+    end
+    [min(1,max(0,q)) for q = qs]
+end
+
+
+Base.quantile(v::RealVector, w::WeightVec, p::Number) = quantile(v, w, [p])[1]
+
+wquantile(v::RealVector, w::WeightVec, p::RealVector) = quantile(v, w, p)
+wquantile(v::RealVector, w::WeightVec, p::Number) = quantile(v, w, [p])[1]
+
+wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
+wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
+

@@ -43,13 +43,15 @@ module StatsBase
     softmax!,
 
     ## weights
-    WeightVec,   # the type to represent a weight vector
-    weights,     # construct a weight vector
-    wsum,        # weighted sum with vector as second argument
-    wsum!,       # weighted sum across dimensions with provided storage
-    wmean,       # weighted mean
-    wmean!,      # weighted mean across dimensions with provided storage
-    wmedian,     # weighted median
+    WeightVec,     # the type to represent a weight vector
+    weights,       # construct a weight vector
+    wsum,          # weighted sum with vector as second argument
+    wsum!,         # weighted sum across dimensions with provided storage
+    wmean,         # weighted mean
+    wmean!,        # weighted mean across dimensions with provided storage
+    wmedian,       # weighted median
+    wquantile,     # weighted quantile
+
 
     ## moments
     skewness,       # (standardized) skewness
