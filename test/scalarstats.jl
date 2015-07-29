@@ -22,6 +22,8 @@ using Base.Test
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.0) 22.4
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.4) 4.0
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.8) 3.0
+@test_approx_eq trimmean([2, 3, -100, 200, 7], 0.4) 4.0
+@test_approx_eq trimmean([2, 3, -100, 200, 7], 0.8) 3.0
 
 ## mode & modes
 

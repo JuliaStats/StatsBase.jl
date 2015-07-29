@@ -39,7 +39,7 @@ function trimmean(x::RealArray, p::Real)
     nh = (rn - nl)
     s = 0.0
     for i = (1+nl) : (n-nh)
-        @inbounds s += x[i]
+        @inbounds s += sx[i]
     end
     return s / (n - rn)
 end
