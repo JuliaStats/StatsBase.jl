@@ -291,6 +291,10 @@ function entropy{T<:Real}(p::AbstractArray{T})
     return -s
 end
 
+function entropy{T<:Real}(p::AbstractArray{T}, b::Real)
+    return entropy(p) / log(b)
+end
+
 function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
     s = 0.
@@ -303,6 +307,10 @@ function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
         end
     end
     return -s
+end
+
+function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T}, b::Real)
+    return crossentropy(p,q) / log(b)
 end
 
 function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
@@ -319,6 +327,9 @@ function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     return s
 end
 
+function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T}, b::Real)
+    return kldivergence(p,q) / log(b)
+end
 
 #############################
 #

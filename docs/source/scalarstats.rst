@@ -117,16 +117,27 @@ Entropy and Friends
 
 .. function:: entropy(p)
 
-   Compute the entropy of the probability vector ``p``.
+   Compute the entropy of the probability vector ``p`` using natural logarithms (units of nats).
+
+.. function:: entropy(p, b)
+
+   Compute the entropy of the probability vector ``p`` using logarithms of base ``b`` (e.g. ``entropy(p,2)`` returns the entropy in bits).
 
 .. function:: crossentropy(p, q)
 
    Compute the cross entropy between two probability vectors ``p`` and ``q``.
 
+.. function:: crossentropy(p, q, b)
+
+   Compute the cross entropy between ``p`` and ``q`` using logarithms of base ``b``.
+
 .. function:: kldivergence(p, q)
 
    Compute the Kullback-Leibler divergence between ``p`` and ``q``.
 
+.. function:: kldivergence(p, q, b)
+
+   Compute the Kullback-Leibler divergence between ``p`` and ``q`` using logarithms of base ``b``.
 
 Quantile and Friends
 ---------------------
