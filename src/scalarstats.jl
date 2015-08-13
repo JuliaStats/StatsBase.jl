@@ -281,12 +281,19 @@ zscore{T<:Real}(X::AbstractArray{T}, dim::Int) = ((μ, σ) = mean_and_std(X, dim
 
 function entropy{T<:Real}(p::AbstractArray{T})
     s = 0.
+    ss = 0.
     z = zero(T)
     for i = 1:length(p)
         @inbounds pi = p[i]
+        ss += pi
         if pi > z
             s += pi * log(pi)
+        elseif pi < -1e-12
+            throw(ArgumentError("Input is not a probability vector (has negative element)"))
         end
+    end
+    if abs(ss-1.0) > 1e-12
+        throw(ArgumentError("Input is not a probability vector (does not sum to one)"))
     end
     return -s
 end
@@ -298,13 +305,26 @@ end
 function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
     s = 0.
+    sp,sq = 0.,0.
     z = zero(T)
     for i = 1:length(p)
         @inbounds pi = p[i]
         @inbounds qi = q[i]
-        if pi > z
+        sp += pi
+        sq += qi
+        if (pi > z) && (qi > z) 
             s += pi * log(qi)
+        elseif pi < -1e-12
+            throw(ArgumentError("First input is not a probability vector (has negative element)."))
+        elseif qi < -1e-12
+            throw(ArgumentError("Second input is not a probability vector (has negative element)."))
         end
+    end
+    if abs(sp-1.0) > 1e-12
+        throw(ArgumentError("First input is not a probability vector (does not sum to one)."))
+    end
+    if abs(sq-1.0) > 1e-12
+        throw(ArgumentError("Second input is not a probability vector (does not sum to one)."))
     end
     return -s
 end
@@ -316,13 +336,26 @@ end
 function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
     s = 0.
+    sp,sq = 0.,0.
     z = zero(T)
     for i = 1:length(p)
         @inbounds pi = p[i]
         @inbounds qi = q[i]
-        if pi > z
+        sp += pi
+        sq += qi
+        if (pi > z) && (qi >= z)
             s += pi * log(pi / qi)
+        elseif pi < -1e-12
+            throw(ArgumentError("First input is not a probability vector (has negative element)"))
+        elseif qi < -1e-12
+            throw(ArgumentError("Second input is not a probability vector (has negative element)"))
         end
+    end
+    if abs(sp-1.0) > 1e-12
+        throw(ArgumentError("First input is not a probability vector (does not sum to one)"))
+    end
+    if abs(sq-1.0) > 1e-12
+        throw(ArgumentError("Second input is not a probability vector (does not sum to one)"))
     end
     return s
 end
