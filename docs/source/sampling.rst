@@ -25,7 +25,7 @@ The package provides functions for sampling from a given population (with or wit
 
 .. function:: sample(wv) 
 
-    Draw an integer in ``1:length(w)`` with probabilities proportional to the weights given in ``wv``. 
+    Draw an integer in ``1:length(wv)`` with probabilities proportional to the weights given in ``wv``. 
 
     Here, ``wv`` should be a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
