@@ -240,21 +240,21 @@ function _zscore_chksize(X::AbstractArray, μ::AbstractArray, σ::AbstractArray)
     end
 end
 
-function zscore!{ZT<:FloatingPoint,T<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real)
+function zscore!{ZT<:AbstractFloat,T<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real)
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
     _zscore!(Z, X, μ, σ)
 end
 
-function zscore!{ZT<:FloatingPoint,T<:Real,U<:Real,S<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T},
+function zscore!{ZT<:AbstractFloat,T<:Real,U<:Real,S<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T},
                                                             μ::AbstractArray{U}, σ::AbstractArray{S})
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
     _zscore_chksize(X, μ, σ)
     _zscore!(Z, X, μ, σ)
 end
 
-zscore!{T<:FloatingPoint}(X::AbstractArray{T}, μ::Real, σ::Real) = _zscore!(X, X, μ, σ)
+zscore!{T<:AbstractFloat}(X::AbstractArray{T}, μ::Real, σ::Real) = _zscore!(X, X, μ, σ)
 
-zscore!{T<:FloatingPoint,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) =
+zscore!{T<:AbstractFloat,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) =
     (_zscore_chksize(X, μ, σ); _zscore!(X, X, μ, σ))
 
 function zscore{T<:Real}(X::AbstractArray{T}, μ::Real, σ::Real)
@@ -337,7 +337,7 @@ end
 #
 #############################
 
-immutable SummaryStats{T<:FloatingPoint}
+immutable SummaryStats{T<:AbstractFloat}
     mean::T
     min::T
     q25::T
@@ -349,7 +349,7 @@ end
 function summarystats{T<:Real}(a::AbstractArray{T})
     m = mean(a)
     qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
-    R = typeof(convert(FloatingPoint, zero(T)))
+    R = typeof(convert(AbstractFloat, zero(T)))
     SummaryStats{R}(
         convert(R, m),
         convert(R, qs[1]),

@@ -191,7 +191,7 @@ Summary of Statistics
 
   .. code-block:: julia
 
-    immutable SummaryStats{T<:FloatingPoint}
+    immutable SummaryStats{T<:AbstractFloat}
         mean::T
         min::T
         q25::T

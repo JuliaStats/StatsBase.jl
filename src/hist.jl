@@ -1,7 +1,7 @@
 import Base: show, ==, push!, append!
 
 ## nice-valued ranges for histograms
-function histrange{T<:FloatingPoint}(v::AbstractArray{T}, n::Integer, closed::Symbol)
+function histrange{T<:AbstractFloat}(v::AbstractArray{T}, n::Integer, closed::Symbol)
     if length(v) == 0
         return 0.0:1.0:0.0
     end
