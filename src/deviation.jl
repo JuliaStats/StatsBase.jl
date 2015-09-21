@@ -32,7 +32,7 @@ function sqL2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
     for i = 1:n
-        @inbounds r += abs2(a[i] - b[i]) 
+        @inbounds r += abs2(a[i] - b[i])
     end
     return r
 end
@@ -46,9 +46,9 @@ function L1dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
     for i = 1:n
-        @inbounds r += abs(a[i] - b[i]) 
+        @inbounds r += abs(a[i] - b[i])
     end
-    return r    
+    return r
 end
 
 # Linf distance
@@ -57,16 +57,16 @@ function Linfdist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
     for i = 1:n
-        @inbounds v = abs(a[i] - b[i]) 
+        @inbounds v = abs(a[i] - b[i])
         if r < v
             r = v
         end
     end
-    return r     
+    return r
 end
 
 # Generalized KL-divergence
-function gkldiv{T<:FloatingPoint}(a::AbstractArray{T}, b::AbstractArray{T})
+function gkldiv{T<:AbstractFloat}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
     r = 0.0
     for i = 1:n
@@ -91,7 +91,7 @@ maxad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = Linfdist(a, b)
 msd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqL2dist(a, b) / length(a)
 
 # RMSD: root mean squared deviation
-function rmsd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}; normalize::Bool=false) 
+function rmsd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}; normalize::Bool=false)
 	v = sqrt(msd(a, b))
 	if normalize
 		amin, amax = extrema(a)
