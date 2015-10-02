@@ -169,7 +169,10 @@ Quantile and Friends
     w = rand(n)
     xk = median(x, weights(w))
 
+.. function:: quantile(x, w, p)
 
+  Compute the weighted quantiles of a vector ``x`` at a specified set of probability values ``p``, using weights given by a weight vector ``w`` (of type ``WeightVec``).  Weights must not be negative. The weights and data vectors must have the same length. The quantile for :math:`p` is defined as follows.  Denoting :math:`S_k = (k-1)w_k + (n-1) \sum_{i<k}w_i`, define :math:`x_{k+1}` the smallest element of ``x`` such that :math:`S_{k+1}/S_{n}` is strictly superior to :math:`p`. The function returns :math:`(1-\gamma) x_k + \gamma x_{k+1}` with  :math:`\gamma = (pS_n- S_k)/(S_{k+1}-S_k)`. This corresponds to  R-7, Excel, SciPy-(1,1), Maple-6 when ``w`` is one (see https://en.wikipedia.org/wiki/Quantile).
+  
 Mode and Modes
 ---------------
 
