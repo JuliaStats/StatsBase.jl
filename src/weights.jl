@@ -293,3 +293,84 @@ end
 
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
+
+###### Weighted quantile #####
+
+# http://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
+# In the non weighted version, we compute a vector of index h(N, p)
+# and take interpolation between floor and ceil of this index
+# Here there is a supplementary function from index to weighted index k -> Sk
+
+function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector)
+
+    # checks
+    isempty(v) && error("quantile of an empty array is undefined")
+    isempty(p) && throw(ArgumentError("empty quantile array"))
+
+    w.sum == 0 && error("weight vector cannot sum to zero")
+    length(v) == length(w) || error("data and weight vectors must be the same size, got $(length(v)) and $(length(w))")
+    for x in w.values
+        isnan(x) && error("weight vector cannot contain NaN entries")
+        x < 0 && error("weight vector cannot contain negative entries")
+    end
+
+    # full sort
+    vw = sort!(collect(zip(v, w.values)))
+
+    wsum = w.sum
+
+    # prepare percentiles
+    ppermute = sortperm(p)
+    p = p[ppermute]
+    p = bound_quantiles(p)
+
+    # prepare out vector
+    N = length(vw)
+    out = Array(typeof(zero(V)/1), length(p))
+    fill!(out, vw[end][1])
+
+    # start looping on quantiles
+    cumulative_weight, Sk, Skold =  zero(W), zero(W), zero(W)
+    vk, vkold = zero(V), zero(V)
+    k = 1
+    for i in 1:length(p)
+        h = p[i] * (N - 1) * wsum
+        if h == 0
+            # happens when N or p or wsum equal zero
+            out[ppermute[i]] = vw[1][1]     
+        else
+            while Sk <= h
+                # happens in particular when k == 1
+                vk, wk = vw[k]
+                cumulative_weight += wk
+                if k >= N 
+                    # out was initialized with maximum v
+                    return out
+                end
+                k += 1
+                Skold, vkold = Sk, vk
+                vk, wk = vw[k]
+                Sk = (k - 1) * wk + (N - 1) * cumulative_weight
+            end
+            # in particular, Sk is different from Skold
+            g = (h - Skold) / (Sk - Skold)
+            out[ppermute[i]] = vkold + g * (vk - vkold)
+        end
+    end
+    return out
+end
+
+# similarly to statistics.jl in Base
+function bound_quantiles{T <: Real}(qs::AbstractVector{T})
+    epsilon = 100 * eps()
+    if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
+        throw(ArgumentError("quantiles out of [0,1] range"))
+    end
+    T[min(one(T), max(zero(T), q)) for q = qs]
+end
+
+quantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
+wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::RealVector) = quantile(v, w, p)
+wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
+wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
+wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
