@@ -25,6 +25,21 @@ using Base.Test
 @test eltype(fit(Histogram,1:100,weights(ones(Int,100)),nbins=5).weights) == Int
 @test eltype(fit(Histogram,1:100,weights(ones(Float64,100)),nbins=5).weights) == Float64
 
+# histrange
+# Note: atm histrange must be qualified
+@test StatsBase.histrange(Float64[], 0, :left) == 0.0:1.0:0.0
+@test StatsBase.histrange([0.], 0, :left) == 0.0:1.0:1.0
+@test StatsBase.histrange(Float64[1:5;], 1, :left) == 0.0:5.0:10.0
+@test StatsBase.histrange(Float64[1:10;], 1, :left) == 0.0:10.0:20.0
+@test StatsBase.histrange(Int64[1:5;], 1, :left) == 0:5:10
+@test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
+
+# hist show
+show_h = sprint(show, fit(Histogram,[1,2,3]))
+@test contains(show_h, "edges:\n  0:1:3")
+@test contains(show_h, "weights: [1,1,1]")
+@test contains(show_h, "closed: right")
+
 import StatsBase.midpoints
 
 @test midpoints(1.0:1.0:10.0) == 1.5:1.0:9.5
