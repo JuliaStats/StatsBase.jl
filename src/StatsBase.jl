@@ -86,8 +86,7 @@ module StatsBase
     crossentropy,   # cross entropy between two probability vectors
     kldivergence,   # K-L divergence between two probability vectors
 
-    summarystats,   # summary statistics
-    describe,       # print the summary statistics
+    describe,       # summary statistics
 
     # deviation
     counteq,        # count the number of equal pairs
