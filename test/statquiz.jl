@@ -11,10 +11,10 @@ nasty = DataFrame(	label = ["One", "Two", "Three", "Four", "Five", "Six", "Seven
 					x = [1.:9],
 					zero = fill(0.0,9),
 					miss = fill(NA, 9),
-					big = 99999990.0 + [1:9],
-					little = (99999990.0 + [1:9])/10^8,
-					huge = [1.:9]*1e12,
-					tiny = [1.:9]*1e-12,
+					big = 99999990.0 + [1:9;],
+					little = (99999990.0 + [1:9;])/10^8,
+					huge = [1.:9;]*1e12,
+					tiny = [1.:9;]*1e-12,
 					round = [0.5:8.5])
 
 println(nasty)
@@ -23,9 +23,9 @@ print("Test rounding: ")
 @test [@sprintf("%1.0f", x) for x in nasty[:round]] == ["1","2","3","4","5","6","7","8","9"]
 println("OK")
 print("Test math: ")
-@test int(2.6*7 - 0.2) == 18
-@test 2 - int(exp(log(sqrt(2)*sqrt(2)))) == 0
-@test int(3 - exp(log(sqrt(2)*sqrt(2)))) == 1
+@test round(Int, 2.6*7 - 0.2) == 18
+@test 2 - round(Int, exp(log(sqrt(2)*sqrt(2)))) == 0
+@test round(Int, 3 - exp(log(sqrt(2)*sqrt(2)))) == 1
 println("OK")
 
 print("Test means: ")
@@ -39,7 +39,7 @@ end
 println("OK")
 
 print("Test standard deviation: ")
-for vars in names(nasty)[[2,5:9]]
+for vars in names(nasty)[[2;5:9]]
 #	@test (@sprintf("%.9e", std(nasty[vars])))[1:10] == "2.73861278"
     @test repr(std(nasty[vars]))[1:10] == "2.73861278"
 end
@@ -71,6 +71,12 @@ ctable = coeftable(lm(big ~ x, nasty))
 @test typeof(ctable) == CoefTable
 @test_approx_eq ctable.mat[:,1] [99999990, 1]
 
+@test sprint(show, ctable) == """\
+             Estimate Std.Error t value Pr(>|t|)
+(Intercept)     1.0e8       0.0     Inf   <1e-99
+x                 1.0       0.0     Inf   <1e-99
+"""
+
 println("OK")
 
 println("\nIV Regression:\nIV A")
@@ -89,4 +95,3 @@ nasty[:x9] = nasty[:x].^9
 lm(x1~x2+x3+x4+x5+x6+x7+x8+x9, nasty)
 @test_approx_eq coef(lm(x~x, nasty)) [0,1]
 println("OK")
-

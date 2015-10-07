@@ -51,7 +51,7 @@ end
 function show(io::IO, ct::CoefTable)
     mat = ct.mat; nr,nc = size(mat); rownms = ct.rownms; colnms = ct.colnms; pvc = ct.pvalcol
     if length(rownms) == 0
-        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3)::String for i in 1:nr]
+        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
     rnwidth = max(4,maximum([length(nm) for nm in rownms]) + 1)
     rownms = [rpad(nm,rnwidth) for nm in rownms]
