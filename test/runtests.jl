@@ -14,7 +14,8 @@ tests = ["weights",
          "misc",
          "sampling",
          "wsampling",
-         "statmodels"]
+         "statmodels",
+         "statquiz"]
 
 println("Running tests:")
 

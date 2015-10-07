@@ -8,14 +8,14 @@ using GLM
 testeps = sqrt(eps())
 
 nasty = DataFrame(	label = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
-					x = [1.:9],
+					x = collect(1.:9),
 					zero = fill(0.0,9),
 					miss = fill(NA, 9),
-					big = 99999990.0 + [1:9;],
-					little = (99999990.0 + [1:9;])/10^8,
-					huge = [1.:9;]*1e12,
-					tiny = [1.:9;]*1e-12,
-					round = [0.5:8.5])
+					big = 99999990.0 + collect(1:9),
+					little = (99999990.0 + collect(1:9))/10^8,
+					huge = collect(1.:9)*1e12,
+					tiny = collect(1.:9)*1e-12,
+					round = collect(0.5:8.5))
 
 println(nasty)
 println("\nII Real Numbers:\nII A")
@@ -48,7 +48,7 @@ println("OK")
 
 println("\nII D")
 print("Test correlation: ")
-cn = names(nasty)[[2,5:9]]
+cn = names(nasty)[[2;5:9]]
 for i in 1:5
 	for j = i+1:6
 	@test_approx_eq cor(nasty[cn[i]], nasty[cn[j]]) 1
@@ -57,7 +57,7 @@ end
 println("OK")
 
 print("Test spearman correlation: ")
-cn = names(nasty)[[2,5:9]]
+cn = names(nasty)[[2;5:9]]
 for i in 1:5
 	for j = i+1:6
 	@test_approx_eq corspearman(nasty[cn[i]], nasty[cn[j]]) 1
