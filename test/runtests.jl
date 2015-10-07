@@ -13,7 +13,8 @@ tests = ["weights",
          "signalcorr",
          "misc",
          "sampling",
-         "wsampling"]
+         "wsampling",
+         "statmodels"]
 
 println("Running tests:")
 

@@ -40,6 +40,9 @@ end
 
 ## format numbers in the p-value column
 function format_pvc(pv::Number)
+    if isnan(pv)
+        return @sprintf("%d", pv)
+    end
     0. <= pv <= 1. || error("p-values must be in [0.,1.]")
     if pv >= 1e-4
         return @sprintf("%.4f", pv)
