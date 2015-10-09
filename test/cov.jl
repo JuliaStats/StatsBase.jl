@@ -31,61 +31,119 @@ Sz2w = X * diagm(w2) * X'
 
 ## scattermat
 
-@test_approx_eq scattermat(X) S1
-@test_approx_eq scattermat(X; vardim=2) S2
+if VERSION < v"0.5.0-dev+679"
+    @test_approx_eq scattermat(X) S1
+    @test_approx_eq scattermat(X; vardim=2) S2
 
-@test_approx_eq scattermat(X; mean=0) Sz1
-@test_approx_eq scattermat(X; mean=0, vardim=2) Sz2
+    @test_approx_eq scattermat(X; mean=0) Sz1
+    @test_approx_eq scattermat(X; mean=0, vardim=2) Sz2
 
-@test_approx_eq scattermat(X; mean=mean(X,1)) S1
-@test_approx_eq scattermat(X; mean=mean(X,2), vardim=2) S2
+    @test_approx_eq scattermat(X; mean=mean(X,1)) S1
+    @test_approx_eq scattermat(X; mean=mean(X,2), vardim=2) S2
 
-@test_approx_eq scattermat(X; mean=zeros(1,8)) Sz1
-@test_approx_eq scattermat(X; mean=zeros(3), vardim=2) Sz2
+    @test_approx_eq scattermat(X; mean=zeros(1,8)) Sz1
+    @test_approx_eq scattermat(X; mean=zeros(3), vardim=2) Sz2
 
-## weighted scatter mat
+    ## weighted scatter mat
 
-@test_approx_eq scattermat(X, wv1) S1w
-@test_approx_eq scattermat(X, wv2; vardim=2) S2w
+    @test_approx_eq scattermat(X, wv1) S1w
+    @test_approx_eq scattermat(X, wv2; vardim=2) S2w
 
-@test_approx_eq scattermat(X, wv1; mean=0) Sz1w
-@test_approx_eq scattermat(X, wv2; mean=0, vardim=2) Sz2w
+    @test_approx_eq scattermat(X, wv1; mean=0) Sz1w
+    @test_approx_eq scattermat(X, wv2; mean=0, vardim=2) Sz2w
 
-@test_approx_eq scattermat(X, wv1; mean=mean(X, wv1, 1)) S1w
-@test_approx_eq scattermat(X, wv2; mean=mean(X, wv2, 2), vardim=2) S2w
+    @test_approx_eq scattermat(X, wv1; mean=mean(X, wv1, 1)) S1w
+    @test_approx_eq scattermat(X, wv2; mean=mean(X, wv2, 2), vardim=2) S2w
 
-@test_approx_eq scattermat(X, wv1; mean=zeros(1,8)) Sz1w
-@test_approx_eq scattermat(X, wv2; mean=zeros(3), vardim=2) Sz2w
+    @test_approx_eq scattermat(X, wv1; mean=zeros(1,8)) Sz1w
+    @test_approx_eq scattermat(X, wv2; mean=zeros(3), vardim=2) Sz2w
+else
+    @test_approx_eq scattermat(X) S1
+    @test_approx_eq scattermat(X, 2) S2
+
+    @test_approx_eq StatsBase.scattermatm(X, 0) Sz1
+    @test_approx_eq StatsBase.scattermatm(X, 0, 2) Sz2
+
+    @test_approx_eq StatsBase.scattermatm(X, mean(X,1)) S1
+    @test_approx_eq StatsBase.scattermatm(X, mean(X,2), 2) S2
+
+    @test_approx_eq StatsBase.scattermatm(X, zeros(1,8)) Sz1
+    @test_approx_eq StatsBase.scattermatm(X, zeros(3), 2) Sz2
+
+    ## weighted scatter mat
+
+    @test_approx_eq scattermat(X, wv1) S1w
+    @test_approx_eq scattermat(X, wv2, 2) S2w
+
+    @test_approx_eq StatsBase.scattermatm(X, 0, wv1) Sz1w
+    @test_approx_eq StatsBase.scattermatm(X, 0, wv2, 2) Sz2w
+
+    @test_approx_eq StatsBase.scattermatm(X, mean(X, wv1, 1), wv1) S1w
+    @test_approx_eq StatsBase.scattermatm(X, mean(X, wv2, 2), wv2, 2) S2w
+
+    @test_approx_eq StatsBase.scattermatm(X, zeros(1,8), wv1) Sz1w
+    @test_approx_eq StatsBase.scattermatm(X, zeros(3), wv2, 2) Sz2w
+end
 
 # weighted covariance
 
-@test_approx_eq cov(X, wv1) S1w ./ sum(wv1)
-@test_approx_eq cov(X, wv2; vardim=2) S2w ./ sum(wv2)
+if VERSION < v"0.5.0-dev+679"
+    @test_approx_eq cov(X, wv1) S1w ./ sum(wv1)
+    @test_approx_eq cov(X, wv2; vardim=2) S2w ./ sum(wv2)
 
-@test_approx_eq cov(X, wv1; mean=0) Sz1w ./ sum(wv1)
-@test_approx_eq cov(X, wv2; mean=0, vardim=2) Sz2w ./ sum(wv2)
+    @test_approx_eq cov(X, wv1; mean=0) Sz1w ./ sum(wv1)
+    @test_approx_eq cov(X, wv2; mean=0, vardim=2) Sz2w ./ sum(wv2)
 
-@test_approx_eq cov(X, wv1; mean=mean(X, wv1, 1)) S1w ./ sum(wv1)
-@test_approx_eq cov(X, wv2; mean=mean(X, wv2, 2), vardim=2) S2w ./ sum(wv2)
+    @test_approx_eq cov(X, wv1; mean=mean(X, wv1, 1)) S1w ./ sum(wv1)
+    @test_approx_eq cov(X, wv2; mean=mean(X, wv2, 2), vardim=2) S2w ./ sum(wv2)
 
-@test_approx_eq cov(X, wv1; mean=zeros(1,8)) Sz1w ./ sum(wv1)
-@test_approx_eq cov(X, wv2; mean=zeros(3), vardim=2) Sz2w ./ sum(wv2)
+    @test_approx_eq cov(X, wv1; mean=zeros(1,8)) Sz1w ./ sum(wv1)
+    @test_approx_eq cov(X, wv2; mean=zeros(3), vardim=2) Sz2w ./ sum(wv2)
+else
+    @test_approx_eq cov(X, wv1) S1w ./ sum(wv1)
+    @test_approx_eq cov(X, wv2, 2) S2w ./ sum(wv2)
+
+    @test_approx_eq Base.covm(X, 0, wv1) Sz1w ./ sum(wv1)
+    @test_approx_eq Base.covm(X, 0, wv2, 2) Sz2w ./ sum(wv2)
+
+    @test_approx_eq Base.covm(X, mean(X, wv1, 1), wv1) S1w ./ sum(wv1)
+    @test_approx_eq Base.covm(X, mean(X, wv2, 2), wv2, 2) S2w ./ sum(wv2)
+
+    @test_approx_eq Base.covm(X, zeros(1,8), wv1) Sz1w ./ sum(wv1)
+    @test_approx_eq Base.covm(X, zeros(3), wv2, 2) Sz2w ./ sum(wv2)
+end
 
 # mean_and_cov
+if VERSION < v"0.5.0-dev+679"
+    (m, C) = mean_and_cov(X; vardim=1)
+    @test m == mean(X, 1)
+    @test C == cov(X; vardim=1)
 
-(m, C) = mean_and_cov(X; vardim=1)
-@test m == mean(X, 1)
-@test C == cov(X; vardim=1)
+    (m, C) = mean_and_cov(X; vardim=2)
+    @test m == mean(X, 2)
+    @test C == cov(X; vardim=2)
 
-(m, C) = mean_and_cov(X; vardim=2)
-@test m == mean(X, 2)
-@test C == cov(X; vardim=2)
+    (m, C) = mean_and_cov(X, wv1; vardim=1)
+    @test m == mean(X, wv1, 1)
+    @test C == cov(X, wv1; vardim=1)
 
-(m, C) = mean_and_cov(X, wv1; vardim=1)
-@test m == mean(X, wv1, 1)
-@test C == cov(X, wv1; vardim=1)
+    (m, C) = mean_and_cov(X, wv2; vardim=2)
+    @test m == mean(X, wv2, 2)
+    @test C == cov(X, wv2; vardim=2)
+else
+    (m, C) = mean_and_cov(X, 1)
+    @test m == mean(X, 1)
+    @test C == cov(X, 1)
 
-(m, C) = mean_and_cov(X, wv2; vardim=2)
-@test m == mean(X, wv2, 2)
-@test C == cov(X, wv2; vardim=2)
+    (m, C) = mean_and_cov(X, 2)
+    @test m == mean(X, 2)
+    @test C == cov(X, 2)
 
+    (m, C) = mean_and_cov(X, wv1, 1)
+    @test m == mean(X, wv1, 1)
+    @test C == cov(X, wv1, 1)
+
+    (m, C) = mean_and_cov(X, wv2, 2)
+    @test m == mean(X, wv2, 2)
+    @test C == cov(X, wv2, 2)
+end
