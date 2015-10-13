@@ -10,6 +10,7 @@ notifications:
   email: false
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - git log -n 50
   - julia --check-bounds=yes -e 'Pkg.clone(pwd())'
   - julia --check-bounds=yes -e 'Pkg.add("DataFrames")'
   - julia --check-bounds=yes -e 'Pkg.add("GLM"); println(Pkg.installed())'
