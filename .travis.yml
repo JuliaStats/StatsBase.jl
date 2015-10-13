@@ -9,7 +9,11 @@ julia:
 notifications:
   email: false
 script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-  - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("StatsBase"); Pkg.test("StatsBase"; coverage=true)'
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow --tags; fi
+  - git log -n 50
+  - julia --check-bounds=yes -e 'Pkg.clone(pwd())'
+  - julia --check-bounds=yes -e 'Pkg.add("DataFrames")'
+  - julia --check-bounds=yes -e 'Pkg.add("GLM"); println(Pkg.installed())'
+  - julia --check-bounds=yes -e 'Pkg.test("StatsBase"; coverage=true)'
 after_success:
   - julia -e 'cd(Pkg.dir("StatsBase")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
