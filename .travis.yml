@@ -9,7 +9,7 @@ julia:
 notifications:
   email: false
 script:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - if [[ -a .git/shallow ]]; then git fetch --unshallow --tags; fi
   - git log -n 50
   - julia --check-bounds=yes -e 'Pkg.clone(pwd())'
   - julia --check-bounds=yes -e 'Pkg.add("DataFrames")'
