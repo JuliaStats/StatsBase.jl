@@ -1,4 +1,4 @@
-import Base: show, ==, push!, append!
+import Base: show, ==, push!, append!, histrange
 
 ## nice-valued ranges for histograms
 function histrange{T<:AbstractFloat}(v::AbstractArray{T}, n::Integer, closed::Symbol)
@@ -65,10 +65,6 @@ histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbo
 histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) = map(v -> histrange(v,nbins,closed),vs)
 
 
-
-## midpoints of intervals
-midpoints(r::Range) = r[1:length(r)-1] + 0.5*step(r)
-midpoints(v::AbstractVector) = [0.5*(v[i] + v[i+1]) for i in 1:length(v)-1]
 
 ## histograms ##
 function sturges(n)  # Sturges' formula
