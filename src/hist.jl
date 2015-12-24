@@ -3,31 +3,66 @@ import Base: show, ==, push!, append!, histrange
 ## nice-valued ranges for histograms
 function histrange{T<:AbstractFloat}(v::AbstractArray{T}, n::Integer, closed::Symbol)
     if length(v) == 0
-        return 0.0:1.0:0.0
+        return zero(T):one(T):zero(T)
     end
     lo, hi = extrema(v)
     if hi == lo
-        step = 1.0
+        start = hi
+        step = one(T)
+        divisor = one(T)
+        len = one(T)
     else
         bw = (hi - lo) / n
-        e = exp10(floor(Int,log10(bw)))
-        r = bw / e
-        if r <= 2
-            step = 2*e
-        elseif r <= 5
-            step = 5*e
+        lbw = log10(bw)
+        if lbw >= 0
+            step = exp10(floor(lbw))
+            r = bw / step
+            if r <= 1.1
+                nothing
+            elseif r <= 2.2
+                step *= 2
+            elseif r <= 5.5
+                step *= 5
+            else
+                step *= 10
+            end
+            divisor = one(T)
+            start = step*floor(lo/step)
+            len = ceil((hi - start)/step)
         else
-            step = 10*e
+            divisor = exp10(-floor(lbw))
+            r = bw * divisor
+            if r <= 1.1
+                nothing
+            elseif r <= 2.2
+                divisor /= 2
+            elseif r <= 5.5
+                divisor /= 5
+            else
+                divisor /= 10
+            end
+            step = one(T)
+            start = floor(lo*divisor)
+            len = ceil(hi*divisor - start)
         end
     end
-    if closed == :right
-        start = step*(ceil(lo/step)-1)
-        nm1 = ceil(Integer, (hi - start)/step)
+    # fix up endpoints
+    if closed == :right #(,]
+        while lo <= start/divisor
+            start -= step
+        end
+        while (start + (len-1)*step)/divisor < hi
+            len += one(T)
+        end
     else
-        start = step*floor(lo/step)
-        nm1 = floor(Integer, (hi - start)/step)+1
+        while lo < start/divisor
+            start -= step
+        end
+        while (start + (len-1)*step)/divisor <= hi
+            len += one(T)
+        end
     end
-    start:step:(start + nm1*step)
+    FloatRange(start,step,len,divisor)
 end
 
 function histrange{T<:Integer}(v::AbstractArray{T}, n::Integer, closed::Symbol)

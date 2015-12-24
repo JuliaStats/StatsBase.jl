@@ -31,6 +31,17 @@ using Base.Test
 @test StatsBase.histrange([0.], 0, :left) == 0.0:1.0:1.0
 @test StatsBase.histrange(Float64[1:5;], 1, :left) == 0.0:5.0:10.0
 @test StatsBase.histrange(Float64[1:10;], 1, :left) == 0.0:10.0:20.0
+
+@test StatsBase.histrange([0.201,0.299], 10, :left) == 0.2:0.01:0.3
+@test StatsBase.histrange([0.2,0.299], 10, :left) == 0.2:0.01:0.3
+@test StatsBase.histrange([0.2,0.3], 10, :left) == 0.2:0.01:0.31
+@test StatsBase.histrange([0.2,0.3], 10, :right) == 0.19:0.01:0.3
+
+@test StatsBase.histrange([200.1,299.9], 10, :left) == 200.0:10.0:300.0
+@test StatsBase.histrange([200.0,299.9], 10, :left) == 200.0:10.0:300.0
+@test StatsBase.histrange([200.0,300.0], 10, :left) == 200.0:10.0:310.0
+@test StatsBase.histrange([200.0,300.0], 10, :right) == 190.0:10.0:300.0
+
 @test StatsBase.histrange(Int64[1:5;], 1, :left) == 0:5:10
 @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
 
