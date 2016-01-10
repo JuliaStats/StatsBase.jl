@@ -8,7 +8,7 @@ Autocovariance and Autocorrelation
 
 .. function:: autocov(x, lags[; demean=true])
 
-    Compute auto-covariance of ``x`` at specified lags. If ``x`` is a vector, it returns a vector of th same length of ``lags``. If ``x`` is a matrix, it returns a matrix of size ``(length(lags), size(x,2))``, where each column in the result corresponding to a column in ``x``. 
+    Compute auto-covariance of ``x`` at specified lags. If ``x`` is a vector, it returns a vector of the same length of ``lags``. If ``x`` is a matrix, it returns a matrix of size ``(length(lags), size(x,2))``, where each column in the result corresponding to a column in ``x``. 
 
     Here, ``demean`` is a keyword argument (default value is ``true``), which means that the function will subtract each ``x`` from its mean before computing the results. Otherwise, ``x`` is considered as having been centered. 
 
