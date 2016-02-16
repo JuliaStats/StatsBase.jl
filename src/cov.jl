@@ -81,4 +81,31 @@ else
         m = mean(x, wv, vardim)
         return m, Base.cov(x, wv, vardim)
     end
+    """
+        mean_and_cov(x::DenseMatrix, wv::WeightVec, vardim::Int)
+
+    ### Args:
+    * `x`: A 2-d array of type `DenseMatrix` to compute the mean and covariance of.
+    * `wv`: An optional weight vector of type `WeightVec`.
+    * `vardim`: An optional parameter specifying the dimension along which to compute the mean.
+
+    Jointly compute the mean and covariance of input matrix `x`.
+    """
+    function mean_and_cov end
+
+    """
+        scattermat(x::DenseMatrix, mean, vardim::Int=1)
+
+    ### Args:
+    * `x`: A `DenseMatrix`
+    * `mean`: Pre-computed mean vector. Default value of mean is set to nothing, which        indicates that the function would compute the mean internally. One can also set mean t    o 0, which indicates that the input `X` has already been centralized. Otherwise, the s    upplied mean will be subtracted from `X`.
+    
+    Compute scatter matrix for the variables contained in X.
+
+    A scatter matrix can be considered as a unnormalized version of the covariance matrix.
+
+    By default, it considers each column as a variable (i.e each row as an observation), a    nd subtract the mean from each vector. One may change this default behavior by setting    the keyword arguments.
+    """
+    function scattermat end
+    
 end

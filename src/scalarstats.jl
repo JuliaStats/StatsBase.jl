@@ -8,6 +8,11 @@
 #############################
 
 # Geometric mean
+"""
+    geomean(a::RealArray)
+
+Compute the geometric mean of `a`.
+"""
 function geomean(a::RealArray)
     s = 0.0
     n = length(a)
@@ -18,6 +23,11 @@ function geomean(a::RealArray)
 end
 
 # Harmonic mean
+"""
+    harmmean(a::RealArray)
+
+Compute the harmonic mean of `a`.
+"""
 function harmmean(a::RealArray)
     s = 0.0
     n = length(a)
@@ -27,7 +37,13 @@ function harmmean(a::RealArray)
     return n / s
 end
 
+
 # Trimmed mean
+"""
+    trimmean(a::RealArray)
+
+Compute the trimmed mean of `a`.
+"""
 function trimmean(x::RealArray, p::Real)
     n = length(x)
     n > 0 || error("x can not be empty.")
@@ -146,6 +162,28 @@ function modes{T}(a::AbstractArray{T})
     return ms
 end
 
+"""
+    mode{T}(a::AbstractArray{T}, rgn::UnitRange{T})
+
+### Args:
+* `a`: An arbitrary array of type `AbstractArray`.
+* `rgn`: A range of integer values, which is optional.
+
+Compute the first mode of `a`, over the range `rng` if specified.
+"""
+function mode end
+
+"""
+    modes{T}(a::AbstractArray{T}, rgn::UnitRange{T})
+
+### Args:
+* `a`: An arbitrary array of type `AbstractArray`.
+* `rgn`: A range of integer values, which is optional.
+
+Compute all the modes of `a`, over the range `rng` if specified.
+"""
+function mode end
+
 
 #############################
 #
@@ -153,9 +191,27 @@ end
 #
 #############################
 
+"""
+    percentile(v::AbstractArray{T}, p)
+
+### Args:
+* `v`: An `AbstracArray`.
+* `p`: Percentage value.
+
+Computes the quantile using percentage (instead of fraction) as argument.
+"""
 percentile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
 
 quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
+"""
+    nquantile(v::AbstractArray{T}, n::Integer)
+
+### Args:
+* `v`: An array of type `AbstractArray`.
+* `n`: Integer value to compute the quantile at.
+
+Compute quantiles at [0:n]/n. For example, nquantiles(x, 5) returns a vector of quantiles, respectively at 0.0, 0.2, 0.4, 0.6, 0.8, 1.0.
+"""
 nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 
 
@@ -166,19 +222,49 @@ nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 #############################
 
 # span, i.e. the range minimum(x):maximum(x)
+"""
+    span(x::AbstractArray{T})
+
+Returns the range of `x`, i.e., minimum(x):maximum(x).
+"""
 span{T<:Integer}(x::AbstractArray{T}) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 variation{T<:Real}(x::AbstractArray{T}, m::Real) = stdm(x, m) / m
 variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
+"""
+    variation(x::AbstractArray{T}, m::Real)
 
+### Args:
+* `x`: An array of type `AbstractArray`.
+* `m`: An optional paramater, which specifies the mean.
+
+Computes the ratio of standard deviation to mean.
+"""
 # Standard error of the mean: std(a) / sqrt(len)
+"""
+    sem(a::AbstractArray{T})
+
+### Args:
+* `a`: An array of type `AbstractArray`.
+
+Computes the standard error of the mean, i.e. sqrt(var / n).
+"""
 sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 mad{T<:Real}(v::AbstractArray{T}, args...;arg...) = mad!(copy(v), args...;arg...)
 mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v;], args...;arg...)
+"""
+    mad(x, center;constant=1.4826)
+### Args:
+* `x`: An array of type `AbstractArray`.
+* `center`: Optional parameter which specifies the center of `x`.
+* `constant`: Optional paramter, Constant scale factor, default is 1.4826.
 
+Compute the median absolute deviation of x. One can optionally supply the center. By default, constant=1.4826 for consistent estimation of the standard deviation of a normal distribution.
+"""
+function mad end    
 function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
     for i in 1:length(v)
         @inbounds v[i] = abs(v[i]-center)
@@ -187,6 +273,14 @@ function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::R
 end
 
 # Interquartile range
+"""
+    iqr(v::AbstractArray{T})
+
+### Args:
+* `v`: An array of type `AbstractArray`.
+
+Compute the interquartile range of x, i.e. quantile(x, 0.75) - quantile(x, 0.25).
+"""
 iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
 
 
@@ -271,6 +365,29 @@ end
 zscore{T<:Real}(X::AbstractArray{T}) = ((μ, σ) = mean_and_std(X); zscore(X, μ, σ))
 zscore{T<:Real}(X::AbstractArray{T}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); zscore(X, μ, σ))
 
+"""
+    zscore(X::AbstractArray, μ::AbstractArray, σ::AbstractArray)
+
+### Args:
+* `X`: The input matrix to compute the Z-score.
+* `μ`: The mean, this could be a scalar or a an array.
+* `σ`: The standard deviation, this could be a scalar or a an array.
+
+Compute the Z-scores, given the mean μ and standard deviation σ, which is defined as (x - μ) / σ. This function returns an array Z of the same size as X. Here, μ and σ should be both scalars or both arrays.
+"""
+function zscore end
+
+"""
+    zscore(X::AbstractArray, μ::AbstractArray, σ::AbstractArray)
+
+### Args:
+* `X`: The input matrix to compute the Z-score.
+* `μ`: The mean, this could be a scalar or a an array.
+* `σ`: The standard deviation, this could be a scalar or a an array.
+
+Compute the Z-scores inline, given the mean μ and standard deviation σ, which is defined as (x - μ) / σ. Here, μ and σ should be both scalars or both arrays.
+"""
+function zscore! end
 
 
 #############################
@@ -294,6 +411,16 @@ end
 function entropy{T<:Real}(p::AbstractArray{T}, b::Real)
     return entropy(p) / log(b)
 end
+"""
+    entropy(p::AbstractArray{T}, b::Real)
+
+### Args:
+* `p`: Probability vector of type `AbstractArray{T}`.
+* `b`: Optional paramater, which specifies the base of logarithm, default is natural logarithm.
+
+Compute the entropy of the probability vector p using logarithms of base b (e.g. entropy(p,2) returns the entropy in bits).
+"""
+function entropy end   
 
 function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
@@ -312,6 +439,16 @@ end
 function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T}, b::Real)
     return crossentropy(p,q) / log(b)
 end
+"""
+    crossentropy(p::AbstractArray{T}, q::AbstractArray{T}, b::Real)
+
+### Args:
+* `p`: First probability vector.
+* `q`: Second probability vector.
+* `b`: Base of logarithm, an optional parameter.
+
+Compute the cross entropy between p and q using logarithms of base b.
+"""
 
 function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
@@ -330,6 +467,16 @@ end
 function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T}, b::Real)
     return kldivergence(p,q) / log(b)
 end
+"""
+    kldivergence(p::AbstractArray{T}, q::AbstractArray{T}, b::Real)
+
+### Args:
+* `p`: First probability vector.
+* `q`: Second probability vector.
+* `b`: Base of logarithm, an optional parameter.
+
+Computes the Kullback-Leiver divergence between the two probability vectors. 
+"""
 
 #############################
 #
@@ -346,6 +493,21 @@ immutable SummaryStats{T<:AbstractFloat}
     max::T
 end
 
+"""
+    summarystats(a::AbstractArray)
+
+Compute a set of statistics over x and return a struct of type SummaryStats defined as below:
+```
+immutable SummaryStats{T<:AbstractFloat}
+    mean::T
+    min::T
+    q25::T
+    median::T
+    q75::T
+    max::T
+end
+```
+"""
 function summarystats{T<:Real}(a::AbstractArray{T})
     m = mean(a)
     qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
@@ -369,4 +531,9 @@ function Base.show(io::IO, ss::SummaryStats)
     @printf(io, "Maximum:      %.6f\n", ss.max)
 end
 
+"""
+    describe(a::AbstractArray)
+
+Print the summary statistics of `a`.
+"""
 describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))

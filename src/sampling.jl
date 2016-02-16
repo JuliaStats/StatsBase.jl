@@ -80,6 +80,11 @@ function samplepair(n::Int)
     return (i1, ifelse(i2 == i1, n, i2))
 end
 
+"""
+    samplepair(a::AbstractArray)
+
+Pick two elements at distinct positions from a, and return them as a pair. This algorithm consumes exactly two random numbers.
+"""
 function samplepair(a::AbstractArray)
     i1, i2 = samplepair(length(a))
     return a[i1], a[i2]
@@ -274,8 +279,25 @@ end
 
 ### Interface functions (poly-algorithms)
 
+"""
+    sample(a::AbstractArray)
+
+Randomly draw an element from an array `a`.
+"""
 sample(a::AbstractArray) = a[randi(length(a))]
 
+"""
+    sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=fal\
+se)
+
+### Args:
+* `a`: An `AbstractArray`.
+* `x`: Pre-allocated array.
+* `replace`: indicates whether to have replacement (default = true).
+* `ordered`: indicates whether to arrange the samples in ascending order (default = false).
+
+Draw length(x) elements from a and write them to a pre-allocated array x.
+"""
 function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
@@ -316,6 +338,18 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     return x
 end
 
+"""
+    sample!(a::AbstractArray, n::Integer; replace::Bool=true, ordered::Bool=fal\
+se)
+
+### Args:
+* `a`: An `AbstractArray`.
+* `n`: Number of elements to draw.
+* `replace`: indicates whether to have replacement (default = true).
+* `ordered`: indicates whether to arrange the samples in ascending order (default = false).
+
+Randomly draw `n` elements from `a`.
+"""
 function sample{T}(a::AbstractArray{T}, n::Integer; replace::Bool=true, ordered::Bool=false)
     sample!(a, Array(T, n); replace=replace, ordered=ordered)
 end
@@ -330,7 +364,11 @@ end
 #  Weighted sampling
 #
 ################################################################
+"""
+    sample(wv::WeightVec)
 
+Draw an integer in 1:length(wv) with probabilities proportional to the weights given in wv. Here, wv should be a weight vector of type WeightVec.
+"""
 function sample(wv::WeightVec)
     t = rand() * sum(wv)
     w = values(wv)

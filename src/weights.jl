@@ -9,6 +9,11 @@ end
 WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
 WeightVec(vs::RealVector) = WeightVec(vs, sum(vs))
 
+"""
+    weights(vs)
+
+This function constructs the weight vector.
+"""
 weights(vs::RealVector) = WeightVec(vs)
 weights(vs::RealArray) = WeightVec(vec(vs))
 
@@ -24,7 +29,15 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 ##### Weighted sum #####
 
 ## weighted sum over vectors
+"""
+    wsum(v, w)
 
+### Args:
+* `v`: Vector to compute weighted sum. This could also be an array.
+* `w`: Weights vector
+
+This function computes the weighted sum of vector `v` with vector `w` as second argument.
+"""
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
@@ -290,6 +303,13 @@ function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
         end
     end
 end
+
+"""
+    middle(x, y)
+
+Returns the mean of two numbers, `x` and `y`. 
+"""
+function middle end
 
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)

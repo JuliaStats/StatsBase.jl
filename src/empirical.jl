@@ -3,6 +3,11 @@
 
 ## Empirical CDF
 
+"""
+    ecdf(X::RealVector)
+
+Return an empirical cumulative distribution function based on a vector of samples given in `X`.
+"""
 function ecdf{T<:Real}(X::RealVector{T})
     Xs = sort(X)
     n = length(X)

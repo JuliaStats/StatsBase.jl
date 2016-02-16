@@ -87,6 +87,36 @@ end
 
 autocov{T<:Real}(x::VecOrMat{T}; demean::Bool=true) = autocov(x, default_autolags(size(x,1)); demean=demean)
 
+"""
+    autocov(x, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the autocovariance of. 
+* `lags`: Specifies the lags at which the autocovariance of `x` is copmuted.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute auto-covariance of `x` at specified lags. If `x` is a vector, it returns a vector of the same length of lags. If `x` is a matrix, it returns a matrix of size `(length(lags), size(x,2))`, where each column in the result corresponding to a column in `x`.
+
+Here, demean is a keyword argument (default value is true), which means that the function will subtract each `x` from its mean before computing the results. Otherwise, `x` is considered as having been centered.
+"""
+function autocov end
+
+"""
+    autocov!(r, x, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the autocovariance of. 
+* `lags`: Specifies the lags at which the autocovariance of `x` is copmuted.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute auto-covariance of `x` at specified lags. If `x` is a vector, it returns a vector of the same length of lags. If `x` is a matrix, it returns a matrix of size `(length(lags), size(x,2))`, where each column in the result corresponding to a column in `x`.
+
+Here, demean is a keyword argument (default value is true), which means that the function will subtract each `x` from its mean before computing the results. Otherwise, `x` is considered as having been centered.
+
+the computed autocovariance is written back to `r`.
+"""
+function autocov end
+
 ## autocor
 
 function autocor!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
@@ -131,6 +161,35 @@ end
 
 autocor{T<:Real}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
 
+"""
+    autocor(x, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the auto-correlation of. 
+* `lags`: Specifies the lags at which the auto-correlation of `x` is copmuted.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute auto-correlation of `x` at specified lags. If `x` is a vector, it returns a vector of the same length of lags. If `x` is a matrix, it returns a matrix of size `(length(lags), size(x,2))`, where each column in the result corresponding to a column in `x`.
+
+Here, demean is a keyword argument (default value is true), which means that the function will subtract each `x` from its mean before computing the results. Otherwise, `x` is considered as having been centered.
+"""
+function autocor end
+
+"""
+    autocor!(r, x, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the autocorrelation of. 
+* `lags`: Specifies the lags at which the autocorrelation of `x` is copmuted.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute auto-correlation of `x` at specified lags. If `x` is a vector, it returns a vector of the same length of lags. If `x` is a matrix, it returns a matrix of size `(length(lags), size(x,2))`, where each column in the result corresponding to a column in `x`.
+
+Here, demean is a keyword argument (default value is true), which means that the function will subtract each `x` from its mean before computing the results. Otherwise, `x` is considered as having been centered.
+
+the computed auto-correlation is written back to `r`.
+"""
+function autocor! end
 
 #######################################
 #
@@ -248,6 +307,33 @@ end
 
 crosscov{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscov(x, y, default_crosslags(size(x,1)); demean=demean)
 
+"""
+    crosscov(x, y, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `y`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `lags`: Specifies the lags at which the cross-covariance is computed.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute cross-covariance of `x` at specified lags. If both `x` and `y` are vectors, it returns a vector of th same length of lags. Otherwise, it computes cross covariances between each pairs of columns in x and y.
+"""
+function crosscov end    
+
+"""
+    crosscov!(r, x, y, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `y`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `lags`: Specifies the lags at which the cross-covariance is copmuted.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute cross-covariance of `x` at specified lags. If both `x` and `y` are vectors, it returns a vector of th same length of lags. Otherwise, it computes cross covariances between each pairs of columns in `x` and `y`.
+
+The computed cross-covariance is written back to `r`.
+"""
+function crosscov end
 
 ## crosscor
 
@@ -365,7 +451,33 @@ end
 
 crosscor{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscor(x, y, default_crosslags(size(x,1)); demean=demean)
 
+"""
+    crosscov(x, y, lags, demean)
 
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `y`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `lags`: Specifies the lags at which the cross-covariance is computed.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute cross-covariance of `x` at specified lags. If both `x` and `y` are vectors, it returns a vector of th same length of lags. Otherwise, it computes cross covariances between each pairs of columns in x and y.
+"""
+function crosscov end    
+    
+"""
+    crosscov!(r, x, y, lags, demean)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `y`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `lags`: Specifies the lags at which the cross-covariance is copmuted.
+* `demean`: A `Bool` type variable, this is a named paramter. 
+
+Compute cross-covariance of `x` at specified lags. If both `x` and `y` are vectors, it returns a vector of th same length of lags. Otherwise, it computes cross covariances between each pairs of columns in `x` and `y`.
+
+The computed cross-covariance is written back to `r`.
+"""
+function crosscov! end    
 #######################################
 #
 #   Partial auto-correlations
@@ -427,4 +539,28 @@ end
 function pacf{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
+
+"""
+    pacf(x, lags; method=:regression)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `lags`: Specifies the lags at which the cross-covariance is computed.
+* `method`: A named parameter, which specifies the choice of algorithm, which can be either :regresion or :yulewalker. The default value is :regression.
+
+Compute partial auto-correlation of `x` at specified lags. If `x` is a vector, it returns a vector of th same length of lags. If `x` is a matrix, it returns a matrix of size `(length(lags), size(x,2))`, where each column in the result corresponding to a column in `x`.
+"""
+
+"""
+    pacf!(x, lags; method=:regression)
+
+### Args:
+* `x`: Input `Vector` or `Matrix` to compute the cross-covariance of.
+* `lags`: Specifies the lags at which the cross-covariance is computed.
+* `method`: A named parameter, which specifies the choice of algorithm, which can be either :regresion or :yulewalker. The default value is :regression.
+
+Compute partial auto-correlation of `x` at specified lags. If `x` is a vector, it returns a vector of th same length of lags. If `x` is a matrix, it returns a matrix of size `(length(lags), size(x,2))`, where each column in the result corresponding to a column in `x`.
+
+Write the computed partial auto-correlation to r.
+"""
 

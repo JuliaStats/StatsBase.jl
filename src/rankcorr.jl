@@ -18,6 +18,16 @@ corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank,
 
 corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
 
+"""
+    corspearman(x, y)
+
+### Args:
+* `x`: Can be any one of `RealVector` or `RealMatrix`.
+* `y`: Can be any one of `RealVector` or `RealMatrix`.
+
+Spearman’s rank correlation. Here, `x` and `y` can be either real vectors or matrices. When `x` and `y` are matrices, it computes the correlations between their columns (pairwisely).
+"""
+function corspearman end
 
 #######################################
 #
@@ -106,6 +116,15 @@ function corkendall(X::RealMatrix)
     return C
 end
 
+"""
+    corkendall(x, y)
+
+### Args:
+* `x`: Can be any one of `RealVector` or `RealMatrix`.
+* `y`: Can be any one of `RealVector` or `RealMatrix`.
+
+Kendall’s rank correlation. Here, `x` and `y` can be either real vectors or matrices. When `x` and `y` are matrices, it computes the correlations between their columns (pairwisely).
+"""
 # Auxilliary functions for Kendall's rank correlation
 
 function swaps!(x::RealVector)

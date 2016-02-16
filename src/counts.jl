@@ -9,7 +9,16 @@
 typealias IntUnitRange{T<:Integer} UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
+"""
+    addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
 
+### Args:
+* `r`: Accumulating array.
+* `x`: An `IntegerArray` for which the counts are computed.
+* `levels`: The range of values to check for occurence in `x`. 
+
+This function adds the counts of values in `levels` that appear in `x` to an accumulating array `r` or a map.
+"""
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
 	# add counts of integers from x to r
 
@@ -29,6 +38,17 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
 	return r
 end
 
+"""
+    addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::weightVector)
+
+### Args:
+* `r`: Accumulating array.
+* `x`: An `IntegerArray` for which the counts are computed.
+* `levels`: The range of values to check for occurence in `x`. 
+* `wv`: An optional parameter, which is the weight vector.
+
+This function adds the counts of values in `levels` that appear in `x` to an accumulating array `r`.
+"""
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::WeightVec)
 	k = length(levels)
 	length(r) == k || raise_dimerror()
@@ -60,6 +80,18 @@ proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
 proportions(x::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, 1:k, wv)
 proportions(x::IntegerArray) = proportions(x, span(x))
 proportions(x::IntegerArray, wv::WeightVec) = proportions(x, span(x), wv)
+
+"""
+    proportions(x::IntegerArray, levels::IntUnitRange, wv::WeightVec)
+
+### Args:
+* `x`: An `IntegerArray`.
+* `levels`: An integer unti range.
+* `wv`: An optional weight vector.
+
+Compute the proportions of values in a:b with respect to x.
+"""
+function proportion end
 
 #### functions for counting a single list of integers (2D)
 
@@ -199,6 +231,24 @@ end
 
 countmap{T}(x::AbstractArray{T}) = addcounts!(Dict{T,Int}(), x)
 countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}(), x, wv)
+"""
+    countmap(x::AbstractArray{T}, wv::WeightVec{W})
+
+### Args:
+* `x`: An `AbstractArray`.
+* `wv`; An optional weight vector.
+
+Return a dictionary that maps distinct values in x to their counts (or total weights).
+"""
 
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
+"""
+    proportionmap(x::AbstractArray{T}, wv::WeightVec{W})
+
+### Args:
+* `x`: An `AbstractArray`.
+* `wv`; An optional weight vector.
+
+Return a dictionary that maps distinct values in x to their proportions.
+"""
