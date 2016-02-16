@@ -241,6 +241,8 @@ variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
 
 Computes the ratio of standard deviation to mean.
 """
+function variation end
+
 # Standard error of the mean: std(a) / sqrt(len)
 """
     sem(a::AbstractArray{T})
