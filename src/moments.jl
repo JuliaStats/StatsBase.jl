@@ -89,7 +89,7 @@ mean_and_std(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m,
 
 Jointly compute the mean and variance of x.
 """
-function mean_and_var
+function mean_and_var end
     
 """
     mean_and_std(x::RealArray, wv::WeightVec, dim::Int)
