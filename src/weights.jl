@@ -141,7 +141,7 @@ end
         @nloops N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
             @inbounds r = (@nref N R j)
             for i_1 = 1:sizA1
-                @inbounds r += evaluate(f, (@nref N A i)) * w[i_1]
+                @inbounds r += f(@nref N A i) * w[i_1]
             end
             @inbounds (@nref N R j) = r
         end 
@@ -151,7 +151,7 @@ end
                                j_d = 1
                            else
                                j_d = i_d
-                           end) @inbounds (@nref N R j) += evaluate(f, (@nref N A i)) * wi
+                           end) @inbounds (@nref N R j) += f(@nref N A i) * wi
     end
     return R
 end
@@ -168,7 +168,7 @@ end
             @inbounds r = (@nref N R j)
             @inbounds m = (@nref N means j)
             for i_1 = 1:sizA1
-                @inbounds r += evaluate(f, (@nref N A i) - m) * w[i_1]
+                @inbounds r += f((@nref N A i) - m) * w[i_1]
             end
             @inbounds (@nref N R j) = r
         end 
@@ -178,7 +178,7 @@ end
                                j_d = 1
                            else
                                j_d = i_d
-                           end) @inbounds (@nref N R j) += evaluate(f, (@nref N A i) - (@nref N means j)) * wi
+                           end) @inbounds (@nref N R j) += f((@nref N A i) - (@nref N means j)) * wi
     end
     return R
 end

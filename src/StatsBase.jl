@@ -1,4 +1,4 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__(true)
+__precompile__(true)
 
 module StatsBase
     using Compat
@@ -9,19 +9,9 @@ module StatsBase
     import Base: rand, rand!
     import Base: Func, IdFun, Abs2Fun
     import Base.LinAlg: BlasReal, BlasFloat
-    if VERSION < v"0.4.0-dev+3184"
-        import Base.Cartesian: @ngenerate
-    end
     import Base.Cartesian: @nloops, @nref, @nextract
 
     ## tackle compatibility issues
-
-    if VERSION < v"0.4.0-dev+1258"
-        import Base: evaluate
-    else
-        evaluate(f::Func{1}, x) = call(f, x)
-        evaluate(f::Func{2}, x, y) = call(f, x, y)
-    end
 
     ## import mathfuns, which were migrated to StatsFuns
     import StatsFuns: xlogx, xlogy, logistic, logit,
