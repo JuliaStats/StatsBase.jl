@@ -15,6 +15,14 @@ vals, lens = rle(z)
 @test lens == [2, 2, 1, 1, 3]
 @test inverse_rle(vals, lens) == z
 
+# levelsmap
+a = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3, 2]
+b = [true, false, false, true, false, true, true, false]
+
+@test levelsmap(a) == Dict([(2, 2), (3, 3), (1, 1)])
+@test levelsmap(b) == Dict([(false, 2), (true, 1) ])
+
+
 # findat
 
 findat([2, 4, 6, 8, 10], [8, 6, 4]) == [4, 3, 2]
