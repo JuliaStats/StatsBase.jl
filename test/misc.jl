@@ -19,8 +19,8 @@ vals, lens = rle(z)
 a = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3, 2]
 b = [true, false, false, true, false, true, true, false]
 
-@test levelsmap(a) == Dict([(2, 2), (3, 3), (1, 1)])
-@test levelsmap(b) == Dict([(false, 2), (true, 1) ])
+@test levelsmap(a) == Dict(2=>2, 3=>3, 1=>1)
+@test levelsmap(b) == Dict(false=>2, true=>1)
 
 
 # findat

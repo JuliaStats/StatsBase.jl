@@ -11,28 +11,20 @@ using Base.Test
 
 w  = [1., 2., 3.]
 wv = weights(w)
-@test eltype(wv) == Float64
-@test length(wv) == 3
+@test eltype(wv) === Float64
+@test length(wv) === 3
 @test values(wv) === w
 @test sum(wv) === 6.0
 @test !isempty(wv)
 
 b  = trues(3)
 bv = weights(b)
-@test eltype(bv) == Bool
-@test length(bv) == 3
-@test values(bv) == b
-@test sum(bv)    == 3
+@test eltype(bv) === Bool
+@test length(bv) === 3
+@test values(bv) === b
+@test sum(bv)    === 3
 @test !isempty(bv)
 
-c  = [1, 4, 3, 5]; d = [4, 7, 18, 9]; e = [1, 2, -5, 3];
-s  = sparse(c, d, e)
-cv = weights(c)
-@test eltype(cv) == Int64
-@test length(cv) == 4
-@test values(cv) == c
-@test sum(cv)    === 13
-@test !isempty(cv)
 
 ## wsum
 
@@ -42,14 +34,14 @@ p = [1. 2. ; 3. 4.]
 q = [1., 2., 3., 4.]
 
 @test wsum(Float64[], Float64[]) === 0.0
-@test wsum(x, w) == 72.0
-@test wsum(p, q) == 29.0
+@test wsum(x, w) === 72.0
+@test wsum(p, q) === 29.0
 
 ## wsum along dimensions
 
 @test wsum(x, w, 1) == [72.0]
 
-x = rand(6, 8)
+x  = rand(6, 8)
 w1 = rand(6)
 w2 = rand(8)
 
