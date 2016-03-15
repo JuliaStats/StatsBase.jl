@@ -74,6 +74,17 @@ a = sample(3:12, 10; ordered=true)
 check_sample_wrep(a, (3, 12), 0; ordered=true)
 
 
+#### sampling pairs
+
+srand(1);
+
+@test samplepair(2)  === (1, 2)
+@test samplepair(10) === (7, 3)
+
+@test samplepair([3, 4, 2, 6, 8]) === (4, 3)
+@test samplepair([1, 2])          === (1, 2)
+
+
 #### sample without replacement
 
 function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
