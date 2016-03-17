@@ -5,29 +5,43 @@ using Base.Test
 @test isa(weights([1, 2, 3]), WeightVec{Int})
 @test isa(weights([1., 2., 3.]), WeightVec{Float64})
 
+@test isa(weights([1 2 3; 4 5 6]), WeightVec{Int})
+
 @test isempty(weights(Float64[]))
 
-w = [1., 2., 3.]
+w  = [1., 2., 3.]
 wv = weights(w)
-@test eltype(wv) == Float64
-@test length(wv) == 3
+@test eltype(wv) === Float64
+@test length(wv) === 3
 @test values(wv) === w
-@test sum(wv) == 6.0
+@test sum(wv) === 6.0
 @test !isempty(wv)
+
+b  = trues(3)
+bv = weights(b)
+@test eltype(bv) === Bool
+@test length(bv) === 3
+@test values(bv) === b
+@test sum(bv)    === 3
+@test !isempty(bv)
+
 
 ## wsum
 
 x = [6., 8., 9.]
 w = [2., 3., 4.]
+p = [1. 2. ; 3. 4.]
+q = [1., 2., 3., 4.]
 
 @test wsum(Float64[], Float64[]) === 0.0
-@test wsum(x, w) == 72.0
+@test wsum(x, w) === 72.0
+@test wsum(p, q) === 29.0
 
 ## wsum along dimensions
 
 @test wsum(x, w, 1) == [72.0]
 
-x = rand(6, 8)
+x  = rand(6, 8)
 w1 = rand(6)
 w2 = rand(8)
 
@@ -168,8 +182,8 @@ data = (
     [-2, 2, -1, 3, 6],
     [-10, 1, 1, -10, -10],
     [2, 4],
-    [2, 2, 4, 4],    
-    [2, 2, 2, 4]   
+    [2, 2, 4, 4],
+    [2, 2, 2, 4]
 )
 wt = (
     [1, 1/3, 1/3, 1/3, 1],
@@ -191,7 +205,7 @@ wt = (
     [0.1, 0.2, 0.3, -0.2, 0.1],
     [-1, -1, -1, -1, 1],
     [1, 1],
-    [1, 1, 1, 1],  
+    [1, 1, 1, 1],
     [1, 1, 1, 1]
 )
 median_answers = (7.0,   4.0,   8.5,
@@ -278,7 +292,7 @@ wt = (
     weights([0.1, 0.2, 0.3, 0.2, 0.1]),
     weights([1, 1, 1, 1, 1]),
 )
-quantile_answers = (    
+quantile_answers = (
     [1.0,3.6000000000000005,6.181818181818182,8.2,10.0],
     [1.0,2.0,4.0,7.0,10.0],
     [1.0,4.75,8.0,10.833333333333334,15.0],
@@ -333,4 +347,3 @@ answer = 6.181818181818182
 @test_approx_eq  wquantile(data[1], weights(w), 0.5) answer
 @test_approx_eq  wquantile(data[1], w, [0.5]) [answer]
 @test_approx_eq  wquantile(data[1], w, 0.5)  answer
-
