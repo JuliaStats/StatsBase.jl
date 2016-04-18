@@ -17,6 +17,8 @@ function rle{T}(v::Vector{T})
     vals = T[]
     lens = Int[]
 
+    n>0 || return (vals,lens)
+    
     cv = v[1]
     cl = 1
 
