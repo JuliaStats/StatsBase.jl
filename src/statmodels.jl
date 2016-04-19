@@ -170,7 +170,7 @@ type CoefTable
         all(0 .<= integercols .<= nc) || error("integercols = $integercols should be a vector with elements in [0,...,$nc]")
         length(colnms) in [0,nc] || error("colnms should have length 0 or $nc")
         length(rownms) in [0,nr] || error("rownms should have length 0 or $nr")
-        new(mat,colnms,rownms,pvalcol, integercols)
+        new(mat,colnms,rownms,pvalcol,integercols)
     end
 end
 
@@ -204,7 +204,7 @@ function show(io::IO, ct::CoefTable)
     for ic in ct.integercols
         if ic != 0
             for i in 1:nr
-                str[i, ic] = @sprintf("%u", mat[i, ic])
+                str[i,ic] = @sprintf("%u",mat[i,ic])
             end
         end
     end
