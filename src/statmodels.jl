@@ -167,7 +167,7 @@ type CoefTable
     function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0,integercols::Vector{Int}=Int[])
         nr,nc = size(mat)
         0 <= pvalcol <= nc || error("pvalcol = $pvalcol should be in [0,...,$nc]")
-        all(0 .<= integercols .<= nc) || error("integercols = $integercols should be a vector with elements in [1,...,$nc]")
+        all(1 .<= integercols .<= nc) || error("integercols = $integercols should be a vector with elements in [1,...,$nc]")
         length(colnms) in [0,nc] || error("colnms should have length 0 or $nc")
         length(rownms) in [0,nr] || error("rownms should have length 0 or $nr")
         new(mat,colnms,rownms,pvalcol,integercols)
