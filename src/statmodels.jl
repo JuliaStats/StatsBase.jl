@@ -164,10 +164,10 @@ type CoefTable
     rownms::Vector
     pvalcol::Integer
     integercols::Vector{Int}
-    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0,integercols::Vector{Int}=[0;])
+    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0,integercols::Vector{Int}=Int[])
         nr,nc = size(mat)
         0 <= pvalcol <= nc || error("pvalcol = $pvalcol should be in [0,...,$nc]")
-        all(0 .<= integercols .<= nc) || error("integercols = $integercols should be a vector with elements in [0,...,$nc]")
+        all(0 .<= integercols .<= nc) || error("integercols = $integercols should be a vector with elements in [1,...,$nc]")
         length(colnms) in [0,nc] || error("colnms should have length 0 or $nc")
         length(rownms) in [0,nr] || error("rownms should have length 0 or $nr")
         new(mat,colnms,rownms,pvalcol,integercols)
@@ -202,10 +202,8 @@ function show(io::IO, ct::CoefTable)
         end
     end
     for ic in ct.integercols
-        if ic != 0
-            for i in 1:nr
-                str[i,ic] = @sprintf("%u",mat[i,ic])
-            end
+        for i in 1:nr
+            str[i,ic] = sprint(showcompact,Int(mat[i,ic]))
         end
     end
     for j in 1:nc
