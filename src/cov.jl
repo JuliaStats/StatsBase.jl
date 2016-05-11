@@ -16,8 +16,8 @@ function _symmetrize!(a::DenseMatrix)
 end
 
 function _scalevars(x::DenseMatrix, s::DenseVector, vardim::Int)
-    vardim == 1 ? scale(s, x) :
-    vardim == 2 ? scale(x, s) :
+    vardim == 1 ? Diagonal(s) * x :
+    vardim == 2 ? x * Diagonal(s) :
     error("vardim should be either 1 or 2.")
 end
 

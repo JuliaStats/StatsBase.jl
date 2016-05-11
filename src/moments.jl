@@ -24,10 +24,10 @@ end
 ## var along dim
 
 Base.varzm!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int) =
-    scale!(_wsum_general!(R, Abs2Fun(), A, values(wv), dim, true), inv(sum(wv)))
+    scale!(_wsum_general!(R, @functorize(abs2), A, values(wv), dim, true), inv(sum(wv)))
 
 Base.varm!(R::AbstractArray, A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
-    scale!(_wsum_centralize!(R, Abs2Fun(), A, values(wv), M, dim, true), inv(sum(wv)))
+    scale!(_wsum_centralize!(R, @functorize(abs2), A, values(wv), M, dim, true), inv(sum(wv)))
 
 function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=nothing)
     if mean == 0
