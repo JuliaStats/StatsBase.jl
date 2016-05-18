@@ -159,46 +159,61 @@ df_residual(obj::RegressionModel) = error("df_residual is not defined for $(type
 
 ## Nms are the coefficient names, corresponding to rows in the table
 type CoefTable
-    mat::Matrix
+    cols::Vector
     colnms::Vector
     rownms::Vector
-    pvalcol::Integer
-    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0)
-        nr,nc = size(mat)
-        0 <= pvalcol <= nc || error("pvalcol = $pvalcol should be in 0,...,$nc]")
+    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector)
+        nc = length(cols)
+        nrs = map(length,cols)
+        nr = nrs[1]
         length(colnms) in [0,nc] || error("colnms should have length 0 or $nc")
         length(rownms) in [0,nr] || error("rownms should have length 0 or $nr")
-        new(mat,colnms,rownms,pvalcol)
+        all(nrs .== nr) || error("Elements of cols should have equal lengths, but got $nrs")
+        new(cols,colnms,rownms)
+    end
+    
+    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0)
+        nc = size(mat,2)
+        cols = Any[mat[:, i] for i in 1:nc]
+        if pvalcol != 0                         # format the p-values column
+            cols[pvalcol] = [PValue(cols[pvalcol][j])
+                            for j in eachindex(cols[pvalcol])]
+        end
+        CoefTable(cols,colnms,rownms)
     end
 end
 
-## format numbers in the p-value column
-function format_pvc(pv::Number)
-    if isnan(pv)
-        return @sprintf("%d", pv)
+type PValue
+    v::Number
+    function PValue(v::Number)
+        0. <= v <= 1. || isnan(v) || error("p-values must be in [0.,1.]")
+        new(v)
     end
-    0. <= pv <= 1. || error("p-values must be in [0.,1.]")
-    if pv >= 1e-4
-        return @sprintf("%.4f", pv)
+end
+
+function show(io::IO, pv::PValue)
+    v = pv.v
+    if isnan(v)
+        @printf(io,"%d", v)
+    elseif v >= 1e-4
+        @printf(io,"%.4f", v)
     else
-        return @sprintf("<1e%2.2d", ceil(Integer, max(nextfloat(log10(pv)), -99)))
+        @printf(io,"<1e%2.2d", ceil(Integer, max(nextfloat(log10(v)), -99)))
     end
 end
 
 function show(io::IO, ct::CoefTable)
-    mat = ct.mat; nr,nc = size(mat); rownms = ct.rownms; colnms = ct.colnms; pvc = ct.pvalcol
+    cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
+    nc = length(cols)
+    nr = length(cols[1])
     if length(rownms) == 0
         rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
     rnwidth = max(4,maximum([length(nm) for nm in rownms]) + 1)
     rownms = [rpad(nm,rnwidth) for nm in rownms]
     widths = [length(cn)::Int for cn in colnms]
-    str = [sprint(showcompact,mat[i,j]) for i in 1:nr, j in 1:nc]
-    if pvc != 0                         # format the p-values column
-        for i in 1:nr
-            str[i,pvc] = format_pvc(mat[i,pvc])
-        end
-    end
+    str = ByteString[isa(cols[j][i], AbstractString) ? cols[j][i] :
+        sprint(showcompact,cols[j][i]) for i in 1:nr, j in 1:nc]
     for j in 1:nc
         for i in 1:nr
             lij = length(str[i,j])

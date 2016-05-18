@@ -69,7 +69,7 @@ println("\nII F")
 print("Testing regression: ")
 ctable = coeftable(lm(big ~ x, nasty))
 @test typeof(ctable) == CoefTable
-@test_approx_eq ctable.mat[:,1] [99999990, 1]
+@test_approx_eq ctable.cols[1] [99999990, 1]
 
 @test sprint(show, ctable) == """\
              Estimate Std.Error t value Pr(>|t|)
