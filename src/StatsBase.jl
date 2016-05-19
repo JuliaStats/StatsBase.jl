@@ -133,7 +133,7 @@ module StatsBase
     AbstractHistogram,
     Histogram,
     hist,
-    histrange,
+    # histrange,
     midpoints,
 
     ## misc

@@ -28,7 +28,6 @@ using Base.Test
 # histrange
 # Note: atm histrange must be qualified
 @test StatsBase.histrange(Float64[], 0, :left) == 0.0:1.0:0.0
-@test StatsBase.histrange([0.], 0, :left) == 0.0:1.0:1.0
 @test StatsBase.histrange(Float64[1:5;], 1, :left) == 0.0:5.0:10.0
 @test StatsBase.histrange(Float64[1:10;], 1, :left) == 0.0:10.0:20.0
 
@@ -45,9 +44,29 @@ using Base.Test
 @test StatsBase.histrange(Int64[1:5;], 1, :left) == 0:5:10
 @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
 
+@test StatsBase.histrange([1, 2, 3, 4], 4) == 0.0:1.0:4.0
+@test StatsBase.histrange([1, 2, 2, 4], 4) == 0.0:1.0:4.0
+@test StatsBase.histrange([1, 10], 4) == 0.0:5.0:10.0
+@test StatsBase.histrange([1, 20], 4) == 0.0:5.0:20.0
+@test StatsBase.histrange([1, 600], 4) == 0.0:200.0:600.0
+@test StatsBase.histrange([1, -1000], 4) == -1500.0:500.0:500.0
+
+# Base issue #13326
+l,h = extrema(StatsBase.histrange([typemin(Int),typemax(Int)], 10))
+@test l <= typemin(Int)
+@test h >= typemax(Int)
+
+@test_throws ArgumentError StatsBase.histrange([1, 10], 0)
+@test_throws ArgumentError StatsBase.histrange([1, 10], -1)
+@test_throws ArgumentError StatsBase.histrange([1.0, 10.0], 0)
+@test_throws ArgumentError StatsBase.histrange([1.0, 10.0], -1)
+@test_throws ArgumentError StatsBase.histrange(Float64[],-1)
+@test_throws ArgumentError StatsBase.histrange([0.], 0)
+
+
 # hist show
 show_h = sprint(show, fit(Histogram,[1,2,3]))
-@test contains(show_h, "edges:\n  0:1:3")
+@test contains(show_h, "edges:\n  0.0:1.0:3.0")
 @test contains(show_h, "weights: [1,1,1]")
 @test contains(show_h, "closed: right")
 
