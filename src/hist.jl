@@ -11,8 +11,12 @@ function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:right)
     elseif nv == 0
         return zero(F):zero(F)
     end
-    
+
     lo, hi = extrema(v)
+    histrange(F(lo), F(hi), n, closed)
+end
+
+function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:right)
     if hi == lo
         start = F(hi)
         step = one(F)
