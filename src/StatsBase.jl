@@ -2,6 +2,7 @@ __precompile__(true)
 
 module StatsBase
     using Compat
+    import Compat.String
     using ArrayViews
     using StatsFuns
 
