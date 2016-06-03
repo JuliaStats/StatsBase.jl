@@ -280,7 +280,7 @@ zscore{T<:Real}(X::AbstractArray{T}, dim::Int) = ((μ, σ) = mean_and_std(X, dim
 #############################
 
 function entropy{T<:Real}(p::AbstractArray{T})
-    s = 0.
+    s = zero(T)
     z = zero(T)
     for i = 1:length(p)
         @inbounds pi = p[i]
