@@ -9,12 +9,19 @@
 typealias IntUnitRange{T<:Integer} UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
+"""
+    addcounts!(r, x, levels[, wv])
 
+Fill the array `r` with the number of occurrences in `x` of
+each value in `levels`. If a weighting vector `wv` is specified,
+the counts are incremented by the corresponding weights rather
+than by 1.
+"""
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     # add counts of integers from x to r
 
     k = length(levels)
-    length(r) == k || raise_dimerror()
+    length(r) == k || throw(DimensionMismatch())
 
     m0 = levels[1]
     m1 = levels[end]
@@ -31,7 +38,7 @@ end
 
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::WeightVec)
     k = length(levels)
-    length(r) == k || raise_dimerror()
+    length(r) == k || throw(DimensionMismatch())
 
     m0 = levels[1]
     m1 = levels[end]
@@ -47,15 +54,36 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
     return r
 end
 
-counts(x::IntegerArray, levels::IntUnitRange) = addcounts!(zeros(Int, length(levels)), x, levels)
-counts(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) = addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
+
+"""
+    counts(x, [levels,] [k,] [wv]) -> Vector
+
+Count the occurrences of the integers in `x`. The occurrences in
+`x` of the values in `levels` are counted if `levels` is given,
+or of the integers from 1 to `k` if `k` is given. A weighting
+vector `wv` can be specified to weight the counts.
+"""
+counts(x::IntegerArray, levels::IntUnitRange) =
+    addcounts!(zeros(Int, length(levels)), x, levels)
+counts(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) =
+    addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
 counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
 counts(x::IntegerArray, k::Integer, wv::WeightVec) = counts(x, 1:k, wv)
 counts(x::IntegerArray) = counts(x, span(x))
 counts(x::IntegerArray, wv::WeightVec) = counts(x, span(x), wv)
 
+
+"""
+    proportions(x, [levels,] [k,], [wv]) -> Vector
+
+Return the proportion of `x` consisting of each value of `levels`
+if specified, the integers 1 to `k` if `k` is specified, otherwise
+the values of `x`. A weighting vector `wv` can be specified to
+weight the proportions.
+"""
 proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
-proportions(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) = counts(x, levels, wv) .* inv(sum(wv))
+proportions(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) =
+    counts(x, levels, wv) .* inv(sum(wv))
 proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
 proportions(x::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, 1:k, wv)
 proportions(x::IntegerArray) = proportions(x, span(x))
@@ -67,13 +95,13 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
     # add counts of integers from x to r
 
     n = length(x)
-    length(y) == n || raise_dimerror()
+    length(y) == n || throw(DimensionMismatch())
 
     xlevels, ylevels = levels
 
     kx = length(xlevels)
     ky = length(ylevels)
-    size(r) == (kx, ky) || raise_dimerror()
+    size(r) == (kx, ky) || throw(DimensionMismatch())
 
     mx0 = xlevels[1]
     mx1 = xlevels[end]
@@ -93,17 +121,18 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
     return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}, wv::WeightVec)
+function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
+                    levels::NTuple{2,IntUnitRange}, wv::WeightVec)
     # add counts of integers from x to r
 
     n = length(x)
-    length(y) == length(wv) == n || raise_dimerror()
+    length(y) == length(wv) == n || throw(DimensionMismatch())
 
     xlevels, ylevels = levels
 
     kx = length(xlevels)
     ky = length(ylevels)
-    size(r) == (kx, ky) || raise_dimerror()
+    size(r) == (kx, ky) || throw(DimensionMismatch())
 
     mx0 = xlevels[1]
     mx1 = xlevels[end]
@@ -134,25 +163,36 @@ function counts(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}
     addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
 end
 
-counts(x::IntegerArray, y::IntegerArray, levels::IntUnitRange) = counts(x, y, (levels, levels))
-counts(x::IntegerArray, y::IntegerArray, levels::IntUnitRange, wv::WeightVec) = counts(x, y, (levels, levels), wv)
+counts(x::IntegerArray, y::IntegerArray, levels::IntUnitRange) =
+    counts(x, y, (levels, levels))
+counts(x::IntegerArray, y::IntegerArray, levels::IntUnitRange, wv::WeightVec) =
+    counts(x, y, (levels, levels), wv)
 
-counts(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) = counts(x, y, (1:ks[1], 1:ks[2]))
-counts(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}, wv::WeightVec) = counts(x, y, (1:ks[1], 1:ks[2]), wv)
+counts(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) =
+    counts(x, y, (1:ks[1], 1:ks[2]))
+counts(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}, wv::WeightVec) =
+    counts(x, y, (1:ks[1], 1:ks[2]), wv)
 counts(x::IntegerArray, y::IntegerArray, k::Integer) = counts(x, y, (1:k, 1:k))
-counts(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = counts(x, y, (1:k, 1:k), wv)
+counts(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) =
+    counts(x, y, (1:k, 1:k), wv)
 counts(x::IntegerArray, y::IntegerArray) = counts(x, y, (span(x), span(y)))
 counts(x::IntegerArray, y::IntegerArray, wv::WeightVec) = counts(x, y, (span(x), span(y)), wv)
 
-proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}) = counts(x, y, levels) .* inv(length(x))
-proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}, wv::WeightVec) = counts(x, y, levels, wv) .* inv(sum(wv))
+proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}) =
+    counts(x, y, levels) .* inv(length(x))
+proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}, wv::WeightVec) =
+    counts(x, y, levels, wv) .* inv(sum(wv))
 
-proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) = proportions(x, y, (1:ks[1], 1:ks[2]))
-proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}, wv::WeightVec) = proportions(x, y, (1:ks[1], 1:ks[2]), wv)
+proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) =
+    proportions(x, y, (1:ks[1], 1:ks[2]))
+proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}, wv::WeightVec) =
+    proportions(x, y, (1:ks[1], 1:ks[2]), wv)
 proportions(x::IntegerArray, y::IntegerArray, k::Integer) = proportions(x, y, (1:k, 1:k))
-proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, y, (1:k, 1:k), wv)
+proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::WeightVec) =
+    proportions(x, y, (1:k, 1:k), wv)
 proportions(x::IntegerArray, y::IntegerArray) = proportions(x, y, (span(x), span(y)))
-proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec) = proportions(x, y, (span(x), span(y)), wv)
+proportions(x::IntegerArray, y::IntegerArray, wv::WeightVec) =
+    proportions(x, y, (span(x), span(y)), wv)
 
 
 #################################################
@@ -185,7 +225,7 @@ end
 
 function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec{W})
     n = length(x)
-    length(wv) == n || raise_dimerror()
+    length(wv) == n || throw(DimensionMismatch())
     w = values(wv)
     z = zero(W)
 
@@ -197,8 +237,20 @@ function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::WeightVec{W})
     return cm
 end
 
+
+"""
+    countmap(x) -> Dict
+
+Return the counts of each distinct element of `x` as a dictionary.
+"""
 countmap{T}(x::AbstractArray{T}) = addcounts!(Dict{T,Int}(), x)
 countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}(), x, wv)
 
+
+"""
+    proportionmap(x) -> Dict
+
+Return the proportions of each distinct element of `x` as a dictionary.
+"""
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
