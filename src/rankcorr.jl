@@ -10,9 +10,18 @@
 #
 #######################################
 
+"""
+    corspearman(x[, y])
+
+Compute Spearman's rank-based correlation. If a single matrix `x` is
+given, the correlation between columns of `x` is given as a matrix.
+If `x` and `y` are vectors, the output is a float, otherwise it's a
+matrix.
+"""
 corspearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
 
-corspearman(X::RealMatrix, Y::RealMatrix) = cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
+corspearman(X::RealMatrix, Y::RealMatrix) =
+    cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
 corspearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, 1), tiedrank(y))
 corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, 1))
 
@@ -86,6 +95,13 @@ function corkendall!(x::RealVector, y::RealVector)
 end
 
 
+"""
+    corkendall(x[, y])
+
+Compute Kendall's rank-based correlation. If `x` is a matrix, the
+correlation between columns is given as a matrix. Otherwise `x` and
+`y` must both be either matrices or vectors.
+"""
 corkendall(x::RealVector, y::RealVector) = corkendall!(float(copy(x)), float(copy(y)))
 
 corkendall(X::RealMatrix, y::RealVector) = Float64[corkendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
