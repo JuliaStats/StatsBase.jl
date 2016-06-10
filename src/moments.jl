@@ -2,36 +2,23 @@
 
 ## var
 
-function Base.varzm(v::RealArray, wv::WeightVec) 
-    n = length(v)
-    length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    w = values(wv)
-    s = 0.0
-    for i = 1:n
-        @inbounds s += w[i] * abs2(v[i])
-    end
-    return s / sum(wv)
-end
-
 Base.varm(v::RealArray, wv::WeightVec, m::Real) = _moment2(v, wv, m)
 
 function Base.var(v::RealArray, wv::WeightVec; mean=nothing) 
-    mean == 0 ? Base.varzm(v, wv) :
+    mean == 0 ? Base.varm(v, wv, 0) :
     mean == nothing ? varm(v, wv, Base.mean(v, wv)) :
     varm(v, wv, mean)
 end
 
 ## var along dim
 
-Base.varzm!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int) =
-    scale!(_wsum_general!(R, @functorize(abs2), A, values(wv), dim, true), inv(sum(wv)))
-
 Base.varm!(R::AbstractArray, A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
     scale!(_wsum_centralize!(R, @functorize(abs2), A, values(wv), M, dim, true), inv(sum(wv)))
 
 function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=nothing)
     if mean == 0
-        Base.varzm!(R, A, wv, dim)
+        Base.varm!(R, A, wv,
+            Base.reducedim_initarray(A, dim, 0, eltype(R)), dim)
     elseif mean == nothing
         Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim)
     else
