@@ -31,7 +31,7 @@ function corkendall!(x::RealVector, y::RealVector)
     if any(isnan(x)) || any(isnan(y)) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
-    
+
     # Initial sorting
     pm = sortperm(y)
     x[:] = x[pm]
@@ -45,7 +45,7 @@ function corkendall!(x::RealVector, y::RealVector)
     iU = 1
     nU = 0
     for i = 2:n
-        if x[i] == x[i-1] 
+        if x[i] == x[i-1]
             iT += 1
         else
             nT += iT*(iT - 1)
@@ -71,7 +71,7 @@ function corkendall!(x::RealVector, y::RealVector)
     nV = 0
     jV = 1
     for i = 2:n
-        if x[i] == x[i-1] && y[i] == y[i-1] 
+        if x[i] == x[i-1] && y[i] == y[i-1]
             iV += 1
         else
             nV += iV*(iV - 1)

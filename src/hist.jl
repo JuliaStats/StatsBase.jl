@@ -76,8 +76,10 @@ function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:right)
     FloatRange(start,step,len,divisor)
 end
 
-histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) = map((v,n) -> histrange(v,n,closed),vs,nbins)
-histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) = map(v -> histrange(v,nbins,closed),vs)
+histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) =
+    map((v,n) -> histrange(v,n,closed),vs,nbins)
+histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) =
+    map(v -> histrange(v,nbins,closed),vs)
 
 
 
