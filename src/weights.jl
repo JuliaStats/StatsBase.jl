@@ -9,6 +9,11 @@ end
 WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
 WeightVec(vs::RealVector) = WeightVec(vs, sum(vs))
 
+"""
+    weights(vs) -> WeightVec
+
+Construct a weight vector from a given array.
+"""
 weights(vs::RealVector) = WeightVec(vs)
 weights(vs::RealArray) = WeightVec(vec(vs))
 
@@ -25,6 +30,11 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 
 ## weighted sum over vectors
 
+"""
+    wsum(v, w) -> Float
+
+Compute the weighted sum of `v` with weights `w`.
+"""
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
@@ -33,16 +43,16 @@ Base.sum(v::BitArray, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::SparseMatrixCSC, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
 
-## wsum along dimension 
+## wsum along dimension
 #
 #  Brief explanation of the algorithm:
 #  ------------------------------------
 #
-#  1. _wsum! provides the core implementation, which assumes that 
+#  1. _wsum! provides the core implementation, which assumes that
 #     the dimensions of all input arguments are consistent, and no
-#     dimension checking is performed therein. 
+#     dimension checking is performed therein.
 #
-#     wsum and wsum! perform argument checking and call _wsum! 
+#     wsum and wsum! perform argument checking and call _wsum!
 #     internally.
 #
 #  2. _wsum! adopt a Cartesian based implementation for general
@@ -52,24 +62,24 @@ Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
 #     The internal function that implements this is _wsum_general!
 #
 #  3. _wsum! is specialized for following cases:
-#     (a) A is a vector: we invoke the vector version wsum above. 
+#     (a) A is a vector: we invoke the vector version wsum above.
 #         The internal function that implements this is _wsum1!
 #
 #     (b) A is a dense matrix with eltype <: BlasReal: we call gemv!
 #         The internal function that implements this is _wsum2_blas!
 #
-#     (c) A is a contiguous array with eltype <: BlasReal: 
+#     (c) A is a contiguous array with eltype <: BlasReal:
 #         dim == 1: treat A like a matrix of size (d1, d2 x ... x dN)
 #         dim == N: treat A like a matrix of size (d1 x ... x d(N-1), dN)
-#         otherwise: decompose A into multiple pages, and apply _wsum2! 
-#         for each  
+#         otherwise: decompose A into multiple pages, and apply _wsum2!
+#         for each
 #
 #     (d) A is a general dense array with eltype <: BlasReal:
 #         dim <= 2: delegate to (a) and (b)
 #         otherwise, decompose A into multiple pages
 #
 
-function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool) 
+function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool)
     r = wsum(A, w)
     if init
         R[1] = r
@@ -144,7 +154,7 @@ end
                 @inbounds r += f(@nref N A i) * w[i_1]
             end
             @inbounds (@nref N R j) = r
-        end 
+        end
     else
         @nloops N i A d->(if d == dim
                                wi = w[i_d]
@@ -171,7 +181,7 @@ end
                 @inbounds r += f((@nref N A i) - m) * w[i_1]
             end
             @inbounds (@nref N R j) = r
-        end 
+        end
     else
         @nloops N i A d->(if d == dim
                                wi = w[i_d]
@@ -185,15 +195,15 @@ end
 
 
 # N = 1
-_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) = 
+_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsum1!(R, A, w, init)
 
 # N = 2
-_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,2}, w::StridedVector{T}, dim::Int, init::Bool) = 
+_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,2}, w::StridedVector{T}, dim::Int, init::Bool) =
     (_wsum2_blas!(view(R,:), A, w, dim, init); R)
 
 # N >= 3
-_wsum!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) = 
+_wsum!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsumN!(R, A, w, dim, init)
 
 _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) = _wsum_general!(R, @functorize(identity), A, w, dim, init)
@@ -203,6 +213,14 @@ _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bo
 wsumtype{T,W}(::Type{T}, ::Type{W}) = typeof(zero(T) * zero(W) + zero(T) * zero(W))
 wsumtype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
+
+"""
+    wsum!(R, A, w, dim[, init=true])
+
+Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
+the result in `R`. The function accepts a single optional keyword argument `init`
+that defaults to `true`.
+"""
 function wsum!{T,N}(R::AbstractArray, A::AbstractArray{T,N}, w::AbstractVector, dim::Int; init::Bool=true)
     1 <= dim <= N || error("dim should be within [1, $N]")
     ndims(R) <= N || error("ndims(R) should not exceed $N")
@@ -226,6 +244,11 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = ws
 
 ###### Weighted means #####
 
+"""
+    wmean(v, w) -> Float
+
+Compute the weighted mean of `v` with weights `w`.
+"""
 function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
     Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
     mean(v, weights(w))
@@ -291,6 +314,12 @@ function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
     end
 end
 
+
+"""
+    wmedian(v, w) -> Float
+
+Compute the weighted median of `v` with weights `w`.
+"""
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 
@@ -337,13 +366,13 @@ function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector
         h = p[i] * (N - 1) * wsum
         if h == 0
             # happens when N or p or wsum equal zero
-            out[ppermute[i]] = vw[1][1]     
+            out[ppermute[i]] = vw[1][1]
         else
             while Sk <= h
                 # happens in particular when k == 1
                 vk, wk = vw[k]
                 cumulative_weight += wk
-                if k >= N 
+                if k >= N
                     # out was initialized with maximum v
                     return out
                 end
@@ -370,6 +399,13 @@ function bound_quantiles{T <: Real}(qs::AbstractVector{T})
 end
 
 quantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
+
+
+"""
+    wquantile(v, w, p)
+
+Compute the `p`th quantile(s) of `v` with weights `w`.
+"""
 wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
 wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)

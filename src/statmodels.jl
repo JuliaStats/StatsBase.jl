@@ -171,7 +171,7 @@ type CoefTable
         all(nrs .== nr) || error("Elements of cols should have equal lengths, but got $nrs")
         new(cols,colnms,rownms)
     end
-    
+
     function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0)
         nc = size(mat,2)
         cols = Any[mat[:, i] for i in 1:nc]
