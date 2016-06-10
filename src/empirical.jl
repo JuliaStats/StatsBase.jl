@@ -2,7 +2,12 @@
 
 
 ## Empirical CDF
+"""
+    ecdf(X) -> Vector
 
+Compute the empirical cumulative distribution function (ECDF)
+of a real-valued vector.
+"""
 function ecdf{T<:Real}(X::RealVector{T})
     Xs = sort(X)
     n = length(X)
@@ -22,8 +27,8 @@ function ecdf{T<:Real}(X::RealVector{T})
                 i += 1
             end
             r0 += 1
-            if i > m 
-            	break 
+            if i > m
+                break
             end
         end
         while i <= m
