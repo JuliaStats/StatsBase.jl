@@ -3,7 +3,7 @@
 
 ## Empirical CDF
 """
-    ecdf(X) -> Vector
+    ecdf(X)
 
 Compute the empirical cumulative distribution function (ECDF)
 of a real-valued vector.

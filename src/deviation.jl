@@ -3,7 +3,7 @@
 ## count the number of equal/non-equal pairs
 
 """
-    counteq(a, b) -> Int
+    counteq(a, b)
 
 Count the number of indices at which the elements of the arrays
 `a` and `b` are equal.
@@ -22,7 +22,7 @@ end
 
 
 """
-    countne(a, b) -> Int
+    countne(a, b)
 
 Count the number of indices at which the elements of the arrays
 `a` and `b` are not equal.
@@ -41,9 +41,9 @@ end
 
 
 """
-    sqL2dist(a, b) -> Float
+    sqL2dist(a, b)
 
-Compute the squared L2 distance between two arrays.
+Compute the squared L2 distance between two arrays: `∑|a-b|^2`.
 """
 function sqL2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -58,18 +58,19 @@ end
 
 # L2 distance
 """
-    L2dist(a, b) -> Float
+    L2dist(a, b)
 
-Compute the L2 distance between two arrays.
+Compute the L2 distance between two arrays, i.e. the square root of
+the squared L2 distance.
 """
 L2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqrt(sqL2dist(a, b))
 
 
 # L1 distance
 """
-    L1dist(a, b) -> Float
+    L1dist(a, b)
 
-Compute the L1 distance between two arrays.
+Compute the L1 distance between two arrays: `∑|a-b|`.
 """
 function L1dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -84,10 +85,10 @@ end
 
 # Linf distance
 """
-    Linfdist(a, b) -> Float
+    Linfdist(a, b)
 
 Compute the L∞ distance, also called the Chebyshev distance, between
-two arrays.
+two arrays: `max|a-b|`.
 """
 function Linfdist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -105,9 +106,10 @@ end
 
 # Generalized KL-divergence
 """
-    gkldiv(a, b) -> Float
+    gkldiv(a, b)
 
-Compute the generalized Kullback-Leibler divergence between two arrays.
+Compute the generalized Kullback-Leibler divergence between two arrays:
+`∑(a*log(a/b)-a+b)`.
 """
 function gkldiv{T<:AbstractFloat}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -127,37 +129,38 @@ end
 
 # MeanAD: mean absolute deviation
 """
-    meanad(a, b) -> Float
+    meanad(a, b)
 
-Return the mean absolute deviation between two arrays.
+Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
 """
 meanad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = L1dist(a, b) / length(a)
 
 
 # MaxAD: maximum absolute deviation
 """
-    maxad(a, b) -> Float
+    maxad(a, b)
 
-Return the maximum absolute deviation between two arrays.
+Return the maximum absolute deviation between two arrays: `maximum(abs(a - b))`.
 """
 maxad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = Linfdist(a, b)
 
 
 # MSD: mean squared deviation
 """
-    msd(a, b) -> Float
+    msd(a, b)
 
-Return the mean squared deviation between two arrays.
+Return the mean squared deviation between two arrays: `mean(abs2(a - b))`.
 """
 msd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqL2dist(a, b) / length(a)
 
 
 # RMSD: root mean squared deviation
 """
-    rmsd(a, b, [normalize=<bool>]) -> Float
+    rmsd(a, b; normalize=false)
 
 Return the root mean squared deviation between two optionally
-normalized arrays. By default normalization is not used.
+normalized arrays. The root mean squared deviation is computed
+as `sqrt(msd(a, b))`.
 """
 function rmsd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}; normalize::Bool=false)
     v = sqrt(msd(a, b))
@@ -171,10 +174,11 @@ end
 
 # PSNR: peak signal-to-noise ratio
 """
-    psnr(a, b, maxv) -> Float
+    psnr(a, b, maxv)
 
 Compute the peak signal-to-noise ratio between two arrays `a` and `b`.
-`maxv` is the maximum possible value either array can take.
+`maxv` is the maximum possible value either array can take. The PSNR
+is computed as `10 * log10(maxv^2 / msd(a, b))`.
 """
 function psnr{T<:Real}(a::AbstractArray{T}, b::AbstractArray{T}, maxv::Real)
     20. * log10(maxv) - 10. * log10(msd(a, b))

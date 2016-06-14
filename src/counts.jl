@@ -14,8 +14,7 @@ typealias IntUnitRange{T<:Integer} UnitRange{T}
 
 Fill the array `r` with the number of occurrences in `x` of
 each value in `levels`. If a weighting vector `wv` is specified,
-the counts are incremented by the corresponding weights rather
-than by 1.
+the sum of weights is used rather than the raw counts.
 """
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     # add counts of integers from x to r
@@ -56,12 +55,17 @@ end
 
 
 """
-    counts(x, [levels,] [k,] [wv]) -> Vector
+    counts(x, [levels,] [wv])
 
-Count the occurrences of the integers in `x`. The occurrences in
-`x` of the values in `levels` are counted if `levels` is given,
-or of the integers from 1 to `k` if `k` is given. A weighting
-vector `wv` can be specified to weight the counts.
+Count the number of times that values in the range `levels` occur in
+`x`. The output is a vector of length `length(levels)`. If `levels`
+is not provided, `span(x)` is used in its place. If a weighting
+vector `wv` (of type `WeightVec`) is specified, the sum of the weights
+is used rather than the raw counts.
+
+    counts(x, [k,] [wv])
+
+Count the number of times integers in the range 1 to `k` occur in `x`.
 """
 counts(x::IntegerArray, levels::IntUnitRange) =
     addcounts!(zeros(Int, length(levels)), x, levels)
@@ -74,12 +78,17 @@ counts(x::IntegerArray, wv::WeightVec) = counts(x, span(x), wv)
 
 
 """
-    proportions(x, [levels,] [k,], [wv]) -> Vector
+    proportions(x, [levels,] [wv])
 
-Return the proportion of `x` consisting of each value of `levels`
-if specified, the integers 1 to `k` if `k` is specified, otherwise
-the values of `x`. A weighting vector `wv` can be specified to
-weight the proportions.
+Return the proportion of values in the range `levels` that occur
+in `x`. Equivalent to `counts(x, levels) / length(x)`. If `levels`
+is not provided, `span(x)` is used in its place. If a weighting
+vector `wv` (of type `WeightVec`) is specified, the sum of the
+weights is used rather than the raw counts.
+
+    proportions(x, [k,] [wv])
+
+Return the proportion of integers in 1 to `k` that occur in `x`.
 """
 proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
 proportions(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) =
@@ -239,18 +248,20 @@ end
 
 
 """
-    countmap(x) -> Dict
+    countmap(x)
 
-Return the counts of each distinct element of `x` as a dictionary.
+Return a dictionary mapping each unique value in `x` to its number
+of occurrences.
 """
 countmap{T}(x::AbstractArray{T}) = addcounts!(Dict{T,Int}(), x)
 countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}(), x, wv)
 
 
 """
-    proportionmap(x) -> Dict
+    proportionmap(x)
 
-Return the proportions of each distinct element of `x` as a dictionary.
+Return a dictionary mapping each unique value in `x` to its
+proportion of `x`.
 """
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
