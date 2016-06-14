@@ -32,11 +32,11 @@ end
 
 
 """
-    ordinalrank(x) -> Array
+    ordinalrank(x)
 
-Return the ordinal ranking of a real-valued array. Ordinal ranking,
-aka "1234" ranking, uses the literal sorted order. All items in `x`
-are assigned a unique rank regardless of their uniqueness within `x`.
+Return the ordinal ranking ("1234" ranking) of a real-valued array.
+All items in `x` are given distinct, successive ranks based on their
+position in `sort(x)`.
 """
 ordinalrank(x::RealArray) = ordinalrank!(Array(Int, size(x)), x, sortperm(x))
 
@@ -69,11 +69,11 @@ end
 
 
 """
-    competerank(x) -> Array
+    competerank(x)
 
 Return the standard competition ranking ("1224" ranking) of a real-valued
-array. Items that compare equal are given the same rank with a gap in the
-ranking the size of the number of tied items - 1.
+array. Items that compare equal are given the same rank, then a gap is left
+in the rankings the size of the number of tied items - 1.
 """
 competerank(x::RealArray) = competerank!(Array(Int, size(x)), x, sortperm(x))
 
@@ -106,7 +106,7 @@ end
 
 
 """
-    denserank(x) -> Array
+    denserank(x)
 
 Return the dense ranking ("1223" ranking) of a real-valued array. Items that
 compare equal receive the same ranking, and the next subsequent rank is
@@ -151,7 +151,7 @@ end
 
 # order (aka. rank), resolving ties using the mean rank
 """
-    tiedrank(x) -> Array
+    tiedrank(x)
 
 Return the tied ranking, also called fractional or "1 2.5 2.5 4" ranking,
 of a real-valued array. Items that compare equal receive the mean of the
