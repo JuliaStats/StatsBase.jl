@@ -63,7 +63,7 @@ is not provided, `span(x)` is used in its place. If a weighting
 vector `wv` (of type `WeightVec`) is specified, the sum of the weights
 is used rather than the raw counts.
 
-    counts(x, [k,] [wv])
+    counts(x, k::Integer[, wv])
 
 Count the number of times integers in the range 1 to `k` occur in `x`.
 """
@@ -86,7 +86,7 @@ is not provided, `span(x)` is used in its place. If a weighting
 vector `wv` (of type `WeightVec`) is specified, the sum of the
 weights is used rather than the raw counts.
 
-    proportions(x, [k,] [wv])
+    proportions(x, k::Integer[, wv])
 
 Return the proportion of integers in 1 to `k` that occur in `x`.
 """

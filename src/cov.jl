@@ -41,10 +41,10 @@ the estimate.
 which indicates that the mean is unknown, and the function will
 compute the mean. Specifying `mean=0` indicates that the data
 are centered and hence there's no need to subtract the mean.
-* `vardim`: the dimension of the variables. When `vardim = 1`, the
-variables are considered columns with observations in rows; when
-`vardim = 2`, variables are in rows with observations in columns.
-By default it's set to 1.
+* `vardim`: the dimension along which the variables are organized.
+When `vardim = 1` (default), the variables are considered columns
+with observations in rows; when `vardim = 2`, variables are in rows
+with observations in columns.
 """
     function scattermat(x::DenseMatrix; mean=nothing, vardim::Int=1)
         mean == 0 ? scattermat_zm(x, vardim) :
@@ -73,10 +73,10 @@ is equivalent to `scattermat(X, wv) / sum(wv)`.
 """
     mean_and_cov(x, [wv;] vardim=1) -> (mean, cov)
 
-Return the means and covariance matrix as a tuple. A weighting
-vector `wv` can be specified. The function accepts a single
-keyword argument `vardim` that designates whether the variables
-are columns in the matrix (`1`, the default) or rows (`2`).
+Return the mean and covariance matrix as a tuple. A weighting
+vector `wv` can be specified. `vardim` that designates whether
+the variables are columns in the matrix (`1`, the default) or
+rows (`2`).
 """
     function mean_and_cov(x::DenseMatrix; vardim::Int=1)
         m = mean(x, vardim)

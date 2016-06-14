@@ -37,9 +37,9 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 ## weighted sum over vectors
 
 """
-    wsum(v, w)
+    wsum(v, w[, dim])
 
-Compute the weighted sum of `v` with weights `w`.
+Compute the weighted sum of `v` with weights `w`, optionally over the dimension `dim`.
 """
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
@@ -224,7 +224,8 @@ wsumtype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
     wsum!(R, A, w, dim; init=true)
 
 Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
-the result in `R`.
+the result in `R`. If `init=false`, the sum is added to `R` rather than starting
+from zero.
 """
 function wsum!{T,N}(R::AbstractArray, A::AbstractArray{T,N}, w::AbstractVector, dim::Int; init::Bool=true)
     1 <= dim <= N || error("dim should be within [1, $N]")

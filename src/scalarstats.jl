@@ -316,9 +316,10 @@ end
 """
     zscore!([Z,] X, μ, σ)
 
-Compute the z-scores of an array `X` with mean `μ` and standard deviation `σ`. If
-a destination array `Z` is provided, the scores are stored in `Z`, otherwise `X`
-is overwritten.
+Compute the z-scores of an array `X` with mean `μ` and standard deviation `σ`.
+z-scores are the signed number of standard deviations above the mean that an
+observation lies. If a destination array `Z` is provided, the scores are stored
+in `Z`, otherwise `X` is overwritten.
 """
 function zscore!{ZT<:AbstractFloat,T<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real)
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
@@ -342,8 +343,9 @@ zscore!{T<:AbstractFloat,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray
     zscore(X[, μ, σ])
 
 Compute the z-scores of `X`, optionally specifying a precomputed mean `μ` and
-standard deviation `σ`. The mean and standard deviation can be real numbers or
-arrays of real numbers.
+standard deviation `σ`. z-scores are the signed number of standard deviations
+above the mean that an observation lies. The mean and standard deviation can be
+real numbers or arrays of real numbers.
 """
 function zscore{T<:Real}(X::AbstractArray{T}, μ::Real, σ::Real)
     ZT = typeof((zero(T) - zero(μ)) / one(σ))
