@@ -13,11 +13,11 @@ end
 
 # run-length encoding
 """
-    rle(v) -> (Vector, Vector)
+    rle(v) -> (vals, lens)
 
-Returns the run-length encoding of a vector as a tuple. The
-first element of the tuple a vector of values of the input and
-the second is the number of consecutive occurrences of each
+Return the run-length encoding of a vector as a tuple. The
+first element of the tuple is a vector of values of the input
+and the second is the number of consecutive occurrences of each
 element.
 """
 function rle{T}(v::Vector{T})
@@ -53,9 +53,9 @@ end
 
 # inverse run-length encoding
 """
-    inverse_rle(vals, lens) -> Vector
+    inverse_rle(vals, lens)
 
-Reconstruct a vector from its run length encoding. `vals` is a
+Reconstruct a vector from its run-length encoding. `vals` is a
 vector of the values and `lens` is a vector of the corresponding
 run lengths.
 """
@@ -79,10 +79,10 @@ end
 
 # findat (get positions (within a) for elements in b)
 """
-    indexmap(a) -> Dict
+    indexmap(a)
 
-Construct a dictionary that associates the elements of an
-array with their indices in the array.
+Construct a dictionary that maps each unique value in `a` to
+the index of its first occurrence in `a`.
 """
 function indexmap{T}(a::AbstractArray{T})
     d = Dict{T,Int}()
@@ -97,10 +97,10 @@ end
 
 
 """
-    levelsmap(a) -> Dict
+    levelsmap(a)
 
-Construct a dictionary that associates the unique elements of
-`a` with the integers 1 to `length(a)`.
+Construct a dictionary that maps each of the `n` unique values
+in `a` to a number between 1 and `n`.
 """
 function levelsmap{T}(a::AbstractArray{T})
     d = Dict{T,Int}()
@@ -126,9 +126,10 @@ end
 
 
 """
-    findat(a, b) -> Array
+    findat(a, b)
 
-Find the position within `a` for the elements in `b`.
+For each element in `b`, find its first index in `a`. If the value does
+not occur in `a`, the corresponding index is 0.
 """
 findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
 
@@ -140,13 +141,22 @@ findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
 # k: the maximum integer in x
 
 """
-    indicatormat(x, [c,] [k,] [sparse=false]) -> Matrix
+    indicatormat(x, k::Integer; sparse=false)
 
-Construct the indicator matrix for an array `x`. The optional argument
-`k` is the maximum integer in `x` and `c` is an array of categories.
-The function accepts a single optional keyword argument `sparse` that
-defaults to `false`. If `true`, the output will be a sparse matrix,
-otherwise it will be a dense matrix.
+Construct a boolean matrix `I` of size `(k, length(x))` such that
+`I[x[i], i] = true` and all other elements are set to `false`.
+If `sparse` is `true`, the output will be a sparse matrix, otherwise
+it will be dense (default).
+
+    indicatormat(x, c; sparse=false)
+
+Construct a boolean matrix `I` of size `(length(c), length(x))`.
+Let `ci` be the index of `x[i]` in `c`. Then `I[ci, i] = true` and
+all other elements are `false`.
+
+    indicatormat(x; sparse=false)
+
+Equivalent to `indicatormat(x, sort(unique(x)); sparse=...)`.
 """
 function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
