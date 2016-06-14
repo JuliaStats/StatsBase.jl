@@ -9,7 +9,7 @@
 
 # Geometric mean
 """
-    geomean(a) -> Float
+    geomean(a)
 
 Return the geometric mean of a real-valued array.
 """
@@ -24,7 +24,7 @@ end
 
 # Harmonic mean
 """
-    harmmean(a) -> Array
+    harmmean(a)
 
 Return the harmonic mean of a real-valued array.
 """
@@ -39,10 +39,10 @@ end
 
 # Trimmed mean
 """
-    trimmean(x, p) -> Float
+    trimmean(x, p)
 
-Compute the mean of `x` after removing a proportion `p` of its highest- and
-lowest-valued elements.
+Compute the trimmed mean of `x`, i.e. the mean after removing a
+proportion `p` of its highest- and lowest-valued elements.
 """
 function trimmean(x::RealArray, p::Real)
     n = length(x)
@@ -62,10 +62,10 @@ end
 
 # compute mode, given the range of integer values
 """
-    mode(a[, rng]) -> Int
+    mode(a[, rng])
 
 Return the first mode (most common number) of an array, optionally
-over a specified range.
+over a specified range `rng`.
 """
 function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
     isempty(a) && error("mode: input array cannot be empty.")
@@ -89,10 +89,11 @@ function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
 end
 
 """
-    modes(a[, rng]) -> Vector
+    modes(a[, rng])
 
 Return all modes (most common numbers) of an array, optionally over a
-specified range.
+specified range `rng`. The output is always an array, even if `a` has
+only a single mode.
 """
 function modes{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
     r0 = rgn[1]
@@ -182,19 +183,19 @@ end
 #############################
 
 """
-    percentile(v, p) -> Float
+    percentile(v, p)
 
-Return the `p`th percentile of an array `v`.
+Return the `p`th percentile of a real-valued array `v`.
 """
 percentile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
 
 quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
 
 """
-    nquantile(v, n) -> Array
+    nquantile(v, n)
 
-Return the n-quantiles of an array, i.e. the values which partition `v` into
-`n` subsets of nearly equal size.
+Return the n-quantiles of a real-valued array, i.e. the values which
+partition `v` into `n` subsets of nearly equal size.
 """
 nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 
@@ -207,7 +208,7 @@ nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 
 # span, i.e. the range minimum(x):maximum(x)
 """
-    span(x) -> Range
+    span(x)
 
 Return the span of an integer array, i.e. the range `minimum(x):maximum(x)`.
 """
@@ -215,7 +216,7 @@ span{T<:Integer}(x::AbstractArray{T}) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 """
-    variation(x[, m]) -> Float
+    variation(x[, m])
 
 Return the coefficient of variation of an array `x`, optionally specifying
 a precomputed mean `m`. The coefficient of variation is the ratio of the
@@ -226,19 +227,20 @@ variation{T<:Real}(x::AbstractArray{T}) = variation(x, mean(x))
 
 # Standard error of the mean: std(a) / sqrt(len)
 """
-    sem(a) -> Float
+    sem(a)
 
-Return the standard error of the mean of `a`.
+Return the standard error of the mean of `a`, i.e. `sqrt(var(a) / length(a))`.
 """
 sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v, [center,] [constant=1.4826]) -> Float
+    mad(v, [center;] constant=1.4826)
 
 Compute the median absolute deviation of `v`, optionally specifying a
-precomputed median `center`. The function accepts a keyword argument
-`constant` which provides a scaling factor.
+precomputed median `center`. `constant` provides a scaling factor that
+defaults to 1.4826 for consistent estimation of the standard deviation
+of a normal distribution.
 """
 mad{T<:Real}(v::AbstractArray{T}, args...;arg...) = mad!(copy(v), args...;arg...)
 mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v;], args...;arg...)
@@ -252,9 +254,10 @@ end
 
 # Interquartile range
 """
-    iqr(v) -> Float
+    iqr(v)
 
-Compute the interquartile range (IQR) of an array.
+Compute the interquartile range (IQR) of an array, i.e. the 75th percentile
+minus the 25th percentile.
 """
 iqr{T<:Real}(v::AbstractArray{T}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
 
@@ -336,7 +339,7 @@ zscore!{T<:AbstractFloat,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray
 
 
 """
-    zscore(X, [μ,] [σ]) -> Array
+    zscore(X[, μ, σ])
 
 Compute the z-scores of `X`, optionally specifying a precomputed mean `μ` and
 standard deviation `σ`. The mean and standard deviation can be real numbers or
@@ -365,7 +368,7 @@ zscore{T<:Real}(X::AbstractArray{T}, dim::Int) = ((μ, σ) = mean_and_std(X, dim
 #############################
 
 """
-    entropy(p[, b]) -> Float
+    entropy(p[, b])
 
 Compute the entropy of an array `p`, optionally specifying a real number
 `b` such that the entropy is scaled by `1/log(b)`.
@@ -388,7 +391,7 @@ end
 
 
 """
-    crossentropy(p, q[, b]) -> Float
+    crossentropy(p, q[, b])
 
 Compute the cross entropy between `p` and `q`, optionally specifying a real
 number `b` such that the entropy is scaled by `1/log(b)`.
@@ -413,10 +416,10 @@ end
 
 
 """
-    kldivergence(p, q[, b]) -> Float
+    kldivergence(p, q[, b])
 
 Compute the Kullback-Leibler divergence of `q` from `p`, optionally specifying
-a real number `b` which scales the divergence by `1/log(b)`.
+a real number `b` such that the divergence is scaled by `1/log(b)`.
 """
 function kldivergence{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
@@ -453,7 +456,7 @@ end
 
 
 """
-    summarystats(a) -> SummaryStats
+    summarystats(a)
 
 Compute summary statistics for a real-valued array `a`. Returns a
 `SummaryStats` object containing the mean, minimum, 25th percentile,
@@ -486,6 +489,8 @@ end
 """
     describe(a)
 
-Pretty-print the summary statistics provided by `summarystats`.
+Pretty-print the summary statistics provided by `summarystats`:
+the mean, minimum, 25th percentile, median, 75th percentile, and
+maximum.
 """
 describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))

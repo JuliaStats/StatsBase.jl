@@ -6,13 +6,19 @@ immutable WeightVec{W,Vec<:RealVector}
     sum::W
 end
 
+"""
+    WeightVec(vs[, wsum])
+
+Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
+If omitted, `wsum` is computed.
+"""
 WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
 WeightVec(vs::RealVector) = WeightVec(vs, sum(vs))
 
 """
-    weights(vs) -> WeightVec
+    weights(vs)
 
-Construct a weight vector from a given array.
+Construct a `WeightVec` from a given array.
 """
 weights(vs::RealVector) = WeightVec(vs)
 weights(vs::RealArray) = WeightVec(vec(vs))
@@ -31,7 +37,7 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 ## weighted sum over vectors
 
 """
-    wsum(v, w) -> Float
+    wsum(v, w)
 
 Compute the weighted sum of `v` with weights `w`.
 """
@@ -215,11 +221,10 @@ wsumtype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
 
 """
-    wsum!(R, A, w, dim[, init=true])
+    wsum!(R, A, w, dim; init=true)
 
 Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
-the result in `R`. The function accepts a single optional keyword argument `init`
-that defaults to `true`.
+the result in `R`.
 """
 function wsum!{T,N}(R::AbstractArray, A::AbstractArray{T,N}, w::AbstractVector, dim::Int; init::Bool=true)
     1 <= dim <= N || error("dim should be within [1, $N]")
@@ -245,7 +250,7 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = ws
 ###### Weighted means #####
 
 """
-    wmean(v, w) -> Float
+    wmean(v, w)
 
 Compute the weighted mean of `v` with weights `w`.
 """
@@ -316,7 +321,7 @@ end
 
 
 """
-    wmedian(v, w) -> Float
+    wmedian(v, w)
 
 Compute the weighted median of `v` with weights `w`.
 """
@@ -330,6 +335,11 @@ wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 # and take interpolation between floor and ceil of this index
 # Here there is a supplementary function from index to weighted index k -> Sk
 
+"""
+    quantile(v, w::WeightVec, p)
+
+Compute `p`th quantile(s) of `v` with weights `w`.
+"""
 function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector)
 
     # checks
