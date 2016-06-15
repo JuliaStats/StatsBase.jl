@@ -336,37 +336,172 @@ end
 #   summary
 #
 #############################
-
-immutable SummaryStats{T<:AbstractFloat}
+immutable SummaryStats{T<:AbstractFloat} 
     mean::T
+    std::T
     min::T
-    q25::T
+    p25::T
     median::T
-    q75::T
+    p75::T
     max::T
 end
 
-function summarystats{T<:Real}(a::AbstractArray{T})
+function describe{T<:Real}(a::AbstractArray{T}, ::Type{Val{false}})
     m = mean(a)
-    qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
-    R = typeof(convert(AbstractFloat, zero(T)))
-    SummaryStats{R}(
+    std = stdm(a, m)
+    R = typeof(zero(T)/1)
+    p = [0.00, 0.25, 0.50, 0.75, 1.00]
+    qs = quantile(a, p)
+    return SummaryStats{R}(
         convert(R, m),
-        convert(R, qs[1]),
-        convert(R, qs[2]),
-        convert(R, qs[3]),
-        convert(R, qs[4]),
-        convert(R, qs[5]))
+        convert(R, std),
+        convert(Vector{R}, qs)...
+        )
 end
 
-function Base.show(io::IO, ss::SummaryStats)
+immutable DetailedSummaryStats{T<:AbstractFloat}  
+    mean::T
+    std::T
+    skewness::T
+    kurtosis::T
+    min::T
+    p1::T
+    p5::T
+    p10::T
+    p25::T
+    median::T
+    p75::T
+    p90::T
+    p95::T
+    p99::T
+    max::T
+end
+
+function describe{T<:Real}(a::AbstractArray{T}, ::Type{Val{true}})
+    m = mean(a)
+    std = stdm(a, m)
+    R = typeof(zero(T)/1)
+    sk = skewness(a, m)
+    ku = kurtosis(a, m)
+    p = [0.00, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1.00]
+    qs = quantile(a, p)
+    return DetailedSummaryStats{R}(
+        convert(R, m), 
+        convert(R, std),
+        convert(R, sk),
+        convert(R, ku),
+        convert(Vector{R}, qs)...
+        )
+end
+
+# Weighted
+immutable WeightedSummaryStats{T<:AbstractFloat, W<:Real} 
+    mean::T
+    std::T
+    min::T
+    p25::T
+    median::T
+    p75::T
+    max::T 
+    wsum::W
+end
+
+function describe{T<:Real, W<:Real}(a::AbstractVector{T}, w::WeightVec{W}, detail::Type{Val{false}})
+    m = mean(a, w)
+    std = stdm(a, m, w)
+    R = typeof(zero(T)/1)
+    p = [0.00, 0.25, 0.50, 0.75, 1.00]
+    qs = quantile(a, w, p)
+    return WeightedSummaryStats{R, W}(
+        convert(R, m),
+        convert(R, std),
+        convert(Vector{R}, qs)...,
+        w.sum
+        )
+end
+
+immutable WeightedDetailedSummaryStats{T<:AbstractFloat, W<:Real} 
+    mean::T
+    std::T
+    skewness::T
+    kurtosis::T
+    min::T
+    p1::T
+    p5::T
+    p10::T
+    p25::T
+    median::T
+    p75::T
+    p90::T
+    p95::T
+    p99::T
+    max::T
+    wsum::W
+end
+
+function describe{T<:Real, W<:Real}(a::AbstractVector{T}, w::WeightVec{W}, detail::Type{Val{true}})
+    m = mean(a, w)
+    std = stdm(a, m, w)
+    R = typeof(zero(T)/1)
+    sk = skewness(a, w, m)
+    ku = kurtosis(a, w, m)
+    p = [0.00, 0.01, 0.05, 0.10, 0.25, 0.50, 0.75, 0.90, 0.95, 0.99, 1.00]
+    qs = quantile(a, w, p)
+    return WeightedDetailedSummaryStats{R, W}(
+        convert(R, m),
+        convert(R, std),
+        convert(R, sk),
+        convert(R, ku),
+        convert(Vector{R}, qs)...,
+        w.sum
+        )  
+end  
+
+# value vs type for detail
+function describe{T<:Real}(a::AbstractArray{T}; detail = false) 
+    return describe(a, Val{detail})
+end
+
+function describe{T<:Real, W<:Real}(a::AbstractVector{T}, w::WeightVec{W}; detail = false) 
+    return describe(a, w, Val{detail})
+end
+
+# show methods
+function Base.show(io::IO, ss::@compat(Union{SummaryStats, WeightedSummaryStats}))
     println(io, "Summary Stats:")
-    @printf(io, "Mean:         %.6f\n", ss.mean)
-    @printf(io, "Minimum:      %.6f\n", ss.min)
-    @printf(io, "1st Quartile: %.6f\n", ss.q25)
-    @printf(io, "Median:       %.6f\n", ss.median)
-    @printf(io, "3rd Quartile: %.6f\n", ss.q75)
-    @printf(io, "Maximum:      %.6f\n", ss.max)
+    @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std:            %.6f\n", ss.std)
+    @printf(io, "Minimum:        %.6f\n", ss.min)
+    @printf(io, "1st Quartile:   %.6f\n", ss.p25)
+    @printf(io, "Median:         %.6f\n", ss.median)
+    @printf(io, "3rd Quartile:   %.6f\n", ss.p75)
+    @printf(io, "Maximum:        %.6f\n", ss.max)
+    show_sumw(io, ss)
 end
 
-describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))
+function Base.show(io::IO, ss::@compat(Union{DetailedSummaryStats, WeightedDetailedSummaryStats}))
+    println(io, "Detailed Summary Stats:")
+    @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std:            %.6f\n", ss.std)
+    @printf(io, "Skewness:       %.6f\n", ss.skewness)
+    @printf(io, "Kurtosis:       %.6f\n", ss.kurtosis)
+    print("\n")  
+    @printf(io, "Minimum:        %.6f\n", ss.min)
+    @printf(io, "p1:             %.6f\n", ss.p1)
+    @printf(io, "p5:             %.6f\n", ss.p5)
+    @printf(io, "p10:            %.6f\n", ss.p10)
+    @printf(io, "p25:            %.6f\n", ss.p25)
+    @printf(io, "Median:         %.6f\n", ss.median)
+    @printf(io, "p75             %.6f\n", ss.p75)
+    @printf(io, "p90:            %.6f\n", ss.p90)
+    @printf(io, "p95:            %.6f\n", ss.p95)
+    @printf(io, "p99:            %.6f\n", ss.p99)
+    @printf(io, "Maximum:        %.6f\n", ss.max)
+    show_sumw(io, ss)
+end
+
+show_sumw(io::IO, ss::@compat(Union{SummaryStats, DetailedSummaryStats})) = nothing
+function show_sumw(io::IO, ss::@compat(Union{WeightedSummaryStats, WeightedDetailedSummaryStats}))
+    print("\n")  
+    @printf(io, "Sum of weights: %.6f\n", ss.wsum)
+end

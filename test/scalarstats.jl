@@ -102,11 +102,56 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 ##### summarystats
 
-s = summarystats(1:5)
+s = describe(1:5)
+@show s
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == 1.0
 @test s.max == 5.0
 @test_approx_eq s.mean 3.0
 @test_approx_eq s.median 3.0
-@test_approx_eq s.q25 2.0
-@test_approx_eq s.q75 4.0
+@test_approx_eq s.p25 2.0
+@test_approx_eq s.p75 4.0
+
+s = describe(1:5, detail = true)
+@show s
+@test isa(s, StatsBase.DetailedSummaryStats)
+@test s.min == 1.0
+@test s.max == 5.0
+@test_approx_eq s.mean 3.0
+@test_approx_eq s.median 3.0
+@test_approx_eq s.p25 2.0
+@test_approx_eq s.p75 4.0
+@test_approx_eq s.p1 1.04
+@test_approx_eq s.p5 1.2
+@test_approx_eq s.p95 4.8
+@test_approx_eq s.p99 4.96
+@test_approx_eq s.skewness 0.0
+@test_approx_eq s.kurtosis -1.3
+
+s = describe(1:5, weights(1:5))
+@show s
+@test isa(s, StatsBase.WeightedSummaryStats)
+@test s.min == 1.0
+@test s.max == 5.0
+@test_approx_eq s.mean  3.6666666666666
+@test_approx_eq s.median 3.6666666666666
+@test_approx_eq s.p25 2.750000
+@test_approx_eq s.p75 4.375000
+
+s = describe(1:5, weights(1:5), detail = true)
+@show s
+@test isa(s, StatsBase.WeightedDetailedSummaryStats)
+@test s.min == 1.0
+@test s.max == 5.0
+@test_approx_eq s.mean  3.6666666666666
+@test_approx_eq s.median 3.6666666666666
+@test_approx_eq s.p25 2.750000
+@test_approx_eq s.p75 4.375000
+@test_approx_eq s.p1  1.100000
+@test_approx_eq s.p5 1.500000
+@test_approx_eq s.p95 4.875000
+@test_approx_eq s.p99 4.975000
+@test_approx_eq s.skewness -0.5879747322073332
+@test_approx_eq s.kurtosis  -0.7285714285714291
+
+
