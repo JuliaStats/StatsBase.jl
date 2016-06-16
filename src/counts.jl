@@ -55,7 +55,7 @@ end
 
 
 """
-    counts(x, [levels=span(x)], [wv::WeightVec])
+    counts(x, levels=span(x), [wv::WeightVec])
 
 Count the number of times that values in the range `levels` occur in
 `x`. The output is a vector of length `length(levels)`. If a weighting
@@ -79,7 +79,7 @@ counts(x::IntegerArray, wv::WeightVec) = counts(x, span(x), wv)
 
 
 """
-    proportions(x, [levels=span(x)], [wv::WeightVec])
+    proportions(x, levels=span(x), [wv::WeightVec])
 
 Return the proportion of values in the range `levels` that occur in `x`.
 Equivalent to `counts(x, levels) / length(x)`. If a weighting vector `wv`

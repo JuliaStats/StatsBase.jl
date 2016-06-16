@@ -56,16 +56,19 @@ Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, 
 """
     mean_and_var(x, [wv::WeightVec], [dim]) -> (mean, var)
 
-Return the mean and variance of an array `x`, optionally over a dimension `dim`,
-as a tuple. A weighting vector `wv` can be specified to weight the estimates.
+Return the mean and variance of a real-valued array `x`, optionally over a dimension
+`dim`, as a tuple. A weighting vector `wv` can be specified to weight the estimates.
+The weights are assumed to be frequency weights, also called case weights.
 """
 mean_and_var(A::RealArray) = (m = mean(A); (m, varm(A, m)))
 
 """
     mean_and_std(x, [wv::WeightVec], [dim]) -> (mean, std)
 
-Return the mean and standard deviation of an array `x`, optionally over a dimension
-`dim`, as a tuple. A weighting vector `wv` can be specified to weight the estimates.
+Return the mean and standard deviation of a real-valued array `x`, optionally
+over a dimension `dim`, as a tuple. A weighting vector `wv` can be specified
+to weight the estimates. The weights are assumed to be frequency weights, also
+called case weights.
 """
 mean_and_std(A::RealArray) = (m = mean(A); (m, stdm(A, m)))
 
@@ -167,7 +170,7 @@ end
 
 
 """
-    moment(v, k, [wv::WeightVec], [m=mean(v)])
+    moment(v, k, [wv::WeightVec], m=mean(v))
 
 Return the `k`th order central moment of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
@@ -195,7 +198,7 @@ moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, wv, mean(v, wv))
 # Skewness
 # This is Type 1 definition according to Joanes and Gill (1998)
 """
-    skewness(v, [wv::WeightVec], [m=mean(v)])
+    skewness(v, [wv::WeightVec], m=mean(v))
 
 Compute the standardized skewness of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
@@ -243,9 +246,9 @@ skewness(v::RealArray, wv::WeightVec) = skewness(v, wv, mean(v, wv))
 # (excessive) Kurtosis
 # This is Type 1 definition according to Joanes and Gill (1998)
 """
-    kurtosis(v, [wv::WeightVec], [m=mean(v)])
+    kurtosis(v, [wv::WeightVec], m=mean(v))
 
-Compute the excessive kurtosis of a real-valued array `v`, optionally
+Compute the excess kurtosis of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
 function kurtosis(v::RealArray, m::Real)

@@ -294,7 +294,7 @@ sample(a::AbstractArray) = a[randi(length(a))]
 
 
 """
-    sample!(a, [wv::WeightVec] x; replace=true, ordered=false)
+    sample!(a, [wv::WeightVec], x; replace=true, ordered=false)
 
 Draw a random sample of `length(x)` elements from an array `a`
 and store the result in `x`. A polyalgorithm is used for sampling.
