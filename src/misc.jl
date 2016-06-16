@@ -147,21 +147,19 @@ Construct a boolean matrix `I` of size `(k, length(x))` such that
 `I[x[i], i] = true` and all other elements are set to `false`.
 If `sparse` is `true`, the output will be a sparse matrix, otherwise
 it will be dense (default).
-
-    indicatormat(x, c; sparse=false)
-
-Construct a boolean matrix `I` of size `(length(c), length(x))`.
-Let `ci` be the index of `x[i]` in `c`. Then `I[ci, i] = true` and
-all other elements are `false`.
-
-    indicatormat(x; sparse=false)
-
-Equivalent to `indicatormat(x, sort(unique(x)); sparse=...)`.
 """
 function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
 end
 
+
+"""
+    indicatormat(x, [c=sort(unique(x))]; sparse=false)
+
+Construct a boolean matrix `I` of size `(length(c), length(x))`.
+Let `ci` be the index of `x[i]` in `c`. Then `I[ci, i] = true` and
+all other elements are `false`.
+"""
 function indicatormat(x::AbstractArray, c::AbstractArray; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
 end

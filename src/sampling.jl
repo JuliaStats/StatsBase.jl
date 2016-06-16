@@ -77,7 +77,7 @@ end
 """
     samplepair(n)
 
-Draw a pair of integers between 1 and `n` without replacement.
+Draw a pair of distinct integers between 1 and `n` without replacement.
 """
 function samplepair(n::Int)
     i1 = randi(n)
@@ -89,7 +89,7 @@ end
 """
     samplepair(a)
 
-Draw a pair of elements from the array `a` without replacement.
+Draw a pair of distinct elements from the array `a` without replacement.
 """
 function samplepair(a::AbstractArray)
     i1, i2 = samplepair(length(a))
@@ -284,12 +284,17 @@ end
 
 
 ### Interface functions (poly-algorithms)
+"""
+    sample(a, [wv::WeightVec])
 
+Select a single random element of `a`. Weighted sampling is performed if
+a weighting vector `wv` is given.
+"""
 sample(a::AbstractArray) = a[randi(length(a))]
 
 
 """
-    sample!(a, [wv::WeightVec,] x; replace=true, ordered=false)
+    sample!(a, [wv::WeightVec] x; replace=true, ordered=false)
 
 Draw a random sample of `length(x)` elements from an array `a`
 and store the result in `x`. A polyalgorithm is used for sampling.
@@ -340,32 +345,24 @@ end
 
 
 """
-    sample(a[, wv::WeightVec])
-
-Select a single random element of `a`. Weighted sampling is performed if
-a weighting vector `wv` is given.
-
-    sample(a, [wv::WeightVec,] n::Integer; replace=true, ordered=false)
+    sample(a, [wv::WeightVec], n::Integer; replace=true, ordered=false)
 
 Select a random, optionally weighted sample of size `n` from an array `a`
 using a polyalgorithm. `replace` dictates whether sampling is performed
 with replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
-
-    sample(a, [wv::WeightVec,] dims; replace=true, ordered=false)
-
-Select a random, optionally weighted sample from an array `a` specifying
-the dimensions `dims` of the output array.
-
-    sample(wv::WeightVec)
-
-Select a single random integer in `1:length(wv)` with probabilities
-proportional to the weights given in `wv`.
 """
 function sample{T}(a::AbstractArray{T}, n::Integer; replace::Bool=true, ordered::Bool=false)
     sample!(a, Array{T}(n); replace=replace, ordered=ordered)
 end
 
+
+"""
+    sample(a, [wv::WeightVec], dims::Dims; replace=true, ordered=false)
+
+Select a random, optionally weighted sample from an array `a` specifying
+the dimensions `dims` of the output array.
+"""
 function sample{T}(a::AbstractArray{T}, dims::Dims; replace::Bool=true, ordered::Bool=false)
     sample!(a, Array{T}(dims); replace=replace, ordered=ordered)
 end
@@ -377,6 +374,12 @@ end
 #
 ################################################################
 
+"""
+    sample(wv::WeightVec)
+
+Select a single random integer in `1:length(wv)` with probabilities
+proportional to the weights given in `wv`.
+"""
 function sample(wv::WeightVec)
     t = rand() * sum(wv)
     w = values(wv)
@@ -594,31 +597,35 @@ wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, 
 
 
 """
-    wsample([a,] w)
+    wsample([a], w)
 
 Select a weighted random sample of size 1 from `a` with weights constructed
 from `w`. If `a` is not present, select a random weight from `w`.
+"""
+wsample(w::RealVector) = sample(weights(w))
+wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
 
-    wsample([a,] w, n::Integer; replace=true, ordered=false)
+
+"""
+    wsample([a], w, n::Integer; replace=true, ordered=false)
 
 Select a weighted random sample of size `n` from `a` with weights given in `w`
 if `a` is present, otherwise select a random sample of size `n` of the weights
 given in `w`. `replace` dictates whether sampling is performed with replacement
 and `order` dictates whether an ordered sample, also called a sequential sample,
 should be taken.
+"""
+wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
+    wsample!(a, w, Array{T}(n); replace=replace, ordered=ordered)
 
-    wsample([a,] w, dims; replace=true, ordered=false)
+
+"""
+    wsample([a], w, dims::Dims; replace=true, ordered=false)
 
 Select a weighted random sample from `a` with weights given in `w` if `a` is
 present, otherwise select a random sample of size `n` of the weights given in
 `w`. The dimensions of the output are given by `dims`.
 """
-wsample(w::RealVector) = sample(weights(w))
-wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
-
-wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
-    wsample!(a, w, Array{T}(n); replace=replace, ordered=ordered)
-
 wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) =
     wsample!(a, w, Array{T}(dims); replace=replace, ordered=ordered)
 

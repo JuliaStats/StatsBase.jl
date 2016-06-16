@@ -85,7 +85,7 @@ end
 
 
 """
-    autocov(x, [lags;] demean=true)
+    autocov(x, [lags]; demean=true)
 
 Compute the autocovariance of a vector or matrix `x`, optionally specifying
 the `lags` at which to compute the autocovariance. `demean` denotes whether

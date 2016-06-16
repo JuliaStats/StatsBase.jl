@@ -7,7 +7,7 @@ immutable WeightVec{W,Vec<:RealVector}
 end
 
 """
-    WeightVec(vs[, wsum])
+    WeightVec(vs, [wsum])
 
 Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
 If omitted, `wsum` is computed.
@@ -37,7 +37,7 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 ## weighted sum over vectors
 
 """
-    wsum(v, w[, dim])
+    wsum(v, w, [dim])
 
 Compute the weighted sum of `v` with weights `w`, optionally over the dimension `dim`.
 """

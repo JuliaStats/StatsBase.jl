@@ -43,7 +43,7 @@ end
 """
     sqL2dist(a, b)
 
-Compute the squared L2 distance between two arrays: `∑|a-b|^2`.
+Compute the squared L2 distance between two arrays: `sumabs2(a - b)`.
 """
 function sqL2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -60,8 +60,7 @@ end
 """
     L2dist(a, b)
 
-Compute the L2 distance between two arrays, i.e. the square root of
-the squared L2 distance.
+Compute the L2 distance between two arrays: `sqrt(sumabs2(a - b))`.
 """
 L2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqrt(sqL2dist(a, b))
 
@@ -70,7 +69,7 @@ L2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqrt(sqL2dist(a, b
 """
     L1dist(a, b)
 
-Compute the L1 distance between two arrays: `∑|a-b|`.
+Compute the L1 distance between two arrays: `sumabs(a - b)`.
 """
 function L1dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -88,7 +87,7 @@ end
     Linfdist(a, b)
 
 Compute the L∞ distance, also called the Chebyshev distance, between
-two arrays: `max|a-b|`.
+two arrays: `maxabs(a - b)`.
 """
 function Linfdist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -109,7 +108,7 @@ end
     gkldiv(a, b)
 
 Compute the generalized Kullback-Leibler divergence between two arrays:
-`∑(a*log(a/b)-a+b)`.
+`sum(a*log(a/b)-a+b)`.
 """
 function gkldiv{T<:AbstractFloat}(a::AbstractArray{T}, b::AbstractArray{T})
     n = length(a)
@@ -140,7 +139,7 @@ meanad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = L1dist(a, b) / len
 """
     maxad(a, b)
 
-Return the maximum absolute deviation between two arrays: `maximum(abs(a - b))`.
+Return the maximum absolute deviation between two arrays: `maxabs(a - b)`.
 """
 maxad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = Linfdist(a, b)
 

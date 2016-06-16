@@ -11,10 +11,10 @@
 #######################################
 
 """
-    corspearman(x[, y])
+    corspearman(x, [y])
 
 Compute Spearman's rank correlation coefficient. If a single matrix `x`
-is given, the correlation between columns of `x` is given as a matrix.
+is given, the correlation between columns of `x` is returned as a matrix.
 If `x` and `y` are vectors, the output is a float, otherwise it's a
 matrix corresponding to the pairwise correlations of the columns of `x`
 and `y`.
@@ -97,10 +97,10 @@ end
 
 
 """
-    corkendall(x[, y])
+    corkendall(x, [y])
 
 Compute Kendall's rank correlation coefficient, τ. If `x` is a matrix, the
-correlation between columns is given as a matrix. Otherwise `x` and `y` must
+correlation between columns is returned as a matrix. Otherwise `x` and `y` must
 both be either matrices or vectors.
 """
 corkendall(x::RealVector, y::RealVector) = corkendall!(float(copy(x)), float(copy(y)))

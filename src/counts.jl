@@ -10,11 +10,11 @@ typealias IntUnitRange{T<:Integer} UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
 """
-    addcounts!(r, x, levels[, wv])
+    addcounts!(r, x, levels, [wv])
 
-Fill the array `r` with the number of occurrences in `x` of
-each value in `levels`. If a weighting vector `wv` is specified,
-the sum of weights is used rather than the raw counts.
+Add the number of occurrences in `x` of each value in `levels` to an existing
+array `r`. If a weighting vector `wv` is specified, the sum of weights is used
+rather than the raw counts.
 """
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     # add counts of integers from x to r
@@ -55,22 +55,23 @@ end
 
 
 """
-    counts(x, [levels,] [wv])
+    counts(x, [levels=span(x)], [wv::WeightVec])
 
 Count the number of times that values in the range `levels` occur in
-`x`. The output is a vector of length `length(levels)`. If `levels`
-is not provided, `span(x)` is used in its place. If a weighting
-vector `wv` (of type `WeightVec`) is specified, the sum of the weights
-is used rather than the raw counts.
-
-    counts(x, k::Integer[, wv])
-
-Count the number of times integers in the range 1 to `k` occur in `x`.
+`x`. The output is a vector of length `length(levels)`. If a weighting
+vector `wv` is specified, the sum of the weights is used rather than the
+raw counts.
 """
 counts(x::IntegerArray, levels::IntUnitRange) =
     addcounts!(zeros(Int, length(levels)), x, levels)
 counts(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) =
     addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
+
+"""
+    counts(x, k::Integer, [wv::WeightVec])
+
+Count the number of times integers in the range 1 to `k` occur in `x`.
+"""
 counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
 counts(x::IntegerArray, k::Integer, wv::WeightVec) = counts(x, 1:k, wv)
 counts(x::IntegerArray) = counts(x, span(x))
@@ -78,21 +79,21 @@ counts(x::IntegerArray, wv::WeightVec) = counts(x, span(x), wv)
 
 
 """
-    proportions(x, [levels,] [wv])
+    proportions(x, [levels=span(x)], [wv::WeightVec])
 
-Return the proportion of values in the range `levels` that occur
-in `x`. Equivalent to `counts(x, levels) / length(x)`. If `levels`
-is not provided, `span(x)` is used in its place. If a weighting
-vector `wv` (of type `WeightVec`) is specified, the sum of the
-weights is used rather than the raw counts.
-
-    proportions(x, k::Integer[, wv])
-
-Return the proportion of integers in 1 to `k` that occur in `x`.
+Return the proportion of values in the range `levels` that occur in `x`.
+Equivalent to `counts(x, levels) / length(x)`. If a weighting vector `wv`
+is specified, the sum of the weights is used rather than the raw counts.
 """
 proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
 proportions(x::IntegerArray, levels::IntUnitRange, wv::WeightVec) =
     counts(x, levels, wv) .* inv(sum(wv))
+
+"""
+    proportions(x, k::Integer, [wv::WeightVec])
+
+Return the proportion of integers in 1 to `k` that occur in `x`.
+"""
 proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
 proportions(x::IntegerArray, k::Integer, wv::WeightVec) = proportions(x, 1:k, wv)
 proportions(x::IntegerArray) = proportions(x, span(x))

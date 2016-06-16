@@ -62,17 +62,17 @@ end
 
 # compute mode, given the range of integer values
 """
-    mode(a[, rng])
+    mode(a, [r])
 
 Return the first mode (most common number) of an array, optionally
-over a specified range `rng`.
+over a specified range `r`.
 """
-function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
+function mode{T<:Integer}(a::AbstractArray{T}, r::UnitRange{T})
     isempty(a) && error("mode: input array cannot be empty.")
     len = length(a)
-    r0 = rgn[1]
-    r1 = rgn[end]
-    cnts = zeros(Int, length(rgn))
+    r0 = r[1]
+    r1 = r[end]
+    cnts = zeros(Int, length(r))
     mc = 0    # maximum count
     mv = r0   # a value corresponding to maximum count
     for i = 1:len
@@ -89,16 +89,16 @@ function mode{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
 end
 
 """
-    modes(a[, rng])
+    modes(a, [r])
 
 Return all modes (most common numbers) of an array, optionally over a
-specified range `rng`. The output is always an array, even if `a` has
+specified range `r`. The output is always an array, even if `a` has
 only a single mode.
 """
-function modes{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
-    r0 = rgn[1]
-    r1 = rgn[end]
-    n = length(rgn)
+function modes{T<:Integer}(a::AbstractArray{T}, r::UnitRange{T})
+    r0 = r[1]
+    r1 = r[end]
+    n = length(r)
     cnts = zeros(Int, n)
     # find the maximum count
     mc = 0
@@ -115,7 +115,7 @@ function modes{T<:Integer}(a::AbstractArray{T}, rgn::UnitRange{T})
     ms = T[]
     for i = 1:n
         @inbounds if cnts[i] == mc
-            push!(ms, rgn[i])
+            push!(ms, r[i])
         end
     end
     return ms
@@ -216,7 +216,7 @@ span{T<:Integer}(x::AbstractArray{T}) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 """
-    variation(x[, m])
+    variation(x, [m])
 
 Return the coefficient of variation of an array `x`, optionally specifying
 a precomputed mean `m`. The coefficient of variation is the ratio of the
@@ -235,7 +235,7 @@ sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v, [center;] constant=1.4826)
+    mad(v, [center]; constant=1.4826)
 
 Compute the median absolute deviation of `v`, optionally specifying a
 precomputed median `center`. `constant` provides a scaling factor that
@@ -314,7 +314,7 @@ end
 
 
 """
-    zscore!([Z,] X, μ, σ)
+    zscore!([Z], X, μ, σ)
 
 Compute the z-scores of an array `X` with mean `μ` and standard deviation `σ`.
 z-scores are the signed number of standard deviations above the mean that an
@@ -340,7 +340,7 @@ zscore!{T<:AbstractFloat,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray
 
 
 """
-    zscore(X[, μ, σ])
+    zscore(X, [μ, σ])
 
 Compute the z-scores of `X`, optionally specifying a precomputed mean `μ` and
 standard deviation `σ`. z-scores are the signed number of standard deviations
@@ -370,7 +370,7 @@ zscore{T<:Real}(X::AbstractArray{T}, dim::Int) = ((μ, σ) = mean_and_std(X, dim
 #############################
 
 """
-    entropy(p[, b])
+    entropy(p, [b])
 
 Compute the entropy of an array `p`, optionally specifying a real number
 `b` such that the entropy is scaled by `1/log(b)`.
@@ -393,10 +393,10 @@ end
 
 
 """
-    crossentropy(p, q[, b])
+    crossentropy(p, q, [b])
 
 Compute the cross entropy between `p` and `q`, optionally specifying a real
-number `b` such that the entropy is scaled by `1/log(b)`.
+number `b` such that the result is scaled by `1/log(b)`.
 """
 function crossentropy{T<:Real}(p::AbstractArray{T}, q::AbstractArray{T})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
@@ -418,7 +418,7 @@ end
 
 
 """
-    kldivergence(p, q[, b])
+    kldivergence(p, q, [b])
 
 Compute the Kullback-Leibler divergence of `q` from `p`, optionally specifying
 a real number `b` such that the divergence is scaled by `1/log(b)`.
