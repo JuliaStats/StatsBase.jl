@@ -66,6 +66,29 @@ mean_and_std(A::RealArray, dim::Int) = (m = mean(A, dim); (m, stdm(A, m, dim)))
 mean_and_var(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, varm(A, wv, m, dim)))
 mean_and_std(A::RealArray, wv::WeightVec, dim::Int) = (m = mean(A, wv, dim); (m, stdm(A, wv, m, dim)))
 
+"""
+    mean_and_var(x::RealArray, wv::WeightVec, dim::Int)
+
+### Args:
+* `x`: A vector of type `RealArray` to compute theh mean and variance of.
+* `wv`: An optional weight vector of type `WeightVec`.
+* `dim`: An optional `Int` type parameter which specifies the dimension.
+
+Jointly compute the mean and variance of x.
+"""
+function mean_and_var end
+    
+"""
+    mean_and_std(x::RealArray, wv::WeightVec, dim::Int)
+
+### Args:
+* `x`: A vector of type `RealArray` to compute theh mean and variance of.
+* `wv`: An optional weight vector of type `WeightVec`.
+* `dim`: An optional `Int` type parameter which specifies the dimension.
+
+Jointly compute the mean and standard deviation of x.
+"""
+function mean_and_std end    
 
 ##### General central moment
 
@@ -170,6 +193,17 @@ end
 moment(v::RealArray, k::Int) = moment(v, k, mean(v))
 moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, wv, mean(v, wv))
 
+"""
+    moment(v::RealArray, k::Int, wv::WeightVec, m::Real)
+
+### Args:
+* `v`: The vector of type `RealArray`.
+* `k`: The order of central moment.
+* `wv`: A weights vector which is optional.
+* `m`: The centre value, which is optional.
+
+Compute the k-th order central moment of the values in x. It is the sample mean of (x - mean(x)).^k. One can optionally supply the center m, and/or a weight vector of type WeightVec
+"""
 
 ##### Skewness and Kurtosis 
 
@@ -215,6 +249,16 @@ end
 skewness(v::RealArray) = skewness(v, mean(v))
 skewness(v::RealArray, wv::WeightVec) = skewness(v, wv, mean(v, wv))
 
+"""
+    skewness(x, wv)
+
+### Args:
+* `x`: The vector of type `RealArray`.
+* `wv`: An optional weight vector.
+
+Compute the (standardized) skewness of x. One can optionally supply a weight vector of type WeightVec. 
+"""
+
 # (excessive) Kurtosis
 # This is Type 1 definition according to Joanes and Gill (1998)
 function kurtosis(v::RealArray, m::Real)
@@ -257,3 +301,12 @@ end
 kurtosis(v::RealArray) = kurtosis(v, mean(v))
 kurtosis(v::RealArray, wv::WeightVec) = kurtosis(v, wv, mean(v, wv))
 
+"""
+    kurtosis(x, wv)
+
+### Args:
+* `x`: The vector of type `RealArray`.
+* `wv`: An optional weight vector.
+
+Compute the (excessive) kurtosis of `x`. One can optionally supply a weight vector of type `WeightVec`.
+"""

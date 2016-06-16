@@ -12,6 +12,11 @@ function norepeat(a::AbstractArray)
 end
 
 # run-length encoding
+"""
+    rle(v::Vector)
+
+Run-length encoding of `v`. It returns `(vals, lens)`, a sequence of values and their corresponding chunk length.
+"""
 function rle{T}(v::Vector{T})
     n = length(v)
     vals = T[]
@@ -44,6 +49,11 @@ function rle{T}(v::Vector{T})
 end
 
 # inverse run-length encoding
+"""
+    inverse_rle(vals::AbstractVector, lens::AbstractVector)
+
+Inversed run-length encoding. It takes the results of rle and reconstructs the original sequence.
+"""
 function inverse_rle{T}(vals::AbstractVector{T}, lens::IntegerVector)
     m = length(vals)
     length(lens) == m || raise_dimerror()
@@ -63,7 +73,11 @@ end
 
 
 # findat (get positions (within a) for elements in b)
+"""
+    indexmap(x)
 
+Construct a dictionary that maps each distinct value in `x` to its first index.
+"""
 function indexmap{T}(a::AbstractArray{T})
     d = Dict{T,Int}()
     for i = 1 : length(a)
@@ -75,6 +89,11 @@ function indexmap{T}(a::AbstractArray{T})
     return d
 end
 
+"""
+    levelsmap(x)
+
+Construct a dictionary that maps each of the `n` distinct values in `x` to a number between `1` and `n`.
+"""
 function levelsmap{T}(a::AbstractArray{T})
     d = Dict{T,Int}()
     index = 1
@@ -88,6 +107,11 @@ function levelsmap{T}(a::AbstractArray{T})
     return d
 end
 
+"""
+    findat!(r::IntegerArray, a::AbstractArray, b::AbstractArray)
+
+For each element in `b`, find its first index in `a`. If the value does not appear in `a`, the corresponding index is `0`. Write the results of findat(a, x) to a pre-allocated array `r`.
+"""
 function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
     length(r) == length(b) || raise_dimerror()
     d = indexmap(a)
@@ -97,6 +121,11 @@ function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
     return r
 end
 
+"""
+    findat(a::AbstractArray, b::AbstractArray)
+
+For each element in `b`, find its first index in `a`. If the value does not appear in `a`, the corresponding index is `0`.
+"""
 findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
 
 
@@ -106,6 +135,18 @@ findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
 # c: categories
 # k: the maximum integer in x
 
+"""
+    indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
+
+### Args:
+* `x`: A, `IntegerArray`.
+* `k`: An `Integer`
+* `sparse`: A keyword argument, of `Bool` type.
+
+Construct a boolean matrix `r` of size `(k, length(x))` such that `r[x[i], i] = true` and all other elements are set to false.
+
+The keyword argument sparse controls whether to construct a sparse matrix. By default, it is `false`. 
+"""
 function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
 end

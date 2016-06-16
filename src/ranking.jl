@@ -30,6 +30,11 @@ function ordinalrank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+"""
+    ordinalrank(x::RealArray)
+
+Compute ordinal ranking (also known as 1 2 3 4 ranking) for x.
+"""
 ordinalrank(x::RealArray) = ordinalrank!(Array(Int, size(x)), x, sortperm(x))
 
 
@@ -59,6 +64,11 @@ function competerank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+"""
+    competerank(x::RealArray)
+
+Compute competition ranking (also known as 1 2 2 4 ranking) for x.
+"""
 competerank(x::RealArray) = competerank!(Array(Int, size(x)), x, sortperm(x))
 
 
@@ -88,6 +98,11 @@ function denserank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+"""
+    denserank(x::RealArray
+
+Compute dense ranking (also known as 1 2 2 3 ranking) for x.
+"""
 denserank(x::RealArray) = denserank!(Array(Int, size(x)), x, sortperm(x))
 
 
@@ -126,6 +141,11 @@ function tiedrank!(rks::RealArray, x::RealArray, p::IntegerArray)
 end
 
 # order (aka. rank), resolving ties using the mean rank
+"""
+    tiedrank(x::RealArray)
+
+Compute tied ranking (also known as fractional ranking or 1 2.5 2.5 4 ranking) for x.
+"""
 tiedrank(x::RealArray) = tiedrank!(Array(Float64, size(x)), x, sortperm(x))
 
 
