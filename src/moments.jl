@@ -4,7 +4,7 @@
 
 Base.varm(v::RealArray, wv::WeightVec, m::Real) = _moment2(v, wv, m)
 
-function Base.var(v::RealArray, wv::WeightVec; mean=nothing) 
+function Base.var(v::RealArray, wv::WeightVec; mean=nothing)
     mean == 0 ? Base.varm(v, wv, 0) :
     mean == nothing ? varm(v, wv, Base.mean(v, wv)) :
     varm(v, wv, mean)
@@ -39,7 +39,7 @@ end
 Base.varm(A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
     Base.varm!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, M, dim)
 
-Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) = 
+Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) =
     var!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, dim; mean=mean)
 
 ## std
@@ -53,8 +53,20 @@ Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, 
 
 
 ##### Fused statistics
+"""
+    mean_and_var(x, [wv::WeightVec], [dim]) -> (mean, var)
 
+Return the mean and variance of an array `x`, optionally over a dimension `dim`,
+as a tuple. A weighting vector `wv` can be specified to weight the estimates.
+"""
 mean_and_var(A::RealArray) = (m = mean(A); (m, varm(A, m)))
+
+"""
+    mean_and_std(x, [wv::WeightVec], [dim]) -> (mean, std)
+
+Return the mean and standard deviation of an array `x`, optionally over a dimension
+`dim`, as a tuple. A weighting vector `wv` can be specified to weight the estimates.
+"""
 mean_and_std(A::RealArray) = (m = mean(A); (m, stdm(A, m)))
 
 mean_and_var(A::RealArray, wv::WeightVec) = (m = mean(A, wv); (m, varm(A, wv, m)))
@@ -153,6 +165,13 @@ function _momentk(v::RealArray, k::Int, wv::WeightVec, m::Real)
     s / sum(wv)
 end
 
+
+"""
+    moment(v, k, [wv::WeightVec], [m=mean(v)])
+
+Return the `k`th order central moment of a real-valued array `v`, optionally
+specifying a weighting vector `wv` and a center `m`.
+"""
 function moment(v::RealArray, k::Int, m::Real)
     k == 2 ? _moment2(v, m) :
     k == 3 ? _moment3(v, m) :
@@ -171,10 +190,16 @@ moment(v::RealArray, k::Int) = moment(v, k, mean(v))
 moment(v::RealArray, k::Int, wv::WeightVec) = moment(v, k, wv, mean(v, wv))
 
 
-##### Skewness and Kurtosis 
+##### Skewness and Kurtosis
 
 # Skewness
 # This is Type 1 definition according to Joanes and Gill (1998)
+"""
+    skewness(v, [wv::WeightVec], [m=mean(v)])
+
+Compute the standardized skewness of a real-valued array `v`, optionally
+specifying a weighting vector `wv` and a center `m`.
+"""
 function skewness(v::RealArray, m::Real)
     n = length(v)
     cm2 = 0.0   # empirical 2nd centered moment (variance)
@@ -195,7 +220,7 @@ function skewness(v::RealArray, wv::WeightVec, m::Real)
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0   # empirical 2nd centered moment (variance)
-    cm3 = 0.0   # empirical 3rd centered moment    
+    cm3 = 0.0   # empirical 3rd centered moment
     w = values(wv)
 
     @inbounds for i = 1:n
@@ -217,6 +242,12 @@ skewness(v::RealArray, wv::WeightVec) = skewness(v, wv, mean(v, wv))
 
 # (excessive) Kurtosis
 # This is Type 1 definition according to Joanes and Gill (1998)
+"""
+    kurtosis(v, [wv::WeightVec], [m=mean(v)])
+
+Compute the excessive kurtosis of a real-valued array `v`, optionally
+specifying a weighting vector `wv` and a center `m`.
+"""
 function kurtosis(v::RealArray, m::Real)
     n = length(v)
     cm2 = 0.0  # empirical 2nd centered moment (variance)
