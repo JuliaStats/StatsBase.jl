@@ -89,11 +89,10 @@ function mode{T<:Integer}(a::AbstractArray{T}, r::UnitRange{T})
 end
 
 """
-    modes(a, [r])
+    modes(a, [r])::Vector
 
 Return all modes (most common numbers) of an array, optionally over a
-specified range `r`. The output is always an array, even if `a` has
-only a single mode.
+specified range `r`.
 """
 function modes{T<:Integer}(a::AbstractArray{T}, r::UnitRange{T})
     r0 = r[1]
@@ -216,7 +215,7 @@ span{T<:Integer}(x::AbstractArray{T}) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 """
-    variation(x, [m])
+    variation(x, m=mean(x))
 
 Return the coefficient of variation of an array `x`, optionally specifying
 a precomputed mean `m`. The coefficient of variation is the ratio of the
@@ -235,7 +234,7 @@ sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v, [center]; constant=1.4826)
+    mad(v, center=median(x); constant=1.4826)
 
 Compute the median absolute deviation of `v`, optionally specifying a
 precomputed median `center`. `constant` provides a scaling factor that

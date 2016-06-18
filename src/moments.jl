@@ -2,8 +2,22 @@
 
 ## var
 
+"""
+    varm(x, wv::WeightVec, m, [dim])
+
+Return the variance of a real-valued array `x` with a known mean `m`, optionally
+over a dimension `dim`. The weighting vector `wv` specifies frequency weights
+(also called case weights) for the estimate.
+"""
 Base.varm(v::RealArray, wv::WeightVec, m::Real) = _moment2(v, wv, m)
 
+"""
+    var(x, wv::WeightVec, [dim]; mean=nothing)
+
+Return the variance of a real-valued array `x`, optionally over a dimension `dim`.
+The weighting vector `wv` specifies frequency weights (also called case weights)
+for the estimate.
+"""
 function Base.var(v::RealArray, wv::WeightVec; mean=nothing)
     mean == 0 ? Base.varm(v, wv, 0) :
     mean == nothing ? varm(v, wv, Base.mean(v, wv)) :
@@ -43,8 +57,22 @@ Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) =
     var!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, dim; mean=mean)
 
 ## std
+"""
+    stdm(v, wv::WeightVec, m, [dim])
 
+Return the standard deviation of a real-valued array `v` with a known mean `m`,
+optionally over a dimension `dim`. The weighting vector `wv` specifies frequency
+weights (also called case weights) for the estimate.
+"""
 Base.stdm(v::RealArray, wv::WeightVec, m::Real) = sqrt(varm(v, wv, m))
+
+"""
+    std(v, wv::WeightVec, [dim]; mean=nothing)
+
+Return the standard deviation of a real-valued array `v`, optionally over a
+dimension `dim`. The weighting vector `wv` specifies frequency weights (also
+called case weights) for the estimate.
+"""
 Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt(var(v, wv; mean=mean))
 
 Base.stdm(v::RealArray, m::RealArray, dim::Int) = Base.sqrt!(varm(v, m, dim))

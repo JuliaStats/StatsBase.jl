@@ -287,8 +287,8 @@ end
 """
     sample(a, [wv::WeightVec])
 
-Select a single random element of `a`. Weighted sampling is performed if
-a weighting vector `wv` is given.
+Select a single random element of `a`. Sampling probabilities are proportional to
+the weights given in `wv`, if provided.
 """
 sample(a::AbstractArray) = a[randi(length(a))]
 
@@ -298,10 +298,10 @@ sample(a::AbstractArray) = a[randi(length(a))]
 
 Draw a random sample of `length(x)` elements from an array `a`
 and store the result in `x`. A polyalgorithm is used for sampling.
-Weighted sampling is performed is a weighting vector `wv` is given.
-`replace` dictates whether sampling is performed with replacement
-and `order` dictates whether an ordered sample, also called a
-sequential sample, should be taken.
+Sampling probabilities are proportional to the weights given in `wv`,
+if provided. `replace` dictates whether sampling is performed with
+replacement and `order` dictates whether an ordered sample, also called
+a sequential sample, should be taken.
 """
 function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
@@ -348,7 +348,8 @@ end
     sample(a, [wv::WeightVec], n::Integer; replace=true, ordered=false)
 
 Select a random, optionally weighted sample of size `n` from an array `a`
-using a polyalgorithm. `replace` dictates whether sampling is performed
+using a polyalgorithm. Sampling probabilities are proportional to the weights
+given in `wv`, if provided. `replace` dictates whether sampling is performed
 with replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
 """
@@ -361,7 +362,10 @@ end
     sample(a, [wv::WeightVec], dims::Dims; replace=true, ordered=false)
 
 Select a random, optionally weighted sample from an array `a` specifying
-the dimensions `dims` of the output array.
+the dimensions `dims` of the output array. Sampling probabilities are
+proportional to the weights given in `wv`, if provided. `replace` dictates
+whether sampling is performed with replacement and `order` dictates whether
+an ordered sample, also called a sequential sample, should be taken.
 """
 function sample{T}(a::AbstractArray{T}, dims::Dims; replace::Bool=true, ordered::Bool=false)
     sample!(a, Array{T}(dims); replace=replace, ordered=ordered)
@@ -587,10 +591,10 @@ sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; replace::Bool=true, or
 """
     wsample!(a, w, x; replace=true, ordered=false)
 
-Select a weighted sample from an array `a` and store the result in `x`. The
-weights are given in `w`. `replace` dictates whether sampling is performed
-with replacement and `order` dictates whether an ordered sample, also called a
-sequential sample, should be taken.
+Select a weighted sample from an array `a` and store the result in `x`. Sampling
+probabilities are proportional to the weights given in `w`. `replace` dictates
+whether sampling is performed with replacement and `order` dictates whether an
+ordered sample, also called a sequential sample, should be taken.
 """
 wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, ordered::Bool=false) =
     sample!(a, weights(w), x; replace=replace, ordered=ordered)
@@ -599,8 +603,8 @@ wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, 
 """
     wsample([a], w)
 
-Select a weighted random sample of size 1 from `a` with weights constructed
-from `w`. If `a` is not present, select a random weight from `w`.
+Select a weighted random sample of size 1 from `a` with probabilities proportional
+to the weights given in `w`. If `a` is not present, select a random weight from `w`.
 """
 wsample(w::RealVector) = sample(weights(w))
 wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
@@ -609,11 +613,11 @@ wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
 """
     wsample([a], w, n::Integer; replace=true, ordered=false)
 
-Select a weighted random sample of size `n` from `a` with weights given in `w`
-if `a` is present, otherwise select a random sample of size `n` of the weights
-given in `w`. `replace` dictates whether sampling is performed with replacement
-and `order` dictates whether an ordered sample, also called a sequential sample,
-should be taken.
+Select a weighted random sample of size `n` from `a` with probabilities proportional
+to the weights given in `w` if `a` is present, otherwise select a random sample of size
+`n` of the weights given in `w`. `replace` dictates whether sampling is performed with
+replacement and `order` dictates whether an ordered sample, also called a sequential
+sample, should be taken.
 """
 wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
     wsample!(a, w, Array{T}(n); replace=replace, ordered=ordered)
@@ -622,9 +626,9 @@ wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, o
 """
     wsample([a], w, dims::Dims; replace=true, ordered=false)
 
-Select a weighted random sample from `a` with weights given in `w` if `a` is
-present, otherwise select a random sample of size `n` of the weights given in
-`w`. The dimensions of the output are given by `dims`.
+Select a weighted random sample from `a` with probabilities proportional to the
+weights given in `w` if `a` is present, otherwise select a random sample of size
+`n` of the weights given in `w`. The dimensions of the output are given by `dims`.
 """
 wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) =
     wsample!(a, w, Array{T}(dims); replace=replace, ordered=ordered)

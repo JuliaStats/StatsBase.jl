@@ -28,7 +28,7 @@ scattermat_zm(x::DenseMatrix, vardim::Int) = Base.unscaled_covzm(x, vardim)
 scattermat_zm(x::DenseMatrix, wv::WeightVec, vardim::Int) =
     _symmetrize!(Base.unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
 
-if VERSION < v"0.5.0-dev+679"
+
 """
     scattermat(X, [wv::WeightVec]; mean=nothing, vardim=1)
 
@@ -44,6 +44,30 @@ that the data are centered and hence there's no need to subtract the mean.
 When `vardim = 1`, the variables are considered columns with observations in rows;
 when `vardim = 2`, variables are in rows with observations in columns.
 """
+function scattermat end
+
+
+"""
+    cov(X, wv::WeightVec; mean=nothing, vardim=1)
+
+Compute the weighted covariance matrix. By default, the covariance
+matrix is normalized by the sum of the weights. That is, `cov(X, wv)`
+is equivalent to `scattermat(X, wv) / sum(wv)`.
+"""
+cov
+
+
+"""
+    mean_and_cov(x, [wv::WeightVec]; vardim=1) -> (mean, cov)
+
+Return the mean and covariance matrix as a tuple. A weighting
+vector `wv` can be specified. `vardim` that designates whether
+the variables are columns in the matrix (`1`) or rows (`2`).
+"""
+function mean_and_cov end
+
+
+if VERSION < v"0.5.0-dev+679"
     function scattermat(x::DenseMatrix; mean=nothing, vardim::Int=1)
         mean == 0 ? scattermat_zm(x, vardim) :
         mean == nothing ? scattermat_zm(x .- Base.mean(x, vardim), vardim) :
@@ -57,24 +81,9 @@ when `vardim = 2`, variables are in rows with observations in columns.
     end
 
     ## weighted cov
-"""
-    cov(X, wv::WeightVec; mean=nothing, vardim=1)
-
-Compute the weighted covariance matrix. By default, the covariance
-matrix is normalized by the sum of the weights. That is, `cov(X, wv)`
-is equivalent to `scattermat(X, wv) / sum(wv)`.
-"""
     Base.cov(x::DenseMatrix, wv::WeightVec; mean=nothing, vardim::Int=1) =
         scale!(scattermat(x, wv; mean=mean, vardim=vardim), inv(sum(wv)))
 
-
-"""
-    mean_and_cov(x, [wv::WeightVec]; vardim=1) -> (mean, cov)
-
-Return the mean and covariance matrix as a tuple. A weighting
-vector `wv` can be specified. `vardim` that designates whether
-the variables are columns in the matrix (`1`) or rows (`2`).
-"""
     function mean_and_cov(x::DenseMatrix; vardim::Int=1)
         m = mean(x, vardim)
         return m, Base.covm(x, m; vardim=vardim)

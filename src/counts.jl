@@ -262,7 +262,7 @@ countmap{T,W}(x::AbstractArray{T}, wv::WeightVec{W}) = addcounts!(Dict{T,W}(), x
     proportionmap(x)
 
 Return a dictionary mapping each unique value in `x` to its
-proportion of `x`.
+proportion in `x`.
 """
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::WeightVec) = _normalize_countmap(countmap(x, wv), sum(wv))
