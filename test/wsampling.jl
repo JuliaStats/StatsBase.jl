@@ -107,8 +107,8 @@ for j = 1:n
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
 
-#a = sample(4:7, wv, n; replace=false, ordered=false)
-#check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+a = sample(4:7, wv, 3; replace=false, ordered=false)
+check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
 
-#a = sample(4:7, wv, n; replace=false, ordered=true)
-#check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
+a = sample(4:7, wv, 3; replace=false, ordered=true)
+check_wsample_norep(a, (4, 7), wv, -1; ordered=true)
