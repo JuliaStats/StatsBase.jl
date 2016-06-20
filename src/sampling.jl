@@ -463,7 +463,6 @@ function xmultinom_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     return x
 end
 
-
 function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
@@ -488,6 +487,125 @@ function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     return x
 end
 
+# Weighted sampling without replacement
+#
+# Algorithm A from:
+#     Efraimidis PS, Spirakis PG (2006). "Weighted random sampling with a reservoir."
+#     Information Processing  Letters, 97 (5), 181-185. ISSN 0020-0190.
+#     doi:10.1016/j.ipl.2005.11.003.
+#     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
+#
+# Insteads of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
+function efraimidis_a_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    k = length(x)
+
+    # calculate keys for all items
+    r = randexp(n)
+    for i in 1:n
+        @inbounds r[i] = wv.values[i]/r[i]
+    end
+
+    # return items with largest keys
+    index = sortperm(r; alg = PartialQuickSort(k), rev = true)
+    for i in 1:k
+        @inbounds x[i] = a[index[i]]
+    end
+    return x
+end
+
+# Weighted sampling without replacement
+#
+# Algorithm A-Res from:
+#     Efraimidis PS, Spirakis PG (2006). "Weighted random sampling with a reservoir."
+#     Information Processing  Letters, 97 (5), 181-185. ISSN 0020-0190.
+#     doi:10.1016/j.ipl.2005.11.003.
+#     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
+#
+# Insteads of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
+function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    (k = length(x)) > 0 || return x
+
+    # initialize priority queue
+    h = Array{Pair{Float64,Int}}(k)
+    @inbounds for i in 1:k
+        h[i] = (wv.values[i]/randexp() => i)
+    end
+    heapify!(h)
+
+    # set threshold
+    @inbounds T = h[1].first
+    
+    @inbounds for i in k+1:n
+        r = wv.values[i]/randexp()
+        
+        # if key `r` is larger than the minimal key
+        if r > T
+            # update priority queue
+            h[1] = (r => i)
+            Collections.percolate_down!(h, 1)
+
+            # update threshold
+            T = h[1].first
+        end
+    end
+    
+    # fill output array with items in descending order
+    @inbounds for i in k:-1:1
+        x[i] = a[heappop!(h).second]
+    end
+    return x
+end
+
+# Weighted sampling without replacement
+#
+# Algorithm A-ExpJ from:
+#     Efraimidis PS, Spirakis PG (2006). "Weighted random sampling with a reservoir."
+#     Information Processing  Letters, 97 (5), 181-185. ISSN 0020-0190.
+#     doi:10.1016/j.ipl.2005.11.003.
+#     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
+#
+# Insteads of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
+function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
+    n = length(a)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    (k = length(x)) > 0 || return x
+
+    # initialize priority queue
+    h = Array{Pair{Float64,Int}}(k)
+    @inbounds for i in 1:k
+        h[i] = (wv.values[i]/randexp() => i)
+    end
+    heapify!(h)
+
+    # set threshold
+    @inbounds T = h[1].first
+    X = T*randexp()
+    
+    @inbounds for i in k+1:n
+        w = wv.values[i]
+        (X -= w) <= 0 || continue
+        
+        # update priority queue
+        t = exp(-w/T)
+        r = t+rand()*(1-t)
+        h[1] = (-w/log(r) => i)
+        Collections.percolate_down!(h, 1)
+
+        # update threshold
+        T = h[1].first
+        X = T*randexp()
+    end
+    
+    # fill output array with items in descending order
+    @inbounds for i in k:-1:1
+        x[i] = a[heappop!(h).second]
+    end
+    return x
+end
 
 function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; 
                  replace::Bool=true, ordered::Bool=false)
@@ -518,7 +636,9 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
             end
         end
     else
-        naive_wsample_norep!(a, wv, x)
+        k <= n || error("Cannot draw more samples without replacement.")
+        
+        efraimidis_aexpj_wsample_norep!(a, wv, x)
         if ordered
             sort!(x)
         end
