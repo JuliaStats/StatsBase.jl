@@ -7,7 +7,13 @@
 
 Return the variance of a real-valued array `x` with a known mean `m`, optionally
 over a dimension `dim`. The weighting vector `wv` specifies frequency weights
-(also called case weights) for the estimate.
+(also called case weights) for the result.
+
+This function differs from its counterpart in Base in that Bessel's correction
+is not used. That is, here the denominator for the variance is `sum(wv)`,
+whereas it's `length(x)-1` in `Base.varm`. The impact is that this is not a
+weighted estimate of the population variance based on the sample; it's the weighted
+variance of the sample.
 """
 Base.varm(v::RealArray, wv::WeightVec, m::Real) = _moment2(v, wv, m)
 
@@ -17,6 +23,12 @@ Base.varm(v::RealArray, wv::WeightVec, m::Real) = _moment2(v, wv, m)
 Return the variance of a real-valued array `x`, optionally over a dimension `dim`.
 The weighting vector `wv` specifies frequency weights (also called case weights)
 for the estimate.
+
+This function differs from its counterpart in Base in that Bessel's correction
+is not used. That is, here the denominator for the variance is `sum(wv)`,
+whereas it's `length(x)-1` in `Base.var`. The impact is that this is not a
+weighted estimate of the population variance based on the sample; it's the weighted
+variance of the sample.
 """
 function Base.var(v::RealArray, wv::WeightVec; mean=nothing)
     mean == 0 ? Base.varm(v, wv, 0) :

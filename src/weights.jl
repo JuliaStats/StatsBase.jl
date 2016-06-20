@@ -37,9 +37,9 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 ## weighted sum over vectors
 
 """
-    wsum(v, w, [dim])
+    wsum(v, w::Vector, [dim])
 
-Compute the weighted sum of `v` with weights `w`, optionally over the dimension `dim`.
+Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
 """
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
@@ -251,9 +251,9 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = ws
 ###### Weighted means #####
 
 """
-    wmean(v, w)
+    wmean(v, w::Vector)
 
-Compute the weighted mean of `v` with weights `w`.
+Compute the weighted mean of an array `v` with weights `w`.
 """
 function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
     Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
@@ -324,7 +324,8 @@ end
 """
     wmedian(v, w)
 
-Compute the weighted median of `v` with weights `w`.
+Compute the weighted median of an array `v` with weights `w`, given as either a
+vector or `WeightVec`.
 """
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
@@ -415,7 +416,8 @@ quantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, 
 """
     wquantile(v, w, p)
 
-Compute the `p`th quantile(s) of `v` with weights `w`.
+Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
+or a `WeightVec`.
 """
 wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]

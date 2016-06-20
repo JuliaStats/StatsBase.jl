@@ -90,6 +90,9 @@ end
 Compute the autocovariance of a vector or matrix `x`, optionally specifying
 the `lags` at which to compute the autocovariance. `demean` denotes whether
 the mean of `x` should be subtracted from `x` before computing the autocovariance.
+
+When left unspecified, the lags used are the integers from 0 to
+`min(size(x,1)-1, 10*log10(size(x,1)))`.
 """
 function autocov{T<:Real}(x::Vector{T}, lags::IntegerVector; demean::Bool=true)
     autocov!(Array(fptype(T), length(lags)), float(x), lags; demean=demean)
@@ -149,6 +152,9 @@ end
 Compute the autocorrelation function (ACF) of a vector or matrix `x`,
 optionally specifying the `lags`. `demean` denotes whether the mean
 of `x` should be subtracted from `x` before computing the ACF.
+
+When left unspecified, the lags used are the integers from 0 to
+`min(size(x,1)-1, 10*log10(size(x,1)))`.
 """
 function autocor{T<:Real}(x::Vector{T}, lags::IntegerVector; demean::Bool=true)
     autocor!(Array(fptype(T), length(lags)), float(x), lags; demean=demean)
@@ -176,9 +182,10 @@ _crossdot{T<:RealFP}(x::Vector{T}, y::Vector{T}, lx::Int, l::Int) = (l >= 0 ? do
 """
     crosscov!(r, x, y, lags; demean=true)
 
-Compute the cross covariance function (CCF) between `x` and `y` at `lags` and
-store the result in `r`. `demean` specifies whether the respective means of `x`
-and `y` should be subtracted from them before computing their CCF.
+Compute the cross covariance function (CCF) between real-valued vectors or matrices
+`x` and `y` at `lags` and store the result in `r`. `demean` specifies whether the
+respective means of `x` and `y` should be subtracted from them before computing their
+CCF.
 """
 function crosscov!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -270,9 +277,13 @@ end
 """
     crosscov(x, y, [lags]; demean=true)
 
-Compute the cross covariance function (CCF) between `x` and `y`, optionally
-specifying the `lags`. `demean` specifies whether the respective means of `x`
-and `y` should be subtracted from them before computing their CCF.
+Compute the cross covariance function (CCF) between real-valued vectors or
+matrices `x` and `y`, optionally specifying the `lags`. `demean` specifies
+whether the respective means of `x` and `y` should be subtracted from them
+before computing their CCF.
+
+When left unspecified, the lags used are the integers from
+`-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
 """
 function crosscov{T<:Real}(x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
     crosscov!(Array(fptype(T), length(lags)), float(x), float(y), lags; demean=demean)
@@ -297,9 +308,9 @@ crosscov{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscov(
 """
     crosscor!(r, x, y, lags; demean=true)
 
-Compute the cross correlation between `x` and `y` at `lags` and store the result in
-`r`. `demean` specifies whether the respective means of `x` and `y` should be subtracted
-from them before computing their cross correlation.
+Compute the cross correlation between real-valued vectors or matrices `x` and `y` at
+`lags` and store the result in `r`. `demean` specifies whether the respective means of
+`x` and `y` should be subtracted from them before computing their cross correlation.
 """
 function crosscor!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -401,9 +412,12 @@ end
 """
     crosscor(x, y, [lags]; demean=true)
 
-Compute the cross correlation between `x` and `y`, optionally specifying the `lags`.
-`demean` specifies whether the respective means of `x` and `y` should be subtracted
-from them before computing their cross correlation.
+Compute the cross correlation between real-valued vectors or matrices `x` and `y`,
+optionally specifying the `lags`. `demean` specifies whether the respective means of
+`x` and `y` should be subtracted from them before computing their cross correlation.
+
+When left unspecified, the lags used are the integers from
+`-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
 """
 function crosscor{T<:Real}(x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
     crosscor!(Array(fptype(T), length(lags)), float(x), float(y), lags; demean=demean)
@@ -492,11 +506,11 @@ end
 """
     pacf(X, lags; method=:regression)
 
-Compute the partial autocorrelation function (PACF) of `X` at `lags`. `method`
-designates the estimation method. Recognized values are `:regression`, which
-computes the partial autocorrelations via successive regression models, and
-`:yulewalker`, which computes the partial autocorrelations using the Yule-Walker
-equations.
+Compute the partial autocorrelation function (PACF) of a real-valued vector
+or matrix `X` at `lags`. `method` designates the estimation method. Recognized
+values are `:regression`, which computes the partial autocorrelations via successive
+regression models, and `:yulewalker`, which computes the partial autocorrelations
+using the Yule-Walker equations.
 """
 function pacf{T<:Real}(X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
     pacf!(Array(fptype(T), length(lags), size(X,2)), float(X), lags; method=method)
