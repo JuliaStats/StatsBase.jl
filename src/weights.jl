@@ -90,19 +90,19 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::ContiguousArray{T,N}, 
     if dim == 1
         m = size(A, 1)
         n = div(length(A), m)
-        _wsum2_blas!(ArrayViews.view(R,:), reshape_ArrayViews.view(A, (m, n)), w, 1, init)
+        _wsum2_blas!(ArrayViews.view(R,:), reshape_view(A, (m, n)), w, 1, init)
     elseif dim == N
         n = size(A, N)
         m = div(length(A), n)
-        _wsum2_blas!(ArrayViews.view(R,:), reshape_ArrayViews.view(A, (m, n)), w, 2, init)
+        _wsum2_blas!(ArrayViews.view(R,:), reshape_view(A, (m, n)), w, 2, init)
     else # 1 < dim < N
         m = 1
         for i = 1:dim-1; m *= size(A, i); end
         n = size(A, dim)
         k = 1
         for i = dim+1:N; k *= size(A, i); end
-        Av = reshape_ArrayViews.view(A, (m, n, k))
-        Rv = reshape_ArrayViews.view(R, (m, k))
+        Av = reshape_view(A, (m, n, k))
+        Rv = reshape_view(R, (m, k))
         for i = 1:k
             _wsum2_blas!(ArrayViews.view(Rv,:,i), ArrayViews.view(Av,:,:,i), w, 2, init)
         end
@@ -120,7 +120,7 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::St
             npages *= size(A, i)
         end
         rlen = ifelse(dim == 1, n, m)
-        Rv = reshape_ArrayViews.view(R, (rlen, npages))
+        Rv = reshape_view(R, (rlen, npages))
         for i = 1:npages
             _wsum2_blas!(ArrayViews.view(Rv,:,i), ArrayViews.view(A,:,:,i), w, dim, init)
         end
