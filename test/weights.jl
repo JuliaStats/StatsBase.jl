@@ -64,7 +64,7 @@ w3 = rand(4)
 @test_approx_eq wsum(x, w2, 2) sum(x .* w2', 2)
 @test_approx_eq wsum(x, w3, 3) sum(x .* reshape(w3, 1, 1, 4), 3)
 
-v = view(x, 2:4, :, :)
+v = ArrayViews.view(x, 2:4, :, :)
 
 @test_approx_eq wsum(v, w1[1:3], 1) sum(v .* w1[1:3], 1)
 @test_approx_eq wsum(v, w2, 2) sum(v .* w2', 2)

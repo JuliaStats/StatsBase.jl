@@ -33,16 +33,16 @@ Base.sum(v::BitArray, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::SparseMatrixCSC, w::WeightVec) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
 
-## wsum along dimension 
+## wsum along dimension
 #
 #  Brief explanation of the algorithm:
 #  ------------------------------------
 #
-#  1. _wsum! provides the core implementation, which assumes that 
+#  1. _wsum! provides the core implementation, which assumes that
 #     the dimensions of all input arguments are consistent, and no
-#     dimension checking is performed therein. 
+#     dimension checking is performed therein.
 #
-#     wsum and wsum! perform argument checking and call _wsum! 
+#     wsum and wsum! perform argument checking and call _wsum!
 #     internally.
 #
 #  2. _wsum! adopt a Cartesian based implementation for general
@@ -52,24 +52,24 @@ Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
 #     The internal function that implements this is _wsum_general!
 #
 #  3. _wsum! is specialized for following cases:
-#     (a) A is a vector: we invoke the vector version wsum above. 
+#     (a) A is a vector: we invoke the vector version wsum above.
 #         The internal function that implements this is _wsum1!
 #
 #     (b) A is a dense matrix with eltype <: BlasReal: we call gemv!
 #         The internal function that implements this is _wsum2_blas!
 #
-#     (c) A is a contiguous array with eltype <: BlasReal: 
+#     (c) A is a contiguous array with eltype <: BlasReal:
 #         dim == 1: treat A like a matrix of size (d1, d2 x ... x dN)
 #         dim == N: treat A like a matrix of size (d1 x ... x d(N-1), dN)
-#         otherwise: decompose A into multiple pages, and apply _wsum2! 
-#         for each  
+#         otherwise: decompose A into multiple pages, and apply _wsum2!
+#         for each
 #
 #     (d) A is a general dense array with eltype <: BlasReal:
 #         dim <= 2: delegate to (a) and (b)
 #         otherwise, decompose A into multiple pages
 #
 
-function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool) 
+function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool)
     r = wsum(A, w)
     if init
         R[1] = r
@@ -90,21 +90,21 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::ContiguousArray{T,N}, 
     if dim == 1
         m = size(A, 1)
         n = div(length(A), m)
-        _wsum2_blas!(view(R,:), reshape_view(A, (m, n)), w, 1, init)
+        _wsum2_blas!(ArrayViews.view(R,:), reshape_ArrayViews.view(A, (m, n)), w, 1, init)
     elseif dim == N
         n = size(A, N)
         m = div(length(A), n)
-        _wsum2_blas!(view(R,:), reshape_view(A, (m, n)), w, 2, init)
+        _wsum2_blas!(ArrayViews.view(R,:), reshape_ArrayViews.view(A, (m, n)), w, 2, init)
     else # 1 < dim < N
         m = 1
         for i = 1:dim-1; m *= size(A, i); end
         n = size(A, dim)
         k = 1
         for i = dim+1:N; k *= size(A, i); end
-        Av = reshape_view(A, (m, n, k))
-        Rv = reshape_view(R, (m, k))
+        Av = reshape_ArrayViews.view(A, (m, n, k))
+        Rv = reshape_ArrayViews.view(R, (m, k))
         for i = 1:k
-            _wsum2_blas!(view(Rv,:,i), view(Av,:,:,i), w, 2, init)
+            _wsum2_blas!(ArrayViews.view(Rv,:,i), ArrayViews.view(Av,:,:,i), w, 2, init)
         end
     end
     return R
@@ -120,9 +120,9 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::St
             npages *= size(A, i)
         end
         rlen = ifelse(dim == 1, n, m)
-        Rv = reshape_view(R, (rlen, npages))
+        Rv = reshape_ArrayViews.view(R, (rlen, npages))
         for i = 1:npages
-            _wsum2_blas!(view(Rv,:,i), view(A,:,:,i), w, dim, init)
+            _wsum2_blas!(ArrayViews.view(Rv,:,i), ArrayViews.view(A,:,:,i), w, dim, init)
         end
     else
         _wsum_general!(R, @functorize(identity), A, w, dim, init)
@@ -144,7 +144,7 @@ end
                 @inbounds r += f(@nref N A i) * w[i_1]
             end
             @inbounds (@nref N R j) = r
-        end 
+        end
     else
         @nloops N i A d->(if d == dim
                                wi = w[i_d]
@@ -171,7 +171,7 @@ end
                 @inbounds r += f((@nref N A i) - m) * w[i_1]
             end
             @inbounds (@nref N R j) = r
-        end 
+        end
     else
         @nloops N i A d->(if d == dim
                                wi = w[i_d]
@@ -185,15 +185,15 @@ end
 
 
 # N = 1
-_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) = 
+_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsum1!(R, A, w, init)
 
 # N = 2
-_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,2}, w::StridedVector{T}, dim::Int, init::Bool) = 
-    (_wsum2_blas!(view(R,:), A, w, dim, init); R)
+_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,2}, w::StridedVector{T}, dim::Int, init::Bool) =
+    (_wsum2_blas!(ArrayViews.view(R,:), A, w, dim, init); R)
 
 # N >= 3
-_wsum!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) = 
+_wsum!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsumN!(R, A, w, dim, init)
 
 _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) = _wsum_general!(R, @functorize(identity), A, w, dim, init)
@@ -337,13 +337,13 @@ function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector
         h = p[i] * (N - 1) * wsum
         if h == 0
             # happens when N or p or wsum equal zero
-            out[ppermute[i]] = vw[1][1]     
+            out[ppermute[i]] = vw[1][1]
         else
             while Sk <= h
                 # happens in particular when k == 1
                 vk, wk = vw[k]
                 cumulative_weight += wk
-                if k >= N 
+                if k >= N
                     # out was initialized with maximum v
                     return out
                 end
