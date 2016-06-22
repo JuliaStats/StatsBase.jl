@@ -7,15 +7,15 @@ using GLM
 
 testeps = sqrt(eps())
 
-nasty = DataFrame(	label = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
-					x = collect(1.:9),
-					zero = fill(0.0,9),
-					miss = fill(NA, 9),
-					big = 99999990.0 + collect(1:9),
-					little = (99999990.0 + collect(1:9))/10^8,
-					huge = collect(1.:9)*1e12,
-					tiny = collect(1.:9)*1e-12,
-					round = collect(0.5:8.5))
+nasty = DataFrame(    label = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+                    x = collect(1.:9),
+                    zero = fill(0.0,9),
+                    miss = fill(NA, 9),
+                    big = 99999990.0 + collect(1:9),
+                    little = (99999990.0 + collect(1:9))/10^8,
+                    huge = collect(1.:9)*1e12,
+                    tiny = collect(1.:9)*1e-12,
+                    round = collect(0.5:8.5))
 
 println(nasty)
 println("\nII Real Numbers:\nII A")
@@ -31,16 +31,16 @@ println("OK")
 print("Test means: ")
 for vars in names(nasty)[2:end]
     if vars == :miss
-	@test isna(mean(nasty[vars]))
+    @test isna(mean(nasty[vars]))
     else
-	@test_approx_eq mean(nasty[vars]) nasty[vars][5]
+    @test_approx_eq mean(nasty[vars]) nasty[vars][5]
     end
 end
 println("OK")
 
 print("Test standard deviation: ")
 for vars in names(nasty)[[2;5:9]]
-#	@test (@sprintf("%.9e", std(nasty[vars])))[1:10] == "2.73861278"
+#    @test (@sprintf("%.9e", std(nasty[vars])))[1:10] == "2.73861278"
     @test repr(std(nasty[vars]))[1:10] == "2.73861278"
 end
 println("OK")
@@ -50,18 +50,18 @@ println("\nII D")
 print("Test correlation: ")
 cn = names(nasty)[[2;5:9]]
 for i in 1:5
-	for j = i+1:6
-	@test_approx_eq cor(nasty[cn[i]], nasty[cn[j]]) 1
-	end
+    for j = i+1:6
+    @test_approx_eq cor(nasty[cn[i]], nasty[cn[j]]) 1
+    end
 end
 println("OK")
 
 print("Test spearman correlation: ")
 cn = names(nasty)[[2;5:9]]
 for i in 1:5
-	for j = i+1:6
-	@test_approx_eq corspearman(nasty[cn[i]], nasty[cn[j]]) 1
-	end
+    for j = i+1:6
+    @test_approx_eq corspearman(nasty[cn[i]], nasty[cn[j]]) 1
+    end
 end
 println("OK")
 
