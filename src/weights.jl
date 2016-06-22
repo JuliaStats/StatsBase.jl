@@ -37,7 +37,7 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 ## weighted sum over vectors
 
 """
-    wsum(v, w::Vector, [dim])
+    wsum(v, w::AbstractVector, [dim])
 
 Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
 """
@@ -251,7 +251,7 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = ws
 ###### Weighted means #####
 
 """
-    wmean(v, w::Vector)
+    wmean(v, w::AbstractVector)
 
 Compute the weighted mean of an array `v` with weights `w`.
 """
