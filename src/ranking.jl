@@ -7,7 +7,7 @@
 #
 
 
-function _check_randparams(rks, x, p) 
+function _check_randparams(rks, x, p)
     n = length(rks)
     length(x) == length(p) == n || raise_dimerror()
     return n
@@ -30,15 +30,23 @@ function ordinalrank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+
+"""
+    ordinalrank(x)
+
+Return the ordinal ranking ("1234" ranking) of a real-valued array.
+All items in `x` are given distinct, successive ranks based on their
+position in `sort(x)`.
+"""
 ordinalrank(x::RealArray) = ordinalrank!(Array(Int, size(x)), x, sortperm(x))
 
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
 function competerank!(rks::RealArray, x::RealArray, p::IntegerArray)
     n = _check_randparams(rks, x, p)
-    
-    if n > 0    
-        p1 = p[1]    
+
+    if n > 0
+        p1 = p[1]
         v = x[p1]
         rks[p1] = k = 1
 
@@ -59,15 +67,23 @@ function competerank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+
+"""
+    competerank(x)
+
+Return the standard competition ranking ("1224" ranking) of a real-valued
+array. Items that compare equal are given the same rank, then a gap is left
+in the rankings the size of the number of tied items - 1.
+"""
 competerank(x::RealArray) = competerank!(Array(Int, size(x)), x, sortperm(x))
 
 
 # Dense ranking ("1223" ranking) -- resolve tied ranks using min
 function denserank!(rks::RealArray, x::RealArray, p::IntegerArray)
     n = _check_randparams(rks, x, p)
-    
-    if n > 0     
-        p1 = p[1]   
+
+    if n > 0
+        p1 = p[1]
         v = x[p1]
         rks[p1] = k = 1
 
@@ -88,6 +104,14 @@ function denserank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+
+"""
+    denserank(x)
+
+Return the dense ranking ("1223" ranking) of a real-valued array. Items that
+compare equal receive the same ranking, and the next subsequent rank is
+assigned with no gap.
+"""
 denserank(x::RealArray) = denserank!(Array(Int, size(x)), x, sortperm(x))
 
 
@@ -100,7 +124,7 @@ function tiedrank!(rks::RealArray, x::RealArray, p::IntegerArray)
 
         s = 1  # starting index of current range
         e = 2  # pass-by-end index of current range
-        while e <= n 
+        while e <= n
             cx = x[p[e]]
             if cx != v
                 # fill average rank to s : e-1
@@ -126,7 +150,12 @@ function tiedrank!(rks::RealArray, x::RealArray, p::IntegerArray)
 end
 
 # order (aka. rank), resolving ties using the mean rank
+"""
+    tiedrank(x)
+
+Return the tied ranking, also called fractional or "1 2.5 2.5 4" ranking,
+of a real-valued array. Items that compare equal receive the mean of the
+rankings they would have been assigned under ordinal ranking.
+"""
 tiedrank(x::RealArray) = tiedrank!(Array(Float64, size(x)), x, sortperm(x))
-
-
 

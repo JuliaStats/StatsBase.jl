@@ -40,8 +40,8 @@ end
 # Expanded Multinomial sampling
 #
 #   for each element in a, we draw the number of its
-#   occurrences, and fill this element to x for 
-#   this number of times. 
+#   occurrences, and fill this element to x for
+#   this number of times.
 #
 function xmultinom_sample!(a::AbstractArray, x::AbstractArray)
     n = length(a)
@@ -65,7 +65,7 @@ function xmultinom_sample!(a::AbstractArray, x::AbstractArray)
                 end
                 offset += m
             end
-            i += 1            
+            i += 1
         end
     end
     x
@@ -74,12 +74,23 @@ end
 
 ### draw a pair of distinct integers in [1:n]
 
+"""
+    samplepair(n)
+
+Draw a pair of distinct integers between 1 and `n` without replacement.
+"""
 function samplepair(n::Int)
     i1 = randi(n)
     i2 = randi(n-1)
     return (i1, ifelse(i2 == i1, n, i2))
 end
 
+
+"""
+    samplepair(a)
+
+Draw a pair of distinct elements from the array `a` without replacement.
+"""
 function samplepair(a::AbstractArray)
     i1, i2 = samplepair(length(a))
     return a[i1], a[i2]
@@ -92,7 +103,7 @@ end
 #
 #   Reference: The Art of Computer Programming, Vol 2, 3.4.2, p.142
 #
-function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=true) 
+function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=true)
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -116,7 +127,7 @@ function knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=tr
     s = RandIntSampler(k)
     for i = k+1:n
         if rand() * i < k  # keep it with probability k / i
-            @inbounds x[rand(s)] = a[i]            
+            @inbounds x[rand(s)] = a[i]
         end
     end
     return x
@@ -124,7 +135,7 @@ end
 
 # Fisher-Yates sampling
 #
-#   create an array of index inds = [1:n] 
+#   create an array of index inds = [1:n]
 #
 #   for i = 1:k
 #       swap inds[i] with a random one in inds[i:n]
@@ -133,7 +144,7 @@ end
 #
 #   O(n) for initialization + O(k) for random shuffling
 #
-function fisher_yates_sample!(a::AbstractArray, x::AbstractArray) 
+function fisher_yates_sample!(a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -158,7 +169,7 @@ end
 #   Use a set to maintain the index that has been sampled,
 #
 #   each time draw a new index, if the index has already
-#   been sampled, redraw until it draws an unsampled one.  
+#   been sampled, redraw until it draws an unsampled one.
 #
 function self_avoid_sample!(a::AbstractArray, x::AbstractArray)
     n = length(a)
@@ -189,7 +200,7 @@ end
 
 # Random subsequence sampling
 #
-#  References: 
+#  References:
 #
 #   Jeffrey Scott Vitter.
 #   "Faster Methods for Random Sampling"
@@ -262,7 +273,7 @@ function seqsample_c!(a::AbstractArray, x::AbstractArray)
         k -= 1
     end
 
-    if k > 0 
+    if k > 0
         s = trunc(Int, n * rand())
         x[j+1] = a[i+(s+1)]
     end
@@ -273,9 +284,25 @@ end
 
 
 ### Interface functions (poly-algorithms)
+"""
+    sample(a, [wv::WeightVec])
 
+Select a single random element of `a`. Sampling probabilities are proportional to
+the weights given in `wv`, if provided.
+"""
 sample(a::AbstractArray) = a[randi(length(a))]
 
+
+"""
+    sample!(a, [wv::WeightVec], x; replace=true, ordered=false)
+
+Draw a random sample of `length(x)` elements from an array `a`
+and store the result in `x`. A polyalgorithm is used for sampling.
+Sampling probabilities are proportional to the weights given in `wv`,
+if provided. `replace` dictates whether sampling is performed with
+replacement and `order` dictates whether an ordered sample, also called
+a sequential sample, should be taken.
+"""
 function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
@@ -316,12 +343,32 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
     return x
 end
 
+
+"""
+    sample(a, [wv::WeightVec], n::Integer; replace=true, ordered=false)
+
+Select a random, optionally weighted sample of size `n` from an array `a`
+using a polyalgorithm. Sampling probabilities are proportional to the weights
+given in `wv`, if provided. `replace` dictates whether sampling is performed
+with replacement and `order` dictates whether an ordered sample, also called
+a sequential sample, should be taken.
+"""
 function sample{T}(a::AbstractArray{T}, n::Integer; replace::Bool=true, ordered::Bool=false)
-    sample!(a, Array(T, n); replace=replace, ordered=ordered)
+    sample!(a, Array{T}(n); replace=replace, ordered=ordered)
 end
 
+
+"""
+    sample(a, [wv::WeightVec], dims::Dims; replace=true, ordered=false)
+
+Select a random, optionally weighted sample from an array `a` specifying
+the dimensions `dims` of the output array. Sampling probabilities are
+proportional to the weights given in `wv`, if provided. `replace` dictates
+whether sampling is performed with replacement and `order` dictates whether
+an ordered sample, also called a sequential sample, should be taken.
+"""
 function sample{T}(a::AbstractArray{T}, dims::Dims; replace::Bool=true, ordered::Bool=false)
-    sample!(a, Array(T, dims); replace=replace, ordered=ordered)
+    sample!(a, Array{T}(dims); replace=replace, ordered=ordered)
 end
 
 
@@ -331,6 +378,12 @@ end
 #
 ################################################################
 
+"""
+    sample(wv::WeightVec)
+
+Select a single random integer in `1:length(wv)` with probabilities
+proportional to the weights given in `wv`.
+"""
 function sample(wv::WeightVec)
     t = rand() * sum(wv)
     w = values(wv)
@@ -355,7 +408,7 @@ function direct_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     return x
 end
 
-function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64, 
+function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
                            a::AbstractVector{Float64},
                            alias::AbstractVector{Int})
     # Arguments:
@@ -364,7 +417,7 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     #   wsum [in]:      pre-computed sum(w)
     #
     #   a [out]:        acceptance probabilities
-    #   alias [out]:    alias table      
+    #   alias [out]:    alias table
     #
     # Note: a and w can be the same way, then that away will be
     #       overriden inplace by acceptance probabilities
@@ -373,7 +426,7 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     #
 
     n = length(w)
-    length(a) == length(alias) == n || 
+    length(a) == length(alias) == n ||
         throw(DimensionMismatch("Inconsistent array lengths."))
 
     ac = n / wsum
@@ -387,8 +440,8 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     ks = 0  # actual number of smalls
 
     for i = 1:n
-        @inbounds ai = a[i] 
-        if ai > 1.0 
+        @inbounds ai = a[i]
+        if ai > 1.0
             larges[kl+=1] = i  # push to larges
         elseif ai < 1.0
             smalls[ks+=1] = i  # push to smalls
@@ -410,7 +463,7 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     # this loop should be redundant, except for rounding
     for i = 1:ks
         @inbounds a[smalls[i]] = 1.0
-    end 
+    end
     nothing
 end
 
@@ -489,7 +542,7 @@ function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
 end
 
 
-function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray; 
+function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
@@ -527,22 +580,56 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
 end
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; replace::Bool=true, ordered::Bool=false) =
-    sample!(a, wv, Array(T, n); replace=replace, ordered=ordered)
+    sample!(a, wv, Array{T}(n); replace=replace, ordered=ordered)
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; replace::Bool=true, ordered::Bool=false) =
-    sample!(a, wv, Array(T, dims); replace=replace, ordered=ordered)
+    sample!(a, wv, Array{T}(dims); replace=replace, ordered=ordered)
+
 
 # wsample interface
 
-wsample(w::RealVector) = sample(weights(w))
-wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
+"""
+    wsample!(a, w, x; replace=true, ordered=false)
 
+Select a weighted sample from an array `a` and store the result in `x`. Sampling
+probabilities are proportional to the weights given in `w`. `replace` dictates
+whether sampling is performed with replacement and `order` dictates whether an
+ordered sample, also called a sequential sample, should be taken.
+"""
 wsample!(a::AbstractArray, w::RealVector, x::AbstractArray; replace::Bool=true, ordered::Bool=false) =
     sample!(a, weights(w), x; replace=replace, ordered=ordered)
 
-wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
-    wsample!(a, w, Array(T, n); replace=replace, ordered=ordered)
 
+"""
+    wsample([a], w)
+
+Select a weighted random sample of size 1 from `a` with probabilities proportional
+to the weights given in `w`. If `a` is not present, select a random weight from `w`.
+"""
+wsample(w::RealVector) = sample(weights(w))
+wsample(a::AbstractArray, w::RealVector) = sample(a, weights(w))
+
+
+"""
+    wsample([a], w, n::Integer; replace=true, ordered=false)
+
+Select a weighted random sample of size `n` from `a` with probabilities proportional
+to the weights given in `w` if `a` is present, otherwise select a random sample of size
+`n` of the weights given in `w`. `replace` dictates whether sampling is performed with
+replacement and `order` dictates whether an ordered sample, also called a sequential
+sample, should be taken.
+"""
+wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
+    wsample!(a, w, Array{T}(n); replace=replace, ordered=ordered)
+
+
+"""
+    wsample([a], w, dims::Dims; replace=true, ordered=false)
+
+Select a weighted random sample from `a` with probabilities proportional to the
+weights given in `w` if `a` is present, otherwise select a random sample of size
+`n` of the weights given in `w`. The dimensions of the output are given by `dims`.
+"""
 wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) =
-    wsample!(a, w, Array(T, dims); replace=replace, ordered=ordered)
+    wsample!(a, w, Array{T}(dims); replace=replace, ordered=ordered)
 

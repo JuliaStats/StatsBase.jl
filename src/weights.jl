@@ -6,9 +6,20 @@ immutable WeightVec{W,Vec<:RealVector}
     sum::W
 end
 
+"""
+    WeightVec(vs, [wsum])
+
+Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
+If omitted, `wsum` is computed.
+"""
 WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
 WeightVec(vs::RealVector) = WeightVec(vs, sum(vs))
 
+"""
+    weights(vs)
+
+Construct a `WeightVec` from a given array.
+"""
 weights(vs::RealVector) = WeightVec(vs)
 weights(vs::RealArray) = WeightVec(vec(vs))
 
@@ -25,6 +36,11 @@ Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
 
 ## weighted sum over vectors
 
+"""
+    wsum(v, w::AbstractVector, [dim])
+
+Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
+"""
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
@@ -203,6 +219,14 @@ _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bo
 wsumtype{T,W}(::Type{T}, ::Type{W}) = typeof(zero(T) * zero(W) + zero(T) * zero(W))
 wsumtype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
+
+"""
+    wsum!(R, A, w, dim; init=true)
+
+Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
+the result in `R`. If `init=false`, the sum is added to `R` rather than starting
+from zero.
+"""
 function wsum!{T,N}(R::AbstractArray, A::AbstractArray{T,N}, w::AbstractVector, dim::Int; init::Bool=true)
     1 <= dim <= N || error("dim should be within [1, $N]")
     ndims(R) <= N || error("ndims(R) should not exceed $N")
@@ -226,6 +250,11 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = ws
 
 ###### Weighted means #####
 
+"""
+    wmean(v, w::AbstractVector)
+
+Compute the weighted mean of an array `v` with weights `w`.
+"""
 function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
     Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
     mean(v, weights(w))
@@ -291,6 +320,13 @@ function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
     end
 end
 
+
+"""
+    wmedian(v, w)
+
+Compute the weighted median of an array `v` with weights `w`, given as either a
+vector or `WeightVec`.
+"""
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 
@@ -301,6 +337,11 @@ wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 # and take interpolation between floor and ceil of this index
 # Here there is a supplementary function from index to weighted index k -> Sk
 
+"""
+    quantile(v, w::WeightVec, p)
+
+Compute `p`th quantile(s) of `v` with weights `w`.
+"""
 function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector)
 
     # checks
@@ -370,6 +411,14 @@ function bound_quantiles{T <: Real}(qs::AbstractVector{T})
 end
 
 quantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
+
+
+"""
+    wquantile(v, w, p)
+
+Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
+or a `WeightVec`.
+"""
 wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
 wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
