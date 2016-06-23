@@ -1,6 +1,9 @@
-using ArrayViews
 using StatsBase
 using Base.Test
+
+if !isdefined(Base, :view)
+    view = sub
+end
 
 @test isa(weights([1, 2, 3]), WeightVec{Int})
 @test isa(weights([1., 2., 3.]), WeightVec{Float64})
