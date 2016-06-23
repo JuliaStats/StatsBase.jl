@@ -3,7 +3,6 @@ __precompile__(true)
 module StatsBase
     using Compat
     import Compat.String
-    using ArrayViews
     using StatsFuns
 
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
@@ -19,9 +18,6 @@ module StatsBase
                       logsumexp, softmax, softmax!
 
     export
-
-    # reexport from ArrayViews
-    view,
 
     ## mathfuns (TODO: removed after a certain period)
     xlogx,       # x * log(x)
@@ -176,6 +172,11 @@ module StatsBase
     R2,
     R²,
     model_response
+
+    # Use the base capabilities for array views
+    if !isdefined(Base, :view)
+        view = sub
+    end
 
     # source files
 
