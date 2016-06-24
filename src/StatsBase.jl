@@ -152,9 +152,9 @@ module StatsBase
 
     adjR2,
     adjR²,
-    AIC,
-    AICc,
-    BIC,
+    aic,
+    aicc,
+    bic,
     coef,
     coeftable,
     confint,

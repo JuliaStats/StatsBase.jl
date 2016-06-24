@@ -47,35 +47,35 @@ fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj
 fit!(obj::StatisticalModel, data...) = error("fit! is not defined for $(typeof(obj)).")
 
 """
-    AIC(obj::StatisticalModel)
+    aic(obj::StatisticalModel)
 
 Akaike's Information Criterion, defined as `-2 log L + 2k`, with `L` the likelihood
 of the model, and `k` its number of consumed degrees of freedom (as returned by `df`).
 """
-AIC(obj::StatisticalModel) = -2loglikelihood(obj) + 2df(obj)
+aic(obj::StatisticalModel) = -2loglikelihood(obj) + 2df(obj)
 
 """
-    AICc(obj::StatisticalModel)
+    aicc(obj::StatisticalModel)
 
 Corrected Akaike's Information Criterion for small sample sizes (Hurvich and Tsai 1989),
 defined as `-2 log L + 2k + 2k(k-1)/(n-k-1)`, with `L` the likelihood of the model,
 `k` its number of consumed degrees of freedom (as returned by `df`), and `n` the number
 of observations (as returned by `nobs`).
 """
-function AICc(obj::StatisticalModel)
+function aicc(obj::StatisticalModel)
     k = df(obj)
     n = nobs(obj)
     -2loglikelihood(obj) + 2k + 2k*(k+1)/(n-k-1)
 end
 
 """
-    BIC(obj::StatisticalModel)
+    bic(obj::StatisticalModel)
 
-Akaike's Information Criterion, defined as `-2 log L + k log n`, with `L`
+Bayesian Information Criterion, defined as `-2 log L + k log n`, with `L`
 the likelihood of the model,  `k` its number of consumed degrees of freedom
 (as returned by `df`), and `n` the number of observations (as returned by `nobs`).
 """
-BIC(obj::StatisticalModel) = -2loglikelihood(obj) + df(obj)*log(nobs(obj))
+bic(obj::StatisticalModel) = -2loglikelihood(obj) + df(obj)*log(nobs(obj))
 
 """
     R2(obj::StatisticalModel, variant::Symbol)

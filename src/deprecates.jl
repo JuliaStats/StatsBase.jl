@@ -12,3 +12,7 @@ import Base.varm, Base.stdm
 @deprecate _moment4(v::RealArray, m::Real, wv::WeightVec) _moment4(v, wv, m)
 @deprecate _momentk(v::RealArray, k::Int, m::Real, wv::WeightVec) _momentk(v, k, wv, m)
 @deprecate moment(v::RealArray, k::Int, m::Real, wv::WeightVec) moment(v, k, wv, m)
+
+@deprecate AIC(obj::StatisticalModel) aic(obj)
+@deprecate AICc(obj::StatisticalModel) aicc(obj)
+@deprecate BIC(obj::StatisticalModel) bic(obj)
