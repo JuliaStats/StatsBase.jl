@@ -78,8 +78,8 @@ the likelihood of the model,  `k` its number of consumed degrees of freedom
 bic(obj::StatisticalModel) = -2loglikelihood(obj) + df(obj)*log(nobs(obj))
 
 """
-    R2(obj::StatisticalModel, variant::Symbol)
-    R²(obj::StatisticalModel, variant::Symbol)
+    r2(obj::StatisticalModel, variant::Symbol)
+    r²(obj::StatisticalModel, variant::Symbol)
 
 Coefficient of determination (R-squared).
 
@@ -97,7 +97,7 @@ In the above formulas, ``L`` is the likelihood of the model, ``L0`` that of the 
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models.
 """
-function R2(obj::StatisticalModel, variant::Symbol)
+function r2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
 
@@ -112,11 +112,11 @@ function R2(obj::StatisticalModel, variant::Symbol)
     end
 end
 
-const R² = R2
+const r² = r2
 
 """
-    adjR2(obj::StatisticalModel, variant::Symbol)
-    adjR²(obj::StatisticalModel, variant::Symbol)
+    adjr2(obj::StatisticalModel, variant::Symbol)
+    adjr²(obj::StatisticalModel, variant::Symbol)
 
 Adjusted coefficient of determination (adjusted R-squared).
 
@@ -131,7 +131,7 @@ In this formula, `L` is the likelihood of the model, `L0` that of the null model
 `deviance` of the corresponding models. `k` is the number of consumed degrees of freedom
 of the model (as returned by `df`).
 """
-function adjR2(obj::StatisticalModel, variant::Symbol)
+function adjr2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
     k = df(obj)
@@ -143,7 +143,7 @@ function adjR2(obj::StatisticalModel, variant::Symbol)
     end
 end
 
-const adjR² = adjR2
+const adjr² = adjr2
 
 abstract RegressionModel <: StatisticalModel
 

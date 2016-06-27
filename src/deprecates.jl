@@ -16,3 +16,9 @@ import Base.varm, Base.stdm
 @deprecate AIC(obj::StatisticalModel) aic(obj)
 @deprecate AICc(obj::StatisticalModel) aicc(obj)
 @deprecate BIC(obj::StatisticalModel) bic(obj)
+
+@deprecate R2(obj::StatisticalModel, variant::Symbol) r2(obj, variant)
+@deprecate R²(obj::StatisticalModel, variant::Symbol) r²(obj, variant)
+@deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
+@deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
+
