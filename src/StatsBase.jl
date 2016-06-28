@@ -150,11 +150,11 @@ module StatsBase
     StatisticalModel,
     RegressionModel,
 
-    adjR2,
-    adjR²,
-    AIC,
-    AICc,
-    BIC,
+    adjr2,
+    adjr²,
+    aic,
+    aicc,
+    bic,
     coef,
     coeftable,
     confint,
@@ -173,8 +173,8 @@ module StatsBase
     predict,
     predict!,
     residuals,
-    R2,
-    R²,
+    r2,
+    r²,
     model_response
 
     # source files
