@@ -40,7 +40,7 @@ function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fal
             @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
         else
             for j = 1:ncols
-                aj = view(a, :, j)
+                aj = ArrayViews.view(a, :, j)
                 @test_approx_eq_eps proportions(aj, vmin:vmax) p0 ptol
             end
         end
@@ -96,7 +96,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
     n = vmax - vmin + 1
 
     for j = 1:size(a,2)
-        aj = view(a,:,j)
+        aj = ArrayViews.view(a,:,j)
         @assert norepeat(aj)
         if ordered
             @assert issorted(aj)
@@ -110,7 +110,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
         else
             b = transpose(a)
             for j = 1:size(b,2)
-                bj = view(b,:,j)
+                bj = ArrayViews.view(b,:,j)
                 @test_approx_eq_eps proportions(bj, vmin:vmax) p0 ptol
             end
         end
@@ -122,31 +122,31 @@ import StatsBase: seqsample_a!, seqsample_c!
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
-    knuths_sample!(3:12, view(a,:,j))
+    knuths_sample!(3:12, ArrayViews.view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
-    fisher_yates_sample!(3:12, view(a,:,j))
+    fisher_yates_sample!(3:12, ArrayViews.view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
-    self_avoid_sample!(3:12, view(a,:,j))
+    self_avoid_sample!(3:12, ArrayViews.view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
-    seqsample_a!(3:12, view(a,:,j))
+    seqsample_a!(3:12, ArrayViews.view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
-    seqsample_c!(3:12, view(a,:,j))
+    seqsample_c!(3:12, ArrayViews.view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
