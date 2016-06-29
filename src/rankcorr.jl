@@ -126,8 +126,8 @@ function swaps!(x::RealVector)
     n = length(x)
     if n == 1 return 0 end
     n2 = div(n, 2)
-    xl = sub(x, 1:n2)
-    xr = sub(x, n2+1:n)
+    xl = Compat.view(x, 1:n2)
+    xr = Compat.view(x, n2+1:n)
     nsl = swaps!(xl)
     nsr = swaps!(xr)
     sort!(xl)
@@ -150,4 +150,3 @@ function mswaps(x::RealVector, y::RealVector)
     end
     return nSwaps
 end
-

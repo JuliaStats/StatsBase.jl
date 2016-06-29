@@ -457,8 +457,8 @@ function pacf_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::Int
         end
         for i = 1 : length(lags)
             l = lags[i]
-            sX = sub(tmpX, 1+l:lx, 1:l+1)
-            r[i,j] = (cholfact!(sX'sX)\(sX'sub(X, 1+l:lx, j)))[end]
+            sX = Compat.view(tmpX, 1+l:lx, 1:l+1)
+            r[i,j] = (cholfact!(sX'sX)\(sX'Compat.view(X, 1+l:lx, j)))[end]
         end
     end
     r
@@ -470,7 +470,7 @@ function pacf_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerV
         acfs = autocor(X[:,j], 1:mk)
         for i = 1 : length(lags)
             l = lags[i]
-            r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(sub(acfs, 1:l), tmp)[l]
+            r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(Compat.view(acfs, 1:l), tmp)[l]
         end
     end
 end
@@ -519,4 +519,3 @@ end
 function pacf{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
-
