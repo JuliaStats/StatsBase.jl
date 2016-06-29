@@ -25,7 +25,7 @@ function check_wsample_wrep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; o
             @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
         else
             for j = 1:ncols
-                aj = view(a, :, j)
+                aj = ArrayViews.view(a, :, j)
                 @test_approx_eq_eps proportions(aj, vmin:vmax) p0 ptol
             end
         end
@@ -64,7 +64,7 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; 
     n = vmax - vmin + 1
 
     for j = 1:size(a,2)
-        aj = view(a,:,j)
+        aj = ArrayViews.view(a,:,j)
         @assert norepeat(aj)
         if ordered
             @assert issorted(aj)
@@ -84,6 +84,6 @@ wv = weights([0.2, 0.8, 0.4, 0.6])
 
 a = zeros(Int, 3, n)
 for j = 1:n
-    naive_wsample_norep!(4:7, wv, view(a,:,j))
+    naive_wsample_norep!(4:7, wv, ArrayViews.view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)

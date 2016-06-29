@@ -3,6 +3,7 @@ __precompile__(true)
 module StatsBase
     using Compat
     import Compat.String
+    import Compat.view
     using ArrayViews
     using StatsFuns
 
@@ -18,10 +19,12 @@ module StatsBase
                       softplus, invsoftplus,
                       logsumexp, softmax, softmax!
 
-    export
+    if VERSION < v"0.5.0-dev"
+        # reexport from ArrayViews
+        export view
+    end
 
-    # reexport from ArrayViews
-    view,
+    export
 
     ## mathfuns (TODO: removed after a certain period)
     xlogx,       # x * log(x)
