@@ -2,7 +2,8 @@ __precompile__(true)
 
 module StatsBase
     using Compat
-    import Compat.String
+    import Compat: String, view
+
     using StatsFuns
 
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
@@ -172,11 +173,6 @@ module StatsBase
     R2,
     R²,
     model_response
-
-    # Use the base capabilities for array views
-    if !isdefined(Base, :view)
-        view = sub
-    end
 
     # source files
 
