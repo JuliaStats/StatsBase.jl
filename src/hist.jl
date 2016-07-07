@@ -1,7 +1,22 @@
 import Base: show, ==, push!, append!
 
+# Mechanism for temporary deprecation of default for "closed" (because default
+# value has changed). After deprecation is lifed, remove "_check_closed_arg"
+# and all calls to it, and replace every ":default_left" with ":left". Also
+# remove "closed=:left" in tests for all lines marked "FIXME: closed".
+function _check_closed_arg(closed::Symbol, funcsym)
+    if closed == :default_left
+        Base.depwarn("Default for keyword argument \"closed\" has changed from :right to :left.", funcsym)
+        :left
+    else
+        closed
+    end
+end
+
+
 ## nice-valued ranges for histograms
-function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:left)
+function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:default_left)
+    closed = _check_closed_arg(closed,:histrange)
     F = float(T)
     nv = length(v)
     if nv == 0 && n < 0
@@ -16,7 +31,8 @@ function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:left)
     histrange(F(lo), F(hi), n, closed)
 end
 
-function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:left)
+function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:default_left)
+    closed = _check_closed_arg(closed,:histrange)
     if hi == lo
         start = F(hi)
         step = one(F)
@@ -108,14 +124,14 @@ type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     end
 end
 
-Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:left) =
-    Histogram{T,N,typeof(edges)}(edges,weights,closed)
+Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:default_left) =
+    Histogram{T,N,typeof(edges)}(edges,weights,_check_closed_arg(closed,:Histogram))
 
-Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:left) =
-    Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),closed)
+Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:default_left) =
+    Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),_check_closed_arg(closed,:Histogram))
 
-Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:left) =
-    Histogram(edges,Int,closed)
+Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:default_left) =
+    Histogram(edges,Int,_check_closed_arg(closed,:Histogram))
 
 function show(io::IO, h::AbstractHistogram)
     println(io, typeof(h))
@@ -130,14 +146,14 @@ end
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)
 
 # 1-dimensional
-Histogram{T}(edge::AbstractVector, weights::AbstractVector{T}, closed::Symbol=:left) =
-    Histogram((edge,), weights, closed)
+Histogram{T}(edge::AbstractVector, weights::AbstractVector{T}, closed::Symbol=:default_left) =
+    Histogram((edge,), weights, _check_closed_arg(closed,:Histogram))
 
-Histogram{T}(edge::AbstractVector, ::Type{T}, closed::Symbol=:left) =
-    Histogram(edge, zeros(T,length(edge)-1), closed)
+Histogram{T}(edge::AbstractVector, ::Type{T}, closed::Symbol=:default_left) =
+    Histogram(edge, zeros(T,length(edge)-1), _check_closed_arg(closed,:Histogram))
 
-Histogram(edge::AbstractVector,closed::Symbol=:left) =
-    Histogram(edge, Int, closed)
+Histogram(edge::AbstractVector,closed::Symbol=:default_left) =
+    Histogram(edge, Int, _check_closed_arg(closed,:Histogram))
 
 function push!{T,E}(h::Histogram{T,1,E}, x::Real,w::Real)
     i = if h.closed == :right
@@ -165,15 +181,19 @@ function append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector,wv::WeightVec)
     h
 end
 
-fit(::Type{Histogram},v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) =
-    append!(Histogram(edg,closed), v)
-fit(::Type{Histogram},v::AbstractVector; closed::Symbol=:left, nbins=sturges(length(v))) =
+fit(::Type{Histogram},v::AbstractVector, edg::AbstractVector; closed::Symbol=:default_left) =
+    append!(Histogram(edg,_check_closed_arg(closed,:fit)), v)
+fit(::Type{Histogram},v::AbstractVector; closed::Symbol=:default_left, nbins=sturges(length(v))) = begin
+    closed = _check_closed_arg(closed,:fit)
     fit(Histogram, v, histrange(v,nbins,closed); closed=closed)
+end
 
-fit{W}(::Type{Histogram},v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:left) =
-    append!(Histogram(edg,W,closed), v, wv)
-fit(::Type{Histogram},v::AbstractVector, wv::WeightVec; closed::Symbol=:left, nbins=sturges(length(v))) =
+fit{W}(::Type{Histogram},v::AbstractVector, wv::WeightVec{W}, edg::AbstractVector; closed::Symbol=:default_left) =
+    append!(Histogram(edg,W,_check_closed_arg(closed,:fit)), v, wv)
+fit(::Type{Histogram},v::AbstractVector, wv::WeightVec; closed::Symbol=:default_left, nbins=sturges(length(v))) = begin
+    closed = _check_closed_arg(closed,:fit)
     fit(Histogram, v, wv, histrange(v,nbins,closed); closed=closed)
+end
 
 # N-dimensional
 function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
@@ -204,12 +224,16 @@ function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector},wv
     h
 end
 
-fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:left) =
-    append!(Histogram(edges,closed), vs)
-fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}; closed::Symbol=:left, nbins=sturges(length(vs[1]))) =
+fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
+    append!(Histogram(edges,_check_closed_arg(closed,:fit)), vs)
+fit{N}(::Type{Histogram}, vs::NTuple{N,AbstractVector}; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
+    closed = _check_closed_arg(closed,:fit)
     fit(Histogram, vs, histrange(vs,nbins,closed); closed=closed)
+end
 
-fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:left) =
-    append!(Histogram(edges,W,closed), vs, wv)
-fit{N}(::Type{Histogram},vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:left, nbins=sturges(length(vs[1]))) =
+fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
+    append!(Histogram(edges,W,_check_closed_arg(closed,:fit)), vs, wv)
+fit{N}(::Type{Histogram},vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
+    closed = _check_closed_arg(closed,:fit)
     fit(Histogram, vs, wv, histrange(vs,nbins,closed); closed=closed)
+end
