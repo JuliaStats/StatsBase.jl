@@ -102,23 +102,23 @@ function _wsum2_blas!{T<:BlasReal}(R::StridedVector{T}, A::StridedMatrix{T}, w::
     return R
 end
 
-function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::ContiguousArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool)
+function _wsumN!{T<:BlasReal,N}(R::StridedArray{T}, A::StridedArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool)
     if dim == 1
         m = size(A, 1)
         n = div(length(A), m)
-        _wsum2_blas!(view(R,:), reshape_view(A, (m, n)), w, 1, init)
+        _wsum2_blas!(view(R,:), reshape(A, (m, n)), w, 1, init)
     elseif dim == N
         n = size(A, N)
         m = div(length(A), n)
-        _wsum2_blas!(view(R,:), reshape_view(A, (m, n)), w, 2, init)
+        _wsum2_blas!(view(R,:), reshape(A, (m, n)), w, 2, init)
     else # 1 < dim < N
         m = 1
         for i = 1:dim-1; m *= size(A, i); end
         n = size(A, dim)
         k = 1
         for i = dim+1:N; k *= size(A, i); end
-        Av = reshape_view(A, (m, n, k))
-        Rv = reshape_view(R, (m, k))
+        Av = reshape(A, (m, n, k))
+        Rv = reshape(R, (m, k))
         for i = 1:k
             _wsum2_blas!(view(Rv,:,i), view(Av,:,:,i), w, 2, init)
         end
@@ -126,7 +126,7 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::ContiguousArray{T,N}, 
     return R
 end
 
-function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool)
+function _wsumN!{T<:BlasReal,N}(R::StridedArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool)
     @assert N >= 3
     if dim <= 2
         m = size(A, 1)
@@ -136,7 +136,7 @@ function _wsumN!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::St
             npages *= size(A, i)
         end
         rlen = ifelse(dim == 1, n, m)
-        Rv = reshape_view(R, (rlen, npages))
+        Rv = reshape(R, (rlen, npages))
         for i = 1:npages
             _wsum2_blas!(view(Rv,:,i), view(A,:,:,i), w, dim, init)
         end
@@ -201,15 +201,15 @@ end
 
 
 # N = 1
-_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) =
+_wsum!{T<:BlasReal}(R::StridedArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsum1!(R, A, w, init)
 
 # N = 2
-_wsum!{T<:BlasReal}(R::ContiguousArray{T}, A::DenseArray{T,2}, w::StridedVector{T}, dim::Int, init::Bool) =
+_wsum!{T<:BlasReal}(R::StridedArray{T}, A::DenseArray{T,2}, w::StridedVector{T}, dim::Int, init::Bool) =
     (_wsum2_blas!(view(R,:), A, w, dim, init); R)
 
 # N >= 3
-_wsum!{T<:BlasReal,N}(R::ContiguousArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) =
+_wsum!{T<:BlasReal,N}(R::StridedArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsumN!(R, A, w, dim, init)
 
 _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) = _wsum_general!(R, @functorize(identity), A, w, dim, init)
