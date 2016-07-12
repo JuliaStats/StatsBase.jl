@@ -60,7 +60,7 @@ function rand_binom(n::Real, p::Real, t::Int=7)
     if n * p < t
         return x + s * _rand_binom_waittime(n, p)
     else
-        i = floor((n + 1) * p)
+        i = floor(Int, (n + 1) * p)
         y = rand_beta(i, n + 1 - i)
         x += s * i
         if y <= p
