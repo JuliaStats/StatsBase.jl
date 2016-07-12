@@ -20,7 +20,15 @@ end
 randi(K::Int) = rand(RandIntSampler(K))
 randi(a::Int, b::Int) = rand(RandIntSampler(a, b))
 
-# draw a number from a binomial distribution
-
-rand_binom(n::Real, p::Real) =
-    @compat Int(ccall((:rbinom, "libRmath-julia"), Float64, (Float64, Float64), n, p))
+# Draw a number from a binomial distribution using the coin flip method
+# described in Non-Uniform Random Variate Generation by Luc Devroye,
+# chapter 10, page 524.
+function rand_binom(n::Real, p::Real)
+    x = 0
+    for i = 1:n
+        if rand() <= p
+            x += 1
+        end
+    end
+    return x
+end
