@@ -57,7 +57,7 @@ function xmultinom_sample!(a::AbstractArray, x::AbstractArray)
             end
             offset = k
         else
-            m = rand_binom(rk, 1.0 / (n - i + 1))
+            m = binomrand(rk, 1.0 / (n - i + 1))
             if m > 0
                 @inbounds ai = a[i]
                 for j = 1:m
@@ -504,7 +504,7 @@ function xmultinom_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
             end
             offset = k
         else
-            m = rand_binom(rk, wi / wsum)
+            m = binomrand(rk, wi / wsum)
             for j = 1 : m
                 @inbounds x[offset + j] = a[i]
             end

@@ -18,6 +18,8 @@ module StatsBase
                       softplus, invsoftplus,
                       logsumexp, softmax, softmax!
 
+    import StatsFuns: RFunctions.binomrand
+
     export
 
     ## mathfuns (TODO: removed after a certain period)

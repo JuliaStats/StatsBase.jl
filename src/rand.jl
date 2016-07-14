@@ -19,8 +19,3 @@ end
 
 randi(K::Int) = rand(RandIntSampler(K))
 randi(a::Int, b::Int) = rand(RandIntSampler(a, b))
-
-# draw a number from a binomial distribution
-
-rand_binom(n::Real, p::Real) =
-    @compat Int(ccall((:rbinom, "libRmath-julia"), Float64, (Float64, Float64), n, p))
