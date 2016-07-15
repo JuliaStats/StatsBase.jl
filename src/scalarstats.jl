@@ -400,6 +400,8 @@ function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
     
     s = zero(T)
     z = zero(T)
+    scale = sum(p)
+    
     if α ≈ 0
         for i = 1:length(p)
             @inbounds pi = p[i]
@@ -407,7 +409,7 @@ function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
                 s += 1
             end
         end
-        s = log(s)
+        s = log(s / scale)
     elseif α ≈ 1
         for i = 1:length(p)
             @inbounds pi = p[i]
@@ -415,6 +417,7 @@ function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
                 s -= pi * log(pi)
             end
         end
+        s = s / scale
     elseif (isinf(α))
         s = -log(maximum(p))
     else # a normal Rényi entropy
@@ -424,7 +427,7 @@ function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
                 s += pi ^ α
             end
         end
-        s = log(s) / (1 - α)
+        s = log(s / scale) / (1 - α)
     end
     return s
 end

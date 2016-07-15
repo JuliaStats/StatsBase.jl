@@ -125,6 +125,13 @@ order = rand() * 49 + 1 # And over 1
 udist = ones(nindiv) / nindiv
 @test_approx_eq renyientropy(udist, order) log(nindiv)
 
+# And test generalised probability distributions (sum(p) != 1)
+scale = rand()
+@test_approx_eq renyientropy(udist * scale, 0) renyientropy(udist, 0) - log(scale)
+@test_approx_eq renyientropy(udist * scale, 1) renyientropy(udist, 1) - log(scale)
+@test_approx_eq renyientropy(udist * scale, Inf) renyientropy(udist, Inf) - log(scale)
+@test_approx_eq renyientropy(udist * scale, order) renyientropy(udist, order) - log(scale)
+
 ##### Cross entropy
 @test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]) 1.1176681825904018
 @test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) 1.6124543443825532
