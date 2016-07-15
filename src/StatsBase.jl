@@ -72,6 +72,7 @@ module StatsBase
     iqr,         # interquatile range
 
     entropy,        # the entropy of a probability vector
+    renyientropy,   # the Rényi (generalised) entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors
     kldivergence,   # K-L divergence between two probability vectors
 
