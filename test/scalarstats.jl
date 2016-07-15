@@ -1,5 +1,6 @@
 using StatsBase
 using Base.Test
+using Distributions
 
 ##### Location
 
@@ -71,7 +72,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 ##### Dispersion
 
-@test span([3, 4, 5, 6, 2]) == (2:6)
+@test StatsBase.span([3, 4, 5, 6, 2]) == (2:6)
 
 @test_approx_eq variation([1:5;]) 0.527046276694730
 
