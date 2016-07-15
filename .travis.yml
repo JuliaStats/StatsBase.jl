@@ -7,10 +7,12 @@ julia:
   - nightly
 notifications:
   email: false
-before_install:
-  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
-script:
-  - julia --check-bounds=yes -e 'Pkg.clone(pwd())'
-  - julia --check-bounds=yes -e 'Pkg.test("StatsBase"; coverage=true)'
+# Work around a Travis bug
+git:
+  depth: 999999
+# Uncomment the following lines to override the default test script
+#script:
+#  - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+#  - julia -e 'Pkg.clone(pwd()); Pkg.build("Primes"); Pkg.test("Primes"; coverage=true)'
 after_success:
   - julia -e 'cd(Pkg.dir("StatsBase")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
