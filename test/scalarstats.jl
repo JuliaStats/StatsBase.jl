@@ -94,9 +94,11 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test_approx_eq entropy([0.5, 0.5],2) 1.0
 @test_approx_eq entropy([0.2, 0.3, 0.5], 2) 1.4854752972273344
 
+##### Cross entropy
 @test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]) 1.1176681825904018
 @test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) 1.6124543443825532
 
+##### KL divergence
 @test_approx_eq kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]) 0.08801516852582819
 @test_approx_eq kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) 0.12697904715521868
 
