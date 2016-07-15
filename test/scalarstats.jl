@@ -95,6 +95,34 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test_approx_eq entropy([0.5, 0.5],2) 1.0
 @test_approx_eq entropy([0.2, 0.3, 0.5], 2) 1.4854752972273344
 
+##### Renyi entropies
+# Generate a random probability distribution of variable length
+nindiv = rand(DiscreteUniform(2, 100))
+dist = rand(Dirichlet(ones(nindiv)))
+
+# Check Shannon entropy against Renyi entropy of order 1
+@test_approx_eq entropy(dist) renyientropy(dist, 1)
+@test_approx_eq renyientropy(dist, 1) renyientropy(dist, 1.0)
+
+# Check Renyi entropy of order 0 is the natural log of the count of non-zeros
+@test_approx_eq renyientropy(dist, 0) log(mapreduce(x -> x > 0 ? 1 : 0, +, dist))
+
+# And is therefore not affected by the addition of non-zeros
+zdist = dist
+zdist = append!(dist, zeros(rand(DiscreteUniform(1, 100))))
+@test_approx_eq renyientropy(dist, 0) renyientropy(zdist, 0)
+
+# Indeed no Renyi entropy should be
+order = rand(Uniform(0, 100))
+@test_approx_eq renyientropy(dist, order) renyientropy(zdist, order)
+
+# Renyi entropy of order infinity is -log(maximum(dist))
+@test_approx_eq renyientropy(dist, Inf) -log(maximum(dist))
+
+# And all Renyi entropies of uniform probabilities should be log n, where n is the length
+udist = ones(nindiv) / nindiv
+@test_approx_eq renyientropy(udist, order) log(nindiv)
+
 ##### Cross entropy
 @test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]) 1.1176681825904018
 @test_approx_eq crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) 1.6124543443825532
