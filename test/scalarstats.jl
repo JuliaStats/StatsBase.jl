@@ -1,6 +1,5 @@
 using StatsBase
 using Base.Test
-using Distributions
 
 ##### Location
 
@@ -97,8 +96,9 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 ##### Renyi entropies
 # Generate a random probability distribution of variable length
-nindiv = rand(DiscreteUniform(2, 100))
-dist = rand(Dirichlet(ones(nindiv)))
+nindiv = 50
+dist = rand(nindiv)
+dist /= sum(dist)
 
 # Check Shannon entropy against Renyi entropy of order 1
 @test_approx_eq entropy(dist) renyientropy(dist, 1)
@@ -109,11 +109,13 @@ dist = rand(Dirichlet(ones(nindiv)))
 
 # And is therefore not affected by the addition of non-zeros
 zdist = dist
-zdist = append!(dist, zeros(rand(DiscreteUniform(1, 100))))
+zdist = append!(dist, zeros(rand(50)))
 @test_approx_eq renyientropy(dist, 0) renyientropy(zdist, 0)
 
 # Indeed no Renyi entropy should be
-order = rand(Uniform(0, 100))
+loworder = rand() # Between 0 and 1
+@test_approx_eq renyientropy(dist, loworder) renyientropy(zdist, loworder)
+order = rand() * 49 + 1 # And over 1
 @test_approx_eq renyientropy(dist, order) renyientropy(zdist, order)
 
 # Renyi entropy of order infinity is -log(maximum(dist))
