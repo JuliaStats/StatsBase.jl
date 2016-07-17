@@ -95,7 +95,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test_approx_eq entropy([0.2, 0.3, 0.5], 2) 1.4854752972273344
 
 ##### Renyi entropies
-# Generate a random probability distribution of variable length
+# Generate a random probability distribution
 nindiv = 50
 dist = rand(nindiv)
 dist /= sum(dist)
