@@ -6,7 +6,8 @@
 
 using StatsBase
 using Base.Test
-
+using Compat
+import Compat.view
 
 # random data for testing
 
@@ -21,8 +22,8 @@ x = [-2.133252557240862    -.7445937365828654;
        .5354280026977677    .7481337671592626;
        .39182285417742585   .3085762550821047]
 
-x1 = x[:, 1]
-x2 = x[:, 2]
+x1 = view(x, :, 1)
+x2 = view(x, :, 2)
 
 # autocov & autocorr
 
