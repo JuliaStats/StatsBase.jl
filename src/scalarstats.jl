@@ -390,6 +390,47 @@ function entropy{T<:Real}(p::AbstractArray{T}, b::Real)
     return entropy(p) / log(b)
 end
 
+"""
+    renyientropy(p, α)
+
+Compute the Rényi (generalized) entropy of order `α` of an array `p`.
+"""
+function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
+    α < 0 && throw(ArgumentError("Order of Rényi entropy not legal, $(α) < 0."))
+    
+    s = zero(T)
+    z = zero(T)
+    scale = sum(p)
+    
+    if α ≈ 0
+        for i = 1:length(p)
+            @inbounds pi = p[i]
+            if pi > z
+                s += 1
+            end
+        end
+        s = log(s / scale)
+    elseif α ≈ 1
+        for i = 1:length(p)
+            @inbounds pi = p[i]
+            if pi > z
+                s -= pi * log(pi)
+            end
+        end
+        s = s / scale
+    elseif (isinf(α))
+        s = -log(maximum(p))
+    else # a normal Rényi entropy
+        for i = 1:length(p)
+            @inbounds pi = p[i]
+            if pi > z
+                s += pi ^ α
+            end
+        end
+        s = log(s / scale) / (1 - α)
+    end
+    return s
+end
 
 """
     crossentropy(p, q, [b])
