@@ -393,7 +393,7 @@ end
 """
     renyientropy(p, α)
 
-Compute the Rényi (generalised) entropy of order `α` of an array `p`.
+Compute the Rényi (generalized) entropy of order `α` of an array `p`.
 """
 function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
     α < 0 && throw(ArgumentError("Order of Rényi entropy not legal, $(α) < 0."))
