@@ -239,7 +239,9 @@ sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 Compute the median absolute deviation of `v`.
 """
 function mad{T<:Real}(v::AbstractArray{T})
-    m = median(v)
+    isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
+
+    m = middle(first(v))
 
     # Using the MAD as a consistent estimator of the standard deviation requires
     # a scaling factor that depends on the underlying distribution. For normally
@@ -249,7 +251,7 @@ function mad{T<:Real}(v::AbstractArray{T})
 
     S = promote_type(T, typeof(k * (one(T) - m)))
 
-    mad!(Array{S,ndims(v)}(v), m; constant=k)
+    mad!(LinAlg.copy_oftype(v, S), m; constant=k)
 end
 
 function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
@@ -405,11 +407,11 @@ Compute the Rényi (generalized) entropy of order `α` of an array `p`.
 """
 function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
     α < 0 && throw(ArgumentError("Order of Rényi entropy not legal, $(α) < 0."))
-    
+
     s = zero(T)
     z = zero(T)
     scale = sum(p)
-    
+
     if α ≈ 0
         for i = 1:length(p)
             @inbounds pi = p[i]
