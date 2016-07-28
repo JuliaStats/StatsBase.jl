@@ -42,22 +42,20 @@ end
     trimmean(x, p)
 
 Compute the trimmed mean of `x`, i.e. the mean after removing a
-proportion `p` of its highest- and lowest-valued elements.
+proportion `p` of both its highest- and lowest-valued elements.
 """
 function trimmean(x::RealArray, p::Real)
     n = length(x)
     n > 0 || error("x can not be empty.")
-    0 <= p < 1 || error("p must be non-negative and less than 1.")
-    rn = min(round(Int, n * p), n-1)
+    0 <= p < 0.5 || error("p must be non-negative and less than 0.5.")
+    g = floor(Int, n * p)
 
     sx = sort(x)
-    nl = rn >> 1
-    nh = (rn - nl)
     s = 0.0
-    for i = (1+nl) : (n-nh)
+    for i = (g+1) : (n-g)
         @inbounds s += sx[i]
     end
-    return s / (n - rn)
+    return s / (n - 2g)
 end
 
 # compute mode, given the range of integer values
