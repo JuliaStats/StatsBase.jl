@@ -234,15 +234,23 @@ sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v, center=median(x); constant=1.4826)
+    mad(v)
 
-Compute the median absolute deviation of `v`, optionally specifying a
-precomputed median `center`. `constant` provides a scaling factor that
-defaults to 1.4826 for consistent estimation of the standard deviation
-of a normal distribution.
+Compute the median absolute deviation of `v`.
 """
-mad{T<:Real}(v::AbstractArray{T}, args...;arg...) = mad!(copy(v), args...;arg...)
-mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v;], args...;arg...)
+function mad{T<:Real}(v::AbstractArray{T})
+    m = median(v)
+
+    # Using the MAD as a consistent estimator of the standard deviation requires
+    # a scaling factor that depends on the underlying distribution. For normally
+    # distributed data, k is chosen as 1 / quantile(Normal(), 3/4) ≈ 1.4826,
+    # which is computed manually here.
+    k = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))
+
+    S = promote_type(T, typeof(k * (one(T) - m)))
+
+    mad!(Array{S,ndims(v)}(v), m; constant=k)
+end
 
 function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
     for i in 1:length(v)
