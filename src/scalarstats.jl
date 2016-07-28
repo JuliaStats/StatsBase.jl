@@ -251,7 +251,7 @@ function mad{T<:Real}(v::AbstractArray{T})
 
     S = promote_type(T, typeof(k * (one(T) - m)))
 
-    mad!(LinAlg.copy_oftype(v, S), m; constant=k)
+    mad!(LinAlg.copy_oftype(v, S); constant=k)
 end
 
 function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
