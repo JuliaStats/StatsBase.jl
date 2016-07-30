@@ -2,7 +2,7 @@ import Base.@deprecate
 import Base.depwarn
 
 import Base.varm, Base.stdm
-@deprecate trimmean(x::RealArray, p::Real)
+@deprecate trimmean(x::RealArray, p::Real) trim(x,p)
 
 @deprecate varm(v::RealArray, m::Real, wv::WeightVec) varm(v, wv, m)
 @deprecate varm(A::RealArray, M::RealArray, wv::WeightVec, dim::Int) varm(v, wv, m, dim)
