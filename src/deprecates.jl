@@ -8,6 +8,8 @@ import Base.varm, Base.stdm
 @deprecate stdm(v::RealArray, m::Real, wv::AbstractWeights) stdm(v, wv, m)
 @deprecate stdm(v::RealArray, m::RealArray, wv::AbstractWeights, dim::Int) stdm(v, wv, m, dim)
 
+@deprecate trimmean(x::RealArray, p::Real) mean(trim(x, p/2))
+
 @deprecate _moment2(v::RealArray, m::Real, wv::AbstractWeights) _moment2(v, wv, m)
 @deprecate _moment3(v::RealArray, m::Real, wv::AbstractWeights) _moment3(v, wv, m)
 @deprecate _moment4(v::RealArray, m::Real, wv::AbstractWeights) _moment4(v, wv, m)

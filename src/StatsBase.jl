@@ -45,7 +45,6 @@ module StatsBase
     geomean,     # geometric mean
     harmmean,    # harmonic mean
     genmean,     # generalized/power mean
-    trimmean,    # trimmed mean
     middle,      # the mean of two real numbers
     mode,        # find a mode from data (the first one)
     modes,       # find all modes from data
@@ -129,6 +128,13 @@ module StatsBase
     hist,
     # histrange,
     midpoints,
+    
+    ## robust
+    trim,           # trimmed set
+    trim!,          # trimmed set
+    winsor,         # Winsorized set
+    winsor!,        # Winsorized set
+    trimvar,        # variance of the mean of a trimmed set
 
     ## misc
     rle,            # run-length encoding
@@ -189,6 +195,7 @@ module StatsBase
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
+    include("robust.jl")
 
     include("sampling.jl")
     include("statmodels.jl")
