@@ -17,14 +17,6 @@ using Base.Test
 @test_approx_eq harmmean(1:3) 3 / (1 + 1/2 + 1/3)
 @test_approx_eq harmmean([1, 2, 4]) 12 / 7
 
-## trimmean
-
-@test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.0) 22.4
-@test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.4) 4.0
-@test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.8) 3.0
-@test_approx_eq trimmean([2, 3, -100, 200, 7], 0.4) 4.0
-@test_approx_eq trimmean([2, 3, -100, 200, 7], 0.8) 3.0
-
 ## mode & modes
 
 @test mode([1, 2, 3, 3, 2, 2, 1], 1:3) == 2

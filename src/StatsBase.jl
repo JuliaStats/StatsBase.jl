@@ -54,7 +54,6 @@ module StatsBase
     ## scalarstats
     geomean,     # geometric mean
     harmmean,    # harmonic mean
-    trimmean,    # trimmed mean
     middle,      # the mean of two real numbers
     mode,        # find a mode from data (the first one)
     modes,       # find all modes from data
