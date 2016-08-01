@@ -12,12 +12,8 @@
 
 Remove a proportion `p` of the highest elements, and `p` of the lowest
 elements of vector `x` and return the result. To compute the trimmed
-mean of 'x', use `mean(trim(x, p))`; to compute the variance of this
+mean of `x`, use `mean(trim(x, p))`; to compute the variance of this
 quantity, use `trimvar(x, p)`.
-
-
-If you want to compute
-the variance of `mean(trim(x,p))`, use `trimvar`.
 
 # Example
 ```julia
@@ -32,13 +28,13 @@ trim(x::AbstractVector, p::Real=0.2) = trim!(copy(x), p)
 """
     trim!(x, p=0.2)
 
-A variant of `trim` that partially sorts `x` in place while removing
-the proportion `p` of the highest and lowest elements of `x`.
+A variant of `trim` that modifies `x` by removing the proportion `p`
+of the highest and lowest elements of `x`.
 """
 function trim!(x::AbstractVector, p::Real=0.2)
     n = length(x)
-    n > 0 || error("x can not be empty.")
-    0 <= p < 0.5 || error("p must be in 0 <= p < 0.5.")
+    n > 0 || throw(ArgumentError("x can not be empty."))
+    0 <= p < 0.5 || throw(ArgumentError("p must be in 0 <= p < 0.5."))
     g = floor(Int, n * p)
     
     select!(x, 1:g)
@@ -75,8 +71,8 @@ A variant of `winsor` that modifies vector `x` in place.
 """
 function winsor!(x::AbstractVector, p::Real=0.2)
     n = length(x)
-    n > 0 || error("x can not be empty.")
-    0 <= p < 0.5 || error("p must be in 0 <= p < 0.5.")
+    n > 0 || throw(ArgumentError("x can not be empty."))
+    0 <= p < 0.5 || throw(ArgumentError("p must be in 0 <= p < 0.5."))
     g = floor(Int, n * p)
     
     select!(x, 1:g)
@@ -101,10 +97,10 @@ end
 Compute the variance of the trimmed mean of `x`. This function uses
 the Winsorized variance, as described in Wilcox (2010).
 """
-function trimvar(x::RealArray, p::Real=0.2)
+function trimvar(x::AbstractVector, p::Real=0.2)
     n = length(x)
-    n > 0 || error("x can not be empty.")
-    0 <= p < 0.5 || error("p must be in 0 <= p < 0.5.")
+    n > 0 || throw(ArgumentError("x can not be empty."))
+    0 <= p < 0.5 || throw(ArgumentError("p must be in 0 <= p < 0.5."))
     
     return var(winsor(x,p)) / (n * (1 - 2p)^2)
 end
