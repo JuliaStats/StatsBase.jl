@@ -241,20 +241,23 @@ Compute the median absolute deviation of `v`.
 function mad{T<:Real}(v::AbstractArray{T})
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
-    m = middle(first(v))
+    S = promote_type(T, typeof(middle(first(v))))
 
-    # Using the MAD as a consistent estimator of the standard deviation requires
-    # a scaling factor that depends on the underlying distribution. For normally
-    # distributed data, k is chosen as 1 / quantile(Normal(), 3/4) ≈ 1.4826,
-    # which is computed manually here.
-    k = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))
-
-    S = promote_type(T, typeof(k * (one(T) - m)))
-
-    mad!(LinAlg.copy_oftype(v, S); constant=k)
+    mad!(LinAlg.copy_oftype(v, S))
 end
 
-function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
+
+"""
+    StatsBase.mad!(v, center=median!(v); constant=k)
+
+Compute the maximum absolute deviation (MAD) of `v` about a precomputed center
+`center`, overwriting `v` in the process. Using the MAD as a consistent estimator
+of the standard deviation requires a scaling factor that depends on the underlying
+distribution. For normally distributed data, `k` is chosen as
+`1 / quantile(Normal(), 3/4) ≈ 1.4826`, which is used as the default here.
+"""
+function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v);
+                       constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2)))
     for i in 1:length(v)
         @inbounds v[i] = abs(v[i]-center)
     end
