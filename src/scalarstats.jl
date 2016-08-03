@@ -234,17 +234,30 @@ sem{T<:Real}(a::AbstractArray{T}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v, center=median(x); constant=1.4826)
+    mad(v)
 
-Compute the median absolute deviation of `v`, optionally specifying a
-precomputed median `center`. `constant` provides a scaling factor that
-defaults to 1.4826 for consistent estimation of the standard deviation
-of a normal distribution.
+Compute the median absolute deviation of `v`.
 """
-mad{T<:Real}(v::AbstractArray{T}, args...;arg...) = mad!(copy(v), args...;arg...)
-mad{T<:Real}(v::Range{T}, args...;arg...) = mad!([v;], args...;arg...)
+function mad{T<:Real}(v::AbstractArray{T})
+    isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
-function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v); constant::Real=1.4826)
+    S = promote_type(T, typeof(middle(first(v))))
+
+    mad!(LinAlg.copy_oftype(v, S))
+end
+
+
+"""
+    StatsBase.mad!(v, center=median!(v); constant=k)
+
+Compute the maximum absolute deviation (MAD) of `v` about a precomputed center
+`center`, overwriting `v` in the process. Using the MAD as a consistent estimator
+of the standard deviation requires a scaling factor that depends on the underlying
+distribution. For normally distributed data, `k` is chosen as
+`1 / quantile(Normal(), 3/4) ≈ 1.4826`, which is used as the default here.
+"""
+function mad!{T<:Real}(v::AbstractArray{T}, center::Real=median!(v);
+                       constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2)))
     for i in 1:length(v)
         @inbounds v[i] = abs(v[i]-center)
     end
@@ -397,11 +410,11 @@ Compute the Rényi (generalized) entropy of order `α` of an array `p`.
 """
 function renyientropy{T<:Real, U<:Real}(p::AbstractArray{T}, α::U)
     α < 0 && throw(ArgumentError("Order of Rényi entropy not legal, $(α) < 0."))
-    
+
     s = zero(T)
     z = zero(T)
     scale = sum(p)
-    
+
     if α ≈ 0
         for i = 1:length(p)
             @inbounds pi = p[i]
