@@ -37,10 +37,12 @@ function trim!(x::AbstractVector, p::Real=0.2)
     0 <= p < 0.5 || throw(ArgumentError("p must be in 0 <= p < 0.5."))
     g = floor(Int, n * p)
     
-    select!(x, 1:g)
     select!(x, (n-g+1):n)
+    select!(x, 1:g)
+    deleteat!(x, (n-g+1):n)
+    deleteat!(x, 1:g)
     
-    return x[(g+1):(n-g)]
+    return x
 end
 
 """
