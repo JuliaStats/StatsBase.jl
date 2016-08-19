@@ -18,6 +18,7 @@ quantity, use `trimvar(x, p)`.
 # Example
 ```julia
 julia> trim([1,2,3,4,5], 0.2)
+3-element Array{Int64,1}:
  2
  3
  4
@@ -57,6 +58,7 @@ by `trimvar` to compute the variance of the trimmed mean of `x`.
 # Example
 ```julia
 julia> winsor([1,2,3,4,5], 0.2)
+5-element Array{Int64,1}:
  2
  2
  3
