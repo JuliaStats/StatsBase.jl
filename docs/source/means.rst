@@ -13,7 +13,7 @@ The package provides functions to compute means of different kinds.
 
 .. function:: genmean(x, p)
 
-  Compute the generalized/power mean with order ``p`` of ``x``.
+  Compute the generalized/power mean with exponent ``p`` of ``x``.
 
 .. function:: trimmean(x, p)
 
