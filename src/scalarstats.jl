@@ -42,7 +42,7 @@ end
     genmean(a, p)
 
 Return the generalized/power mean with exponent `p` of a real-valued array.
-i.e. returns ((a_1+a_2+...+a_n)/n)^(1/p), where n is the length of the array a.
+i.e. returns ((a_1^p+a_2^p+...+a_n^p)/n)^(1/p), where n is the length of the array a.
 """
 function genmean(a::RealArray, p::Real)
   if p == 0
