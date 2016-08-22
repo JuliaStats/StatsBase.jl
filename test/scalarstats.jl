@@ -24,7 +24,7 @@ using Base.Test
 @test_approx_eq_eps genmean([1,1,2,3], 1e-8) (6.0)^(1/4) 1e-8
 @test_approx_eq_eps genmean([1,1,2,3], -1e-8) (6.0)^(1/4) 1e-8
 
-## tri_mmean
+## trimmean
 
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.0) 22.4
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.4) 4.0
