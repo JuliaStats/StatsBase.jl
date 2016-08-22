@@ -40,19 +40,18 @@ end
 # Generalized mean
 """
     genmean(a, p)
-Return the generalized/power mean with exponent p of a real-valued array.
+
+Return the generalized/power mean with exponent `p` of a real-valued array.
+i.e. returns ((a_1+a_2+...+a_n)/n)^(1/p), where n is the length of the array a.
 """
 function genmean(a::RealArray, p::Real)
-  if p<0
-    p = convert(AbstractFloat, p)# Negative int p causes domain error.
-  end
-  if p==0.0
+  if p == 0
     return geomean(a)
   end
   s = 0.0
   n = length(a)
-  for i = 1:n
-    @inbounds s += a[i]^p
+  for x in a
+    @inbounds s += convert(Float64, x)^p
   end
   return (s/n)^(1/p)
 end
