@@ -17,7 +17,14 @@ using Base.Test
 @test_approx_eq harmmean(1:3) 3 / (1 + 1/2 + 1/3)
 @test_approx_eq harmmean([1, 2, 4]) 12 / 7
 
-## trimmean
+## genmean
+@test_approx_eq genmean([1,1,2,3], 1) 7/4
+@test_approx_eq genmean([1,4,2], -1) 12/7
+@test_approx_eq genmean([1,1,2,3], 0) (6.0)^(1/4)
+@test_approx_eq_eps genmean([1,1,2,3], 1e-8) (6.0)^(1/4) 1e-8
+@test_approx_eq_eps genmean([1,1,2,3], -1e-8) (6.0)^(1/4) 1e-8
+
+## tri_mmean
 
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.0) 22.4
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.4) 4.0

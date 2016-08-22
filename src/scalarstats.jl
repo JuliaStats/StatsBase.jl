@@ -37,6 +37,26 @@ function harmmean(a::RealArray)
     return n / s
 end
 
+# Generalized mean
+"""
+    genmean(a, p)
+Return the generalized/power mean with exponent p of a real-valued array.
+"""
+function genmean(a::RealArray, p::Real)
+  if p<0
+    p = convert(AbstractFloat, p)# Negative int p causes domain error.
+  end
+  if p==0.0
+    return geomean(a)
+  end
+  s = 0.0
+  n = length(a)
+  for i = 1:n
+    @inbounds s += a[i]^p
+  end
+  return (s/n)^(1/p)
+end
+
 # Trimmed mean
 """
     trimmean(x, p)
