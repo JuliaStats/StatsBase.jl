@@ -51,6 +51,8 @@ function genmean(a::RealArray, p::Real)
   s = 0.0
   n = length(a)
   for x in a
+    #= At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
+    We choose `x` in order to exploit exponentiation by squaring when `p` is an int. =#
     @inbounds s += convert(Float64, x)^p
   end
   return (s/n)^(1/p)
