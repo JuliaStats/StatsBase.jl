@@ -13,7 +13,9 @@ The package provides functions to compute means of different kinds.
 
 .. function:: genmean(x, p)
 
-  Compute the generalized/power mean with exponent ``p`` of ``x``.
+  Compute the generalized/power mean of ``x`` with exponent ``p``,
+  i.e. :math:`\left( \frac{1}{n} \sum_{i=1}^n x_i^p \right)^{\frac{1}{p}}`, where ``n == length(a)``.
+  It is taken to be the geometric mean when ``p == 0``.
 
 .. function:: trimmean(x, p)
 
