@@ -7,7 +7,7 @@ coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(
 confint(obj::StatisticalModel) = error("coefint is not defined for $(typeof(obj)).")
 
 """
-deviance(obj::StatisticalModel)
+    deviance(obj::StatisticalModel)
 
 Returns the deviance of the model relative to a reference, which is usually when applicable
 the saturated model. It is equal, *up to a constant*, to `-2 log L`, with `L`
@@ -16,7 +16,7 @@ the likelihood of the model.
 deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(obj)).")
 
 """
-nulldeviance(obj::StatisticalModel)
+    nulldeviance(obj::StatisticalModel)
 
 Returns the deviance of the null model, that is the one including only the intercept.
 """
@@ -25,7 +25,7 @@ loglikelihood(obj::StatisticalModel) = error("loglikelihood is not defined for $
 nullloglikelihood(obj::StatisticalModel) = error("nullloglikelihood is not defined for $(typeof(obj)).")
 
 """
-nobs(obj::StatisticalModel)
+    nobs(obj::StatisticalModel)
 
 Returns the number of independent observations on which the model was fitted. Be careful
 when using this information, as the definition of an independent observation may vary
@@ -35,7 +35,7 @@ depending on the model, on the format used to pass the data, on the sampling pla
 nobs(obj::StatisticalModel) = error("nobs is not defined for $(typeof(obj)).")
 
 """
-df(obj::StatisticalModel)
+    df(obj::StatisticalModel)
 
 Returns the number of degrees of freedom consumed in the model, including
 when applicable the intercept and the distribution's dispersion parameter.
@@ -47,39 +47,39 @@ fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj
 fit!(obj::StatisticalModel, data...) = error("fit! is not defined for $(typeof(obj)).")
 
 """
-AIC(obj::StatisticalModel)
+    aic(obj::StatisticalModel)
 
 Akaike's Information Criterion, defined as `-2 log L + 2k`, with `L` the likelihood
 of the model, and `k` its number of consumed degrees of freedom (as returned by `df`).
 """
-AIC(obj::StatisticalModel) = -2loglikelihood(obj) + 2df(obj)
+aic(obj::StatisticalModel) = -2loglikelihood(obj) + 2df(obj)
 
 """
-AICc(obj::StatisticalModel)
+    aicc(obj::StatisticalModel)
 
 Corrected Akaike's Information Criterion for small sample sizes (Hurvich and Tsai 1989),
 defined as `-2 log L + 2k + 2k(k-1)/(n-k-1)`, with `L` the likelihood of the model,
 `k` its number of consumed degrees of freedom (as returned by `df`), and `n` the number
 of observations (as returned by `nobs`).
 """
-function AICc(obj::StatisticalModel)
+function aicc(obj::StatisticalModel)
     k = df(obj)
     n = nobs(obj)
     -2loglikelihood(obj) + 2k + 2k*(k+1)/(n-k-1)
 end
 
 """
-BIC(obj::StatisticalModel)
+    bic(obj::StatisticalModel)
 
-Akaike's Information Criterion, defined as `-2 log L + k log n`, with `L`
+Bayesian Information Criterion, defined as `-2 log L + k log n`, with `L`
 the likelihood of the model,  `k` its number of consumed degrees of freedom
 (as returned by `df`), and `n` the number of observations (as returned by `nobs`).
 """
-BIC(obj::StatisticalModel) = -2loglikelihood(obj) + df(obj)*log(nobs(obj))
+bic(obj::StatisticalModel) = -2loglikelihood(obj) + df(obj)*log(nobs(obj))
 
 """
-R2(obj::StatisticalModel, variant::Symbol)
-R²(obj::StatisticalModel, variant::Symbol)
+    r2(obj::StatisticalModel, variant::Symbol)
+    r²(obj::StatisticalModel, variant::Symbol)
 
 Coefficient of determination (R-squared).
 
@@ -97,7 +97,7 @@ In the above formulas, ``L`` is the likelihood of the model, ``L0`` that of the 
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models.
 """
-function R2(obj::StatisticalModel, variant::Symbol)
+function r2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
 
@@ -112,11 +112,11 @@ function R2(obj::StatisticalModel, variant::Symbol)
     end
 end
 
-const R² = R2
+const r² = r2
 
 """
-adjR2(obj::StatisticalModel, variant::Symbol)
-adjR²(obj::StatisticalModel, variant::Symbol)
+    adjr2(obj::StatisticalModel, variant::Symbol)
+    adjr²(obj::StatisticalModel, variant::Symbol)
 
 Adjusted coefficient of determination (adjusted R-squared).
 
@@ -131,7 +131,7 @@ In this formula, `L` is the likelihood of the model, `L0` that of the null model
 `deviance` of the corresponding models. `k` is the number of consumed degrees of freedom
 of the model (as returned by `df`).
 """
-function adjR2(obj::StatisticalModel, variant::Symbol)
+function adjr2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
     k = df(obj)
@@ -143,7 +143,7 @@ function adjR2(obj::StatisticalModel, variant::Symbol)
     end
 end
 
-const adjR² = adjR2
+const adjr² = adjr2
 
 abstract RegressionModel <: StatisticalModel
 
@@ -171,7 +171,7 @@ type CoefTable
         all(nrs .== nr) || error("Elements of cols should have equal lengths, but got $nrs")
         new(cols,colnms,rownms)
     end
-    
+
     function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0)
         nc = size(mat,2)
         cols = Any[mat[:, i] for i in 1:nc]

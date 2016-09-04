@@ -10,9 +10,17 @@
 #
 #######################################
 
+"""
+    corspearman(x, y=x)
+
+Compute Spearman's rank correlation coefficient. If `x` and `y` are vectors, the
+output is a float, otherwise it's a matrix corresponding to the pairwise correlations
+of the columns of `x` and `y`.
+"""
 corspearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
 
-corspearman(X::RealMatrix, Y::RealMatrix) = cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
+corspearman(X::RealMatrix, Y::RealMatrix) =
+    cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
 corspearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, 1), tiedrank(y))
 corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, 1))
 
@@ -31,7 +39,7 @@ function corkendall!(x::RealVector, y::RealVector)
     if any(isnan(x)) || any(isnan(y)) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
-    
+
     # Initial sorting
     pm = sortperm(y)
     x[:] = x[pm]
@@ -45,7 +53,7 @@ function corkendall!(x::RealVector, y::RealVector)
     iU = 1
     nU = 0
     for i = 2:n
-        if x[i] == x[i-1] 
+        if x[i] == x[i-1]
             iT += 1
         else
             nT += iT*(iT - 1)
@@ -71,7 +79,7 @@ function corkendall!(x::RealVector, y::RealVector)
     nV = 0
     jV = 1
     for i = 2:n
-        if x[i] == x[i-1] && y[i] == y[i-1] 
+        if x[i] == x[i-1] && y[i] == y[i-1]
             iV += 1
         else
             nV += iV*(iV - 1)
@@ -86,6 +94,12 @@ function corkendall!(x::RealVector, y::RealVector)
 end
 
 
+"""
+    corkendall(x, y=x)
+
+Compute Kendall's rank correlation coefficient, τ. `x` and `y` must both be either
+matrices or vectors.
+"""
 corkendall(x::RealVector, y::RealVector) = corkendall!(float(copy(x)), float(copy(y)))
 
 corkendall(X::RealMatrix, y::RealVector) = Float64[corkendall!(float(X[:,i]), float(copy(y))) for i in 1:size(X, 2)]
@@ -112,8 +126,8 @@ function swaps!(x::RealVector)
     n = length(x)
     if n == 1 return 0 end
     n2 = div(n, 2)
-    xl = sub(x, 1:n2)
-    xr = sub(x, n2+1:n)
+    xl = view(x, 1:n2)
+    xr = view(x, n2+1:n)
     nsl = swaps!(xl)
     nsr = swaps!(xr)
     sort!(xl)

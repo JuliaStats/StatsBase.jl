@@ -2,7 +2,7 @@
 #
 #  autocorrelation
 #  cross-correlation
-#  partial autocorrelation 
+#  partial autocorrelation
 #
 
 #######################################
@@ -14,7 +14,7 @@
 default_laglen(lx::Int) = min(lx-1, round(Int,10*log10(lx)))
 check_lags(lx::Int, lags::AbstractVector) = (maximum(lags) < lx || error("lags must be less than the sample length."))
 
-function demean_col!{T<:RealFP}(z::Vector{T}, x::Matrix{T}, j::Int, demean::Bool)
+function demean_col!{T<:RealFP}(z::AbstractVector{T}, x::AbstractMatrix{T}, j::Int, demean::Bool)
     m = size(x, 1)
     @assert m == length(z)
     b = m * (j-1)
@@ -42,15 +42,21 @@ end
 
 default_autolags(lx::Int) = 0 : default_laglen(lx)
 
-_autodot{T<:RealFP}(x::Vector{T}, lx::Int, l::Int) = dot(x, 1:lx-l, x, 1+l:lx)
+_autodot{T<:RealFP}(x::AbstractVector{T}, lx::Int, l::Int) = dot(x, 1:lx-l, x, 1+l:lx)
 
 
 ## autocov
+"""
+    autocov!(r, x, lags; demean=true)
 
-function autocov!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+Compute the autocovariance of a vector or matrix `x` at `lags` and store the result
+in `r`. `demean` denotes whether the mean of `x` should be subtracted from `x`
+before computing the autocovariance.
+"""
+function autocov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     m = length(lags)
-    length(r) == m || raise_dimerror()
+    length(r) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     z::Vector{T} = demean ? x .- mean(x) : x
@@ -60,11 +66,11 @@ function autocov!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; d
     return r
 end
 
-function autocov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocov!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
-    size(r) == (m, ns) || raise_dimerror()
+    size(r) == (m, ns) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     z = Array(T, lx)
@@ -77,22 +83,40 @@ function autocov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; d
     return r
 end
 
-function autocov{T<:Real}(x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+
+"""
+    autocov(x, [lags]; demean=true)
+
+Compute the autocovariance of a vector or matrix `x`, optionally specifying
+the `lags` at which to compute the autocovariance. `demean` denotes whether
+the mean of `x` should be subtracted from `x` before computing the autocovariance.
+
+When left unspecified, the lags used are the integers from 0 to
+`min(size(x,1)-1, 10*log10(size(x,1)))`.
+"""
+function autocov{T<:Real}(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     autocov!(Array(fptype(T), length(lags)), float(x), lags; demean=demean)
 end
 
-function autocov{T<:Real}(x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocov{T<:Real}(x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     autocov!(Array(fptype(T), length(lags), size(x,2)), float(x), lags; demean=demean)
 end
 
-autocov{T<:Real}(x::VecOrMat{T}; demean::Bool=true) = autocov(x, default_autolags(size(x,1)); demean=demean)
+autocov{T<:Real}(x::AbstractVecOrMat{T}; demean::Bool=true) = autocov(x, default_autolags(size(x,1)); demean=demean)
 
 ## autocor
 
-function autocor!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+"""
+    autocor!(r, x, lags; demean=true)
+
+Compute the autocorrelation function (ACF) of a vector or matrix `x` at `lags`
+and store the result in `r`. `demean` denotes whether the mean of `x` should
+be subtracted from `x` before computing the ACF.
+"""
+function autocor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     m = length(lags)
-    length(r) == m || raise_dimerror()
+    length(r) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     z::Vector{T} = demean ? x .- mean(x) : x
@@ -103,11 +127,11 @@ function autocor!{T<:RealFP}(r::RealVector, x::Vector{T}, lags::IntegerVector; d
     return r
 end
 
-function autocor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocor!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
-    size(r) == (m, ns) || raise_dimerror()
+    size(r) == (m, ns) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     z = Array(T, lx)
@@ -121,15 +145,26 @@ function autocor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, lags::IntegerVector; d
     return r
 end
 
-function autocor{T<:Real}(x::Vector{T}, lags::IntegerVector; demean::Bool=true)
+
+"""
+    autocor(x, [lags]; demean=true)
+
+Compute the autocorrelation function (ACF) of a vector or matrix `x`,
+optionally specifying the `lags`. `demean` denotes whether the mean
+of `x` should be subtracted from `x` before computing the ACF.
+
+When left unspecified, the lags used are the integers from 0 to
+`min(size(x,1)-1, 10*log10(size(x,1)))`.
+"""
+function autocor{T<:Real}(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     autocor!(Array(fptype(T), length(lags)), float(x), lags; demean=demean)
 end
 
-function autocor{T<:Real}(x::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocor{T<:Real}(x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     autocor!(Array(fptype(T), length(lags), size(x,2)), float(x), lags; demean=demean)
 end
 
-autocor{T<:Real}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
+autocor{T<:Real}(x::AbstractVecOrMat{T}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
 
 
 #######################################
@@ -140,14 +175,22 @@ autocor{T<:Real}(x::VecOrMat{T}; demean::Bool=true) = autocor(x, default_autolag
 
 default_crosslags(lx::Int) = (l=default_laglen(lx); -l:l)
 
-_crossdot{T<:RealFP}(x::Vector{T}, y::Vector{T}, lx::Int, l::Int) = (l >= 0 ? dot(x, 1:lx-l, y, 1+l:lx) : dot(x, 1-l:lx, y, 1:lx+l))
+_crossdot{T<:RealFP}(x::AbstractVector{T}, y::AbstractVector{T}, lx::Int, l::Int) = (l >= 0 ? dot(x, 1:lx-l, y, 1+l:lx) : dot(x, 1-l:lx, y, 1:lx+l))
 
 ## crosscov
 
-function crosscov!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+"""
+    crosscov!(r, x, y, lags; demean=true)
+
+Compute the cross covariance function (CCF) between real-valued vectors or matrices
+`x` and `y` at `lags` and store the result in `r`. `demean` specifies whether the
+respective means of `x` and `y` should be subtracted from them before computing their
+CCF.
+"""
+function crosscov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     m = length(lags)
-    (length(y) == lx && length(r) == m) || raise_dimerror()
+    (length(y) == lx && length(r) == m) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     zx::Vector{T} = demean ? x .- mean(x) : x
@@ -158,11 +201,11 @@ function crosscov!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::I
     return r
 end
 
-function crosscov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
-    (length(y) == lx && size(r) == (m, ns)) || raise_dimerror()
+    (length(y) == lx && size(r) == (m, ns)) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     zx = Array(T, lx)
@@ -176,11 +219,11 @@ function crosscov!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, y::Vector{T}, lags::I
     return r
 end
 
-function crosscov!{T<:RealFP}(r::RealMatrix, x::Vector{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!{T<:RealFP}(r::RealMatrix, x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     ns = size(y, 2)
     m = length(lags)
-    (size(y, 1) == lx && size(r) == (m, ns)) || raise_dimerror()
+    (size(y, 1) == lx && size(r) == (m, ns)) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     zx::Vector{T} = demean ? x .- mean(x) : x
@@ -194,12 +237,12 @@ function crosscov!{T<:RealFP}(r::RealMatrix, x::Vector{T}, y::Matrix{T}, lags::I
     return r
 end
 
-function crosscov!{T<:RealFP}(r::AbstractArray{T,3}, x::Matrix{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!{T<:RealFP}(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
     m = length(lags)
-    (size(y, 1) == lx && size(r) == (m, nx, ny)) || raise_dimerror()
+    (size(y, 1) == lx && size(r) == (m, nx, ny)) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     # cached (centered) columns of x
@@ -230,31 +273,49 @@ function crosscov!{T<:RealFP}(r::AbstractArray{T,3}, x::Matrix{T}, y::Matrix{T},
     return r
 end
 
-function crosscov{T<:Real}(x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+
+"""
+    crosscov(x, y, [lags]; demean=true)
+
+Compute the cross covariance function (CCF) between real-valued vectors or
+matrices `x` and `y`, optionally specifying the `lags`. `demean` specifies
+whether the respective means of `x` and `y` should be subtracted from them
+before computing their CCF.
+
+When left unspecified, the lags used are the integers from
+`-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
+"""
+function crosscov{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     crosscov!(Array(fptype(T), length(lags)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscov{T<:Real}(x::Matrix{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov{T<:Real}(x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     crosscov!(Array(fptype(T), length(lags), size(x,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscov{T<:Real}(x::Vector{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov{T<:Real}(x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     crosscov!(Array(fptype(T), length(lags), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscov{T<:Real}(x::Matrix{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov{T<:Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     crosscov!(Array(fptype(T), length(lags), size(x,2), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-crosscov{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscov(x, y, default_crosslags(size(x,1)); demean=demean)
+crosscov{T<:Real}(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=true) = crosscov(x, y, default_crosslags(size(x,1)); demean=demean)
 
 
 ## crosscor
+"""
+    crosscor!(r, x, y, lags; demean=true)
 
-function crosscor!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+Compute the cross correlation between real-valued vectors or matrices `x` and `y` at
+`lags` and store the result in `r`. `demean` specifies whether the respective means of
+`x` and `y` should be subtracted from them before computing their cross correlation.
+"""
+function crosscor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     m = length(lags)
-    (length(y) == lx && length(r) == m) || raise_dimerror()
+    (length(y) == lx && length(r) == m) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     zx::Vector{T} = demean ? x .- mean(x) : x
@@ -266,11 +327,11 @@ function crosscor!{T<:RealFP}(r::RealVector, x::Vector{T}, y::Vector{T}, lags::I
     return r
 end
 
-function crosscor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
-    (length(y) == lx && size(r) == (m, ns)) || raise_dimerror()
+    (length(y) == lx && size(r) == (m, ns)) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     zx = Array(T, lx)
@@ -286,11 +347,11 @@ function crosscor!{T<:RealFP}(r::RealMatrix, x::Matrix{T}, y::Vector{T}, lags::I
     return r
 end
 
-function crosscor!{T<:RealFP}(r::RealMatrix, x::Vector{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!{T<:RealFP}(r::RealMatrix, x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
     ns = size(y, 2)
     m = length(lags)
-    (size(y, 1) == lx && size(r) == (m, ns)) || raise_dimerror()
+    (size(y, 1) == lx && size(r) == (m, ns)) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     zx::Vector{T} = demean ? x .- mean(x) : x
@@ -306,12 +367,12 @@ function crosscor!{T<:RealFP}(r::RealMatrix, x::Vector{T}, y::Matrix{T}, lags::I
     return r
 end
 
-function crosscor!{T<:RealFP}(r::AbstractArray{T,3}, x::Matrix{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!{T<:RealFP}(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
     m = length(lags)
-    (size(y, 1) == lx && size(r) == (m, nx, ny)) || raise_dimerror()
+    (size(y, 1) == lx && size(r) == (m, nx, ny)) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
     # cached (centered) columns of x
@@ -347,23 +408,34 @@ function crosscor!{T<:RealFP}(r::AbstractArray{T,3}, x::Matrix{T}, y::Matrix{T},
     return r
 end
 
-function crosscor{T<:Real}(x::Vector{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+
+"""
+    crosscor(x, y, [lags]; demean=true)
+
+Compute the cross correlation between real-valued vectors or matrices `x` and `y`,
+optionally specifying the `lags`. `demean` specifies whether the respective means of
+`x` and `y` should be subtracted from them before computing their cross correlation.
+
+When left unspecified, the lags used are the integers from
+`-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
+"""
+function crosscor{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     crosscor!(Array(fptype(T), length(lags)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscor{T<:Real}(x::Matrix{T}, y::Vector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor{T<:Real}(x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     crosscor!(Array(fptype(T), length(lags), size(x,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscor{T<:Real}(x::Vector{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor{T<:Real}(x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     crosscor!(Array(fptype(T), length(lags), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscor{T<:Real}(x::Matrix{T}, y::Matrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor{T<:Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
     crosscor!(Array(fptype(T), length(lags), size(x,2), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-crosscor{T<:Real}(x::VecOrMat{T}, y::VecOrMat{T}; demean::Bool=true) = crosscor(x, y, default_crosslags(size(x,1)); demean=demean)
+crosscor{T<:Real}(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=true) = crosscor(x, y, default_crosslags(size(x,1)); demean=demean)
 
 
 #######################################
@@ -385,33 +457,43 @@ function pacf_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::Int
         end
         for i = 1 : length(lags)
             l = lags[i]
-            sX = sub(tmpX, 1+l:lx, 1:l+1)
-            r[i,j] = (cholfact!(sX'sX)\(sX'sub(X, 1+l:lx, j)))[end]
+            sX = view(tmpX, 1+l:lx, 1:l+1)
+            r[i,j] = (cholfact!(sX'sX)\(sX'view(X, 1+l:lx, j)))[end]
         end
-    end 
-    r   
+    end
+    r
 end
 
-function pacf_yulewalker!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector, mk::Integer)
+function pacf_yulewalker!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer)
     tmp = Array(T, mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
         for i = 1 : length(lags)
             l = lags[i]
-            r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(sub(acfs, 1:l), tmp)[l]
+            r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(view(acfs, 1:l), tmp)[l]
         end
     end
 end
 
-function pacf!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
+
+"""
+    pacf!(r, X, lags; method=:regression)
+
+Compute the partial autocorrelation function (PACF) of a matrix `X` at `lags` and
+store the result in `r`. `method` designates the estimation method. Recognized values
+are `:regression`, which computes the partial autocorrelations via successive
+regression models, and `:yulewalker`, which computes the partial autocorrelations
+using the Yule-Walker equations.
+"""
+function pacf!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression)
     lx = size(X, 1)
     m = length(lags)
     minlag, maxlag = extrema(lags)
     (0 <= minlag && 2maxlag < lx) || error("Invalid lag value.")
-    size(r) == (m, size(X,2)) || raise_dimerror()
+    size(r) == (m, size(X,2)) || throw(DimensionMismatch())
 
     if method == :regression
-        pacf_regress!(r, X, lags, maxlag)        
+        pacf_regress!(r, X, lags, maxlag)
     elseif method == :yulewalker
         pacf_yulewalker!(r, X, lags, maxlag)
     else
@@ -420,11 +502,21 @@ function pacf!{T<:RealFP}(r::RealMatrix, X::Matrix{T}, lags::IntegerVector; meth
     return r
 end
 
-function pacf{T<:Real}(X::Matrix{T}, lags::IntegerVector; method::Symbol=:regression)
+
+"""
+    pacf(X, lags; method=:regression)
+
+Compute the partial autocorrelation function (PACF) of a real-valued vector
+or matrix `X` at `lags`. `method` designates the estimation method. Recognized
+values are `:regression`, which computes the partial autocorrelations via successive
+regression models, and `:yulewalker`, which computes the partial autocorrelations
+using the Yule-Walker equations.
+"""
+function pacf{T<:Real}(X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression)
     pacf!(Array(fptype(T), length(lags), size(X,2)), float(X), lags; method=method)
 end
 
-function pacf{T<:Real}(x::Vector{T}, lags::IntegerVector; method::Symbol=:regression)
+function pacf{T<:Real}(x::AbstractVector{T}, lags::IntegerVector; method::Symbol=:regression)
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
 

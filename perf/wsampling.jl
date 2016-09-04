@@ -1,4 +1,4 @@
-# Benchmark on weighted sampling 
+# Benchmark on weighted sampling
 
 using BenchmarkLite
 using StatsBase
@@ -9,7 +9,7 @@ import StatsBase: direct_sample!, alias_sample!, xmultinom_sample!
 
 type WSampleProc{Alg} <: Proc end
 
-abstract WithRep 
+abstract WithRep
 abstract NoRep
 
 type Direct <: WithRep end
@@ -43,10 +43,10 @@ Base.isvalid{Alg<:WithRep}(p::WSampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg
 Base.isvalid{Alg<:NoRep}(p::WSampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg; n >= k >= 1)
 
 function Base.start(p::WSampleProc, cfg::(Int, Int))
-	n, k = cfg
-	x = Array(Int, k)
-	w = weights(fill(1.0/n, n))
-	return (w, x)
+    n, k = cfg
+    x = Array(Int, k)
+    w = weights(fill(1.0/n, n))
+    return (w, x)
 end
 
 Base.run{Alg}(p::WSampleProc{Alg}, cfg::(Int, Int), s) = tsample!(Alg(), s[1], s[2])
@@ -60,7 +60,7 @@ const ks = 2 .^ [1:16]
 
 ## with replacement
 
-const procs1 = Proc[ WSampleProc{Direct}(), 
+const procs1 = Proc[ WSampleProc{Direct}(),
                      WSampleProc{Alias}(),
                      WSampleProc{Xmultinom_S}(),
                      WSampleProc{Sample_WRep}(),

@@ -2,8 +2,8 @@ __precompile__(true)
 
 module StatsBase
     using Compat
-    import Compat.String
-    using ArrayViews
+    import Compat: String, view
+
     using StatsFuns
     using Base.Collections
     
@@ -19,10 +19,9 @@ module StatsBase
                       softplus, invsoftplus,
                       logsumexp, softmax, softmax!
 
-    export
+    import StatsFuns: RFunctions.binomrand
 
-    # reexport from ArrayViews
-    view,
+    export
 
     ## mathfuns (TODO: removed after a certain period)
     xlogx,       # x * log(x)
@@ -74,6 +73,7 @@ module StatsBase
     iqr,         # interquatile range
 
     entropy,        # the entropy of a probability vector
+    renyientropy,   # the Rényi (generalised) entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors
     kldivergence,   # K-L divergence between two probability vectors
 
@@ -151,11 +151,11 @@ module StatsBase
     StatisticalModel,
     RegressionModel,
 
-    adjR2,
-    adjR²,
-    AIC,
-    AICc,
-    BIC,
+    adjr2,
+    adjr²,
+    aic,
+    aicc,
+    bic,
     coef,
     coeftable,
     confint,
@@ -174,8 +174,8 @@ module StatsBase
     predict,
     predict!,
     residuals,
-    R2,
-    R²,
+    r2,
+    r²,
     model_response
 
     # source files

@@ -5,6 +5,22 @@ This package defines an abstract type ``StatisticalModel``, and an abstract subt
 
 Particularly, instances of ``StatisticalModel`` implement the following methods.  Note that the naming of the methods follow the convention of the `R language <http://www.r-project.org>`_.
 
+.. function:: adjr2(model, variant)
+
+    Adjusted coefficient of determination (adjusted R-squared) using a specified variant.
+  
+.. function:: aic(model)
+
+    `Akaike's information criterion <https://en.wikipedia.org/wiki/Akaike_information_criterion>`_ for the model.
+  
+.. function:: aicc(model)
+
+    Finite sample corrected Akaike information criterion.
+  
+.. function:: bic(model)
+
+    `Bayesian information criterion <https://en.wikipedia.org/wiki/Bayesian_information_criterion>`_ for the model.
+  
 .. function:: coef(model)
 
     Return the estimates of the coefficients, or, more generally, the parameters in the fitted model.
@@ -20,7 +36,11 @@ Particularly, instances of ``StatisticalModel`` implement the following methods.
 .. function:: deviance(model)
 
     The deviance of the fitted model at the parameter estimates.
+  
+.. function:: df(model)
 
+    The degrees of freedom consumed in the model, including when applicable the intercept and the distribution's dispersion parameter.
+  
 .. function:: fit(Type{Model}, params...)
 
     Fit a model to data. If the model can be fit using a design matrix and response vector, the model should implement ``fit(Type{Model}, X, y, params...)``.
@@ -28,6 +48,18 @@ Particularly, instances of ``StatisticalModel`` implement the following methods.
 .. function:: loglikelihood(model)
 
     The log-likelihood of the fitted model at the parameter estimates.
+  
+.. function:: nobs(model)
+
+    The number of independent observations on which the model was fit.
+  
+.. function:: nulldeviance(model)
+
+    The deviance of the null model, the model that only includes the intercept.
+  
+.. function:: r2(model, variant)
+
+    Coefficient of determination, R-squared, using a specified variant.
   
 .. function:: stderr(model)
 
@@ -41,9 +73,13 @@ Particularly, instances of ``StatisticalModel`` implement the following methods.
 ``RegressionModel`` extends ``StatisticalModel``, which also implements the following methods
 
  
-.. function:: nobs(model)
+.. function:: df_residual(model)
 
-    The number of data values (observations) in the response to which the model was fit.
+    Residual degrees of freedom of the model.
+  
+.. function:: fitted(model)
+
+    The fitted values from the model.
   
 .. function:: model_response(model)
 
@@ -51,7 +87,11 @@ Particularly, instances of ``StatisticalModel`` implement the following methods.
   
 .. function:: predict(model)
 
-    The fitted values from the model.
+    Predicted values from the model.
+  
+.. function:: predict!(model)
+
+    Predicted values from the model.
   
 .. function:: residuals(model)
 
