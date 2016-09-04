@@ -5,7 +5,7 @@ module StatsBase
     import Compat: String, view
 
     using StatsFuns
-    using Base.Collections
+    import Base.Collections: heapify!, heappop!, percolate_down!
     
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
