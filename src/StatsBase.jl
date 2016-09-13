@@ -1,4 +1,4 @@
-__precompile__(true)
+__precompile__()
 
 module StatsBase
     using Compat
@@ -13,25 +13,7 @@ module StatsBase
 
     ## tackle compatibility issues
 
-    ## import mathfuns, which were migrated to StatsFuns
-    import StatsFuns: xlogx, xlogy, logistic, logit,
-                      softplus, invsoftplus,
-                      logsumexp, softmax, softmax!
-
-    import StatsFuns: RFunctions.binomrand
-
     export
-
-    ## mathfuns (TODO: removed after a certain period)
-    xlogx,       # x * log(x)
-    xlogy,       # x * log(y)
-    logistic,    # 1 / (1 + exp(-x))
-    logit,       # log(x / (1 - x))
-    softplus,    # log(1 + exp(x))
-    invsoftplus, # log(exp(x) - 1)
-    logsumexp,   # log(exp(x) + exp(y)) or log(sum(exp(x)))
-    softmax,
-    softmax!,
 
     ## weights
     WeightVec,   # the type to represent a weight vector

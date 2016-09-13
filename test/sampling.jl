@@ -47,7 +47,7 @@ function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fal
     end
 end
 
-import StatsBase: direct_sample!, xmultinom_sample!
+import StatsBase: direct_sample!
 
 a = direct_sample!(1:10, zeros(Int, n, 3))
 check_sample_wrep(a, (1, 10), 5.0e-3; ordered=false)
@@ -57,12 +57,6 @@ check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
 a = direct_sample!([11:20;], zeros(Int, n, 3))
 check_sample_wrep(a, (11, 20), 5.0e-3; ordered=false)
-
-a = xmultinom_sample!(3:12, zeros(Int, n))
-check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
-
-a = xmultinom_sample!(101:200, zeros(Int, 10))
-check_sample_wrep(a, (101, 200), 0; ordered=true)
 
 a = sample(3:12, n)
 check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)

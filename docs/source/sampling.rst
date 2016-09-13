@@ -77,14 +77,6 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm consumes ``k`` random numbers.
 
-.. function:: xmultinom_sample!(a, x)
-
-    *Expanded multinomial sampling.*
-
-    For each element in ``a``, draw the number of occurrences from a binomial distribution, and fill this element to ``x`` for the chosen number of times. The output values are inherently ordered.
-
-    This algorithm consumes ``n`` binomial-distributed random numbers. It is very efficient when ``k`` is considerably greater than ``n``.
-
 .. function:: samplepair(a)
 
     Pick two elements at distinct positions from ``a``, and return them as a pair.
@@ -159,14 +151,6 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
     Reference: Walker, A. J. *An Efficient Method for Generating Discrete Random Variables with General Distributions.* ACM Transactions on Mathematical Software 3 (3): 253, 1977.
 
     This algorithm takes ``O(n log n)`` time for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
-
-.. function:: xmultinom_sample!(a, wv, x)
-
-    *Expanded Multinomial sampling.*
-
-    Like the ``xmultinom_sample!`` method for non-weighted cases, except that the weights are taking into account when computing the probabilities for drawing from binomial distributions.
-
-    This algorithm consumes ``O(n)`` random numbers. Very fast when ``k >> n``.
 
 .. function:: naive_wsample_norep!(a, wv, x)
 
