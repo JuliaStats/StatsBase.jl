@@ -4,8 +4,6 @@ module StatsBase
     using Compat
     import Compat: String, view
 
-    using StatsFuns
-
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
     import Base.LinAlg: BlasReal, BlasFloat
