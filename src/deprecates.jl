@@ -2,6 +2,9 @@ import Base.@deprecate
 import Base.depwarn
 
 import Base.varm, Base.stdm
+
+@deprecate trimmean(x::RealArray, p::Real) mean(trim(x, p/2))
+
 @deprecate varm(v::RealArray, m::Real, wv::WeightVec) varm(v, wv, m)
 @deprecate varm(A::RealArray, M::RealArray, wv::WeightVec, dim::Int) varm(v, wv, m, dim)
 @deprecate stdm(v::RealArray, m::Real, wv::WeightVec) stdm(v, wv, m)
@@ -21,4 +24,3 @@ import Base.varm, Base.stdm
 @deprecate R²(obj::StatisticalModel, variant::Symbol) r²(obj, variant)
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
 @deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
-
