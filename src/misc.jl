@@ -77,7 +77,6 @@ function inverse_rle{T}(vals::AbstractVector{T}, lens::IntegerVector)
 end
 
 
-# findat (get positions (within a) for elements in b)
 """
     indexmap(a)
 
@@ -114,25 +113,6 @@ function levelsmap{T}(a::AbstractArray{T})
     end
     return d
 end
-
-function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
-    length(r) == length(b) || raise_dimerror()
-    d = indexmap(a)
-    @inbounds for i = 1 : length(b)
-        r[i] = get(d, b[i], 0)
-    end
-    return r
-end
-
-
-"""
-    findat(a, b)
-
-For each element in `b`, find its first index in `a`. If the value does
-not occur in `a`, the corresponding index is 0.
-"""
-findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
-
 
 # indicatormat
 
