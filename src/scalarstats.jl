@@ -46,17 +46,17 @@ i.e. ``\left( \frac{1}{n} \sum_{i=1}^n a_i^p \right)^{\frac{1}{p}}``, where `n =
 It is taken to be the geometric mean when `p == 0`.
 """
 function genmean(a::RealArray, p::Real)
-  if p == 0
-    return geomean(a)
-  end
-  s = 0.0
-  n = length(a)
-  for x in a
-    #= At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
-    We choose `x` in order to exploit exponentiation by squaring when `p` is an int. =#
-    @inbounds s += convert(Float64, x)^p
-  end
-  return (s/n)^(1/p)
+    if p == 0
+        return geomean(a)
+    end
+    s = 0.0
+    n = length(a)
+    for x in a
+        #= At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
+        We choose `x` in order to exploit exponentiation by squaring when `p` is an int. =#
+        @inbounds s += convert(Float64, x)^p
+    end
+    return (s/n)^(1/p)
 end
 
 # Trimmed mean
