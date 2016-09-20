@@ -17,6 +17,18 @@ using Base.Test
 @test_approx_eq harmmean(1:3) 3 / (1 + 1/2 + 1/3)
 @test_approx_eq harmmean([1, 2, 4]) 12 / 7
 
+## genmean
+@test_approx_eq genmean([1,1,2,3], 1) 7/4
+@test_approx_eq genmean([1,4,2], -1) 12/7
+@test_approx_eq genmean([1,1,2,3], 0) (6.0)^(1/4)
+@test_approx_eq genmean([1.2,-0.5,0], 2) sqrt(169/300)
+@test_approx_eq genmean([16/9,0.25,1.0], 1.5) (755/648)^(2/3)
+# Test numerical stability for `p` close to 0 (genmean should be close to geometric mean).
+@test_approx_eq_eps genmean([1,1,2,3], -1e-8) (6.0)^(1/4) 1e-8
+# Test numerical stability for large `p` (genmean should be close to max).
+@test_approx_eq_eps genmean([0.98,1.02], 1e4) 1.02 1e-4
+
+
 ## trimmean
 
 @test_approx_eq trimmean([-100, 2, 3, 7, 200], 0.0) 22.4
