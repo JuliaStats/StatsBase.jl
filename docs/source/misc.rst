@@ -25,24 +25,6 @@ Miscellaneous Functions
 
     Construct a dictionary that maps each distinct value in ``x`` to its first index.
 
-.. function:: findat(a, x)
-
-    For each element in ``x``, find its first index in ``a``. If the value does not appear in ``a``, the corresponding index is ``0``. 
-
-    **Examples:**
-  
-    .. code-block:: julia
-    
-        julia> findat([2,4,6], [2,3,4])
-        3-element Array{Int64,1}:
-        1
-        0
-        2
-
-.. function:: findat!(r, a, x)
-
-    Write the results of ``findat(a, x)`` to a pre-allocated array ``r``.
-
 .. function:: indicatormat(x, k[; sparse=false])  
 
     Construct a boolean matrix ``r`` of size ``(k, length(x))`` such that ``r[x[i], i] = true`` and all other elements are set to ``false``.

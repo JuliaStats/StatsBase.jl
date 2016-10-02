@@ -22,12 +22,6 @@ b = [true, false, false, true, false, true, true, false]
 @test levelsmap(a) == Dict(2=>2, 3=>3, 1=>1)
 @test levelsmap(b) == Dict(false=>2, true=>1)
 
-
-# findat
-
-findat([2, 4, 6, 8, 10], [8, 6, 4]) == [4, 3, 2]
-findat([2, 4, 6, 8, 10], [2, 3, 4]) == [1, 0, 2]
-
 # indicatormat
 
 I = [false true  false false false;
