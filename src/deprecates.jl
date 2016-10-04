@@ -24,3 +24,6 @@ import Base.varm, Base.stdm
 
 @deprecate findat(a, x) indexin(x, a)
 @deprecate findat!(r, a, x)  copy!(r, indexin(x, a))
+
+@deprecate df(obj::StatisticalModel) dof(obj)
+@deprecate df_residual(obj::StatisticalModel) dof_residual(obj)
