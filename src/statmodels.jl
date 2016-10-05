@@ -35,12 +35,12 @@ depending on the model, on the format used to pass the data, on the sampling pla
 nobs(obj::StatisticalModel) = error("nobs is not defined for $(typeof(obj)).")
 
 """
-    df(obj::StatisticalModel)
+    dof(obj::StatisticalModel)
 
 Returns the number of degrees of freedom consumed in the model, including
 when applicable the intercept and the distribution's dispersion parameter.
 """
-df(obj::StatisticalModel) = error("df is not defined for $(typeof(obj)).")
+dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
 stderr(obj::StatisticalModel) = sqrt(diag(vcov(obj)))
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj)).")
@@ -50,20 +50,20 @@ fit!(obj::StatisticalModel, data...) = error("fit! is not defined for $(typeof(o
     aic(obj::StatisticalModel)
 
 Akaike's Information Criterion, defined as `-2 log L + 2k`, with `L` the likelihood
-of the model, and `k` its number of consumed degrees of freedom (as returned by `df`).
+of the model, and `k` its number of consumed degrees of freedom (as returned by `dof`).
 """
-aic(obj::StatisticalModel) = -2loglikelihood(obj) + 2df(obj)
+aic(obj::StatisticalModel) = -2loglikelihood(obj) + 2dof(obj)
 
 """
     aicc(obj::StatisticalModel)
 
 Corrected Akaike's Information Criterion for small sample sizes (Hurvich and Tsai 1989),
 defined as `-2 log L + 2k + 2k(k-1)/(n-k-1)`, with `L` the likelihood of the model,
-`k` its number of consumed degrees of freedom (as returned by `df`), and `n` the number
+`k` its number of consumed degrees of freedom (as returned by `dof`), and `n` the number
 of observations (as returned by `nobs`).
 """
 function aicc(obj::StatisticalModel)
-    k = df(obj)
+    k = dof(obj)
     n = nobs(obj)
     -2loglikelihood(obj) + 2k + 2k*(k+1)/(n-k-1)
 end
@@ -73,9 +73,9 @@ end
 
 Bayesian Information Criterion, defined as `-2 log L + k log n`, with `L`
 the likelihood of the model,  `k` its number of consumed degrees of freedom
-(as returned by `df`), and `n` the number of observations (as returned by `nobs`).
+(as returned by `dof`), and `n` the number of observations (as returned by `nobs`).
 """
-bic(obj::StatisticalModel) = -2loglikelihood(obj) + df(obj)*log(nobs(obj))
+bic(obj::StatisticalModel) = -2loglikelihood(obj) + dof(obj)*log(nobs(obj))
 
 """
     r2(obj::StatisticalModel, variant::Symbol)
@@ -129,12 +129,12 @@ The only currently supported variant is `:MacFadden`, defined as `1 - (log L - k
 In this formula, `L` is the likelihood of the model, `L0` that of the null model
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models. `k` is the number of consumed degrees of freedom
-of the model (as returned by `df`).
+of the model (as returned by `dof`).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
-    k = df(obj)
+    k = dof(obj)
 
     if variant == :McFadden
         1 - (ll - k)/ll0
@@ -152,7 +152,7 @@ model_response(obj::RegressionModel) = error("model_response is not defined for 
 residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
-df_residual(obj::RegressionModel) = error("df_residual is not defined for $(typeof(obj)).")
+dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
 
 
 ## coefficient tables with specialized show method
