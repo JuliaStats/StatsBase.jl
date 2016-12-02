@@ -157,6 +157,7 @@ module StatsBase
     r2,
     r²,
     model_response,
+
     ConvergenceException
 
     # source files
