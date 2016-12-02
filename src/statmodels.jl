@@ -233,3 +233,12 @@ function show(io::IO, ct::CoefTable)
         println(io)
     end
 end
+
+"""
+Exception to handle failure of convergence when fitting statistical models.
+"""
+type ConvergenceException <: Exception
+    iters::Int
+end
+
+Base.showerror(io::IO, ce::ConvergenceException) = print(io, "failure to converge after $(ce.iters) iterations")
