@@ -34,5 +34,5 @@ x3   0.453058  0.72525 0.999172 0.5567
 try
     throw(ConvergenceException(10))
 catch ex
-    @test sprint(Base.showerror, ex) == "failure to converge after 10 iterations"
+    @test sprint(showerror, ex) == "failure to converge after 10 iterations"
 end
