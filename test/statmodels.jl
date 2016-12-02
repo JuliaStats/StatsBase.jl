@@ -30,4 +30,9 @@ x3   0.453058  0.72525 0.999172 0.5567
 @test sprint(show, StatsBase.PValue(NaN)) == "NaN"
 @test_throws ErrorException StatsBase.PValue(-0.1)
 @test_throws ErrorException StatsBase.PValue(1.1)
-@test_throws ConvergenceException throw(ConvergenceException(10))
+
+try
+    throw(ConvergenceException(10))
+catch ex
+    @test sprint(Base.showerror, ex) == "failure to converge after 10 iterations"
+end
