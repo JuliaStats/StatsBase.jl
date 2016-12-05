@@ -235,7 +235,9 @@ function show(io::IO, ct::CoefTable)
 end
 
 """
-Exception to handle failure of convergence when fitting statistical models.
+	ConvergenceException(iters::Int)
+
+The fitting procedure failed to converge in `iters` number of iterations.
 """
 type ConvergenceException <: Exception
     iters::Int
