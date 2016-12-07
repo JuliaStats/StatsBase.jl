@@ -1,6 +1,6 @@
 StatsBase.jl is licensed under the MIT License:
 
-> Copyright (c) 2012-2013: Dahua Lin, Simon Byrne, Andreas Noack Jensen,
+> Copyright (c) 2012-2016: Dahua Lin, Simon Byrne, Andreas Noack,
 > Douglas Bates, John Myles White, Simon Kornblith, and other contributors.
 
 > Permission is hereby granted, free of charge, to any person obtaining
@@ -21,4 +21,3 @@ StatsBase.jl is licensed under the MIT License:
 > LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 > OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-

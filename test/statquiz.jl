@@ -69,7 +69,8 @@ println("\nII F")
 print("Testing regression: ")
 ctable = coeftable(lm(big ~ x, nasty))
 @test typeof(ctable) == CoefTable
-@test_approx_eq ctable.cols[1] [99999990, 1]
+# conversion to Vector{Float64} can be removed when 0.4 is no longer supported
+@test_approx_eq Vector{Float64}(ctable.cols[1]) [99999990, 1]
 
 @test sprint(show, ctable) == """\
              Estimate Std.Error t value Pr(>|t|)

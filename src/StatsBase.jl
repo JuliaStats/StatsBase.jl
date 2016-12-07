@@ -1,38 +1,18 @@
-__precompile__(true)
+__precompile__()
 
 module StatsBase
     using Compat
     import Compat: String, view
 
-    using StatsFuns
-    import Base.Collections: heapify!, heappop!, percolate_down!
-    
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
     import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @nloops, @nref, @nextract
+    import Base.Collections: heapify!, heappop!, percolate_down!
 
     ## tackle compatibility issues
 
-    ## import mathfuns, which were migrated to StatsFuns
-    import StatsFuns: xlogx, xlogy, logistic, logit,
-                      softplus, invsoftplus,
-                      logsumexp, softmax, softmax!
-
-    import StatsFuns: RFunctions.binomrand
-
     export
-
-    ## mathfuns (TODO: removed after a certain period)
-    xlogx,       # x * log(x)
-    xlogy,       # x * log(y)
-    logistic,    # 1 / (1 + exp(-x))
-    logit,       # log(x / (1 - x))
-    softplus,    # log(1 + exp(x))
-    invsoftplus, # log(exp(x) - 1)
-    logsumexp,   # log(exp(x) + exp(y)) or log(sum(exp(x)))
-    softmax,
-    softmax!,
 
     ## weights
     WeightVec,   # the type to represent a weight vector
@@ -55,6 +35,7 @@ module StatsBase
     ## scalarstats
     geomean,     # geometric mean
     harmmean,    # harmonic mean
+    genmean,     # generalized/power mean
     trimmean,    # trimmed mean
     middle,      # the mean of two real numbers
     mode,        # find a mode from data (the first one)
@@ -160,8 +141,8 @@ module StatsBase
     coeftable,
     confint,
     deviance,
-    df,
-    df_residual,
+    dof,
+    dof_residual,
     fit,
     fit!,
     fitted,

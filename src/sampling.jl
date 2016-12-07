@@ -37,41 +37,6 @@ function direct_sample!(a::AbstractArray, x::AbstractArray)
     return x
 end
 
-# Expanded Multinomial sampling
-#
-#   for each element in a, we draw the number of its
-#   occurrences, and fill this element to x for
-#   this number of times.
-#
-function xmultinom_sample!(a::AbstractArray, x::AbstractArray)
-    n = length(a)
-    k = length(x)
-    offset = 0
-    i = 1
-    while offset < k
-        rk = k - offset
-        if i == n
-            @inbounds ai = a[i]
-            for j = 1:rk
-                @inbounds x[offset + j] = ai
-            end
-            offset = k
-        else
-            m = Int(binomrand(rk, 1.0 / (n - i + 1)))
-            if m > 0
-                @inbounds ai = a[i]
-                for j = 1:m
-                    @inbounds x[offset + j] = a[i]
-                end
-                offset += m
-            end
-            i += 1
-        end
-    end
-    x
-end
-
-
 ### draw a pair of distinct integers in [1:n]
 
 """
@@ -310,11 +275,7 @@ function sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered
 
     if replace  # with replacement
         if ordered
-            if k > 10 * n
-                xmultinom_sample!(a, x)
-            else
-                sort!(direct_sample!(a, x))
-            end
+            sort!(direct_sample!(a, x))
         else
             direct_sample!(a, x)
         end
@@ -485,37 +446,6 @@ function alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     return x
 end
 
-function xmultinom_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
-    n = length(a)
-    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
-    k = length(x)
-    offset = 0
-    i = 1
-    wsum = sum(wv)
-    w = values(wv)
-
-    while offset < k
-        rk = k - offset
-        wi = w[i]
-
-        if i == n || wi >= wsum
-            for j = 1 : rk
-                @inbounds x[offset + j] = a[i]
-            end
-            offset = k
-        else
-            m = Int(binomrand(rk, wi / wsum))
-            for j = 1 : m
-                @inbounds x[offset + j] = a[i]
-            end
-            i += 1
-            wsum -= wi
-            offset += m
-        end
-    end
-    return x
-end
-
 function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
@@ -669,24 +599,16 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
 
     if replace
         if ordered
-            if k < n && k < 256
-                sort!(direct_sample!(a, wv, x))
-            else
-                xmultinom_sample!(a, wv, x)
-            end
+            sort!(direct_sample!(a, wv, x))
         else
-            if k > 3 * n
-                shuffle!(xmultinom_sample!(a, wv, x))
+            if n < 40
+                direct_sample!(a, wv, x)
             else
-                if n < 40
+                t = ifelse(n < 500, 64, 32)
+                if k < t
                     direct_sample!(a, wv, x)
                 else
-                    t = ifelse(n < 500, 64, 32)
-                    if k < t
-                        direct_sample!(a, wv, x)
-                    else
-                        alias_sample!(a, wv, x)
-                    end
+                    alias_sample!(a, wv, x)
                 end
             end
         end

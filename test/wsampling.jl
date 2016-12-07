@@ -32,7 +32,7 @@ function check_wsample_wrep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; o
     end
 end
 
-import StatsBase: direct_sample!, alias_sample!, xmultinom_sample!
+import StatsBase: direct_sample!, alias_sample!
 
 n = 10^5
 wv = weights([0.2, 0.8, 0.4, 0.6])
@@ -42,9 +42,6 @@ check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
 
 a = alias_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
-
-a = xmultinom_sample!(4:7, wv, zeros(Int, n))
-check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
 
 a = sample(4:7, wv, n; ordered=false)
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)

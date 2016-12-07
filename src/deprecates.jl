@@ -22,3 +22,24 @@ import Base.varm, Base.stdm
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
 @deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
 
+function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
+    Base.depwarn("findat! is deprecated, use indexin instead", :findat!)
+    length(r) == length(b) || raise_dimerror()
+    d = indexmap(a)
+    @inbounds for i = 1 : length(b)
+        r[i] = get(d, b[i], 0)
+    end
+    return r
+end
+
+
+"""
+    findat(a, b)
+
+For each element in `b`, find its first index in `a`. If the value does
+not occur in `a`, the corresponding index is 0.
+"""
+findat(a::AbstractArray, b::AbstractArray) = findat!(Array(Int, size(b)), a, b)
+
+@deprecate df(obj::StatisticalModel) dof(obj)
+@deprecate df_residual(obj::StatisticalModel) dof_residual(obj)
