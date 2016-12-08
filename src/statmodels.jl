@@ -233,3 +233,14 @@ function show(io::IO, ct::CoefTable)
         println(io)
     end
 end
+
+"""
+	ConvergenceException(iters::Int)
+
+The fitting procedure failed to converge in `iters` number of iterations.
+"""
+type ConvergenceException <: Exception
+    iters::Int
+end
+
+Base.showerror(io::IO, ce::ConvergenceException) = print(io, "failure to converge after $(ce.iters) iterations")

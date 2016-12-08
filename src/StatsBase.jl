@@ -156,7 +156,9 @@ module StatsBase
     residuals,
     r2,
     r²,
-    model_response
+    model_response,
+
+    ConvergenceException
 
     # source files
 
