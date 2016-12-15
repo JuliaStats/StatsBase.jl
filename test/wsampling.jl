@@ -74,7 +74,8 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; 
     end
 end
 
-import StatsBase: naive_wsample_norep!
+import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
+                  efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!
 
 n = 10^5
 wv = weights([0.2, 0.8, 0.4, 0.6])
@@ -84,3 +85,27 @@ for j = 1:n
     naive_wsample_norep!(4:7, wv, view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = zeros(Int, 3, n)
+for j = 1:n
+    efraimidis_a_wsample_norep!(4:7, wv, view(a,:,j))
+end
+check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = zeros(Int, 3, n)
+for j = 1:n
+    efraimidis_ares_wsample_norep!(4:7, wv, view(a,:,j))
+end
+check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = zeros(Int, 3, n)
+for j = 1:n
+    efraimidis_aexpj_wsample_norep!(4:7, wv, view(a,:,j))
+end
+check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = sample(4:7, wv, 3; replace=false, ordered=false)
+check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
+
+a = sample(4:7, wv, 3; replace=false, ordered=true)
+check_wsample_norep(a, (4, 7), wv, -1; ordered=true)
