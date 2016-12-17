@@ -145,7 +145,6 @@ end
 
 const adjr² = adjr2
 
-
 abstract RegressionModel <: StatisticalModel
 
 fitted(obj::RegressionModel) = error("fitted is not defined for $(typeof(obj)).")
@@ -153,7 +152,7 @@ model_response(obj::RegressionModel) = error("model_response is not defined for 
 residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
 
 """
-    predict(obj::RegressionModel [, newX])
+    predict(obj::RegressionModel, [newX])
 
 Form the predicted response of model `obj`, optionally from new covariate values `newX`
 """
