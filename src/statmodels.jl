@@ -154,7 +154,9 @@ residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(o
 """
     predict(obj::RegressionModel, [newX])
 
-Form the predicted response of model `obj`, optionally from new covariate values `newX`
+Form the predicted response of model `obj`. New covariate values `newX` can be supplied as a `DataFrame`
+with the same names as the original predictors, or as an AbstractMatrix (for low-level use) with a column
+for the value of each predictor (including a `Vector` of 1s if an intercept was fitted). 
 """
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
