@@ -44,7 +44,7 @@ Base.isvalid{Alg<:NoRep}(p::WSampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg; 
 
 function Base.start(p::WSampleProc, cfg::(Int, Int))
     n, k = cfg
-    x = Array(Int, k)
+    x = Vector{Int}(k)
     w = weights(fill(1.0/n, n))
     return (w, x)
 end

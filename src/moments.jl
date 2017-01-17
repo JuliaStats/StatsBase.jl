@@ -63,10 +63,18 @@ function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=noth
 end
 
 Base.varm(A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
-    Base.varm!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, M, dim)
+    @static if VERSION < v"0.5.1-pre+19"
+        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim)
+    else
+        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M, dim)
+    end
 
 Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) =
-    var!(Array(Float64, Base.reduced_dims(A, dim)), A, wv, dim; mean=mean)
+    @static if VERSION < v"0.5.1-pre+19"
+        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim; mean=mean)
+    else
+        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim; mean=mean)
+    end
 
 ## std
 """
@@ -85,11 +93,11 @@ Return the standard deviation of a real-valued array `v`, optionally over a
 dimension `dim`. The weighting vector `wv` specifies frequency weights (also
 called case weights) for the estimate.
 """
-Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt(var(v, wv; mean=mean))
+Base.std(v::RealArray, wv::WeightVec; mean=nothing) = sqrt.(var(v, wv; mean=mean))
 
 Base.stdm(v::RealArray, m::RealArray, dim::Int) = Base.sqrt!(varm(v, m, dim))
-Base.stdm(v::RealArray, wv::WeightVec, m::RealArray, dim::Int) = sqrt(varm(v, wv, m, dim))
-Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt(var(v, wv, dim; mean=mean))
+Base.stdm(v::RealArray, wv::WeightVec, m::RealArray, dim::Int) = sqrt.(varm(v, wv, m, dim))
+Base.std(v::RealArray, wv::WeightVec, dim::Int; mean=nothing) = sqrt.(var(v, wv, dim; mean=mean))
 
 
 ##### Fused statistics

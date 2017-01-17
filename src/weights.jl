@@ -237,7 +237,11 @@ end
 
 function wsum{T<:Number,W<:Real}(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int)
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    _wsum!(Array(wsumtype(T,W), Base.reduced_dims(size(A), dim)), A, w, dim, true)
+    @static if VERSION < v"0.5.1-pre+19"
+        _wsum!(similar(A, wsumtype(T,W), Base.reduced_dims(size(A), dim)), A, w, dim, true)
+    else
+        _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(indices(A), dim)), A, w, dim, true)
+    end
 end
 
 # extended sum! and wsum
@@ -269,7 +273,11 @@ wmeantype{T,W}(::Type{T}, ::Type{W}) = typeof((zero(T)*zero(W) + zero(T)*zero(W)
 wmeantype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
 Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
-    mean!(Array(wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
+    @static if VERSION < v"0.5.1-pre+19"
+        mean!(similar(A, wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
+    else
+        mean!(similar(A, wmeantype(T, W), Base.reduced_indices(indices(A), dim)), A, w, dim)
+    end
 
 
 ###### Weighted median #####
@@ -367,7 +375,7 @@ function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector
 
     # prepare out vector
     N = length(vw)
-    out = Array(typeof(zero(V)/1), length(p))
+    out = Vector{typeof(zero(V)/1)}(length(p))
     fill!(out, vw[end][1])
 
     # start looping on quantiles

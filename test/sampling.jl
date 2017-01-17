@@ -12,13 +12,13 @@ n = 10^5
 x = [randi(10) for i = 1:n]
 @test isa(x, Vector{Int})
 @test extrema(x) == (1, 10)
-@test_approx_eq_eps proportions(x, 1:10) fill(0.1, 10) 5.0e-3
+@test isapprox(proportions(x, 1:10), fill(0.1, 10), atol=5.0e-3)
 
 
 x = [randi(3, 12) for i = 1:n]
 @test isa(x, Vector{Int})
 @test extrema(x) == (3, 12)
-@test_approx_eq_eps proportions(x, 3:12) fill(0.1, 10) 5.0e-3
+@test isapprox(proportions(x, 3:12), fill(0.1, 10), atol=5.0e-3)
 
 #### sample with replacement
 
@@ -31,17 +31,17 @@ function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fal
     if ordered
         @test issorted(a)
         if ptol > 0
-            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         end
     else
         @test !issorted(a)
         ncols = size(a,2)
         if ncols == 1
-            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         else
             for j = 1:ncols
                 aj = view(a, :, j)
-                @test_approx_eq_eps proportions(aj, vmin:vmax) p0 ptol
+                @test isapprox(proportions(aj, vmin:vmax), p0, atol=ptol)
             end
         end
     end
@@ -100,12 +100,12 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
     if ptol > 0
         p0 = fill(1/n, n)
         if ordered
-            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         else
             b = transpose(a)
             for j = 1:size(b,2)
                 bj = view(b,:,j)
-                @test_approx_eq_eps proportions(bj, vmin:vmax) p0 ptol
+                @test isapprox(proportions(bj, vmin:vmax), p0, atol=ptol)
             end
         end
     end

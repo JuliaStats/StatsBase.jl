@@ -33,7 +33,7 @@ for vars in names(nasty)[2:end]
     if vars == :miss
     @test isna(mean(nasty[vars]))
     else
-    @test_approx_eq mean(nasty[vars]) nasty[vars][5]
+    @test mean(nasty[vars]) ≈ nasty[vars][5]
     end
 end
 println("OK")
@@ -51,7 +51,7 @@ print("Test correlation: ")
 cn = names(nasty)[[2;5:9]]
 for i in 1:5
     for j = i+1:6
-    @test_approx_eq cor(nasty[cn[i]], nasty[cn[j]]) 1
+    @test cor(nasty[cn[i]], nasty[cn[j]]) ≈ 1
     end
 end
 println("OK")
@@ -60,7 +60,7 @@ print("Test spearman correlation: ")
 cn = names(nasty)[[2;5:9]]
 for i in 1:5
     for j = i+1:6
-    @test_approx_eq corspearman(nasty[cn[i]], nasty[cn[j]]) 1
+    @test corspearman(nasty[cn[i]], nasty[cn[j]]) ≈ 1
     end
 end
 println("OK")
@@ -70,7 +70,7 @@ print("Testing regression: ")
 ctable = coeftable(lm(big ~ x, nasty))
 @test typeof(ctable) == CoefTable
 # conversion to Vector{Float64} can be removed when 0.4 is no longer supported
-@test_approx_eq Vector{Float64}(ctable.cols[1]) [99999990, 1]
+@test Vector{Float64}(ctable.cols[1]) ≈ [99999990, 1]
 
 @test sprint(show, ctable) == """\
              Estimate Std.Error t value Pr(>|t|)
@@ -94,5 +94,5 @@ nasty[:x9] = nasty[:x].^9
 ## Is it intended that the least squares problem be overdetermined in the lm fit?
 ## n = 9 and p = 10 because of the implicit intercept.
 lm(x1~x2+x3+x4+x5+x6+x7+x8+x9, nasty)
-@test_approx_eq coef(lm(x~x, nasty)) [0,1]
+@test coef(lm(x~x, nasty)) ≈ [0,1]
 println("OK")

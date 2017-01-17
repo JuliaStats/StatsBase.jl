@@ -57,7 +57,7 @@ Base.length(p::SampleProc, cfg::(Int, Int)) = cfg[2]
 Base.isvalid{Alg<:WithRep}(p::SampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg; n >= 1 && k >= 1)
 Base.isvalid{Alg<:NoRep}(p::SampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg; n >= k >= 1)
 
-Base.start(p::SampleProc, cfg::(Int, Int)) = Array(Int, cfg[2])
+Base.start(p::SampleProc, cfg::(Int, Int)) = Vector{Int}(cfg[2])
 Base.run{Alg}(p::SampleProc{Alg}, cfg::(Int, Int), s::Vector{Int}) = tsample!(Alg(), 1:cfg[1], s)
 Base.done(p::SampleProc, cfg, s) = nothing
 

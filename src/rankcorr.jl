@@ -36,7 +36,7 @@ corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
 # Knigh JASA (1966)
 
 function corkendall!(x::RealVector, y::RealVector)
-    if any(isnan(x)) || any(isnan(y)) return NaN end
+    if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
 

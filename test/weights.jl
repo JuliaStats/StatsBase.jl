@@ -49,8 +49,8 @@ w2 = rand(8)
 @test size(wsum(x, w1, 1)) == (1, 8)
 @test size(wsum(x, w2, 2)) == (6, 1)
 
-@test_approx_eq wsum(x, w1, 1) sum(x .* w1, 1)
-@test_approx_eq wsum(x, w2, 2) sum(x .* w2', 2)
+@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
 
 x = rand(6, 5, 4)
 w1 = rand(6)
@@ -61,15 +61,15 @@ w3 = rand(4)
 @test size(wsum(x, w2, 2)) == (6, 1, 4)
 @test size(wsum(x, w3, 3)) == (6, 5, 1)
 
-@test_approx_eq wsum(x, w1, 1) sum(x .* w1, 1)
-@test_approx_eq wsum(x, w2, 2) sum(x .* w2', 2)
-@test_approx_eq wsum(x, w3, 3) sum(x .* reshape(w3, 1, 1, 4), 3)
+@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
+@test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), 3)
 
 v = view(x, 2:4, :, :)
 
-@test_approx_eq wsum(v, w1[1:3], 1) sum(v .* w1[1:3], 1)
-@test_approx_eq wsum(v, w2, 2) sum(v .* w2', 2)
-@test_approx_eq wsum(v, w3, 3) sum(v .* reshape(w3, 1, 1, 4), 3)
+@test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], 1)
+@test wsum(v, w2, 2)      ≈ sum(v .* w2', 2)
+@test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), 3)
 
 ## wsum for Arrays with non-BlasReal elements
 
@@ -77,8 +77,8 @@ x = rand(1:100, 6, 8)
 w1 = rand(6)
 w2 = rand(8)
 
-@test_approx_eq wsum(x, w1, 1) sum(x .* w1, 1)
-@test_approx_eq wsum(x, w2, 2) sum(x .* w2', 2)
+@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
 
 ## wsum!
 
@@ -87,11 +87,11 @@ w = rand(6)
 
 r = ones(1)
 @test wsum!(r, x, w, 1; init=true) === r
-@test_approx_eq r [dot(x, w)]
+@test r ≈ [dot(x, w)]
 
 r = ones(1)
 @test wsum!(r, x, w, 1; init=false) === r
-@test_approx_eq r [dot(x, w) + 1.0]
+@test r ≈ [dot(x, w) + 1.0]
 
 x = rand(6, 8)
 w1 = rand(6)
@@ -99,19 +99,19 @@ w2 = rand(8)
 
 r = ones(1, 8)
 @test wsum!(r, x, w1, 1; init=true) === r
-@test_approx_eq r sum(x .* w1, 1)
+@test r ≈ sum(x .* w1, 1)
 
 r = ones(1, 8)
 @test wsum!(r, x, w1, 1; init=false) === r
-@test_approx_eq r sum(x .* w1, 1) .+ 1.0
+@test r ≈ sum(x .* w1, 1) .+ 1.0
 
 r = ones(6)
 @test wsum!(r, x, w2, 2; init=true) === r
-@test_approx_eq r sum(x .* w2', 2)
+@test r ≈ sum(x .* w2', 2)
 
 r = ones(6)
 @test wsum!(r, x, w2, 2; init=false) === r
-@test_approx_eq r sum(x .* w2', 2) .+ 1.0
+@test r ≈ sum(x .* w2', 2) .+ 1.0
 
 x = rand(8, 6, 5)
 w1 = rand(8)
@@ -120,45 +120,45 @@ w3 = rand(5)
 
 r = ones(1, 6, 5)
 @test wsum!(r, x, w1, 1; init=true) === r
-@test_approx_eq r sum(x .* w1, 1)
+@test r ≈ sum(x .* w1, 1)
 
 r = ones(1, 6, 5)
 @test wsum!(r, x, w1, 1; init=false) === r
-@test_approx_eq r sum(x .* w1, 1) .+ 1.0
+@test r ≈ sum(x .* w1, 1) .+ 1.0
 
 r = ones(8, 1, 5)
 @test wsum!(r, x, w2, 2; init=true) === r
-@test_approx_eq r sum(x .* w2', 2)
+@test r ≈ sum(x .* w2', 2)
 
 r = ones(8, 1, 5)
 @test wsum!(r, x, w2, 2; init=false) === r
-@test_approx_eq r sum(x .* w2', 2) .+ 1.0
+@test r ≈ sum(x .* w2', 2) .+ 1.0
 
 r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=true) === r
-@test_approx_eq r sum(x .* reshape(w3, (1, 1, 5)), 3)
+@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3)
 
 r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=false) === r
-@test_approx_eq r sum(x .* reshape(w3, (1, 1, 5)), 3) .+ 1.0
+@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3) .+ 1.0
 
 
 ## the sum and mean syntax
 
-@test_approx_eq sum([1.0, 2.0, 3.0], weights([1.0, 0.5, 0.5])) 3.5
-@test_approx_eq sum(1:3, weights([1.0, 1.0, 0.5])) 4.5
+@test sum([1.0, 2.0, 3.0], weights([1.0, 0.5, 0.5])) ≈ 3.5
+@test sum(1:3, weights([1.0, 1.0, 0.5]))             ≈ 4.5
 
-@test_approx_eq mean([1:3;], weights([1.0, 1.0, 0.5])) 1.8
-@test_approx_eq mean(1:3, weights([1.0, 1.0, 0.5])) 1.8
+@test mean([1:3;], weights([1.0, 1.0, 0.5])) ≈ 1.8
+@test mean(1:3, weights([1.0, 1.0, 0.5]))    ≈ 1.8
 
 a = reshape(1.0:27.0, 3, 3, 3)
 for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-    @test_approx_eq sum(a, weights(wt), 1) sum(a.*reshape(wt, length(wt), 1, 1), 1)
-    @test_approx_eq sum(a, weights(wt), 2) sum(a.*reshape(wt, 1, length(wt), 1), 2)
-    @test_approx_eq sum(a, weights(wt), 3) sum(a.*reshape(wt, 1, 1, length(wt)), 3)
-    @test_approx_eq mean(a, weights(wt), 1) sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
-    @test_approx_eq mean(a, weights(wt), 2) sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
-    @test_approx_eq mean(a, weights(wt), 3) sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
+    @test sum(a, weights(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
+    @test sum(a, weights(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
+    @test sum(a, weights(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
+    @test mean(a, weights(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
+    @test mean(a, weights(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
+    @test mean(a, weights(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
     @test_throws ErrorException mean(a, weights(wt), 4)
 end
 
@@ -318,24 +318,24 @@ p = [0.0, 0.25, 0.5, 0.75, 1.0]
 
 srand(10)
 for i = 1:length(data)
-    @test_approx_eq quantile(data[i], wt[i], p) quantile_answers[i]
+    @test quantile(data[i], wt[i], p) ≈ quantile_answers[i]
     for j = 1:10
         # order of p does not matter
         reorder = sortperm(rand(length(p)))
-        @test_approx_eq quantile(data[i], wt[i], p[reorder]) quantile_answers[i][reorder]
+        @test quantile(data[i], wt[i], p[reorder]) ≈ quantile_answers[i][reorder]
     end
     for j = 1:10
         # order of w does not matter
         reorder = sortperm(rand(length(data[i])))
-        @test_approx_eq quantile(data[i][reorder], weights(wt[i][reorder]), p) quantile_answers[i]
+        @test quantile(data[i][reorder], weights(wt[i][reorder]), p) ≈ quantile_answers[i]
     end
 end
 # w = 1 corresponds to base quantile
 for i = 1:length(data)
-    @test_approx_eq quantile(data[i], weights(ones(Int64, length(data[i]))), p) quantile(data[i], p)
+    @test quantile(data[i], weights(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p)
     for j = 1:10
         prandom = rand(4)
-        @test_approx_eq quantile(data[i], weights(ones(Int64, length(data[i]))),  prandom) quantile(data[i], prandom)
+        @test quantile(data[i], weights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom)
     end
 end
 
@@ -343,8 +343,8 @@ end
 v = [7, 1, 2, 4, 10]
 w = [1, 1/3, 1/3, 1/3, 1]
 answer = 6.181818181818182
-@test_approx_eq  quantile(data[1], weights(w), 0.5) answer
-@test_approx_eq  wquantile(data[1], weights(w), [0.5]) [answer]
-@test_approx_eq  wquantile(data[1], weights(w), 0.5) answer
-@test_approx_eq  wquantile(data[1], w, [0.5]) [answer]
-@test_approx_eq  wquantile(data[1], w, 0.5)  answer
+@test quantile(data[1], weights(w), 0.5)    ≈  answer
+@test wquantile(data[1], weights(w), [0.5]) ≈ [answer]
+@test wquantile(data[1], weights(w), 0.5)   ≈  answer
+@test wquantile(data[1], w, [0.5])          ≈ [answer]
+@test wquantile(data[1], w, 0.5)            ≈  answer

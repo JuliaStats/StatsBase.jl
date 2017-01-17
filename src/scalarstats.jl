@@ -383,13 +383,13 @@ real numbers or arrays of real numbers.
 """
 function zscore{T<:Real}(X::AbstractArray{T}, μ::Real, σ::Real)
     ZT = typeof((zero(T) - zero(μ)) / one(σ))
-    _zscore!(Array(ZT, size(X)), X, μ, σ)
+    _zscore!(Array{ZT}(size(X)), X, μ, σ)
 end
 
 function zscore{T<:Real,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S})
     _zscore_chksize(X, μ, σ)
     ZT = typeof((zero(T) - zero(U)) / one(S))
-    _zscore!(Array(ZT, size(X)), X, μ, σ)
+    _zscore!(Array{ZT}(size(X)), X, μ, σ)
 end
 
 zscore{T<:Real}(X::AbstractArray{T}) = ((μ, σ) = mean_and_std(X); zscore(X, μ, σ))

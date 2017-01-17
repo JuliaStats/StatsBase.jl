@@ -8,7 +8,7 @@ module StatsBase
     import Base: rand, rand!
     import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @nloops, @nref, @nextract
-    import Base.Collections: heapify!, heappop!, percolate_down!
+    import DataStructures: heapify!, heappop!, percolate_down!
 
     ## tackle compatibility issues
 
