@@ -237,7 +237,7 @@ end
 
 function wsum{T<:Number,W<:Real}(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int)
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    @static if VERSION < v"0.5.1-pre+19"
+    @static if VERSION < v"0.6.0-dev.1121"
         _wsum!(similar(A, wsumtype(T,W), Base.reduced_dims(size(A), dim)), A, w, dim, true)
     else
         _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(indices(A), dim)), A, w, dim, true)
@@ -273,7 +273,7 @@ wmeantype{T,W}(::Type{T}, ::Type{W}) = typeof((zero(T)*zero(W) + zero(T)*zero(W)
 wmeantype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
 Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
-    @static if VERSION < v"0.5.1-pre+19"
+    @static if VERSION < v"0.6.0-dev.1121"
         mean!(similar(A, wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
     else
         mean!(similar(A, wmeantype(T, W), Base.reduced_indices(indices(A), dim)), A, w, dim)
