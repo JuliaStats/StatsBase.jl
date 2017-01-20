@@ -114,7 +114,7 @@ function fisher_yates_sample!(a::AbstractArray, x::AbstractArray)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
 
-    inds = Array(Int, n)
+    inds = Vector{Int}(n)
     for i = 1:n
         @inbounds inds[i] = i
     end
@@ -315,7 +315,7 @@ with replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
 """
 function sample{T}(a::AbstractArray{T}, n::Integer; replace::Bool=true, ordered::Bool=false)
-    sample!(a, Array{T}(n); replace=replace, ordered=ordered)
+    sample!(a, Vector{T}(n); replace=replace, ordered=ordered)
 end
 
 
@@ -395,8 +395,8 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
         @inbounds a[i] = w[i] * ac
     end
 
-    larges = Array(Int, n)
-    smalls = Array(Int, n)
+    larges = Vector{Int}(n)
+    smalls = Vector{Int}(n)
     kl = 0  # actual number of larges
     ks = 0  # actual number of smalls
 
@@ -433,8 +433,8 @@ function alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
-    ap = Array(Float64, n)
-    alias = Array(Int, n)
+    ap = Vector{Float64}(n)
+    alias = Vector{Int}(n)
     make_alias_table!(values(wv), sum(wv), ap, alias)
 
     # sampling
@@ -451,7 +451,7 @@ function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
 
-    w = Array(Float64, n)
+    w = Vector{Float64}(n)
     copy!(w, values(wv))
     wsum = sum(wv)
 
@@ -514,7 +514,7 @@ function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abst
     k > 0 || return x
 
     # initialize priority queue
-    pq = Array{Pair{Float64,Int}}(k)
+    pq = Vector{Pair{Float64,Int}}(k)
     @inbounds for i in 1:k
         pq[i] = (wv.values[i]/randexp() => i)
     end
@@ -522,10 +522,10 @@ function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abst
 
     # set threshold
     @inbounds threshold = pq[1].first
-    
+
     @inbounds for i in k+1:n
         key = wv.values[i]/randexp()
-        
+
         # if key is larger than the threshold
         if key > threshold
             # update priority queue
@@ -536,7 +536,7 @@ function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abst
             threshold = pq[1].first
         end
     end
-    
+
     # fill output array with items in descending order
     @inbounds for i in k:-1:1
         x[i] = a[heappop!(pq).second]
@@ -560,7 +560,7 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
     k > 0 || return x
 
     # initialize priority queue
-    pq = Array{Pair{Float64,Int}}(k)
+    pq = Vector{Pair{Float64,Int}}(k)
     @inbounds for i in 1:k
         pq[i] = (wv.values[i]/randexp() => i)
     end
@@ -569,12 +569,12 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
     # set threshold
     @inbounds threshold = pq[1].first
     X = threshold*randexp()
-    
+
     @inbounds for i in k+1:n
         w = wv.values[i]
         X -= w
         X <= 0 || continue
-        
+
         # update priority queue
         t = exp(-w/threshold)
         pq[1] = (-w/log(t+rand()*(1-t)) => i)
@@ -584,7 +584,7 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
         threshold = pq[1].first
         X = threshold * randexp()
     end
-    
+
     # fill output array with items in descending order
     @inbounds for i in k:-1:1
         x[i] = a[heappop!(pq).second]
@@ -614,7 +614,7 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
         end
     else
         k <= n || error("Cannot draw $n samples from $k samples without replacement.")
-        
+
         efraimidis_aexpj_wsample_norep!(a, wv, x)
         if ordered
             sort!(x)
@@ -624,7 +624,7 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray;
 end
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer; replace::Bool=true, ordered::Bool=false) =
-    sample!(a, wv, Array{T}(n); replace=replace, ordered=ordered)
+    sample!(a, wv, Vector{T}(n); replace=replace, ordered=ordered)
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims; replace::Bool=true, ordered::Bool=false) =
     sample!(a, wv, Array{T}(dims); replace=replace, ordered=ordered)
@@ -664,7 +664,7 @@ replacement and `order` dictates whether an ordered sample, also called a sequen
 sample, should be taken.
 """
 wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
-    wsample!(a, w, Array{T}(n); replace=replace, ordered=ordered)
+    wsample!(a, w, Vector{T}(n); replace=replace, ordered=ordered)
 
 
 """

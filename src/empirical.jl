@@ -17,7 +17,7 @@ function ecdf{T<:Real}(X::RealVector{T})
     function ef(v::RealVector)
         ord = sortperm(v)
         m = length(v)
-        r = Array(T, m)
+        r = Vector{T}(m)
         r0 = 0
 
         i = 1

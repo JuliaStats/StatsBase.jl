@@ -67,7 +67,7 @@ the variables are columns in the matrix (`1`) or rows (`2`).
 function mean_and_cov end
 
 
-if VERSION < v"0.5.0-dev+679"
+@static if VERSION < v"0.5.0-dev+679"
     function scattermat(x::DenseMatrix; mean=nothing, vardim::Int=1)
         mean == 0 ? scattermat_zm(x, vardim) :
         mean == nothing ? scattermat_zm(x .- Base.mean(x, vardim), vardim) :

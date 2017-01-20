@@ -16,17 +16,17 @@ function check_wsample_wrep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; o
     if ordered
         @test issorted(a)
         if ptol > 0
-            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         end
     else
         @test !issorted(a)
         ncols = size(a,2)
         if ncols == 1
-            @test_approx_eq_eps proportions(a, vmin:vmax) p0 ptol
+            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         else
             for j = 1:ncols
                 aj = view(a, :, j)
-                @test_approx_eq_eps proportions(aj, vmin:vmax) p0 ptol
+                @test isapprox(proportions(aj, vmin:vmax), p0, atol=ptol)
             end
         end
     end
@@ -70,7 +70,7 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; 
 
     if ptol > 0
         p0 = values(wv) ./ sum(wv)
-        @test_approx_eq_eps proportions(a[1,:], vmin:vmax) p0 ptol
+        @test isapprox(proportions(a[1,:], vmin:vmax), p0, atol=ptol)
     end
 end
 
