@@ -63,14 +63,14 @@ function var!(R::AbstractArray, A::RealArray, wv::WeightVec, dim::Int; mean=noth
 end
 
 Base.varm(A::RealArray, wv::WeightVec, M::RealArray, dim::Int) =
-    @static if VERSION < v"0.5.1-pre+19"
+    @static if VERSION < v"0.6.0-dev.1121"
         Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim)
     else
         Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M, dim)
     end
 
 Base.var(A::RealArray, wv::WeightVec, dim::Int; mean=nothing) =
-    @static if VERSION < v"0.5.1-pre+19"
+    @static if VERSION < v"0.6.0-dev.1121"
         var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim; mean=mean)
     else
         var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim; mean=mean)
