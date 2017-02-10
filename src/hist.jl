@@ -96,10 +96,11 @@ type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     edges::E
     weights::Array{T,N}
     closed::Symbol
-    function Histogram(edges::NTuple{N,AbstractArray},weights::Array{T,N},closed::Symbol)
+    function (::Type{Histogram{T,N,E}}){T,N,E}(edges::NTuple{N,AbstractArray},
+                                               weights::Array{T,N}, closed::Symbol)
         closed == :right || closed == :left || error("closed must :left or :right")
         map(x -> length(x)-1,edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
-        new(edges,weights,closed)
+        new{T,N,E}(edges,weights,closed)
     end
 end
 
