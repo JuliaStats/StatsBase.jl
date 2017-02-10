@@ -150,6 +150,14 @@ abstract RegressionModel <: StatisticalModel
 fitted(obj::RegressionModel) = error("fitted is not defined for $(typeof(obj)).")
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
 residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
+
+"""
+    predict(obj::RegressionModel, [newX])
+
+Form the predicted response of model `obj`. An object with new covariate values `newX` can be supplied,
+which should have the same type and structure as that used to fit `obj`; e.g. for a GLM
+it would generally be a `DataFrame` with the same variable names as the original predictors.
+"""
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
 dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
