@@ -73,7 +73,11 @@ function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:right)
             len += one(F)
         end
     end
-    FloatRange(start,step,len,divisor)
+    @static if VERSION < v"0.6.0-dev.2376" # Julia PR 18777
+        FloatRange(start,step,len,divisor)
+    else
+        Base.floatrange(start,step,len,divisor)
+    end
 end
 
 histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) =
