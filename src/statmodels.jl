@@ -1,6 +1,6 @@
 # Statistical Models
 
-abstract StatisticalModel
+@compat abstract type StatisticalModel end
 
 coef(obj::StatisticalModel) = error("coef is not defined for $(typeof(obj)).")
 coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(obj)).")
@@ -145,7 +145,7 @@ end
 
 const adjr² = adjr2
 
-abstract RegressionModel <: StatisticalModel
+@compat abstract type RegressionModel <: StatisticalModel end
 
 fitted(obj::RegressionModel) = error("fitted is not defined for $(typeof(obj)).")
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")

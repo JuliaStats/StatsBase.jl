@@ -2,6 +2,7 @@
 
 using BenchmarkLite
 using StatsBase
+using Compat
 
 import StatsBase: direct_sample!, alias_sample!, xmultinom_sample!
 
@@ -9,8 +10,8 @@ import StatsBase: direct_sample!, alias_sample!, xmultinom_sample!
 
 type WSampleProc{Alg} <: Proc end
 
-abstract WithRep
-abstract NoRep
+@compat abstract type WithRep end
+@compat abstract type NoRep end
 
 type Direct <: WithRep end
 tsample!(s::Direct, wv, x) = direct_sample!(1:length(wv), wv, x)
