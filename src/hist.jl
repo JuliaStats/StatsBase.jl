@@ -93,7 +93,7 @@ function sturges(n)  # Sturges' formula
     ceil(Integer, log2(n))+1
 end
 
-abstract AbstractHistogram{T<:Real,N,E}
+@compat abstract type AbstractHistogram{T<:Real,N,E} end
 
 # N-dimensional histogram object
 type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}

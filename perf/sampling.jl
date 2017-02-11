@@ -1,8 +1,9 @@
-# Benchmark on non-weighted sampling 
+# Benchmark on non-weighted sampling
 
 # require the BenchmarkLite package
 using BenchmarkLite
 using StatsBase
+using Compat
 
 import StatsBase: direct_sample!, xmultinom_sample!
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
@@ -12,8 +13,8 @@ import StatsBase: seqsample_a!, seqsample_c!
 
 type SampleProc{Alg} <: Proc end
 
-abstract WithRep 
-abstract NoRep
+@compat abstract type WithRep end
+@compat abstract type NoRep end
 
 type Direct <: WithRep end
 tsample!(s::Direct, a, x) = direct_sample!(a, x)
