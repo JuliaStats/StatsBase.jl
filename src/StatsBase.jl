@@ -10,6 +10,8 @@ module StatsBase
     import Base.Cartesian: @nloops, @nref, @nextract
     import DataStructures: heapify!, heappop!, percolate_down!
 
+    import SpecialFunctions: erfcinv
+
     ## tackle compatibility issues
 
     export
