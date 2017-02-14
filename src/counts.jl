@@ -6,7 +6,7 @@
 #
 #################################################
 
-typealias IntUnitRange{T<:Integer} UnitRange{T}
+@compat IntUnitRange{T<:Integer} = UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
 """

@@ -10,15 +10,15 @@
 # covariant type notation, i.e. AbstractVector{<:Real}
 #
 
-typealias RealArray{T<:Real,N} AbstractArray{T,N}
-typealias RealVector{T<:Real} AbstractArray{T,1}
-typealias RealMatrix{T<:Real} AbstractArray{T,2}
+@compat RealArray{T<:Real,N} = AbstractArray{T,N}
+@compat RealVector{T<:Real} = AbstractArray{T,1}
+@compat RealMatrix{T<:Real} = AbstractArray{T,2}
 
-typealias IntegerArray{T<:Integer,N} AbstractArray{T,N}
-typealias IntegerVector{T<:Integer} AbstractArray{T,1}
-typealias IntegerMatrix{T<:Integer} AbstractArray{T,2}
+@compat IntegerArray{T<:Integer,N} = AbstractArray{T,N}
+@compat IntegerVector{T<:Integer} = AbstractArray{T,1}
+@compat IntegerMatrix{T<:Integer} = AbstractArray{T,2}
 
-@compat typealias RealFP Union{Float32, Float64}
+@compat const RealFP = Union{Float32, Float64}
 
 ## conversion from real to fp types
 
