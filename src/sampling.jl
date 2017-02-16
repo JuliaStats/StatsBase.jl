@@ -518,20 +518,25 @@ function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abst
     i = 0
     s = 0
     @inbounds for s in 1:n
-        if wv.values[s] > 0.0
+        w = wv.values[s]
+        w < 0 && error("Negative weight found in weight vector at index $s")
+        if w > 0
             i += 1
-            pq[i] = (wv.values[s]/randexp() => s)
+            pq[i] = (w/randexp() => s)
         end
         i >= k && break
     end
-    i < k && throw(DimensionMismatch("wv must have at least $k positive entries (got $i)"))
+    i < k && throw(DimensionMismatch("wv must have at least $k strictly positive entries (got $i)"))
     heapify!(pq)
 
     # set threshold
     @inbounds threshold = pq[1].first
 
     @inbounds for i in s+1:n
-        key = wv.values[i]/randexp()
+        w = wv.values[i]
+        w < 0 && error("Negative weight found in weight vector at index $i")
+        w > 0 || continue
+        key = w/randexp()
 
         # if key is larger than the threshold
         if key > threshold
@@ -571,13 +576,15 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
     i = 0
     s = 0
     @inbounds for s in 1:n
-        if wv.values[s] > 0.0
+        w = wv.values[s]
+        w < 0 && error("Negative weight found in weight vector at index $s")
+        if w > 0
             i += 1
-            pq[i] = (wv.values[s]/randexp() => s)
+            pq[i] = (w/randexp() => s)
         end
         i >= k && break
     end
-    i < k && throw(DimensionMismatch("wv must have at least $k positive entries (got $i)"))
+    i < k && throw(DimensionMismatch("wv must have at least $k strictly positive entries (got $i)"))
     heapify!(pq)
 
     # set threshold
@@ -586,7 +593,8 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
 
     @inbounds for i in s+1:n
         w = wv.values[i]
-        w > 0.0 || continue
+        w < 0 && error("Negative weight found in weight vector at index $i")
+        w > 0 || continue
         X -= w
         X <= 0 || continue
 
