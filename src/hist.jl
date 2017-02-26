@@ -1,4 +1,6 @@
-import Base: show, ==, push!, append!
+using Base.Cartesian
+
+import Base: show, ==, push!, append!, norm, normalize, normalize!
 
 # Mechanism for temporary deprecation of default for "closed" (because default
 # value has changed). After deprecation is lifed, remove "_check_closed_arg"
@@ -237,3 +239,88 @@ fit{N}(::Type{Histogram},vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Sy
     closed = _check_closed_arg(closed,:fit)
     fit(Histogram, vs, wv, histrange(vs,nbins,closed); closed=closed)
 end
+
+
+# Get a suitable high-precision type for the norm of a histogram.
+@generated function norm_type{T, N, E}(h::Histogram{T, N, E})
+    args = [:( eltype(edges[$d]) ) for d = 1:N]
+    quote
+        edges = h.edges
+        norm_type(promote_type(T, $(args...)))
+    end
+end
+
+norm_type{T<:Integer}(::Type{T}) = promote_type(T, Int64)
+norm_type{T<:AbstractFloat}(::Type{T}) = promote_type(T, Float64)
+
+
+@generated function norm{T, N, E}(h::Histogram{T, N, E})
+    quote
+        edges = h.edges
+        weights = h.weights
+        S = norm_type(h)
+        v_0 = 1
+        s_0 = zero(S)
+        @inbounds @nloops(
+            $N, i, weights,
+            d -> begin
+                v_{$N-d+1} = v_{$N-d} * (edges[d][i_d + 1] - edges[d][i_d])
+                s_{$N-d+1} = zero(S)
+            end,
+            d -> begin
+                s_{$N-d} += s_{$N-d+1}
+            end,
+            begin
+                $(Symbol("s_$(N)")) += (@nref $N weights i) * $(Symbol("v_$N"))
+            end
+        )
+        norm(s_0)
+    end
+end
+
+
+# Deep copy of h, ensuring result has floating point weights
+function _deepcopy_fltweights{T, N, E}(h::Histogram{T, N, E})
+    weights_flt = float(h.weights)
+    weights_fltcp = is(weights_flt, h.weights) ? deepcopy(weights_flt) : weights_flt
+    Histogram{eltype(weights_fltcp), N, E}(deepcopy(h.edges), weights_fltcp, h.closed)
+end
+
+
+# Normalization modes:
+#
+# * `:norm`: Normalize by norm(h). Resulting histogram has norm 1. Histograms
+#    of same data but with different binning will have different weight values
+#    at same coordinates after normalization. Operation is idempotent.
+# * `:pdf`: Normalize by sum of weights and bin sizes. Resulting histogram
+#    has norm 1 and represents a PDF. Histograms of same data but with
+#    different binning will have same weight values at same coordinates
+#    after normalization. Operation is *not* idempotent.
+# * `:density`: Normalize by bin sizes only. Resulting histogram represents
+#    count density of input and does not have norm 1. Histograms of same data
+#    but with different binning will have same weight values at same
+#    coordinates after normalization. Operation is *not* idempotent.
+
+@generated function normalize!{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :norm)
+    quote
+        edges = h.edges
+        weights = h.weights
+
+        if mode == :norm
+            weights ./= norm(h)
+        elseif mode == :pdf || mode == :density
+            SumT = promote_type($T, Float64)
+            vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
+            @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * (edges[d][i_d + 1] - edges[d][i_d])) begin
+                (@nref $N weights i) /= $(Symbol("vs_$N"))
+            end
+        else
+            error("mode must be :norm, :pdf or :density")
+        end
+        h
+    end
+end
+
+
+normalize(h::Histogram; mode::Symbol = :norm) =
+    normalize!(_deepcopy_fltweights(h), mode = mode)
