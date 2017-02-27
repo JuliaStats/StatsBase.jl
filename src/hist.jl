@@ -1,6 +1,6 @@
 using Base.Cartesian
 
-import Base: show, ==, push!, append!, norm, normalize, normalize!
+import Base: show, ==, push!, append!, float, norm, normalize, normalize!
 
 # Mechanism for temporary deprecation of default for "closed" (because default
 # value has changed). After deprecation is lifed, remove "_check_closed_arg"
@@ -279,11 +279,19 @@ norm_type{T<:AbstractFloat}(::Type{T}) = promote_type(T, Float64)
 end
 
 
-# Deep copy of h, ensuring result has floating point weights
-function _deepcopy_fltweights{T, N, E}(h::Histogram{T, N, E})
-    weights_flt = float(h.weights)
-    weights_fltcp = is(weights_flt, h.weights) ? deepcopy(weights_flt) : weights_flt
-    Histogram{eltype(weights_fltcp), N, E}(deepcopy(h.edges), weights_fltcp, h.closed)
+function _float_deepcopy(x)
+    y = float(x)
+    is(y, x)? deepcopy(y) : y
+end
+
+
+function float{T, N, E}(h::Histogram{T, N, E})
+    float_weights = float(h.weights)
+    if is(float_weights, h.weights)
+        h
+    else
+        Histogram{eltype(float_weights), N, E}(deepcopy(h.edges), float_weights, h.closed)
+    end
 end
 
 
@@ -300,19 +308,32 @@ end
 #    count density of input and does not have norm 1. Histograms of same data
 #    but with different binning will have same weight values at same
 #    coordinates after normalization. Operation is *not* idempotent.
+#
+# aux_weights may, e.g., be estimated statistical uncertainties.
 
-@generated function normalize!{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :norm)
+@generated function normalize!{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :norm)
     quote
         edges = h.edges
         weights = h.weights
 
+        for A in aux_weights
+            (size(A) != size(weights)) && error("aux_weights must have same size as histogram weights")
+        end
+
         if mode == :norm
-            weights ./= norm(h)
+            v = norm(h)
+            weights ./= v
+            for A in aux_weights
+                A ./= v
+            end
         elseif mode == :pdf || mode == :density
             SumT = promote_type($T, Float64)
             vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
             @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * (edges[d][i_d + 1] - edges[d][i_d])) begin
                 (@nref $N weights i) /= $(Symbol("vs_$N"))
+                for A in aux_weights
+                    (@nref $N A i) /= $(Symbol("vs_$N"))
+                end
             end
         else
             error("mode must be :norm, :pdf or :density")
@@ -322,5 +343,12 @@ end
 end
 
 
-normalize(h::Histogram; mode::Symbol = :norm) =
-    normalize!(_deepcopy_fltweights(h), mode = mode)
+normalize{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :norm) =
+    normalize!(_float_deepcopy(h), mode = mode)
+
+function normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :norm)
+    h_fltcp = _float_deepcopy(h)
+    aux_weights_fltcp = map(_float_deepcopy, aux_weights)
+    normalize!(h_fltcp, aux_weights_fltcp..., mode = mode)
+    (h_fltcp, aux_weights_fltcp...)
+end
