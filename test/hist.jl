@@ -79,3 +79,47 @@ show_h = sprint(show, fit(Histogram,[0,1,2], closed=:left))  # FIXME: closed
 @test contains(show_h, "edges:\n  0.0:1.0:3.0")
 @test contains(show_h, "weights: $([1,1,1])")
 @test contains(show_h, "closed: left")
+
+
+# hist norm and normalize
+@testset "Histogram norm and normalize" begin
+    rng = MersenneTwister(345678)
+    edges = (
+        cumsum(rand(rng) * rand(rng, 9)),
+        cumsum(rand(rng, 1:10) * rand(rng, 1:100, 11)),
+        cumsum(5 * rand(rng) * rand(rng, 14))
+    )
+
+    n = 100000
+
+    data = (
+        maximum(edges[1]) * (randn(rng, n) / 6 + 0.5),
+        rand(rng, 1:maximum(edges[2]), n),
+        maximum(edges[3]) * rand(rng, n)
+    )
+
+    h = fit(Histogram, data, edges, closed = :left)
+
+    weight_sum = sum(h.weights)
+    bin_vols = [ x * y * z for x in diff(edges[1]), y in diff(edges[2]), z in diff(edges[3])]
+
+    normalize(h)
+
+    @test norm(h) ≈ sum(h.weights .* bin_vols)
+
+    h_norm_norm = normalize(h, mode = :norm)
+    @test normalize(h, mode = :norm) == Histogram(h.edges, h.weights ./ norm(h), h.closed)
+    @test norm(h_norm_norm) ≈ 1
+    @test normalize(h) == h_norm_norm
+    @test normalize(normalize(h)).weights ≈ normalize(h).weights
+
+    h_norm_pdf = normalize(h, mode = :pdf)
+    @test h_norm_pdf.weights ≈ h.weights ./ bin_vols ./ weight_sum
+    @test norm(h_norm_pdf) ≈ 1
+
+    h_norm_density = normalize(h, mode = :density)
+    @test h_norm_density.weights ≈ h.weights ./ bin_vols
+    @test norm(h_norm_density) ≈ weight_sum
+
+    @test normalize(normalize(h, mode = :density)).weights ≈ normalize(h, mode = :pdf).weights
+end
