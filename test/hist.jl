@@ -122,4 +122,22 @@ show_h = sprint(show, fit(Histogram,[0,1,2], closed=:left))  # FIXME: closed
     @test normalize(h, mode = :none) == h
 
     @test normalize(normalize(h, mode = :density)).weights ≈ normalize(h, mode = :pdf).weights
+
+    h2 = deepcopy(float(h))
+    mod_h2 = normalize!(h2, mode = :density)
+    @test mod_h2 === h2 && mod_h2.weights === h2.weights
+    @test h2.weights == h_norm_density.weights
+
+    aux_weights = sqrt.(h.weights)
+    divor0 = (a,b) -> (a == 0 && b == 0) ? 0 : a/b
+    divor0_cmp = (a_n, a_d, b_n, b_d) -> maximum(abs(map(divor0, a_n, a_d) - map(divor0, b_n, b_d))) < 1e-10
+
+    h_norm_norm2, scaled_aux_weights = normalize(float(h), aux_weights, mode = :norm)
+    @test divor0_cmp(scaled_aux_weights, aux_weights, h_norm_norm2.weights, h.weights)
+
+    h_norm_pdf2, scaled_aux_weights = normalize(float(h), aux_weights, mode = :pdf)
+    @test divor0_cmp(scaled_aux_weights, aux_weights, h_norm_pdf2.weights, h.weights)
+
+    h_norm_density2, scaled_aux_weights = normalize(float(h), aux_weights, mode = :density)
+    @test divor0_cmp(scaled_aux_weights, aux_weights, h_norm_density2.weights, h.weights)
 end
