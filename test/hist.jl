@@ -1,3 +1,5 @@
+# See src/hist.jl for meaning of "FIXME: closed" comments.
+
 using StatsBase
 using Base.Test
 
