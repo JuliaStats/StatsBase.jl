@@ -313,6 +313,8 @@ end
 #    idempotent. Histograms of same data but with different binning will
 #    always have similar weight values at same coordinates after
 #    normalization.
+# *  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
+#    conditionally apply different modes of normalization.
 #
 # aux_weights may, e.g., be estimated statistical uncertainties.
 
@@ -340,6 +342,8 @@ end
                     (@nref $N A i) /= $(Symbol("vs_$N"))
                 end
             end
+        elseif mode == :none
+            # Do nothing.
         else
             error("mode must be :norm, :pdf or :density")
         end

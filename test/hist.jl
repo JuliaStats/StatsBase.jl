@@ -121,5 +121,7 @@ show_h = sprint(show, fit(Histogram,[0,1,2], closed=:left))  # FIXME: closed
     @test h_norm_density.weights ≈ h.weights ./ bin_vols
     @test norm(h_norm_density) ≈ weight_sum
 
+    @test normalize(h, mode = :none) == h
+
     @test normalize(normalize(h, mode = :density)).weights ≈ normalize(h, mode = :pdf).weights
 end
