@@ -254,6 +254,11 @@ norm_type{T<:Integer}(::Type{T}) = promote_type(T, Int64)
 norm_type{T<:AbstractFloat}(::Type{T}) = promote_type(T, Float64)
 
 
+"""
+    norm(h::Histogram)
+
+Calculate the norm of histogram `h` as the absolute value of its integral.
+"""
 @generated function norm{T, N, E}(h::Histogram{T, N, E})
     quote
         edges = h.edges
@@ -295,29 +300,13 @@ function float{T, N, E}(h::Histogram{T, N, E})
 end
 
 
-# Normalization modes:
-#
-# * `:norm`: Normalize by norm(h). Resulting histogram has norm 1. Operation
-#    is always idempotent. For homogeneous binning, result is the same as with
-#    mode `:pdf`. For inhomogeneous binning, histograms of same data but with
-#    different binning will have different weight values at same coordinates
-#    after normalization.
-# *  `:pdf`: Normalize by sum of weights and bin sizes. Resulting histogram
-#    has norm 1 and represents a PDF. Operation is *not* idempotent for
-#    histograms with inhomogeneous binning. For homogeneous binning, result is
-#    the same as with mode `:norm`. Histograms of same data but with different
-#    binning will always have similar weight values at same coordinates after
-#    normalization.
-# * `:density`: Normalize by bin sizes only. Resulting histogram represents
-#    count density of input and does not have norm 1. Operation is *never*
-#    idempotent. Histograms of same data but with different binning will
-#    always have similar weight values at same coordinates after
-#    normalization.
-# *  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
-#    conditionally apply different modes of normalization.
-#
-# aux_weights may, e.g., be estimated statistical uncertainties.
 
+"""
+    normalize!{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :norm)
+
+Normalize the histogram `h` and optionally scale one or more auxiliary weight
+arrays appropriately. See description of `normalize` for details. Returns `h`.
+"""
 @generated function normalize!{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :norm)
     quote
         edges = h.edges
@@ -345,16 +334,52 @@ end
         elseif mode == :none
             # Do nothing.
         else
-            error("mode must be :norm, :pdf or :density")
+            throw(ArgumentError("mode must be :norm, :pdf or :density"))
         end
         h
     end
 end
 
 
+"""
+    normalize{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :norm)
+
+Normalize the histogram `h`.
+
+Valid values for `mode` are:
+
+* `:norm`: Normalize by dividing weights by `norm(h)`. Resulting histogram has
+   norm 1. Operation is always idempotent. For homogeneous binning, result is
+   the same as with mode `:pdf`. For inhomogeneous binning, histograms of same
+   data but with different binning will have different weight values at same
+   coordinates after normalization.
+*  `:pdf`: Normalize by sum of weights and bin sizes. Resulting histogram
+   has norm 1 and represents a PDF. Operation is *not* idempotent for
+   histograms with inhomogeneous binning. For homogeneous binning, result is
+   the same as with mode `:norm`. Histograms of same data but with different
+   binning will always have similar weight values at same coordinates after
+   normalization.
+* `:density`: Normalize by bin sizes only. Resulting histogram represents
+   count density of input and does not have norm 1. Operation is *never*
+   idempotent. Histograms of same data but with different binning will
+   always have similar weight values at same coordinates after
+   normalization.
+*  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
+   conditionally apply different modes of normalization.
+"""
 normalize{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :norm) =
     normalize!(_float_deepcopy(h), mode = mode)
 
+
+"""
+    normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :norm)
+
+Normalize the histogram `h` and rescales one or more auxiliary weight arrays
+at the same time (`aux_weights` may, e.g., contain estimated statistical
+uncertainties). The values of the auxiliary arrays are scaled by the same
+factor as the corresponding histogram weight values. Returns a tuple of the
+normalized histogram and scaled auxiliary weights.
+"""
 function normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :norm)
     h_fltcp = _float_deepcopy(h)
     aux_weights_fltcp = map(_float_deepcopy, aux_weights)
