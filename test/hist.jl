@@ -103,8 +103,6 @@ show_h = sprint(show, fit(Histogram,[0,1,2], closed=:left))  # FIXME: closed
     weight_sum = sum(h.weights)
     bin_vols = [ x * y * z for x in diff(edges[1]), y in diff(edges[2]), z in diff(edges[3])]
 
-    normalize(h)
-
     @test norm(h) ≈ sum(h.weights .* bin_vols)
 
     h_norm_norm = normalize(h, mode = :norm)

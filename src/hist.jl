@@ -281,13 +281,13 @@ end
 
 function _float_deepcopy(x)
     y = float(x)
-    is(y, x)? deepcopy(y) : y
+    y === x? deepcopy(y) : y
 end
 
 
 function float{T, N, E}(h::Histogram{T, N, E})
     float_weights = float(h.weights)
-    if is(float_weights, h.weights)
+    if float_weights === h.weights
         h
     else
         Histogram{eltype(float_weights), N, E}(deepcopy(h.edges), float_weights, h.closed)
@@ -324,7 +324,7 @@ end
         weights = h.weights
 
         for A in aux_weights
-            (size(A) != size(weights)) && error("aux_weights must have same size as histogram weights")
+            (size(A) != size(weights)) && throw(DimensionMismatch("aux_weights must have same size as histogram weights"))
         end
 
         if mode == :norm
