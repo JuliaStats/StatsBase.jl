@@ -297,17 +297,22 @@ end
 
 # Normalization modes:
 #
-# * `:norm`: Normalize by norm(h). Resulting histogram has norm 1. Histograms
-#    of same data but with different binning will have different weight values
-#    at same coordinates after normalization. Operation is idempotent.
-# * `:pdf`: Normalize by sum of weights and bin sizes. Resulting histogram
-#    has norm 1 and represents a PDF. Histograms of same data but with
-#    different binning will have same weight values at same coordinates
-#    after normalization. Operation is *not* idempotent.
+# * `:norm`: Normalize by norm(h). Resulting histogram has norm 1. Operation
+#    is always idempotent. For homogeneous binning, result is the same as with
+#    mode `:pdf`. For inhomogeneous binning, histograms of same data but with
+#    different binning will have different weight values at same coordinates
+#    after normalization.
+# *  `:pdf`: Normalize by sum of weights and bin sizes. Resulting histogram
+#    has norm 1 and represents a PDF. Operation is *not* idempotent for
+#    histograms with inhomogeneous binning. For homogeneous binning, result is
+#    the same as with mode `:norm`. Histograms of same data but with different
+#    binning will always have similar weight values at same coordinates after
+#    normalization.
 # * `:density`: Normalize by bin sizes only. Resulting histogram represents
-#    count density of input and does not have norm 1. Histograms of same data
-#    but with different binning will have same weight values at same
-#    coordinates after normalization. Operation is *not* idempotent.
+#    count density of input and does not have norm 1. Operation is *never*
+#    idempotent. Histograms of same data but with different binning will
+#    always have similar weight values at same coordinates after
+#    normalization.
 #
 # aux_weights may, e.g., be estimated statistical uncertainties.
 
