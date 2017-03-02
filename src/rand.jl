@@ -9,13 +9,13 @@ immutable RandIntSampler  # for generating Int samples in [0, K-1]
     @compat RandIntSampler(a::Int, b::Int) = (Ku = UInt(b-a+1); new(a, Ku, div(typemax(UInt), Ku) * Ku))
 end
 
-function rand(s::RandIntSampler)
-    x = rand(UInt)
+function rand(s::RandIntSampler, rng::AbstractRNG = Base.GLOBAL_RNG)
+    x = rand(rng, UInt)
     while x >= s.U
-        x = rand(UInt)
+        x = rand(rng, UInt)
     end
     @compat s.a + Int(rem(x, s.Ku))
 end
 
-randi(K::Int) = rand(RandIntSampler(K))
-randi(a::Int, b::Int) = rand(RandIntSampler(a, b))
+randi(K::Int, rng::AbstractRNG = Base.GLOBAL_RNG) = rand(RandIntSampler(K), rng)
+randi(a::Int, b::Int, rng::AbstractRNG = Base.GLOBAL_RNG) = rand(RandIntSampler(a, b), rng)
