@@ -41,7 +41,7 @@ Returns the number of degrees of freedom consumed in the model, including
 when applicable the intercept and the distribution's dispersion parameter.
 """
 dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
-stderr(obj::StatisticalModel) = sqrt(diag(vcov(obj)))
+stderr(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 fit(obj::StatisticalModel, data...) = error("fit is not defined for $(typeof(obj)).")
 fit!(obj::StatisticalModel, data...) = error("fit! is not defined for $(typeof(obj)).")
