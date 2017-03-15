@@ -69,7 +69,7 @@ end
 #   Reference: The Art of Computer Programming, Vol 2, 3.4.2, p.142
 #
 function knuths_sample!(a::AbstractArray, x::AbstractArray, rng::AbstractRNG=Base.GLOBAL_RNG;
-                       initshuffle::Bool=true)
+                        initshuffle::Bool=true)
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -317,7 +317,7 @@ with replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
 """
 function sample{T}(a::AbstractArray{T}, n::Integer, rng::AbstractRNG=Base.GLOBAL_RNG;
-                  replace::Bool=true, ordered::Bool=false)
+                   replace::Bool=true, ordered::Bool=false)
     sample!(a, Vector{T}(n), rng; replace=replace, ordered=ordered)
 end
 
@@ -332,7 +332,7 @@ whether sampling is performed with replacement and `order` dictates whether
 an ordered sample, also called a sequential sample, should be taken.
 """
 function sample{T}(a::AbstractArray{T}, dims::Dims, rng::AbstractRNG=Base.GLOBAL_RNG;
-                  replace::Bool=true, ordered::Bool=false)
+                   replace::Bool=true, ordered::Bool=false)
     sample!(a, Array{T}(dims), rng; replace=replace, ordered=ordered)
 end
 
@@ -365,7 +365,7 @@ end
 sample(a::AbstractArray, wv::WeightVec, rng::AbstractRNG=Base.GLOBAL_RNG) = a[sample(wv, rng)]
 
 function direct_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
-                      rng::AbstractRNG=Base.GLOBAL_RNG)
+                        rng::AbstractRNG=Base.GLOBAL_RNG)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     for i = 1:length(x)
@@ -434,7 +434,7 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
 end
 
 function alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
-                     rng::AbstractRNG=Base.GLOBAL_RNG)
+                       rng::AbstractRNG=Base.GLOBAL_RNG)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
@@ -453,7 +453,7 @@ function alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
 end
 
 function naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
-                            rng::AbstractRNG=Base.GLOBAL_RNG)
+                              rng::AbstractRNG=Base.GLOBAL_RNG)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
@@ -487,7 +487,7 @@ end
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
 function efraimidis_a_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
-                                   rng::AbstractRNG=Base.GLOBAL_RNG)
+                                     rng::AbstractRNG=Base.GLOBAL_RNG)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -516,7 +516,7 @@ end
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
 function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
-                                     rng::AbstractRNG=Base.GLOBAL_RNG)
+                                        rng::AbstractRNG=Base.GLOBAL_RNG)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -575,7 +575,7 @@ end
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
 function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray,
-                                      rng::AbstractRNG=Base.GLOBAL_RNG)
+                                         rng::AbstractRNG=Base.GLOBAL_RNG)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -626,7 +626,7 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
 end
 
 function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray, rng::AbstractRNG=Base.GLOBAL_RNG;
-                replace::Bool=true, ordered::Bool=false)
+                 replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
 
@@ -657,11 +657,11 @@ function sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray, rng::Abstrac
 end
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, n::Integer, rng::AbstractRNG=Base.GLOBAL_RNG;
-         replace::Bool=true, ordered::Bool=false) =
+          replace::Bool=true, ordered::Bool=false) =
     sample!(a, wv, Vector{T}(n), rng; replace=replace, ordered=ordered)
 
 sample{T}(a::AbstractArray{T}, wv::WeightVec, dims::Dims, rng::AbstractRNG=Base.GLOBAL_RNG;
-         replace::Bool=true, ordered::Bool=false) =
+          replace::Bool=true, ordered::Bool=false) =
     sample!(a, wv, Array{T}(dims), rng; replace=replace, ordered=ordered)
 
 
@@ -676,7 +676,7 @@ whether sampling is performed with replacement and `order` dictates whether an
 ordered sample, also called a sequential sample, should be taken.
 """
 wsample!(a::AbstractArray, w::RealVector, x::AbstractArray, rng::AbstractRNG=Base.GLOBAL_RNG;
-        replace::Bool=true, ordered::Bool=false) =
+         replace::Bool=true, ordered::Bool=false) =
     sample!(a, weights(w), x, rng; replace=replace, ordered=ordered)
 
 
@@ -701,7 +701,7 @@ replacement and `order` dictates whether an ordered sample, also called a sequen
 sample, should be taken.
 """
 wsample{T}(a::AbstractArray{T}, w::RealVector, n::Integer, rng::AbstractRNG=Base.GLOBAL_RNG;
-          replace::Bool=true, ordered::Bool=false) =
+           replace::Bool=true, ordered::Bool=false) =
     wsample!(a, w, Vector{T}(n), rng; replace=replace, ordered=ordered)
 
 
@@ -713,6 +713,6 @@ weights given in `w` if `a` is present, otherwise select a random sample of size
 `n` of the weights given in `w`. The dimensions of the output are given by `dims`.
 """
 wsample{T}(a::AbstractArray{T}, w::RealVector, dims::Dims, rng::AbstractRNG=Base.GLOBAL_RNG;
-          replace::Bool=true, ordered::Bool=false) =
+           replace::Bool=true, ordered::Bool=false) =
     wsample!(a, w, Array{T}(dims), rng; replace=replace, ordered=ordered)
 
