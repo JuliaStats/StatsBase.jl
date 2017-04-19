@@ -311,7 +311,7 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
                 $(Symbol("s_$(N)")) += (@nref $N weights i) * $(Symbol("v_$N"))
             end
         )
-        norm(s_0)
+        s_0
     end
 end
 
