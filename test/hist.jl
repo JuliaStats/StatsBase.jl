@@ -116,6 +116,7 @@ end
     @test contains(show_h, "edges:\n  0.0:1.0:3.0")
     @test contains(show_h, "weights: $([1,1,1])")
     @test contains(show_h, "closed: left")
+    @test contains(show_h, "isdensity: false")
 end
 
 

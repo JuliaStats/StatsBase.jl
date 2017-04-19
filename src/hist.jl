@@ -155,10 +155,11 @@ function show(io::IO, h::AbstractHistogram)
         println(io,"  ",e)
     end
     println(io,"weights: ",h.weights)
-    print(io,"closed: ",h.closed)
+    println(io,"closed: ",h.closed)
+    print(io,"isdensity: ",h.isdensity)
 end
 
-(==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed)
+(==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
 
 
 binindex{T,E}(h::AbstractHistogram{T,1,E}, x::Real) = binindex(h, (x,))[1]
