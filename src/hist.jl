@@ -16,20 +16,6 @@ function _check_closed_arg(closed::Symbol, funcsym)
 end
 
 
-## Fast map for tuples (a lot faster than using Base.map)
-@generated function _tuple_map{N}(f, tuples::NTuple{N, Any}...)
-    M = length(typeof(tuples::NTuple).parameters)
-    result_expr = Expr(:tuple)
-    for i in 1:N
-        call_f_expr = Expr(:call,:f)
-        for j in 1:M
-            push!(call_f_expr.args, :(tuples[$j][$i]))
-        end
-        push!(result_expr.args, call_f_expr)
-    end
-    result_expr
-end
-
 ## Fast getindex function for multiple arrays, returns a tuple of array elements
 @inline Base.@propagate_inbounds @generated function _multi_getindex(i::Integer, c::AbstractArray...)
     N = length(typeof(c::Tuple).parameters)
@@ -124,9 +110,9 @@ function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:default_left)
 end
 
 histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) =
-    _tuple_map((v,n) -> histrange(v,n,closed),vs,nbins)
+    map((v,n) -> histrange(v,n,closed),vs,nbins)
 histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) =
-    _tuple_map(v -> histrange(v,nbins,closed),vs)
+    map(v -> histrange(v,nbins,closed),vs)
 
 
 
@@ -148,7 +134,7 @@ type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
                                                weights::Array{T,N}, closed::Symbol, isdensity::Bool=false)
         closed == :right || closed == :left || error("closed must :left or :right")
         isdensity && !(T <: AbstractFloat) && error("Density histogram must have float-type weights")
-        _tuple_map(x -> length(x)-1,edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
+        map(x -> length(x)-1,edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
         new{T,N,E}(edges,weights,closed,isdensity)
     end
 end
@@ -157,7 +143,7 @@ Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},close
     Histogram{T,N,typeof(edges)}(edges,weights,_check_closed_arg(closed,:Histogram),isdensity)
 
 Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:default_left, isdensity::Bool=false) =
-    Histogram(edges,zeros(T,_tuple_map(x -> length(x)-1,edges)...),_check_closed_arg(closed,:Histogram),isdensity)
+    Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),_check_closed_arg(closed,:Histogram),isdensity)
 
 Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:default_left, isdensity::Bool=false) =
     Histogram(edges,Int,_check_closed_arg(closed,:Histogram),isdensity)
@@ -178,7 +164,7 @@ end
 binindex{T,E}(h::AbstractHistogram{T,1,E}, x::Real) = binindex(h, (x,))[1]
 
 binindex{T,N,E}(h::Histogram{T,N,E}, xs::NTuple{N,Real}) =
-    _tuple_map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
+    map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
 
 @inline function _edge_binindex(edge::AbstractVector, closed::Symbol, x::Real)
     if closed == :right
@@ -192,7 +178,7 @@ end
 binvolume{T,E}(h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(h, (binidx,))
 
 binvolume{T,N,E}(h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
-    prod(_tuple_map((edge, i) -> _edge_binvolume(edge, i), h.edges, binidx))
+    prod(map((edge, i) -> _edge_binvolume(edge, i), h.edges, binidx))
 
 @inline _edge_binvolume(edge::AbstractVector, i::Integer) = edge[i+1] - edge[i]
 @inline _edge_binvolume(edge::Range, i::Integer) = step(edge)
