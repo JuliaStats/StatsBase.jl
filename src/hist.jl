@@ -374,10 +374,10 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                     end
                 end
             end
+            h.isdensity = true
         else mode != :pdf && mode != :density
             throw(ArgumentError("Normalization mode must be :pdf, :density or :none"))
         end
-        h.isdensity = true
         h
     end
 end
