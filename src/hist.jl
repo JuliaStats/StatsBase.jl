@@ -327,7 +327,7 @@ function float{T, N, E}(h::Histogram{T, N, E})
     if float_weights === h.weights
         h
     else
-        Histogram{eltype(float_weights), N, E}(deepcopy(h.edges), float_weights, h.closed)
+        Histogram{eltype(float_weights), N, E}(h.edges, float_weights, h.closed, h.isdensity)
     end
 end
 
