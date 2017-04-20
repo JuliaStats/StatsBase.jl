@@ -1,9 +1,9 @@
 
 ###### Weight vector #####
 
-immutable WeightVec{W,Vec<:RealVector}
-    values::Vec
-    sum::W
+immutable WeightVec{T, V<:RealVector, S} <: RealVector{T}
+    values::V
+    sum::S
 end
 
 """
@@ -12,8 +12,14 @@ end
 Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
 If omitted, `wsum` is computed.
 """
-WeightVec{Vec<:RealVector,W<:Real}(vs::Vec,wsum::W) = WeightVec{W,Vec}(vs, wsum)
-WeightVec(vs::RealVector) = WeightVec(vs, sum(vs))
+function WeightVec{V<:RealVector}(vs::V)
+    sum_ = sum(vs)
+    return WeightVec{eltype(vs), V, typeof(sum_)}(vs, sum_)
+end
+
+function WeightVec{S, V<:RealVector}(vs::V, s::S)
+    return WeightVec{eltype(vs), V, S}(vs, s)
+end
 
 """
     weights(vs)
@@ -30,6 +36,7 @@ sum(wv::WeightVec) = wv.sum
 isempty(wv::WeightVec) = isempty(wv.values)
 
 Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
+Base.size(wv::WeightVec) = size(wv.values)
 
 
 ##### Weighted sum #####
@@ -281,6 +288,9 @@ Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
 
 
 ###### Weighted median #####
+function Base.median(v::AbstractArray, w::WeightVec)
+    throw(MethodError(median, (typeof(v), typeof(w))))
+end
 
 function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
     isempty(v) && error("median of an empty array is undefined")
