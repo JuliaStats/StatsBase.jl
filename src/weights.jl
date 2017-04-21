@@ -1,24 +1,34 @@
 
 ###### Weight vector #####
 
-immutable WeightVec{T, V<:RealVector, S} <: RealVector{T}
-    values::V
-    sum::S
-end
+if VERSION < v"0.6.0-dev.2123"
+    immutable WeightVec{S<:Real, T<:Real, V<:RealVector} <: RealVector{T}
+        values::V
+        sum::S
+    end
 
-"""
-    WeightVec(vs, [wsum])
+    function WeightVec{S<:Real, V<:RealVector}(vs::V, s::S)
+        return WeightVec{S, eltype(vs), V}(vs, s)
+    end
 
-Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
-If omitted, `wsum` is computed.
-"""
-function WeightVec{V<:RealVector}(vs::V)
-    sum_ = sum(vs)
-    return WeightVec{eltype(vs), V, typeof(sum_)}(vs, sum_)
-end
+    function WeightVec{V<:RealVector}(vs::V)
+        sum_ = sum(vs)
+        return WeightVec{typeof(sum_), eltype(vs), V}(vs, sum_)
+    end
+else
+    immutable WeightVec{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T}
+        values::V
+        sum::S
+    end
 
-function WeightVec{S, V<:RealVector}(vs::V, s::S)
-    return WeightVec{eltype(vs), V, S}(vs, s)
+    function WeightVec{S<:Real, T<:Real, V<:AbstractVector{T}}(vs::V, s::S)
+        return WeightVec{S, T, V}(vs, s)
+    end
+
+    function WeightVec{T<:Real, V<:AbstractVector{T}}(vs::V)
+        sum_ = sum(vs)
+        return WeightVec{typeof(sum_), T, V}(vs, sum_)
+    end
 end
 
 """
