@@ -8,14 +8,20 @@ using Base.Test
 
 @testset "Histogram binindex and binvolume" begin
     edg1 = -2:0.5:9
+    edg1f0 = -2:0.5f0:9
     edg2 = [-2, -1, 2, 7, 19]
     h1 = Histogram(edg1, :left)
     h2 = Histogram((edg1, edg2), :left)
+    h3 = Histogram((edg1f0, edg2), :left)
     @test StatsBase.binindex(h1, -0.5) == 4
     @test StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
 
     @test [StatsBase.binvolume(h1, i) for i in indices(h1.weights, 1)] ≈ diff(edg1)
     @test [StatsBase.binvolume(h2, (i,j)) for i in indices(h2.weights, 1), j in indices(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
+
+    @test typeof(StatsBase.binvolume(h2, (1,1))) == Float64
+    @test typeof(StatsBase.binvolume(h3, (1,1))) == Float32
+    @test typeof(StatsBase.binvolume(Float64, h3, (1,1))) == Float64
 end
 
 

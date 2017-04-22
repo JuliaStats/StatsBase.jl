@@ -177,12 +177,17 @@ end
 
 
 binvolume{T,E}(h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(h, (binidx,))
+binvolume{V,T,E}(::Type{V}, h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(V, h, (binidx,))
 
 binvolume{T,N,E}(h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
-    prod(map((edge, i) -> _edge_binvolume(edge, i), h.edges, binidx))
+    binvolume(promote_type(map(eltype, h.edges)...), h, binidx)
 
-@inline _edge_binvolume(edge::AbstractVector, i::Integer) = edge[i+1] - edge[i]
-@inline _edge_binvolume(edge::Range, i::Integer) = step(edge)
+binvolume{V,T,N,E}(::Type{V}, h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
+    prod(map((edge, i) -> _edge_binvolume(V, edge, i), h.edges, binidx))
+
+@inline _edge_binvolume{V}(::Type{V}, edge::AbstractVector, i::Integer) = V(edge[i+1]) - V(edge[i])
+@inline _edge_binvolume{V}(::Type{V}, edge::Range, i::Integer) = V(step(edge))
+@inline _edge_binvolume(edge::AbstractVector, i::Integer) = _edge_binvolume(eltype(edge), edge, i)
 
 
 # 1-dimensional
@@ -302,7 +307,7 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
         @inbounds @nloops(
             $N, i, weights,
             d -> begin
-                v_{$N-d+1} = v_{$N-d} * (SumT(edges[d][i_d + 1]) - SumT(edges[d][i_d]))
+                v_{$N-d+1} = v_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)
                 s_{$N-d+1} = zero(SumT)
             end,
             d -> begin
@@ -367,7 +372,7 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 # Divide weights by bin volume, for :pdf also divide by sum of weights
                 SumT = norm_type(h)
                 vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
-                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * (SumT(edges[d][i_d + 1]) - SumT(edges[d][i_d]))) begin
+                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
                     (@nref $N weights i) /= $(Symbol("vs_$N"))
                     for A in aux_weights
                         (@nref $N A i) /= $(Symbol("vs_$N"))
