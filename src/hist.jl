@@ -296,14 +296,14 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
     quote
         edges = h.edges
         weights = h.weights
-        S = norm_type(h)
+        SumT = norm_type(h)
         v_0 = 1
-        s_0 = zero(S)
+        s_0 = zero(SumT)
         @inbounds @nloops(
             $N, i, weights,
             d -> begin
-                v_{$N-d+1} = v_{$N-d} * (edges[d][i_d + 1] - edges[d][i_d])
-                s_{$N-d+1} = zero(S)
+                v_{$N-d+1} = v_{$N-d} * (SumT(edges[d][i_d + 1]) - SumT(edges[d][i_d]))
+                s_{$N-d+1} = zero(SumT)
             end,
             d -> begin
                 s_{$N-d} += s_{$N-d+1}
@@ -355,19 +355,19 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
             if h.isdensity
                 if mode == :pdf
                     # histogram already represents a density, just divide weights by norm
-                    v = norm(h)
-                    weights ./= v
+                    s = 1/norm(h)
+                    weights .*= s
                     for A in aux_weights
-                        A ./= v
+                        A .*= s
                     end
                 else
                     # histogram already represents a density, nothing to do
                 end
             else
                 # Divide weights by bin volume, for :pdf also divide by sum of weights
-                SumT = promote_type($T, Float64)
+                SumT = norm_type(h)
                 vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
-                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * (edges[d][i_d + 1] - edges[d][i_d])) begin
+                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * (SumT(edges[d][i_d + 1]) - SumT(edges[d][i_d]))) begin
                     (@nref $N weights i) /= $(Symbol("vs_$N"))
                     for A in aux_weights
                         (@nref $N A i) /= $(Symbol("vs_$N"))

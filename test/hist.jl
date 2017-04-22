@@ -158,7 +158,7 @@ end
     @test h_density.isdensity == true
     @test norm(h_density) ≈ weight_sum
     @test normalize(h_density, mode = :pdf) ==
-        Histogram(h_density.edges, h_density.weights ./ norm(h_density), h_density.closed, true)
+        Histogram(h_density.edges, h_density.weights .* (1/norm(h_density)), h_density.closed, true)
     @test normalize(h_density, mode = :pdf).weights ≈ h_pdf.weights
     @test normalize(h_density, mode = :density) == h_density
 
