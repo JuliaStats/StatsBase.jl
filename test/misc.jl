@@ -35,3 +35,25 @@ x = [2, 1, 3, 3, 2]
 x = ["b", "a", "c", "c", "b"]
 @test indicatormat(x) == I
 @test full(indicatormat(x; sparse=true)) == I
+
+io = IOBuffer()
+describe(io, collect(1:10))
+@test String(take!(io)) == """
+                           Summary Stats:
+                           Mean:           5.500000
+                           Minimum:        1.000000
+                           1st Quartile:   3.250000
+                           Median:         5.500000
+                           3rd Quartile:   7.750000
+                           Maximum:        10.000000
+                           Length:         10
+                           Type:           $Int
+                           """
+
+describe(io, fill("s", 3))
+@test String(take!(io)) == """
+                           Summary Stats:
+                           Length:         3
+                           Type:           String
+                           Number Unique:  1
+                           """

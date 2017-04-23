@@ -554,12 +554,12 @@ end
 
 function Base.show(io::IO, ss::SummaryStats)
     println(io, "Summary Stats:")
-    @printf(io, "Mean:         %.6f\n", ss.mean)
-    @printf(io, "Minimum:      %.6f\n", ss.min)
-    @printf(io, "1st Quartile: %.6f\n", ss.q25)
-    @printf(io, "Median:       %.6f\n", ss.median)
-    @printf(io, "3rd Quartile: %.6f\n", ss.q75)
-    @printf(io, "Maximum:      %.6f\n", ss.max)
+    @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Minimum:        %.6f\n", ss.min)
+    @printf(io, "1st Quartile:   %.6f\n", ss.q25)
+    @printf(io, "Median:         %.6f\n", ss.median)
+    @printf(io, "3rd Quartile:   %.6f\n", ss.q75)
+    @printf(io, "Maximum:        %.6f\n", ss.max)
 end
 
 
@@ -570,4 +570,16 @@ Pretty-print the summary statistics provided by `summarystats`:
 the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
-describe{T<:Real}(a::AbstractArray{T}) = show(summarystats(a))
+describe(a::AbstractArray) = describe(STDOUT, a)
+function describe{T<:Real}(io::IO, a::AbstractArray{T})
+    show(io, summarystats(a))
+    println(io, "Length:         $(length(a))")
+    println(io, "Type:           $(string(eltype(a)))")
+end
+function describe(io::IO, a::AbstractArray)
+    println(io, "Summary Stats:")
+    println(io, "Length:         $(length(a))")
+    println(io, "Type:           $(string(eltype(a)))")
+    println(io, "Number Unique:  $(length(unique(a)))")
+    return
+end
