@@ -14,18 +14,13 @@ else
 end
 
 """
-    function WeightVec{S<:Real, V<:RealVector}(vs::V, s::S)
+    WeightVec(vs, [wsum])
 
 Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
 If omitted, `wsum` is computed.
 """
-function WeightVec{S<:Real, V<:RealVector}(vs::V, s::S)
+function WeightVec{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs))
     return WeightVec{S, eltype(vs), V}(vs, s)
-end
-
-function WeightVec{V<:RealVector}(vs::V)
-    s = sum(vs)
-    return WeightVec{typeof(s), eltype(vs), V}(vs, s)
 end
 
 """
