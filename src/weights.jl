@@ -291,7 +291,7 @@ Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
 
 ###### Weighted median #####
 function Base.median(v::AbstractArray, w::WeightVec)
-    throw(MethodError(median, (typeof(v), typeof(w))))
+    throw(MethodError(median, (v, w)))
 end
 
 function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
