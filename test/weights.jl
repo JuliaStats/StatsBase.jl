@@ -5,10 +5,12 @@ import Compat: view
 
 @test isa(weights([1, 2, 3]), WeightVec{Int})
 @test isa(weights([1., 2., 3.]), WeightVec{Float64})
-
 @test isa(weights([1 2 3; 4 5 6]), WeightVec{Int})
 
+@test isa(WeightVec([1, 2, 3], 6), WeightVec{Int})
+
 @test isempty(weights(Float64[]))
+@test size(weights([1, 2, 3])) == (3,)
 
 w  = [1., 2., 3.]
 wv = weights(w)
@@ -26,6 +28,11 @@ bv = weights(b)
 @test sum(bv)    === 3
 @test !isempty(bv)
 
+ba = BitArray([true, false, true])
+sa = sparsevec([1., 0., 2.])
+
+@test sum(ba, wv) === 4.0
+@test sum(sa, wv) === 7.0
 
 ## wsum
 
