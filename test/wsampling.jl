@@ -7,7 +7,7 @@ srand(1234)
 
 #### weighted sample with replacement
 
-function check_wsample_wrep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; ordered::Bool=false)
+function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
     K = length(wv)
     (vmin, vmax) = vrgn
     (amin, amax) = extrema(a)
@@ -35,7 +35,7 @@ end
 import StatsBase: direct_sample!, alias_sample!
 
 n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6])
+wv = weights([0.2, 0.8, 0.4, 0.6], false)
 
 a = direct_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
@@ -53,7 +53,7 @@ check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
 
 #### weighted sampling without replacement
 
-function check_wsample_norep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; ordered::Bool=false)
+function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
     # each column of a for one run
 
     vmin, vmax = vrgn
@@ -79,7 +79,7 @@ import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
                   efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!
 
 n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6])
+wv = weights([0.2, 0.8, 0.4, 0.6], false)
 
 a = zeros(Int, 3, n)
 for j = 1:n

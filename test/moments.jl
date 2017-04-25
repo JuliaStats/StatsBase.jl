@@ -4,7 +4,7 @@ using Base.Test
 ##### weighted var & std
 
 x = rand(10)
-wv = weights(rand(10))
+wv = weights(rand(10), false)
 m = mean(x, wv)
 
 @test var(x, wv)           ≈ sum(abs2.(x .- m), wv) ./ sum(wv)
@@ -34,8 +34,8 @@ m = mean(x, wv)
 x = rand(5, 6)
 w1 = rand(5)
 w2 = rand(6)
-wv1 = weights(w1)
-wv2 = weights(w2)
+wv1 = weights(w1, false)
+wv2 = weights(w2, false)
 m1 = mean(x, wv1, 1)
 m2 = mean(x, wv2, 2)
 
@@ -85,7 +85,7 @@ end
 
 ##### skewness & kurtosis
 
-wv = weights(ones(5) * 2.0)
+wv = weights(ones(5) * 2.0, false)
 
 @test skewness(1:5)             ≈  0.0
 @test skewness([1, 2, 3, 4, 5]) ≈  0.0

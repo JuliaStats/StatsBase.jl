@@ -17,8 +17,12 @@ module StatsBase
     export
 
     ## weights
-    WeightVec,   # the type to represent a weight vector
-    weights,     # construct a weight vector
+    AbstractWeights,   # the abstract type to represent any weight vector
+    Weights,           # the default type for representing a weight vector
+    FrequencyWeights,  # the type for representing a frequency weight vectors
+    weights,     # construct a weights vector
+    frequency,   # construct a frequency weights vector
+    exponential, # construct a weights vector using a exponential smoothing schema
     wsum,        # weighted sum with vector as second argument
     wsum!,       # weighted sum across dimensions with provided storage
     wmean,       # weighted mean

@@ -25,12 +25,12 @@ end
 
 scattermat_zm(x::DenseMatrix, vardim::Int) = Base.unscaled_covzm(x, vardim)
 
-scattermat_zm(x::DenseMatrix, wv::WeightVec, vardim::Int) =
+scattermat_zm(x::DenseMatrix, wv::AbstractWeights, vardim::Int) =
     _symmetrize!(Base.unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
 
 
 """
-    scattermat(X, [wv::WeightVec]; mean=nothing, vardim=1)
+    scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)
 
 Compute the scatter matrix, which is an unnormalized covariance matrix.
 A weighting vector `wv` can be specified to weight
@@ -48,7 +48,7 @@ function scattermat end
 
 
 """
-    cov(X, wv::WeightVec; mean=nothing, vardim=1)
+    cov(X, wv::AbstractWeights; mean=nothing, vardim=1)
 
 Compute the weighted covariance matrix. By default, the covariance
 matrix is normalized by the sum of the weights. That is, `cov(X, wv)`
@@ -58,7 +58,7 @@ cov
 
 
 """
-    mean_and_cov(x, [wv::WeightVec]; vardim=1) -> (mean, cov)
+    mean_and_cov(x, [wv::AbstractWeights]; vardim=1) -> (mean, cov)
 
 Return the mean and covariance matrix as a tuple. A weighting
 vector `wv` can be specified. `vardim` that designates whether
@@ -74,21 +74,21 @@ function mean_and_cov end
         scattermat_zm(x .- mean, vardim)
     end
 
-    function scattermat(x::DenseMatrix, wv::WeightVec; mean=nothing, vardim::Int=1)
+    function scattermat(x::DenseMatrix, wv::AbstractWeights; mean=nothing, vardim::Int=1)
         mean == 0 ? scattermat_zm(x, wv, vardim) :
         mean == nothing ? scattermat_zm(x .- Base.mean(x, wv, vardim), wv, vardim) :
         scattermat_zm(x .- mean, wv, vardim)
     end
 
     ## weighted cov
-    Base.cov(x::DenseMatrix, wv::WeightVec; mean=nothing, vardim::Int=1) =
-        scale!(scattermat(x, wv; mean=mean, vardim=vardim), inv(sum(wv)))
+    Base.cov(x::DenseMatrix, wv::AbstractWeights; mean=nothing, vardim::Int=1) =
+        scale!(scattermat(x, wv; mean=mean, vardim=vardim), inv(bias(wv)))
 
     function mean_and_cov(x::DenseMatrix; vardim::Int=1)
         m = mean(x, vardim)
         return m, Base.covm(x, m; vardim=vardim)
     end
-    function mean_and_cov(x::DenseMatrix, wv::WeightVec; vardim::Int=1)
+    function mean_and_cov(x::DenseMatrix, wv::AbstractWeights; vardim::Int=1)
         m = mean(x, wv, vardim)
         return m, Base.cov(x, wv; mean=m, vardim=vardim)
     end
@@ -96,27 +96,27 @@ else
     scattermatm(x::DenseMatrix, mean, vardim::Int=1) =
         scattermat_zm(x .- mean, vardim)
 
-    scattermatm(x::DenseMatrix, mean, wv::WeightVec, vardim::Int=1) =
+    scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1) =
         scattermat_zm(x .- mean, wv, vardim)
 
     scattermat(x::DenseMatrix, vardim::Int=1) =
         scattermatm(x, Base.mean(x, vardim), vardim)
 
-    scattermat(x::DenseMatrix, wv::WeightVec, vardim::Int=1) =
+    scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
         scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
 
     ## weighted cov
-    Base.covm(x::DenseMatrix, mean, wv::WeightVec, vardim::Int=1) =
-        scale!(scattermatm(x, mean, wv, vardim), inv(sum(wv)))
+    Base.covm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1) =
+        scale!(scattermatm(x, mean, wv, vardim), inv(bias(wv)))
 
-    Base.cov(x::DenseMatrix, wv::WeightVec, vardim::Int=1) =
+    Base.cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
         Base.covm(x, Base.mean(x, wv, vardim), wv, vardim)
 
     function mean_and_cov(x::DenseMatrix, vardim::Int=1)
         m = mean(x, vardim)
         return m, Base.covm(x, m, vardim)
     end
-    function mean_and_cov(x::DenseMatrix, wv::WeightVec, vardim::Int=1)
+    function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1)
         m = mean(x, wv, vardim)
         return m, Base.cov(x, wv, vardim)
     end
