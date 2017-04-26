@@ -35,7 +35,7 @@ end
 import StatsBase: direct_sample!, alias_sample!
 
 n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6], false)
+wv = weights([0.2, 0.8, 0.4, 0.6])
 
 a = direct_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
@@ -79,7 +79,7 @@ import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
                   efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!
 
 n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6], false)
+wv = weights([0.2, 0.8, 0.4, 0.6])
 
 a = zeros(Int, 3, n)
 for j = 1:n

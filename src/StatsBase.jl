@@ -18,11 +18,15 @@ module StatsBase
 
     ## weights
     AbstractWeights,   # the abstract type to represent any weight vector
-    Weights,           # the default type for representing a weight vector
+    AnalyticWeights,   # the default type for representing a analytic/precision/reliability weight vectors
     FrequencyWeights,  # the type for representing a frequency weight vectors
-    weights,     # construct a weights vector
-    frequency,   # construct a frequency weights vector
-    exponential, # construct a weights vector using a exponential smoothing schema
+    ProbabilityWeights,# the type for representing a probability/sampling weight vectors
+    ExponentialWeights,# the type for representing exponential weights
+    weights,           # alias for aweights
+    aweights,          # construct an AnalyticWeights vector
+    fweights,          # construct a FrequencyWeights vector
+    pweights,          # construct a ProbabilityWeights vector
+    eweights,          # construct an ExponentialWeights vector
     wsum,        # weighted sum with vector as second argument
     wsum!,       # weighted sum across dimensions with provided storage
     wmean,       # weighted mean

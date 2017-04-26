@@ -43,3 +43,5 @@ findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(size(b)), a, b)
 
 @deprecate df(obj::StatisticalModel) dof(obj)
 @deprecate df_residual(obj::StatisticalModel) dof_residual(obj)
+
+@deprecate WeightVec{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) AnalyticWeights(vs, s)

@@ -3,35 +3,25 @@ using Base.Test
 using Compat
 import Compat: view
 
-@test isa(weights([1, 2, 3]), Weights{Int})
-@test isa(weights([1., 2., 3.]), Weights{Float64})
-@test isa(weights([1 2 3; 4 5 6]), Weights{Int})
+@test isa(weights([1, 2, 3]), AbstractWeights{Int})
+@test isa(weights([1., 2., 3.]), AbstractWeights{Float64})
+@test isa(weights([1 2 3; 4 5 6]), AbstractWeights{Int})
 
-@test isa(frequency([1, 2, 3]), FrequencyWeights)
-@test isa(frequency([1 2 3; 4 5 6]), FrequencyWeights)
-@test isa(FrequencyWeights([1, 2, 3], 6; corrected=false), FrequencyWeights)
+@test isa(AnalyticWeights([1, 2, 3], 6), AbstractWeights{Int})
 
 @test isempty(weights(Float64[]))
 @test size(weights([1, 2, 3])) == (3,)
 
 w  = [1., 2., 3.]
-wv = weights(w, false)
+wv = weights(w)
 @test eltype(wv) === Float64
 @test length(wv) === 3
 @test values(wv) === w
 @test sum(wv) === 6.0
 @test !isempty(wv)
 
-fw  = [1, 2, 3]
-fwv = frequency(fw)
-@test eltype(fwv) === Int
-@test length(fwv) === 3
-@test values(fwv) === fw
-@test sum(fwv) === 6
-@test !isempty(wv)
-
 b  = trues(3)
-bv = frequency(b)
+bv = weights(b)
 @test eltype(bv) === Bool
 @test length(bv) === 3
 @test values(bv) === b
@@ -41,8 +31,8 @@ bv = frequency(b)
 ba = BitArray([true, false, true])
 sa = sparsevec([1., 0., 2.])
 
-@test sum(ba, fwv) === 4
-@test sum(sa, fwv) === 7.0
+@test sum(ba, wv) === 4.0
+@test sum(sa, wv) === 7.0
 
 ## wsum
 
@@ -161,20 +151,21 @@ r = ones(8, 6)
 
 
 ## the sum and mean syntax
-@test sum([1.0, 2.0, 3.0], weights([1.0, 0.5, 0.5], false)) ≈ 3.5
-@test sum(1:3, weights([1.0, 1.0, 0.5], false))             ≈ 4.5
 
-@test mean([1:3;], weights([1.0, 1.0, 0.5], false)) ≈ 1.8
-@test mean(1:3, weights([1.0, 1.0, 0.5], false))    ≈ 1.8
+@test sum([1.0, 2.0, 3.0], weights([1.0, 0.5, 0.5])) ≈ 3.5
+@test sum(1:3, weights([1.0, 1.0, 0.5]))             ≈ 4.5
+
+@test mean([1:3;], weights([1.0, 1.0, 0.5])) ≈ 1.8
+@test mean(1:3, weights([1.0, 1.0, 0.5]))    ≈ 1.8
 
 a = reshape(1.0:27.0, 3, 3, 3)
 for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-    @test sum(a, weights(wt, false), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
-    @test sum(a, weights(wt, false), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
-    @test sum(a, weights(wt, false), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
-    @test mean(a, weights(wt, false), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
-    @test mean(a, weights(wt, false), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
-    @test mean(a, weights(wt, false), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
+    @test sum(a, weights(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
+    @test sum(a, weights(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
+    @test sum(a, weights(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
+    @test mean(a, weights(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
+    @test mean(a, weights(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
+    @test mean(a, weights(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
     @test_throws ErrorException mean(a, weights(wt), 4)
 end
 
@@ -235,16 +226,15 @@ median_answers = (7.0,   4.0,   8.5,
 num_tests = length(data)
 for i = 1:num_tests
     @test wmedian(data[i], wt[i]) == median_answers[i]
-    @test wmedian(data[i], weights(wt[i], false)) == median_answers[i]
-    @test median(data[i], weights(wt[i], false)) == median_answers[i]
+    @test wmedian(data[i], weights(wt[i])) == median_answers[i]
+    @test median(data[i], weights(wt[i])) == median_answers[i]
     for j = 1:100
         # Make sure the weighted median does not change if the data
         # and weights are reordered.
         reorder = sortperm(rand(length(data[i])))
-        @test median(data[i][reorder], weights(wt[i][reorder], false)) == median_answers[i]
+        @test median(data[i][reorder], weights(wt[i][reorder])) == median_answers[i]
     end
 end
-
 data = [4, 3, 2, 1]
 wt = [0, 0, 0, 0]
 @test_throws MethodError wmedian(data[1])
@@ -265,6 +255,7 @@ wt = [-1, -1, -1, -1, -1]
 @test_throws ErrorException median(data, weights(wt))
 wt = [-1, -1, -1, 0, 0]
 @test_throws ErrorException median(data, weights(wt))
+
 
 # Weighted quantile tests
 data = (
@@ -289,25 +280,25 @@ data = (
     [-10, 1, 1, -10, -10],
 )
 wt = (
-    weights([1, 1/3, 1/3, 1/3, 1], false),
-    weights([1, 1, 1, 1, 1], false),
-    weights([1, 1/3, 1/3, 1/3, 1, 1], false),
-    weights([1/3, 1/3, 1/3, 1, 1, 1], false),
-    weights([30, 191, 9, 0], false),
-    weights([10, 1, 1, 1, 9], false),
-    weights([10, 1, 1, 1, 900], false),
-    weights([1, 3, 5, 4, 2], false),
-    weights([2, 2, 5, 1, 2, 2, 1, 6], false),
-    weights([0.1, 0.1, 0.8], false),
-    weights([5, 5, 4, 1], false),
-    weights([30, 56, 144, 24, 55, 43, 67], false),
-    weights([0.1, 0.2, 0.3, 0.4, 0.5, 0.6], false),
-    weights([12], false),
-    weights([7, 1, 1, 1, 6], false),
-    weights([1, 0, 0, 0, 2], false),
-    weights([1, 2, 3, 4, 5], false),
-    weights([0.1, 0.2, 0.3, 0.2, 0.1], false),
-    weights([1, 1, 1, 1, 1], false),
+    weights([1, 1/3, 1/3, 1/3, 1]),
+    weights([1, 1, 1, 1, 1]),
+    weights([1, 1/3, 1/3, 1/3, 1, 1]),
+    weights([1/3, 1/3, 1/3, 1, 1, 1]),
+    weights([30, 191, 9, 0]),
+    weights([10, 1, 1, 1, 9]),
+    weights([10, 1, 1, 1, 900]),
+    weights([1, 3, 5, 4, 2]),
+    weights([2, 2, 5, 1, 2, 2, 1, 6]),
+    weights([0.1, 0.1, 0.8]),
+    weights([5, 5, 4, 1]),
+    weights([30, 56, 144, 24, 55, 43, 67]),
+    weights([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
+    weights([12]),
+    weights([7, 1, 1, 1, 6]),
+    weights([1, 0, 0, 0, 2]),
+    weights([1, 2, 3, 4, 5]),
+    weights([0.1, 0.2, 0.3, 0.2, 0.1]),
+    weights([1, 1, 1, 1, 1]),
 )
 quantile_answers = (
     [1.0,3.6000000000000005,6.181818181818182,8.2,10.0],
@@ -343,15 +334,15 @@ for i = 1:length(data)
     for j = 1:10
         # order of w does not matter
         reorder = sortperm(rand(length(data[i])))
-        @test quantile(data[i][reorder], weights(wt[i][reorder], false), p) ≈ quantile_answers[i]
+        @test quantile(data[i][reorder], weights(wt[i][reorder]), p) ≈ quantile_answers[i]
     end
 end
 # w = 1 corresponds to base quantile
 for i = 1:length(data)
-    @test quantile(data[i], weights(ones(Int64, length(data[i])), false), p) ≈ quantile(data[i], p)
+    @test quantile(data[i], weights(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p)
     for j = 1:10
         prandom = rand(4)
-        @test quantile(data[i], weights(ones(Int64, length(data[i])), false),  prandom) ≈ quantile(data[i], prandom)
+        @test quantile(data[i], weights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom)
     end
 end
 
@@ -359,8 +350,8 @@ end
 v = [7, 1, 2, 4, 10]
 w = [1, 1/3, 1/3, 1/3, 1]
 answer = 6.181818181818182
-@test quantile(data[1], weights(w, false), 0.5)    ≈  answer
-@test wquantile(data[1], weights(w, false), [0.5]) ≈ [answer]
-@test wquantile(data[1], weights(w, false), 0.5)   ≈  answer
+@test quantile(data[1], weights(w), 0.5)    ≈  answer
+@test wquantile(data[1], weights(w), [0.5]) ≈ [answer]
+@test wquantile(data[1], weights(w), 0.5)   ≈  answer
 @test wquantile(data[1], w, [0.5])          ≈ [answer]
 @test wquantile(data[1], w, 0.5)            ≈  answer

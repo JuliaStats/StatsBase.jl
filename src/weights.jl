@@ -3,112 +3,180 @@
 
 if VERSION < v"0.6.0-dev.2123"
     abstract AbstractWeights{S<:Real, T<:Real, V<:RealVector} <: RealVector{T}
-
-    immutable Weights{S<:Real, T<:Real, V<:RealVector} <: AbstractWeights{S, T, V}
-        values::V
-        sum::S
-        bias::Real
-    end
-
-    immutable FrequencyWeights{S<:Integer, T<:Integer, V<:IntegerVector} <: AbstractWeights{S, T, V}
-        values::V
-        sum::S
-        bias::Int
-    end
-
-    immutable ProbabilityWeights{S<:Real, T<:Real, V<:RealVector} <: AbstractWeights{S, T, V}
-        values::V
-        sum::S
-        bias::Real
-    end
 else
     abstract AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T}
-
-    immutable Weights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
-        values::V
-        sum::S
-        bias::Real
-    end
-
-    immutable FrequencyWeights{S<:Integer, T<:Integer, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
-        values::V
-        sum::S
-        bias::Int
-    end
-
-    immutable ProbabilityWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
-        values::V
-        sum::S
-        bias::Real
-    end
 end
 
 """
-    Weights(vs, [wsum])
+    `@weights name`
 
-Construct a `Weights` with weight values `vs` and sum of weights `wsum`.
-If omitted, `wsum` is computed.
+Generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
+and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
 """
-function Weights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs); corrected::Bool=true)
-    if isempty(vs) || !corrected
-        return Weights{typeof(s), eltype(vs), V}(vs, s, s)
-    else
-        return Weights{S, eltype(vs), V}(vs, s, s * (1 - sum(normalize(vs, 1) .^ 2)))
+macro weights(name)
+    return quote
+        if VERSION < v"0.6.0-dev.2123"
+            immutable $name{S<:Real, T<:Real, V<:RealVector} <: AbstractWeights{S, T, V}
+                values::V
+                sum::S
+            end
+        else
+            immutable $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
+                values::V
+                sum::S
+            end
+        end
     end
-end
-
-function FrequencyWeights{S<:Integer, V<:IntegerVector}(vs::V, s::S=sum(vs); corrected::Bool=true)
-    return FrequencyWeights{S, eltype(vs), V}(vs, s, s - Int(corrected))
-end
-
-# TODO: constructor for ProbabilityWeights, but I'm not familiar with how bias correction works with these
-# types of weights or if bias correction even makes sense.
-# https://en.wikipedia.org/wiki/Inverse_probability_weighting
-
-"""
-    weights(vs)
-
-Construct a `Weights` type from a given array.
-"""
-weights(vs::RealVector, corrected=true) = Weights(vs; corrected=corrected)
-weights(vs::RealArray, corrected=true) = Weights(vec(vs); corrected=corrected)
-
-"""
-    frequency(vs)
-
-Construct a `FrequencyWeights` type from a given array.
-"""
-frequency(vs::RealVector, corrected=true) = FrequencyWeights(vs; corrected=corrected)
-frequency(vs::RealArray, corrected=true) = FrequencyWeights(vec(vs); corrected=corrected)
-
-"""
-    exponential(n, [λ])
-
-Constructs a `Weights` type with a desired length `n` and smoothing factor `λ`,
-where each element is set to `λ * (1 - λ)^(1 - i)`.
-
-# Arguments
-* `n::Integer`: the desired length of the `Weights`
-* `λ::Real`: is a smoothing factor or rate paremeter between 0 .. 1.
-    As this value approaches 0 the resulting weights will be almost equal(),
-    while values closer to 1 will put higher weight on the end elements of the vector.
-"""
-function exponential(n::Integer, λ::Real=0.99)
-    @assert 0 <= λ <= 1 && n > 0
-    w0 = map(i -> λ * (1 - λ)^(1 - i), 1:n)
-    return weights(w0)
 end
 
 eltype(wv::AbstractWeights) = eltype(wv.values)
 length(wv::AbstractWeights) = length(wv.values)
 values(wv::AbstractWeights) = wv.values
 sum(wv::AbstractWeights) = wv.sum
-bias(wv::AbstractWeights) = wv.bias
 isempty(wv::AbstractWeights) = isempty(wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
 
+"""
+    bias(n::Integer, [corrected])
+
+Computes the corrected (default) or uncorrected bias for any `n` observations.
+
+```math
+\fraction{1}{n - 1}
+```
+"""
+bias(n::Integer, corrected=true) = inv(n - Int(corrected))
+
+"""
+    bias(w::AbstractWeights, [corrected])
+
+Computes the corrected (default) or uncorrected bias for any weight vector.
+The default equation assumes analytic/precision/reliability weights and determines the
+bias as:
+
+```math
+\fraction{1}{∑w × (1 - ∑(w'²))}
+```
+where w' represents the normalized weights
+"""
+function bias(w::AbstractWeights, corrected=true)
+    s = sum(w)
+    if corrected
+        return inv(s * (1 - sum(normalize(values(w), 1) .^ 2)))
+    else
+        return inv(s)
+    end
+end
+
+@weights AnalyticWeights
+
+"""
+    AnalyticWeights(vs, [wsum])
+
+Construct a `AnalyticWeights` with weight values `vs` and sum of weights `wsum`.
+If omitted, `wsum` is computed.
+"""
+function AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs))
+    return AnalyticWeights{S, eltype(vs), V}(vs, s)
+end
+
+"""
+    aweights(vs)
+
+Construct a `AnalyticWeights` type from a given array.
+"""
+aweights(vs::RealVector) = AnalyticWeights(vs)
+aweights(vs::RealArray) = AnalyticWeights(vec(vs))
+
+"""
+    weights(vs)
+
+Alias for aweights(vs)
+"""
+weights(vs) = aweights(vs)
+
+@weights FrequencyWeights
+
+function FrequencyWeights{S<:Integer, V<:IntegerVector}(vs::V, s::S=sum(vs))
+    return FrequencyWeights{S, eltype(vs), V}(vs, s)
+end
+
+"""
+    fweights(vs)
+
+Construct a `FrequencyWeights` type from a given array.
+"""
+fweights(vs::IntegerVector) = FrequencyWeights(vs)
+fweights(vs::IntegerArray) = FrequencyWeights(vec(vs))
+
+"""
+    bias(w::FrequencyWeights, [corrected])
+
+```math
+\fraction{1}{∑w - 1}
+```
+"""
+bias(w::FrequencyWeights, corrected=true) = inv(sum(w) - Int(corrected))
+
+@weights ProbabilityWeights
+
+function ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs))
+    return ProbabilityWeights{S, eltype(vs), V}(vs, s)
+end
+
+"""
+    pweights(vs)
+
+Construct a `ProbabilityWeights` type from a given array.
+"""
+pweights(vs::RealVector) = ProbabilityWeights(vs)
+pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
+
+"""
+    bias(w::ProbabilityWeights, [corrected])
+
+```math
+\fraction{n}{∑w × (n - 1)}
+```
+"""
+function bias(w::ProbabilityWeights, corrected=true)
+    s = sum(w)
+
+    if corrected
+        n = length(values(w))
+        return n / (s * (n - 1))
+    else
+        return inv(s)
+    end
+end
+
+@weights ExponentialWeights
+
+function ExponentialWeights{V<:RealVector}(vs::V)
+    s = sum(vs)
+    return ExponentialWeights{typeof(s), eltype(vs), V}(vs, s)
+end
+
+"""
+    eweights(n, [λ])
+
+Constructs a `ExponentialWeights` type with a desired length `n` and smoothing factor `λ`,
+where each element is set to `λ * (1 - λ)^(1 - i)`.
+
+# Arguments
+* `n::Integer`: the desired length of the `Weights`
+* `λ::Real`: a smoothing factor or rate parameter between 0 and 1.
+    As this value approaches 0 the resulting weights will be almost equal,
+    while values closer to 1 will put higher weight on the end elements of the vector.
+"""
+function eweights(n::Integer, λ::Real=0.99)
+    n > 0 || throw(ArgumentError("cannot construct weights of length < 1"))
+    0 <= λ <= 1 || throw(ArgumentError("smoothing factor must be between 0 and 1"))
+    w0 = map(i -> λ * (1 - λ)^(1 - i), 1:n)
+    return weights(w0)
+end
 
 ##### Weighted sum #####
 
@@ -339,7 +407,7 @@ Compute the weighted mean of an array `v` with weights `w`.
 """
 function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
     Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
-    mean(v, weights(w, false))
+    mean(v, weights(w))
 end
 
 Base.mean(v::AbstractArray, w::AbstractWeights) = sum(v, w) / sum(w)
@@ -416,7 +484,7 @@ end
 Compute the weighted median of an array `v` with weights `w`, given as either a
 vector or `AbstractWeights`.
 """
-wmedian(v::RealVector, w::RealVector) = median(v, weights(w, false))
+wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::AbstractWeights{W}) = median(v, w)
 
 ###### Weighted quantile #####
@@ -510,5 +578,5 @@ or a `AbstractWeights`.
 """
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(v, w, [p])[1]
-wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w, false), p)
-wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w, false), [p])[1]
+wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
+wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
