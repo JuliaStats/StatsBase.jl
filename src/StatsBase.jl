@@ -17,22 +17,22 @@ module StatsBase
     export
 
     ## weights
-    AbstractWeights,   # the abstract type to represent any weight vector
-    AnalyticWeights,   # the default type for representing a analytic/precision/reliability weight vectors
-    FrequencyWeights,  # the type for representing a frequency weight vectors
-    ProbabilityWeights,# the type for representing a probability/sampling weight vectors
-    ExponentialWeights,# the type for representing exponential weights
-    weights,           # alias for aweights
-    aweights,          # construct an AnalyticWeights vector
-    fweights,          # construct a FrequencyWeights vector
-    pweights,          # construct a ProbabilityWeights vector
-    eweights,          # construct an ExponentialWeights vector
-    wsum,        # weighted sum with vector as second argument
-    wsum!,       # weighted sum across dimensions with provided storage
-    wmean,       # weighted mean
-    wmean!,      # weighted mean across dimensions with provided storage
-    wmedian,     # weighted median
-    wquantile,   # weighted quantile
+    AbstractWeights,    # the abstract type to represent any weight vector
+    AnalyticWeights,    # the default type for representing a analytic/precision/reliability weight vectors
+    FrequencyWeights,   # the type for representing a frequency weight vectors
+    ProbabilityWeights, # the type for representing a probability/sampling weight vectors
+    ExponentialWeights, # the type for representing exponential weights
+    weights,            # alias for aweights
+    aweights,           # construct an AnalyticWeights vector
+    fweights,           # construct a FrequencyWeights vector
+    pweights,           # construct a ProbabilityWeights vector
+    eweights,           # construct an ExponentialWeights vector
+    wsum,               # weighted sum with vector as second argument
+    wsum!,              # weighted sum across dimensions with provided storage
+    wmean,              # weighted mean
+    wmean!,             # weighted mean across dimensions with provided storage
+    wmedian,            # weighted median
+    wquantile,          # weighted quantile
 
     ## moments
     skewness,       # (standardized) skewness

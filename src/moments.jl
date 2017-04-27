@@ -15,9 +15,8 @@ whereas it's `length(x)-1` in `Base.varm`. The impact is that this is not a
 weighted estimate of the population variance based on the sample; it's the weighted
 variance of the sample.
 """
-function Base.varm(v::RealArray, wv::AbstractWeights, m::Real; corrected=true)
+Base.varm(v::RealArray, wv::AbstractWeights, m::Real; corrected=true) =
     _moment2(v, wv, m, corrected=corrected)
-end
 
 """
     var(x, wv::AbstractWeights, [dim]; mean=nothing)
@@ -40,12 +39,8 @@ end
 
 ## var along dim
 
-function Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int; corrected=true)
-    scale!(
-        _wsum_centralize!(R, @functorize(abs2), A, values(wv), M, dim, true),
-        bias(wv, corrected)
-    )
-end
+Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int; corrected=true) =
+    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true), bias(wv, corrected))
 
 function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=true)
     if mean == 0
@@ -89,15 +84,11 @@ end
 
 function Base.var(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=true)
     @static if VERSION < v"0.6.0-dev.1121"
-        return var!(
-            similar(A, Float64, Base.reduced_dims(size(A), dim)),
-            A, wv, dim; mean=mean, corrected=corrected
-        )
+        return var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim;
+            mean=mean, corrected=corrected)
     else
-        return var!(
-            similar(A, Float64, Base.reduced_indices(indices(A), dim)),
-            A, wv, dim; mean=mean, corrected=corrected
-        )
+        return var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim;
+            mean=mean, corrected=corrected)
     end
 end
 
@@ -109,9 +100,8 @@ Return the standard deviation of a real-valued array `v` with a known mean `m`,
 optionally over a dimension `dim`. The weighting vector `wv` specifies frequency
 weights (also called case weights) for the estimate.
 """
-function Base.stdm(v::RealArray, wv::AbstractWeights, m::Real; corrected=true)
+Base.stdm(v::RealArray, wv::AbstractWeights, m::Real; corrected=true) =
     sqrt(varm(v, wv, m; corrected=corrected))
-end
 
 """
     std(v, wv::AbstractWeights, [dim]; mean=nothing)
@@ -120,21 +110,17 @@ Return the standard deviation of a real-valued array `v`, optionally over a
 dimension `dim`. The weighting vector `wv` specifies frequency weights (also
 called case weights) for the estimate.
 """
-function Base.std(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=true)
+Base.std(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=true) =
     sqrt.(var(v, wv; mean=mean, corrected=corrected))
-end
 
-function Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected=true)
+Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected=true) =
     Base.sqrt!(varm(v, m, dim; corrected=corrected))
-end
 
-function Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int; corrected=true)
+Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int; corrected=true) =
     sqrt.(varm(v, wv, m, dim; corrected=corrected))
-end
 
-function Base.std(v::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=true)
+Base.std(v::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=true) =
     sqrt.(var(v, wv, dim; mean=mean, corrected=corrected))
-end
 
 ##### Fused statistics
 """
@@ -221,8 +207,7 @@ function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=true)
         @inbounds s += (z * z) * w[i]
     end
 
-    result = s * bias(wv, corrected)
-    return result
+    s * bias(wv, corrected)
 end
 
 function _moment3(v::RealArray, m::Real; corrected=true)
