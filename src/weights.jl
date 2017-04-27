@@ -43,9 +43,7 @@ Base.size(wv::AbstractWeights) = size(wv.values)
 
 Computes the corrected (default) or uncorrected bias for any `n` observations.
 
-```math
-\fraction{1}{n - 1}
-```
+``\\frac{1}{n - 1}``
 """
 bias(n::Integer, corrected=true) = inv(n - Int(corrected))
 
@@ -56,10 +54,7 @@ Computes the corrected (default) or uncorrected bias for any weight vector.
 The default equation assumes analytic/precision/reliability weights and determines the
 bias as:
 
-```math
-\fraction{1}{∑w × (1 - ∑(w'²))}
-```
-where w' represents the normalized weights
+``\\frac{1}{\sum w - \sum w / \sum {w^2}}``
 """
 function bias(w::AbstractWeights, corrected=true)
     s = sum(w)
@@ -73,10 +68,9 @@ end
 @weights AnalyticWeights
 
 """
-    AnalyticWeights(vs, [wsum])
+    AnalyticWeights(vs, wsum=sum(vs))
 
-Construct a `AnalyticWeights` with weight values `vs` and sum of weights `wsum`.
-If omitted, `wsum` is computed.
+Construct an `AnalyticWeights` vector with weight values `vs` and sum of weights `wsum`.
 """
 AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     AnalyticWeights{S, eltype(vs), V}(vs, s)
@@ -84,20 +78,25 @@ AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
 """
     aweights(vs)
 
-Construct a `AnalyticWeights` type from a given array.
+Construct an `AnalyticWeights` vector from a given array.
 """
 aweights(vs::RealVector) = AnalyticWeights(vs)
 aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 
 @weights FrequencyWeights
 
+"""
+    FrequencyWeights(vs, wsum=sum(vs))
+
+Construct a `FrequencyWeights` vector with weight values `vs` and sum of weights `wsum`.
+"""
 FrequencyWeights{S<:Integer, V<:IntegerVector}(vs::V, s::S=sum(vs)) =
     FrequencyWeights{S, eltype(vs), V}(vs, s)
 
 """
     fweights(vs)
 
-Construct a `FrequencyWeights` type from a given array.
+Construct a `FrequencyWeights` vector from a given array.
 """
 fweights(vs::IntegerVector) = FrequencyWeights(vs)
 fweights(vs::IntegerArray) = FrequencyWeights(vec(vs))
@@ -105,9 +104,7 @@ fweights(vs::IntegerArray) = FrequencyWeights(vec(vs))
 """
     bias(w::FrequencyWeights, corrected=true)
 
-```math
-\fraction{1}{∑w - 1}
-```
+``\\frac{1}{\sum{w} - 1}``
 """
 bias(w::FrequencyWeights, corrected=true) = inv(sum(w) - Int(corrected))
 
@@ -119,7 +116,7 @@ ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
 """
     pweights(vs)
 
-Construct a `ProbabilityWeights` type from a given array.
+Construct a `ProbabilityWeights` vector from a given array.
 """
 pweights(vs::RealVector) = ProbabilityWeights(vs)
 pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
@@ -127,33 +124,24 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 """
     bias(w::ProbabilityWeights, corrected=true)
 
-```math
-\fraction{n}{∑w × (n - 1)}
-```
+``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
 function bias(w::ProbabilityWeights, corrected=true)
     s = sum(w)
 
     if corrected
-        n = length(values(w))
+        n = length(w)
         return n / (s * (n - 1))
     else
         return inv(s)
     end
 end
 
-@weights ExponentialWeights
-
-function ExponentialWeights{V<:RealVector}(vs::V)
-    s = sum(vs)
-    ExponentialWeights{typeof(s), eltype(vs), V}(vs, s)
-end
-
 """
     eweights(n, [λ])
 
-Constructs a `ExponentialWeights` type with a desired length `n` and smoothing factor `λ`,
-where each element is set to `λ * (1 - λ)^(1 - i)`.
+Constructs an `AnalyticWeights` vector with a desired length `n` and smoothing factor `λ`,
+where each element is set to ``λ * (1 - λ)^(1 - i)``.
 
 # Arguments
 * `n::Integer`: the desired length of the `Weights`
@@ -165,7 +153,7 @@ function eweights(n::Integer, λ::Real=0.99)
     n > 0 || throw(ArgumentError("cannot construct weights of length < 1"))
     0 <= λ <= 1 || throw(ArgumentError("smoothing factor must be between 0 and 1"))
     w0 = map(i -> λ * (1 - λ)^(1 - i), 1:n)
-    weights(w0)
+    aweights(w0)
 end
 
 ##### Weighted sum #####
