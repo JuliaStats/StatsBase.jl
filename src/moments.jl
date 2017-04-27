@@ -35,7 +35,7 @@ function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=tru
     if mean == 0
         return varm(v, wv, 0; corrected=corrected)
     elseif mean == nothing
-        return varm(v, wv, Base.mean(v, wv); corrected=corrected) :
+        return varm(v, wv, Base.mean(v, wv); corrected=corrected)
     else
         return varm(v, wv, mean; corrected=corrected)
     end

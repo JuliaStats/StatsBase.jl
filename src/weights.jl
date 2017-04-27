@@ -390,8 +390,8 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int
 Compute the weighted mean of an array `v` with weights `w`.
 """
 function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
-    Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
-    mean(v, weights(w))
+    Base.depwarn("wmean is deprecated, use mean(v, fweights(w)) instead.", :wmean)
+    mean(v, fweights(w))
 end
 
 Base.mean(v::AbstractArray, w::AbstractWeights) = sum(v, w) / sum(w)
@@ -468,7 +468,7 @@ end
 Compute the weighted median of an array `v` with weights `w`, given as either a
 vector or `AbstractWeights`.
 """
-wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
+wmedian(v::RealVector, w::RealVector) = median(v, fweights(w))
 wmedian{W<:Real}(v::RealVector, w::AbstractWeights{W}) = median(v, w)
 
 ###### Weighted quantile #####
@@ -562,5 +562,5 @@ or a `AbstractWeights`.
 """
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(v, w, [p])[1]
-wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
-wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
+wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, fweights(w), p)
+wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, fweights(w), [p])[1]

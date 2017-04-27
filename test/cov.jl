@@ -9,8 +9,8 @@ Z2 = X .- mean(X, 2)
 w1 = rand(3)
 w2 = rand(8)
 
-wv1 = weights(w1)
-wv2 = weights(w2)
+wv1 = fweights(w1)
+wv2 = fweights(w2)
 
 Z1w = X .- mean(X, wv1, 1)
 Z2w = X .- mean(X, wv2, 2)
