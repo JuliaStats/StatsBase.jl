@@ -223,7 +223,7 @@ fit{W}(::Type{Histogram}, v::AbstractVector, wv::WeightVec{W}, args...; kwargs..
 # N-dimensional
 
 function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
-    (h.isdensity == true) && error("Density histogram must have float-type weights")
+    h.isdensity && error("Density histogram must have float-type weights")
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
         @inbounds h.weights[idx...] += w
