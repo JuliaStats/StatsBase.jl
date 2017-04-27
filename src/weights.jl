@@ -59,7 +59,13 @@ bias as:
 function bias(w::AbstractWeights, corrected=true)
     s = sum(w)
     if corrected
-        return inv(s * (1 - sum(normalize(values(w), 1) .^ 2)))
+        # sum square norm
+        sum_sn = 0.0
+        for x in w
+            sum_sn += (x / s) ^ 2
+        end
+
+        return inv(s * (1 - sum_sn))
     else
         return inv(s)
     end
