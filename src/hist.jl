@@ -322,20 +322,9 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
 end
 
 
-function _float_deepcopy(x)
-    y = float(x)
-    y === x? deepcopy(y) : y
-end
+float{T<:AbstractFloat, N, E}(h::Histogram{T, N, E}) = h
 
-
-function float{T, N, E}(h::Histogram{T, N, E})
-    float_weights = float(h.weights)
-    if float_weights === h.weights
-        h
-    else
-        Histogram{eltype(float_weights), N, E}(h.edges, float_weights, h.closed, h.isdensity)
-    end
-end
+float{T, N, E}(h::Histogram{T, N, E}) = Histogram(h.edges, float(h.weights), h.closed, h.isdensity)
 
 
 
@@ -404,7 +393,7 @@ Valid values for `mode` are:
    conditionally apply different modes of normalization.
 """
 normalize{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :pdf) =
-    normalize!(_float_deepcopy(h), mode = mode)
+    normalize!(deepcopy(float(h)), mode = mode)
 
 
 """
@@ -417,8 +406,8 @@ factor as the corresponding histogram weight values. Returns a tuple of the
 normalized histogram and scaled auxiliary weights.
 """
 function normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :pdf)
-    h_fltcp = _float_deepcopy(h)
-    aux_weights_fltcp = map(_float_deepcopy, aux_weights)
+    h_fltcp = deepcopy(float(h))
+    aux_weights_fltcp = map(x -> deepcopy(float(x)), aux_weights)
     normalize!(h_fltcp, aux_weights_fltcp..., mode = mode)
     (h_fltcp, aux_weights_fltcp...)
 end
