@@ -96,7 +96,7 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 
 Construct a `FrequencyWeights` vector with weight values `vs` and sum of weights `wsum`.
 """
-FrequencyWeights{S<:Integer, V<:IntegerVector}(vs::V, s::S=sum(vs)) =
+FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     FrequencyWeights{S, eltype(vs), V}(vs, s)
 
 """
@@ -104,8 +104,8 @@ FrequencyWeights{S<:Integer, V<:IntegerVector}(vs::V, s::S=sum(vs)) =
 
 Construct a `FrequencyWeights` vector from a given array.
 """
-fweights(vs::IntegerVector) = FrequencyWeights(vs)
-fweights(vs::IntegerArray) = FrequencyWeights(vec(vs))
+fweights(vs::RealVector) = FrequencyWeights(vs)
+fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 
 """
     bias(w::FrequencyWeights, corrected=true)
