@@ -89,13 +89,6 @@ Construct a `AnalyticWeights` type from a given array.
 aweights(vs::RealVector) = AnalyticWeights(vs)
 aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 
-"""
-    weights(vs)
-
-Alias for aweights(vs)
-"""
-weights(vs) = aweights(vs)
-
 @weights FrequencyWeights
 
 FrequencyWeights{S<:Integer, V<:IntegerVector}(vs::V, s::S=sum(vs)) =
