@@ -32,9 +32,13 @@ weighted estimate of the population variance based on the sample; it's the weigh
 variance of the sample.
 """
 function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=true)
-    mean == 0 ? varm(v, wv, 0; corrected=corrected) :
-    mean == nothing ? varm(v, wv, Base.mean(v, wv); corrected=corrected) :
-    varm(v, wv, mean; corrected=corrected)
+    if mean == 0
+        return varm(v, wv, 0; corrected=corrected)
+    elseif mean == nothing
+        return varm(v, wv, Base.mean(v, wv); corrected=corrected) :
+    else
+        return varm(v, wv, mean; corrected=corrected)
+    end
 end
 
 ## var along dim
