@@ -2,9 +2,9 @@
 ###### Weight vector #####
 
 if VERSION < v"0.6.0-dev.2123"
-    abstract AbstractWeights{S<:Real, T<:Real, V<:RealVector} <: RealVector{T}
+    @compat abstract type AbstractWeights{S<:Real, T<:Real, V<:RealVector} <: RealVector{T} end
 else
-    abstract AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T}
+    @compat abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
 end
 
 """
