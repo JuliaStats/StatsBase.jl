@@ -68,3 +68,14 @@ function weights(vs::RealArray)
     s = sum(v)
     WeightVec{typeof(s), eltype(v), typeof(v)}(v, s)
 end
+
+"""
+    varcorrection(w::WeightVec, corrected=false)
+
+Returns ``\\frac{1}{\sum w}`` when corrected is false and throws an `ArgumentError`
+when correction is true.
+"""
+function varcorrections(w::WeightVec, corrected::Bool=false)
+    corrected && throw(ArgumentError("WeightVec does not support bias correction."))
+    1 / w.sum
+end

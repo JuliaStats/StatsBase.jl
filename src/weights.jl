@@ -46,24 +46,7 @@ If `corrected=true` this will return ``\\frac{1}{n - 1}``
 (ie: [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
 otherwise it will return ``\\frac{1}{n}``.
 """
-varcorrection(n::Integer, corrected=false) = 1 / (n - Int(corrected))
-
-"""
-    varcorrection(wv::AbstractWeights, corrected=false)
-
-Computes a correction factor for calculating `var`, `std` and `cov` with a set of
-weights `wv`.
-"""
-varcorrection(wv::AbstractWeights, corrected=false) = varcorrection(wv, Val{corrected})
-
-"""
-    varcorrection(wv::AbstractWeights, false)
-
-``\\frac{1}{\sum w}``
-"""
-varcorrection(wv::AbstractWeights, ::Type{Val{false}}) = 1 / sum(wv)
-varcorrection(wv::AbstractWeights, ::Type{Val{true}}) =
-    throw(ArgumentError("$(typeof(wv)) does not support bias correction."))
+varcorrection(n::Integer, corrected::Bool=false) = 1 / (n - Int(corrected))
 
 
 @weights AnalyticWeights
@@ -90,18 +73,23 @@ aweights(vs::RealVector) = AnalyticWeights(vs)
 aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 
 """
-    varcorrection(w::AnalyticWeights, true)
+    varcorrection(w::AnalyticWeights, corrected=false)
 
-``\\frac{1}{\sum w - \sum w / \sum {w^2}}``
+``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
 """
-function varcorrection(w::AnalyticWeights, ::Type{Val{true}})
-    s = sum(w)
-    sum_sn = 0.0
-    for x in w
-        sum_sn += (x / s) ^ 2
-    end
+function varcorrection(w::AnalyticWeights, corrected::Bool=false)
+    s = w.sum
 
-    1 / (s * (1 - sum_sn))
+    if corrected
+        sum_sn = 0.0
+        for x in w
+            sum_sn += (x / s) ^ 2
+        end
+
+        1 / (s * (1 - sum_sn))
+    else
+        1 / s
+    end
 end
 
 @weights FrequencyWeights
@@ -127,11 +115,19 @@ fweights(vs::RealVector) = FrequencyWeights(vs)
 fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 
 """
-    varcorrection(w::FrequencyWeights, true)
+    varcorrection(w::FrequencyWeights, corrected=false)
 
 ``\\frac{1}{\sum{w} - 1}``
 """
-varcorrection(w::FrequencyWeights, ::Type{Val{true}}) = 1 / (sum(w) - 1)
+function varcorrection(w::FrequencyWeights, corrected::Bool=false)
+    s = w.sum
+
+    if corrected
+        1 / (s - 1)
+    else
+        1 / s
+    end
+end
 
 @weights ProbabilityWeights
 
@@ -157,14 +153,19 @@ pweights(vs::RealVector) = ProbabilityWeights(vs)
 pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 
 """
-    varcorrection(w::ProbabilityWeights, true)
+    varcorrection(w::ProbabilityWeights, corrected=false)
 
 ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-function varcorrection(w::ProbabilityWeights, ::Type{Val{true}})
-    s = sum(w)
-    n = length(w)
-    return n / (s * (n - 1))
+function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
+    s = w.sum
+
+    if corrected
+        n = length(w)
+        n / (s * (n - 1))
+    else
+        1 / s
+    end
 end
 
 """
