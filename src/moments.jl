@@ -44,7 +44,7 @@ end
 ## var along dim
 
 Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int; corrected=false) =
-    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true), cfactor(wv, corrected))
+    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true), varcorrection(wv, corrected))
 
 function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=false)
     if mean == 0
@@ -198,7 +198,7 @@ function _moment2(v::RealArray, m::Real; corrected=false)
         @inbounds z = v[i] - m
         s += z * z
     end
-    cfactor(n, corrected) * s
+    varcorrection(n, corrected) * s
 end
 
 function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
@@ -210,7 +210,7 @@ function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
         @inbounds s += (z * z) * w[i]
     end
 
-    cfactor(wv, corrected) * s
+    varcorrection(wv, corrected) * s
 end
 
 function _moment3(v::RealArray, m::Real)
@@ -220,7 +220,7 @@ function _moment3(v::RealArray, m::Real)
         @inbounds z = v[i] - m
         s += z * z * z
     end
-    cfactor(n, false) * s
+    varcorrection(n, false) * s
 end
 
 function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
@@ -231,7 +231,7 @@ function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * w[i]
     end
-    cfactor(wv, false) * s
+    varcorrection(wv, false) * s
 end
 
 function _moment4(v::RealArray, m::Real; corrected=false)
@@ -241,7 +241,7 @@ function _moment4(v::RealArray, m::Real; corrected=false)
         @inbounds z = v[i] - m
         s += abs2(z * z)
     end
-    cfactor(n, false) * s
+    varcorrection(n, false) * s
 end
 
 function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
@@ -252,7 +252,7 @@ function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * w[i]
     end
-    cfactor(wv, false) * s
+    varcorrection(wv, false) * s
 end
 
 function _momentk(v::RealArray, k::Int, m::Real)
@@ -262,7 +262,7 @@ function _momentk(v::RealArray, k::Int, m::Real)
         @inbounds z = v[i] - m
         s += (z ^ k)
     end
-    cfactor(n, false) * s
+    varcorrection(n, false) * s
 end
 
 function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
@@ -273,7 +273,7 @@ function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * w[i]
     end
-    cfactor(wv, false) * s
+    varcorrection(wv, false) * s
 end
 
 
@@ -324,7 +324,7 @@ function skewness(v::RealArray, m::Real)
         cm2 += z2
         cm3 += z2 * z
     end
-    cf = cfactor(n, false)
+    cf = varcorrection(n, false)
     cm3 *= cf
     cm2 *= cf
     return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
@@ -345,7 +345,7 @@ function skewness(v::RealArray, wv::AbstractWeights, m::Real)
         cm2 += z2w
         cm3 += z2w * z
     end
-    cf = cfactor(wv, false)
+    cf = varcorrection(wv, false)
     cm3 *= cf
     cm2 *= cf
     return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
@@ -372,7 +372,7 @@ function kurtosis(v::RealArray, m::Real)
         cm2 += z2
         cm4 += z2 * z2
     end
-    cf = cfactor(n, false)
+    cf = varcorrection(n, false)
     cm4 *= cf
     cm2 *= cf
     return (cm4 / (cm2 * cm2)) - 3.0
@@ -394,7 +394,7 @@ function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
         cm2 += z2w
         cm4 += z2w * z2
     end
-    cf = cfactor(wv, false)
+    cf = varcorrection(wv, false)
     cm4 *= cf
     cm2 *= cf
     return (cm4 / (cm2 * cm2)) - 3.0
