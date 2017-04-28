@@ -260,7 +260,6 @@ function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector})
     end
     h
 end
-
 function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractVector)
     @inbounds for i in eachindex(wv, vs...)
         xs = _multi_getindex(i, vs...)

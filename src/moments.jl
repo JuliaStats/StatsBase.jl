@@ -33,30 +33,29 @@ variance of the sample.
 """
 function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=false)
     if mean == 0
-        return varm(v, wv, 0; corrected=corrected)
+        varm(v, wv, 0; corrected=corrected)
     elseif mean == nothing
-        return varm(v, wv, Base.mean(v, wv); corrected=corrected)
+        varm(v, wv, Base.mean(v, wv); corrected=corrected)
     else
-        return varm(v, wv, mean; corrected=corrected)
+        varm(v, wv, mean; corrected=corrected)
     end
 end
 
 ## var along dim
 
-Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int; corrected=false) =
-    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true), varcorrection(wv, corrected))
+function Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray,
+                    dim::Int; corrected=false)
+    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true),
+        varcorrection(wv, corrected))
+end
 
-function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=false)
+function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
+              corrected=false)
     if mean == 0
-        Base.varm!(
-            R, A, wv, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
-            corrected=corrected
-        )
+        Base.varm!(R, A, wv, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
+            corrected=corrected)
     elseif mean == nothing
-        Base.varm!(
-            R, A, wv, Base.mean(A, wv, dim), dim;
-            corrected=corrected
-        )
+        Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim; corrected=corrected)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -72,26 +71,24 @@ function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mea
     end
 end
 
-function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int; corrected=false)
+function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int;
+                   corrected=false)
     @static if VERSION < v"0.6.0-dev.1121"
-        return Base.varm!(
-            similar(A, Float64, Base.reduced_dims(size(A), dim)),
-            A, wv, M, dim; corrected=corrected
-        )
+        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim;
+            corrected=corrected)
     else
-        return Base.varm!(
-            similar(A, Float64, Base.reduced_indices(indices(A), dim)),
-            A, wv, M, dim; corrected=corrected
-        )
+        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M,
+            dim; corrected=corrected)
     end
 end
 
-function Base.var(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=false)
+function Base.var(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
+                  corrected=false)
     @static if VERSION < v"0.6.0-dev.1121"
-        return var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim;
+        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim;
             mean=mean, corrected=corrected)
     else
-        return var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim;
+        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim;
             mean=mean, corrected=corrected)
     end
 end
