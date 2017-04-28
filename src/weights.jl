@@ -10,7 +10,7 @@ end
 """
     @weights name
 
-generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
+Generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
 and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
 """
 macro weights(name)
@@ -41,10 +41,10 @@ Base.size(wv::AbstractWeights) = size(wv.values)
 """
     varcorrection(n::Integer, corrected=false)
 
-Computes a correction factor for calculating `var`, `std` and `cov` with `n` observations.
-If `corrected=true` this will return ``\\frac{1}{n - 1}``
-(ie: [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
-otherwise it will return ``\\frac{1}{n}``.
+Compute a bias correction factor for calculating `var`, `std` and `cov` with
+`n` observations. Returns ``\\frac{1}{n - 1}`` when `corrected=true`
+(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
+otherwise returns ``\\frac{1}{n}`` (i.e no correction).
 """
 varcorrection(n::Integer, corrected::Bool=false) = 1 / (n - Int(corrected))
 
@@ -54,7 +54,8 @@ varcorrection(n::Integer, corrected::Bool=false) = 1 / (n - Int(corrected))
 """
     AnalyticWeights(vs, wsum=sum(vs))
 
-Construct an `AnalyticWeights` vector with weight values `vs` and sum of weights `wsum`.
+Construct an `AnalyticWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
 
 Analytic weights describe a non-random relative importance (usually between 0 and 1)
 for each observation. These weights may also be referred to as reliability weights,
@@ -66,7 +67,7 @@ AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
 """
     aweights(vs)
 
-Construct an `AnalyticWeights` vector from a given array.
+Construct an `AnalyticWeights` vector from array `vs`.
 See the documentation for `AnalyticWeights` for more details.
 """
 aweights(vs::RealVector) = AnalyticWeights(vs)
@@ -81,8 +82,8 @@ function varcorrection(w::AnalyticWeights, corrected::Bool=false)
     s = w.sum
 
     if corrected
-        sum_sn = 0.0
-        for x in w
+        sum_sn = zero(eltype(w)) / one(typeof(s)) ^ 2  # to ensure type stability
+        @inbounds for x in w
             sum_sn += (x / s) ^ 2
         end
 
@@ -97,9 +98,10 @@ end
 """
     FrequencyWeights(vs, wsum=sum(vs))
 
-Construct a `FrequencyWeights` vector with weight values `vs` and sum of weights `wsum`.
+Construct a `FrequencyWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
 
-Frequency weights describe the number of cases (or frequency) in which each observation
+Frequency weights describe the number of times (or frequency) each observation
 was observed. These weight may also be referred to as case weights or repeat weights.
 """
 FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
@@ -134,11 +136,12 @@ end
 """
     ProbabilityWeights(vs, wsum=sum(vs))
 
-Construct a `ProbabilityWeights` vector with weight values `vs` and sum of weights `wsum`.
+Construct a `ProbabilityWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
 
 Probability weights represent the inverse of the sampling probability for each observation,
 providing a correction mechanism for under- or over-sampling certain population groups.
-These weight may also be referred to as sampling weights.
+These weights may also be referred to as sampling weights.
 """
 ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     ProbabilityWeights{S, eltype(vs), V}(vs, s)
@@ -169,18 +172,16 @@ function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
 end
 
 """
-    eweights(n, [λ])
+    eweights(n, λ)
 
-Constructs an `AnalyticWeights` vector with a desired length `n` and smoothing factor `λ`,
-where each element is set to ``λ * (1 - λ)^(1 - i)``.
+Construct an `AnalyticWeights` vector with length `n`,
+where each element in position ``i`` is set to ``λ * (1 - λ)^(1 - i)``.
 
-# Arguments
-* `n::Integer`: the desired length of the `Weights`
-* `λ::Real`: a smoothing factor or rate parameter between 0 and 1.
-    As this value approaches 0 the resulting weights will be almost equal,
-    while values closer to 1 will put higher weight on the end elements of the vector.
+``λ`` is a smoothing factor or rate parameter between 0 and 1.
+As this value approaches 0 the resulting weights will be almost equal,
+while values closer to 1 will put higher weight on the end elements of the vector.
 """
-function eweights(n::Integer, λ::Real=0.99)
+function eweights(n::Integer, λ::Real)
     n > 0 || throw(ArgumentError("cannot construct weights of length < 1"))
     0 <= λ <= 1 || throw(ArgumentError("smoothing factor must be between 0 and 1"))
     w0 = map(i -> λ * (1 - λ)^(1 - i), 1:n)
