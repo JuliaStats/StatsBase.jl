@@ -66,9 +66,9 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test zscore!(zeros(size(a)), a, [1, 2, 3], [0.5, 1.0, 2.0])    ≈ z1
 @test zscore!(zeros(size(a)), a, [1 3 2 4], [0.25 0.5 1.0 2.0]) ≈ z2
 
-@test zscore(a)    ≈ zscore(a, mean(a), std(a))
-@test zscore(a, 1) ≈ zscore(a, mean(a,1), std(a,1))
-@test zscore(a, 2) ≈ zscore(a, mean(a,2), std(a,2))
+@test zscore(a)    ≈ zscore(a, mean(a), std(a; corrected=false))
+@test zscore(a, 1) ≈ zscore(a, mean(a,1), std(a,1; corrected=false))
+@test zscore(a, 2) ≈ zscore(a, mean(a,2), std(a,2; corrected=false))
 
 
 ###### quantile & friends

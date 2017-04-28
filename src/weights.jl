@@ -39,22 +39,22 @@ Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
 
 """
-    cfactor(n::Integer, corrected=true)
+    cfactor(n::Integer, corrected=false)
 
 Computes a correction factor for calculating `var`, `std` and `cov` with `n` observations.
 If `corrected=true` this will return ``\\frac{1}{n - 1}``
 (ie: [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
 otherwise it will return ``\\frac{1}{n}``.
 """
-cfactor(n::Integer, corrected=true) = 1 / (n - Int(corrected))
+cfactor(n::Integer, corrected=false) = 1 / (n - Int(corrected))
 
 """
-    cfactor(wv::AbstractWeights, corrected=true)
+    cfactor(wv::AbstractWeights, corrected=false)
 
 Computes a correction factor for calculating `var`, `std` and `cov` with a set of
 weights `wv`.
 """
-cfactor(wv::AbstractWeights, corrected=true) = cfactor(wv, Val{corrected})
+cfactor(wv::AbstractWeights, corrected=false) = cfactor(wv, Val{corrected})
 
 """
     cfactor(wv::AbstractWeights, false)

@@ -87,18 +87,18 @@ end
 
 wv = fweights(ones(5) * 2.0)
 
-@test skewness(1:5; corrected=false)             ≈  0.0
-@test skewness([1, 2, 3, 4, 5]; corrected=false) ≈  0.0
-@test skewness([1, 2, 2, 2, 5]; corrected=false) ≈  1.1731251294063556
-@test skewness([1, 4, 4, 4, 5]; corrected=false) ≈ -1.1731251294063556
+@test skewness(1:5)             ≈  0.0
+@test skewness([1, 2, 3, 4, 5]) ≈  0.0
+@test skewness([1, 2, 2, 2, 5]) ≈  1.1731251294063556
+@test skewness([1, 4, 4, 4, 5]) ≈ -1.1731251294063556
 
-@test skewness([1, 2, 2, 2, 5], wv; corrected=false) ≈ 1.1731251294063556
+@test skewness([1, 2, 2, 2, 5], wv) ≈ 1.1731251294063556
 
-@test kurtosis(1:5; corrected=false)             ≈ -1.3
-@test kurtosis([1, 2, 3, 4, 5]; corrected=false) ≈ -1.3
-@test kurtosis([1, 2, 3, 3, 2]; corrected=false) ≈ -1.1530612244897953
+@test kurtosis(1:5)             ≈ -1.3
+@test kurtosis([1, 2, 3, 4, 5]) ≈ -1.3
+@test kurtosis([1, 2, 3, 3, 2]) ≈ -1.1530612244897953
 
-@test kurtosis([1, 2, 3, 4, 5], wv; corrected=false) ≈ -1.3
+@test kurtosis([1, 2, 3, 4, 5], wv) ≈ -1.3
 
 
 ##### general moments
@@ -125,7 +125,7 @@ x2 = collect(2.0:6.0)
 x = rand(10)
 
 # AnalyticWeights
-@test var(x, aweights(ones(10))) ≈ var(x)
+@test var(x, aweights(ones(10)); corrected=true) ≈ var(x)
 
 w = aweights(rand(10))
 n = length(w) # Could be count(!iszero, w) instead
@@ -133,21 +133,21 @@ w = aweights(w .* (n / sum(w)))
 sw = sum(w) # This is now equal to n, but maybe we should support non-normalized weights?
 xbar = sum(w .* x) ./ sw
 expected = sum(w .* (x .- xbar).^2)/(sw - sum(w.^2)/sw)
-@test var(x, w) ≈ expected
+@test var(x, w; corrected=true) ≈ expected
 
 # FrequencyWeights
-@test var(x, fweights(ones(Int, 10))) ≈ var(x)
+@test var(x, fweights(ones(Int, 10)); corrected=true) ≈ var(x)
 w = fweights(rand(UInt, 10))
 sw = sum(w)
 xbar = sum(w .* x) / sw
 expected = sum(w .* (x .- xbar).^2) ./ (sum(w) - 1)
-@test var(x, w) ≈ expected
+@test var(x, w; corrected=true) ≈ expected
 
 # ProbabilityWeights
-@test var(x, pweights(ones(10))) ≈ var(x)
+@test var(x, pweights(ones(10)); corrected=true) ≈ var(x)
 w = pweights(rand(10))
 n = count(!iszero, w)
 sw = sum(w)
 xbar = sum(w .* x)/sw
 expected = sum(w .* (x .- xbar).^2)/sw * n/(n - 1)
-@test var(x, w) ≈ expected
+@test var(x, w; corrected=true) ≈ expected
