@@ -213,17 +213,17 @@ function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
     cfactor(wv, corrected) * s
 end
 
-function _moment3(v::RealArray, m::Real; corrected=false)
+function _moment3(v::RealArray, m::Real)
     n = length(v)
     s = 0.0
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z * z
     end
-    cfactor(n, corrected) * s
+    cfactor(n, false) * s
 end
 
-function _moment3(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
+function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -231,7 +231,7 @@ function _moment3(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * w[i]
     end
-    cfactor(wv, corrected) * s
+    cfactor(wv, false) * s
 end
 
 function _moment4(v::RealArray, m::Real; corrected=false)
@@ -241,10 +241,10 @@ function _moment4(v::RealArray, m::Real; corrected=false)
         @inbounds z = v[i] - m
         s += abs2(z * z)
     end
-    cfactor(n, corrected) * s
+    cfactor(n, false) * s
 end
 
-function _moment4(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
+function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -252,20 +252,20 @@ function _moment4(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * w[i]
     end
-    cfactor(wv, corrected) * s
+    cfactor(wv, false) * s
 end
 
-function _momentk(v::RealArray, k::Int, m::Real; corrected=false)
+function _momentk(v::RealArray, k::Int, m::Real)
     n = length(v)
     s = 0.0
     for i = 1:n
         @inbounds z = v[i] - m
         s += (z ^ k)
     end
-    cfactor(n, corrected) * s
+    cfactor(n, false) * s
 end
 
-function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real; corrected=false)
+function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
     w = values(wv)
@@ -273,7 +273,7 @@ function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real; corrected=
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * w[i]
     end
-    cfactor(wv, corrected) * s
+    cfactor(wv, false) * s
 end
 
 
@@ -283,23 +283,23 @@ end
 Return the `k`th order central moment of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function moment(v::RealArray, k::Int, m::Real; corrected=false)
-    k == 2 ? _moment2(v, m; corrected=corrected) :
-    k == 3 ? _moment3(v, m; corrected=corrected) :
-    k == 4 ? _moment4(v, m; corrected=corrected) :
-    _momentk(v, k, m; corrected=corrected)
+function moment(v::RealArray, k::Int, m::Real)
+    k == 2 ? _moment2(v, m) :
+    k == 3 ? _moment3(v, m) :
+    k == 4 ? _moment4(v, m) :
+    _momentk(v, k, m)
 end
 
-function moment(v::RealArray, k::Int, wv::AbstractWeights, m::Real; corrected=false)
-    k == 2 ? _moment2(v, wv, m; corrected=corrected) :
-    k == 3 ? _moment3(v, wv, m; corrected=corrected) :
-    k == 4 ? _moment4(v, wv, m; corrected=corrected) :
-    _momentk(v, k, wv, m; corrected=corrected)
+function moment(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
+    k == 2 ? _moment2(v, wv, m) :
+    k == 3 ? _moment3(v, wv, m) :
+    k == 4 ? _moment4(v, wv, m) :
+    _momentk(v, k, wv, m)
 end
 
-moment(v::RealArray, k::Int; corrected=true) = moment(v, k, mean(v); corrected=corrected)
-function moment(v::RealArray, k::Int, wv::AbstractWeights; corrected=false)
-    moment(v, k, wv, mean(v, wv); corrected=corrected)
+moment(v::RealArray, k::Int; corrected=true) = moment(v, k, mean(v))
+function moment(v::RealArray, k::Int, wv::AbstractWeights)
+    moment(v, k, wv, mean(v, wv))
 end
 
 

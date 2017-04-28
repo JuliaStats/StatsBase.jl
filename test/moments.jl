@@ -104,22 +104,22 @@ wv = fweights(ones(5) * 2.0)
 ##### general moments
 
 x = collect(2.0:8.0)
-@test moment(x, 2; corrected=false) ≈ sum((x .- 5).^2) / length(x)
-@test moment(x, 3; corrected=false) ≈ sum((x .- 5).^3) / length(x)
-@test moment(x, 4; corrected=false) ≈ sum((x .- 5).^4) / length(x)
-@test moment(x, 5; corrected=false) ≈ sum((x .- 5).^5) / length(x)
+@test moment(x, 2) ≈ sum((x .- 5).^2) / length(x)
+@test moment(x, 3) ≈ sum((x .- 5).^3) / length(x)
+@test moment(x, 4) ≈ sum((x .- 5).^4) / length(x)
+@test moment(x, 5) ≈ sum((x .- 5).^5) / length(x)
 
-@test moment(x, 2, 4.0; corrected=false) ≈ sum((x .- 4).^2) / length(x)
-@test moment(x, 3, 4.0; corrected=false) ≈ sum((x .- 4).^3) / length(x)
-@test moment(x, 4, 4.0; corrected=false) ≈ sum((x .- 4).^4) / length(x)
-@test moment(x, 5, 4.0; corrected=false) ≈ sum((x .- 4).^5) / length(x)
+@test moment(x, 2, 4.0) ≈ sum((x .- 4).^2) / length(x)
+@test moment(x, 3, 4.0) ≈ sum((x .- 4).^3) / length(x)
+@test moment(x, 4, 4.0) ≈ sum((x .- 4).^4) / length(x)
+@test moment(x, 5, 4.0) ≈ sum((x .- 4).^5) / length(x)
 
 w = fweights([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
 x2 = collect(2.0:6.0)
-@test moment(x, 2, w; corrected=false) ≈ sum((x2 .- 4).^2) / 5
-@test moment(x, 3, w; corrected=false) ≈ sum((x2 .- 4).^3) / 5
-@test moment(x, 4, w; corrected=false) ≈ sum((x2 .- 4).^4) / 5
-@test moment(x, 5, w; corrected=false) ≈ sum((x2 .- 4).^5) / 5
+@test moment(x, 2, w) ≈ sum((x2 .- 4).^2) / 5
+@test moment(x, 3, w) ≈ sum((x2 .- 4).^3) / 5
+@test moment(x, 4, w) ≈ sum((x2 .- 4).^4) / 5
+@test moment(x, 5, w) ≈ sum((x2 .- 4).^5) / 5
 
 # Test corrected cases (this will be cleaner in testsets)
 x = rand(10)
