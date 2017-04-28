@@ -17,12 +17,12 @@ module StatsBase
     export
 
     ## weights
-    AbstractWeights,    # the abstract type to represent any weight vector
-    AnalyticWeights,    # the default type for representing a analytic/precision/reliability weight vectors
-    FrequencyWeights,   # the type for representing a frequency weight vectors
-    ProbabilityWeights, # the type for representing a probability/sampling weight vectors
-    ExponentialWeights, # the type for representing exponential weights
-    weights,            # alias for aweights
+    AbstractWeights,    # abstract type to represent any weight vector
+    WeightVec,          # deprecated type to represent any weight vector
+    AnalyticWeights,    # to represent an analytic/precision/reliability weight vector
+    FrequencyWeights,   # to representing a frequency/case/repeat weight vector
+    ProbabilityWeights, # to representing a probability/sampling weight vector
+    weights,            # deprecated function for constructing a WeightVec vector
     aweights,           # construct an AnalyticWeights vector
     fweights,           # construct a FrequencyWeights vector
     pweights,           # construct a ProbabilityWeights vector
