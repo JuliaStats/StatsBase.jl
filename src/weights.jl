@@ -39,37 +39,32 @@ Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
 
 """
-    bias(n::Integer, corrected=true)
+    cfactor(n::Integer, corrected=true)
 
-Computes the corrected (default) or uncorrected bias for any `n` observations.
-
-``\\frac{1}{n - 1}``
+Computes a correction factor for calculating `var`, `std` and `cov` with `n` observations.
+If `corrected=true` this will return ``\\frac{1}{n - 1}``
+(ie: [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
+otherwise it will return ``\\frac{1}{n}``.
 """
-bias(n::Integer, corrected=true) = inv(n - Int(corrected))
+cfactor(n::Integer, corrected=true) = 1 / (n - Int(corrected))
 
 """
-    bias(w::AbstractWeights, corrected=true)
+    cfactor(wv::AbstractWeights, corrected=true)
 
-Computes the corrected (default) or uncorrected bias for any weight vector.
-The default equation assumes analytic/precision/reliability weights and determines the
-bias as:
-
-``\\frac{1}{\sum w - \sum w / \sum {w^2}}``
+Computes a correction factor for calculating `var`, `std` and `cov` with a set of
+weights `wv`.
 """
-function bias(w::AbstractWeights, corrected=true)
-    s = sum(w)
-    if corrected
-        # sum square norm
-        sum_sn = 0.0
-        for x in w
-            sum_sn += (x / s) ^ 2
-        end
+cfactor(wv::AbstractWeights, corrected=true) = cfactor(wv, Val{corrected})
 
-        return inv(s * (1 - sum_sn))
-    else
-        return inv(s)
-    end
-end
+"""
+    cfactor(wv::AbstractWeights, false)
+
+``\\frac{1}{\sum w}``
+"""
+cfactor(wv::AbstractWeights, ::Type{Val{false}}) = 1 / sum(wv)
+cfactor(wv::AbstractWeights, ::Type{Val{true}}) =
+    throw(ArgumentError("$(typeof(wv)) does not support bias correction."))
+
 
 @weights AnalyticWeights
 
@@ -77,6 +72,10 @@ end
     AnalyticWeights(vs, wsum=sum(vs))
 
 Construct an `AnalyticWeights` vector with weight values `vs` and sum of weights `wsum`.
+
+Analytic weights describe a non-random relative importance (usually between 0 and 1)
+for each observation. These weights may also be referred to as reliability weights,
+precision weights or inverse variance weights.
 """
 AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     AnalyticWeights{S, eltype(vs), V}(vs, s)
@@ -85,9 +84,25 @@ AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     aweights(vs)
 
 Construct an `AnalyticWeights` vector from a given array.
+See the documentation for `AnalyticWeights` for more details.
 """
 aweights(vs::RealVector) = AnalyticWeights(vs)
 aweights(vs::RealArray) = AnalyticWeights(vec(vs))
+
+"""
+    cfactor(w::AnalyticWeights, true)
+
+``\\frac{1}{\sum w - \sum w / \sum {w^2}}``
+"""
+function cfactor(w::AnalyticWeights, ::Type{Val{true}})
+    s = sum(w)
+    sum_sn = 0.0
+    for x in w
+        sum_sn += (x / s) ^ 2
+    end
+
+    1 / (s * (1 - sum_sn))
+end
 
 @weights FrequencyWeights
 
@@ -95,6 +110,9 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
     FrequencyWeights(vs, wsum=sum(vs))
 
 Construct a `FrequencyWeights` vector with weight values `vs` and sum of weights `wsum`.
+
+Frequency weights describe the number of cases (or frequency) in which each observation
+was observed. These weight may also be referred to as case weights or repeat weights.
 """
 FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     FrequencyWeights{S, eltype(vs), V}(vs, s)
@@ -103,19 +121,29 @@ FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     fweights(vs)
 
 Construct a `FrequencyWeights` vector from a given array.
+See the documentation for `FrequencyWeights` for more details.
 """
 fweights(vs::RealVector) = FrequencyWeights(vs)
 fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 
 """
-    bias(w::FrequencyWeights, corrected=true)
+    cfactor(w::FrequencyWeights, true)
 
 ``\\frac{1}{\sum{w} - 1}``
 """
-bias(w::FrequencyWeights, corrected=true) = inv(sum(w) - Int(corrected))
+cfactor(w::FrequencyWeights, ::Type{Val{true}}) = 1 / (sum(w) - 1)
 
 @weights ProbabilityWeights
 
+"""
+    ProbabilityWeights(vs, wsum=sum(vs))
+
+Construct a `ProbabilityWeights` vector with weight values `vs` and sum of weights `wsum`.
+
+Probability weights represent the inverse of the sampling probability for each observation,
+providing a correction mechanism for under- or over-sampling certain population groups.
+These weight may also be referred to as sampling weights.
+"""
 ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     ProbabilityWeights{S, eltype(vs), V}(vs, s)
 
@@ -123,24 +151,20 @@ ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     pweights(vs)
 
 Construct a `ProbabilityWeights` vector from a given array.
+See the documentation for `ProbabilityWeights` for more details.
 """
 pweights(vs::RealVector) = ProbabilityWeights(vs)
 pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 
 """
-    bias(w::ProbabilityWeights, corrected=true)
+    cfactor(w::ProbabilityWeights, true)
 
 ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-function bias(w::ProbabilityWeights, corrected=true)
+function cfactor(w::ProbabilityWeights, ::Type{Val{true}})
     s = sum(w)
-
-    if corrected
-        n = length(w)
-        return n / (s * (n - 1))
-    else
-        return inv(s)
-    end
+    n = length(w)
+    return n / (s * (n - 1))
 end
 
 """
