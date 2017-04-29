@@ -127,21 +127,9 @@ function Base.std(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing)
     std(A, wv, dim, false; mean=mean)
 end
 
-function mean_and_var(A::RealArray)
-    m = mean(A)
-    v = varm(A, m; corrected=true)
-    m, v
-end
-
 function mean_and_var(A::RealArray, wv::AbstractWeights)
     m = mean(A, wv)
     v = varm(A, wv, m, true)
-    m, v
-end
-
-function mean_and_var(A::RealArray, dim::Int)
-    m = mean(A, dim)
-    v = varm(A, m, dim; corrected=true)
     m, v
 end
 
@@ -149,12 +137,6 @@ function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int)
     m = mean(A, wv, dim)
     v = varm(A, wv, m, dim, true)
     m, v
-end
-
-function mean_and_std(A::RealArray)
-    m = mean(A)
-    s = stdm(A, m; corrected=true)
-    m, s
 end
 
 function mean_and_std(A::RealArray, wv::AbstractWeights)

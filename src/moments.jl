@@ -181,9 +181,9 @@ Base.std(v::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool; mean=noth
 Return the mean and variance of a real-valued array `x`, optionally over a dimension
 `dim`, as a tuple.
 """
-function mean_and_var(A::RealArray, corrected::Bool)
+function mean_and_var(A::RealArray, corrected::Bool=true)
     m = mean(A)
-    v = varm(A, m; corrected=correted)
+    v = varm(A, m; corrected=corrected)
     m, v
 end
 
@@ -193,7 +193,7 @@ function mean_and_var(A::RealArray, wv::AbstractWeights, corrected::Bool)
     m, v
 end
 
-function mean_and_var(A::RealArray, dim::Int, corrected::Bool)
+function mean_and_var(A::RealArray, dim::Int, corrected::Bool=true)
     m = mean(A, dim)
     v = varm(A, m, dim; corrected=corrected)
     m, v
@@ -213,7 +213,7 @@ over a dimension `dim`, as a tuple. A weighting vector `wv` can be specified
 to weight the estimates. The weights are assumed to be frequency weights, also
 called case weights.
 """
-function mean_and_std(A::RealArray, corrected::Bool)
+function mean_and_std(A::RealArray, corrected::Bool=true)
     m = mean(A)
     s = stdm(A, m; corrected=corrected)
     m, s
