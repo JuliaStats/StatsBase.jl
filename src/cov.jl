@@ -22,13 +22,6 @@ function _scalevars(x::DenseMatrix, s::DenseVector, vardim::Int)
 end
 
 ## scatter matrix
-
-scattermat_zm(x::DenseMatrix, vardim::Int) = Base.unscaled_covzm(x, vardim)
-
-scattermat_zm(x::DenseMatrix, wv::AbstractWeights, vardim::Int) =
-    _symmetrize!(Base.unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
-
-
 """
     scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)
 
@@ -44,28 +37,6 @@ that the data are centered and hence there's no need to subtract the mean.
 When `vardim = 1`, the variables are considered columns with observations in rows;
 when `vardim = 2`, variables are in rows with observations in columns.
 """
-function scattermat end
-
-
-"""
-    cov(X, wv::AbstractWeights; mean=nothing, vardim=1)
-
-Compute the weighted covariance matrix. By default, the covariance
-matrix is normalized by the sum of the weights. That is, `cov(X, wv)`
-is equivalent to `scattermat(X, wv) / sum(wv)`.
-"""
-cov
-
-
-"""
-    mean_and_cov(x, [wv::AbstractWeights]; vardim=1) -> (mean, cov)
-
-Return the mean and covariance matrix as a tuple. A weighting
-vector `wv` can be specified. `vardim` that designates whether
-the variables are columns in the matrix (`1`) or rows (`2`).
-"""
-function mean_and_cov end
-
 scattermatm(x::DenseMatrix, mean, vardim::Int=1) =
     scattermat_zm(x .- mean, vardim)
 
@@ -78,19 +49,61 @@ scattermat(x::DenseMatrix, vardim::Int=1) =
 scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
     scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
 
-## weighted cov
-Base.covm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1, corrected::Bool=false) =
-    scale!(scattermatm(x, mean, wv, vardim), varcorrection(wv, corrected))
+scattermat_zm(x::DenseMatrix, vardim::Int) = Base.unscaled_covzm(x, vardim)
 
-Base.cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1; corrected=false) =
+scattermat_zm(x::DenseMatrix, wv::AbstractWeights, vardim::Int) =
+    _symmetrize!(Base.unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
+
+"""
+    cov(X, wv::AbstractWeights, [vardim, corrected])
+
+Compute the weighted covariance matrix. Similar to `var` and `std` the biased covariance
+matrix (`corrected=false`) can be computed by multiplying `scattermat(X, wv)` by
+``\frac{1}{\sum{w}}`` to normalize. However, the unbiased covariance matrix
+(`corrected=true`) is dependent on the type of weights used:
+
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+"""
+Base.cov(x::DenseMatrix, wv::AbstractWeights, corrected::Bool) =
+    Base.covm(x, Base.mean(x, wv, 1), wv, 1, corrected)
+
+Base.cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int, corrected::Bool) =
     Base.covm(x, Base.mean(x, wv, vardim), wv, vardim, corrected)
 
-function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected=false)
+Base.covm(x::DenseMatrix, mean, wv::AbstractWeights, corrected::Bool) =
+    scale!(scattermatm(x, mean, wv, 1), varcorrection(wv, corrected))
+
+Base.covm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int, corrected::Bool) =
+    scale!(scattermatm(x, mean, wv, vardim), varcorrection(wv, corrected))
+
+"""
+    mean_and_cov(x, [wv::AbstractWeights, vardim, corrected]) -> (mean, cov)
+
+Return the mean and covariance matrix as a tuple. A weighting
+vector `wv` can be specified. `vardim` that designates whether
+the variables are columns in the matrix (`1`) or rows (`2`).
+Finally, bias correction can be applied to the covariance calculation if
+`corrected=true`.
+See `cov` documentation for more details.
+"""
+function mean_and_cov(x::DenseMatrix, corrected::Bool=true)
+    m = mean(x, 1)
+    return m, Base.covm(x, m, 1, corrected)
+end
+
+function mean_and_cov(x::DenseMatrix, vardim::Int, corrected::Bool=true)
     m = mean(x, vardim)
     return m, Base.covm(x, m, vardim, corrected)
 end
 
-function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1; corrected=false)
+function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, corrected::Bool)
+    m = mean(x, wv, 1)
+    return m, Base.cov(x, wv, 1, corrected)
+end
+
+function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int, corrected::Bool)
     m = mean(x, wv, vardim)
-    return m, Base.cov(x, wv, vardim; corrected=corrected)
+    return m, Base.cov(x, wv, vardim, corrected)
 end

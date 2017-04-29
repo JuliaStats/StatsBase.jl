@@ -60,8 +60,8 @@ Sz2w = X * diagm(w2) * X'
 
 # weighted covariance
 
-@test cov(X, wv1; corrected=false)    ≈ S1w ./ sum(wv1)
-@test cov(X, wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
+@test cov(X, wv1, false)    ≈ S1w ./ sum(wv1)
+@test cov(X, wv2, 2, false) ≈ S2w ./ sum(wv2)
 
 @test Base.covm(X, 0, wv1, 1, false) ≈ Sz1w ./ sum(wv1)
 @test Base.covm(X, 0, wv2, 2, false) ≈ Sz2w ./ sum(wv2)
@@ -74,18 +74,18 @@ Sz2w = X * diagm(w2) * X'
 
 # mean_and_cov
 
-(m, C) = mean_and_cov(X, 1; corrected=false)
+(m, C) = mean_and_cov(X, 1, false)
 @test m == mean(X, 1)
 @test C == cov(X, 1, false)
 
-(m, C) = mean_and_cov(X, 2; corrected=false)
+(m, C) = mean_and_cov(X, 2, false)
 @test m == mean(X, 2)
 @test C == cov(X, 2, false)
 
-(m, C) = mean_and_cov(X, wv1, 1; corrected=false)
+(m, C) = mean_and_cov(X, wv1, 1, false)
 @test m == mean(X, wv1, 1)
-@test C == cov(X, wv1, 1; corrected=false)
+@test C == cov(X, wv1, 1, false)
 
-(m, C) = mean_and_cov(X, wv2, 2; corrected=false)
+(m, C) = mean_and_cov(X, wv2, 2, false)
 @test m == mean(X, wv2, 2)
-@test C == cov(X, wv2, 2; corrected=false)
+@test C == cov(X, wv2, 2, false)

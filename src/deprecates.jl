@@ -156,3 +156,33 @@ function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int)
     s = stdm(A, wv, m, dim, true)
     m, s
 end
+
+function Base.cov(x::DenseMatrix, wv::AbstractWeights)
+    Base.depwarn(_correction_dep_msg("`cov`"), :cov)
+    Base.covm(x, Base.mean(x, wv, 1), wv, 1, false)
+end
+
+function Base.cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int)
+    Base.depwarn(_correction_dep_msg("`cov`"), :cov)
+    Base.covm(x, Base.mean(x, wv, vardim), wv, vardim, false)
+end
+
+function Base.covm(x::DenseMatrix, mean, wv::AbstractWeights)
+    Base.depwarn(_correction_dep_msg("`covm`"), :covm)
+    scale!(scattermatm(x, mean, wv, 1), varcorrection(wv, false))
+end
+
+function Base.covm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int)
+    Base.depwarn(_correction_dep_msg("`covm`"), :covm)
+    scale!(scattermatm(x, mean, wv, vardim), varcorrection(wv, false))
+end
+
+function mean_and_cov(x::DenseMatrix, wv::AbstractWeights)
+    m = mean(x, wv, 1)
+    return m, Base.cov(x, wv, 1)
+end
+
+function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int)
+    m = mean(x, wv, vardim)
+    return m, Base.cov(x, wv, vardim)
+end
