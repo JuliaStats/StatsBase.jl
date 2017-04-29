@@ -7,29 +7,29 @@ x = rand(10)
 wv = fweights(rand(10))
 m = mean(x, wv)
 
-@test var(x, wv; corrected=false)           ≈ sum(abs2.(x .- m), wv) ./ sum(wv)
-@test var(x, wv; mean=0, corrected=false)   ≈ sum(abs2.(x), wv) ./ sum(wv)
-@test var(x, wv; mean=1.0, corrected=false) ≈ sum(abs2.(x .- 1.0), wv) ./ sum(wv)
+@test var(x, wv, false)           ≈ sum(abs2.(x .- m), wv) ./ sum(wv)
+@test var(x, wv, false; mean=0)   ≈ sum(abs2.(x), wv) ./ sum(wv)
+@test var(x, wv, false; mean=1.0) ≈ sum(abs2.(x .- 1.0), wv) ./ sum(wv)
 
-@test std(x, wv; corrected=false)           ≈ sqrt(var(x, wv; corrected=false))
-@test std(x, wv; mean=0, corrected=false)   ≈ sqrt(var(x, wv; mean=0, corrected=false))
-@test std(x, wv; mean=1.0, corrected=false) ≈ sqrt(var(x, wv; mean=1.0, corrected=false))
+@test std(x, wv, false)           ≈ sqrt(var(x, wv, false))
+@test std(x, wv, false; mean=0)   ≈ sqrt(var(x, wv, false; mean=0))
+@test std(x, wv, false; mean=1.0) ≈ sqrt(var(x, wv, false; mean=1.0))
 
-(m, v) = mean_and_var(x; corrected=false)
+(m, v) = mean_and_var(x)
 @test m == mean(x)
-@test v == var(x; corrected=false)
+@test v == var(x)
 
-(m, s) = mean_and_std(x; corrected=false)
+(m, s) = mean_and_std(x)
 @test m == mean(x)
-@test s == std(x; corrected=false)
+@test s == std(x)
 
-(m, v) = mean_and_var(x, wv; corrected=false)
+(m, v) = mean_and_var(x, wv)
 @test m == mean(x, wv)
-@test v == var(x, wv; corrected=false)
+@test v == var(x, wv, true)
 
-(m, s) = mean_and_std(x, wv; corrected=false)
+(m, s) = mean_and_std(x, wv)
 @test m == mean(x, wv)
-@test s == std(x, wv; corrected=false)
+@test s == std(x, wv, true)
 
 x = rand(5, 6)
 w1 = rand(5)
@@ -39,49 +39,47 @@ wv2 = fweights(w2)
 m1 = mean(x, wv1, 1)
 m2 = mean(x, wv2, 2)
 
-@test var(x, wv1, 1; mean=0, corrected=false) ≈ sum(abs2.(x) .* w1, 1) ./ sum(wv1)
-@test var(x, wv2, 2; mean=0, corrected=false) ≈ sum(abs2.(x) .* w2', 2) ./ sum(wv2)
+@test var(x, wv1, 1, false; mean=0) ≈ sum(abs2.(x) .* w1, 1) ./ sum(wv1)
+@test var(x, wv2, 2, false; mean=0) ≈ sum(abs2.(x) .* w2', 2) ./ sum(wv2)
 
-@test var(x, wv1, 1; mean=m1, corrected=false) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-@test var(x, wv2, 2; mean=m2, corrected=false) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+@test var(x, wv1, 1, false; mean=m1) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
+@test var(x, wv2, 2, false; mean=m2) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
 
-@test var(x, wv1, 1; corrected=false) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-@test var(x, wv2, 2; corrected=false) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+@test var(x, wv1, 1, false) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
+@test var(x, wv2, 2, false) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
 
-@test std(x, wv1, 1; corrected=false)          ≈ sqrt.(var(x, wv1, 1; corrected=false))
-@test std(x, wv2, 2; corrected=false)          ≈ sqrt.(var(x, wv2, 2; corrected=false))
-@test std(x, wv1, 1; mean=0, corrected=false)  ≈ sqrt.(var(x, wv1, 1; mean=0, corrected=false))
-@test std(x, wv2, 2; mean=0, corrected=false)  ≈ sqrt.(var(x, wv2, 2; mean=0, corrected=false))
-@test std(x, wv1, 1; mean=m1, corrected=false) ≈ sqrt.(var(x, wv1, 1; mean=m1, corrected=false))
-@test std(x, wv2, 2; mean=m2, corrected=false) ≈ sqrt.(var(x, wv2, 2; mean=m2, corrected=false))
+@test std(x, wv1, 1, false)          ≈ sqrt.(var(x, wv1, 1, false))
+@test std(x, wv2, 2, false)          ≈ sqrt.(var(x, wv2, 2, false))
+@test std(x, wv1, 1, false; mean=0)  ≈ sqrt.(var(x, wv1, 1, false; mean=0))
+@test std(x, wv2, 2, false; mean=0)  ≈ sqrt.(var(x, wv2, 2, false; mean=0))
+@test std(x, wv1, 1, false; mean=m1) ≈ sqrt.(var(x, wv1, 1, false; mean=m1))
+@test std(x, wv2, 2, false; mean=m2) ≈ sqrt.(var(x, wv2, 2, false; mean=m2))
 
 for d in 1:2
-    (m, v) = mean_and_var(x, d; corrected=false)
+    (m, v) = mean_and_var(x, d, false)
     @test m == mean(x, d)
     @test v == var(x, d; corrected=false)
 
-    (m, s) = mean_and_std(x, d; corrected=false)
+    (m, s) = mean_and_std(x, d, false)
     @test m == mean(x, d)
     @test s == std(x, d; corrected=false)
 end
 
-(m, v) = mean_and_var(x, wv1, 1; corrected=false)
+(m, v) = mean_and_var(x, wv1, 1)
 @test m == mean(x, wv1, 1)
-@test v == var(x, wv1, 1; corrected=false)
+@test v == var(x, wv1, 1, true)
 
-(m, v) = mean_and_var(x, wv2, 2; corrected=false)
+(m, v) = mean_and_var(x, wv2, 2, false)
 @test m == mean(x, wv2, 2)
-@test v == var(x, wv2, 2; corrected=false)
+@test v == var(x, wv2, 2, false)
 
-(m, s) = mean_and_std(x, wv1, 1; corrected=false)
+(m, s) = mean_and_std(x, wv1, 1, false)
 @test m == mean(x, wv1, 1)
-@test s == std(x, wv1, 1; corrected=false)
+@test s == std(x, wv1, 1, false)
 
-(m, s) = mean_and_std(x, wv2, 2; corrected=false)
+(m, s) = mean_and_std(x, wv2, 2, false)
 @test m == mean(x, wv2, 2)
-@test s == std(x, wv2, 2; corrected=false)
-
-
+@test s == std(x, wv2, 2, false)
 
 ##### skewness & kurtosis
 
@@ -125,7 +123,7 @@ x2 = collect(2.0:6.0)
 x = rand(10)
 
 # AnalyticWeights
-@test var(x, aweights(ones(10)); corrected=true) ≈ var(x)
+@test var(x, aweights(ones(10)), true) ≈ var(x)
 
 w = aweights(rand(10))
 n = length(w) # Could be count(!iszero, w) instead
@@ -133,21 +131,21 @@ w = aweights(w .* (n / sum(w)))
 sw = sum(w) # This is now equal to n, but maybe we should support non-normalized weights?
 xbar = sum(w .* x) ./ sw
 expected = sum(w .* (x .- xbar).^2)/(sw - sum(w.^2)/sw)
-@test var(x, w; corrected=true) ≈ expected
+@test var(x, w, true) ≈ expected
 
 # FrequencyWeights
-@test var(x, fweights(ones(Int, 10)); corrected=true) ≈ var(x)
+@test var(x, fweights(ones(Int, 10)), true) ≈ var(x)
 w = fweights(rand(UInt, 10))
 sw = sum(w)
 xbar = sum(w .* x) / sw
 expected = sum(w .* (x .- xbar).^2) ./ (sum(w) - 1)
-@test var(x, w; corrected=true) ≈ expected
+@test var(x, w, true) ≈ expected
 
 # ProbabilityWeights
-@test var(x, pweights(ones(10)); corrected=true) ≈ var(x)
+@test var(x, pweights(ones(10)), true) ≈ var(x)
 w = pweights(rand(10))
 n = count(!iszero, w)
 sw = sum(w)
 xbar = sum(w .* x)/sw
 expected = sum(w .* (x .- xbar).^2)/sw * n/(n - 1)
-@test var(x, w; corrected=true) ≈ expected
+@test var(x, w, true) ≈ expected

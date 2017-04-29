@@ -79,3 +79,98 @@ function varcorrections(w::WeightVec, corrected::Bool=false)
     corrected && throw(ArgumentError("WeightVec does not support bias correction."))
     1 / w.sum
 end
+
+_correction_dep_msg(fname) =
+    string(fname, " will default to `corrected=true` in the future.")
+
+# The following methods are for wrapping the deprecated `correction=false` behaviour.
+# When we default to `correction=true` these methods should be removed in favour of
+# adding `corrected::Bool=true` in the appropriate methods.
+
+function Base.varm(v::RealArray, wv::AbstractWeights, m::Real)
+    Base.depwarn(_correction_dep_msg("`varm`"), :varm)
+    varm(v, wv, m, false)
+end
+
+function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int)
+    Base.depwarn(_correction_dep_msg("`varm`"), :varm)
+    varm(A, wv, M, dim, false)
+end
+
+function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing)
+    Base.depwarn(_correction_dep_msg("`var`"), :var)
+    var(v, wv, false; mean=mean)
+end
+
+function Base.var(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing)
+    Base.depwarn(_correction_dep_msg("`var`"), :var)
+    var(A, wv, dim, false; mean=mean)
+end
+
+function Base.stdm(v::RealArray, wv::AbstractWeights, m::Real)
+    Base.depwarn(_correction_dep_msg("`stdm`"), :stdm)
+    stdm(v, wv, m, false)
+end
+
+function Base.stdm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int)
+    Base.depwarn(_correction_dep_msg("`stdm`"), :stdm)
+    stdm(A, wv, M, dim, false)
+end
+
+function Base.std(v::RealArray, wv::AbstractWeights; mean=nothing)
+    Base.depwarn(_correction_dep_msg("`std`"), :std)
+    std(v, wv, false; mean=mean)
+end
+
+function Base.std(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing)
+    Base.depwarn(_correction_dep_msg("`std`"), :std)
+    std(A, wv, dim, false; mean=mean)
+end
+
+function mean_and_var(A::RealArray)
+    m = mean(A)
+    v = varm(A, m; corrected=true)
+    m, v
+end
+
+function mean_and_var(A::RealArray, wv::AbstractWeights)
+    m = mean(A, wv)
+    v = varm(A, wv, m, true)
+    m, v
+end
+
+function mean_and_var(A::RealArray, dim::Int)
+    m = mean(A, dim)
+    v = varm(A, m, dim; corrected=true)
+    m, v
+end
+
+function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int)
+    m = mean(A, wv, dim)
+    v = varm(A, wv, m, dim, true)
+    m, v
+end
+
+function mean_and_std(A::RealArray)
+    m = mean(A)
+    s = stdm(A, m; corrected=true)
+    m, s
+end
+
+function mean_and_std(A::RealArray, wv::AbstractWeights)
+    m = mean(A, wv)
+    s = stdm(A, wv, m, true)
+    m, s
+end
+
+function mean_and_std(A::RealArray, dim::Int)
+    m = mean(A, dim)
+    s = stdm(A, m, dim, true)
+    m, s
+end
+
+function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int)
+    m = mean(A, wv, dim)
+    s = stdm(A, wv, m, dim, true)
+    m, s
+end

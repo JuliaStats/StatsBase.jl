@@ -1,61 +1,100 @@
 ##### Weighted var & std
 
 ## var
-
 """
-    varm(x, wv::AbstractWeights, m, [dim])
+    varm(x, wv::AbstractWeights, m, [dim, corrected])
 
 Return the variance of a real-valued array `x` with a known mean `m`, optionally
-over a dimension `dim`. The weighting vector `wv` specifies frequency weights
-(also called case weights) for the result.
+over a dimension `dim`. Observations in `x` or weighted via `wv`.
 
-This function differs from its counterpart in Base in that Bessel's correction
-is not used. That is, here the denominator for the variance is `sum(wv)`,
-whereas it's `length(x)-1` in `Base.varm`. The impact is that this is not a
-weighted estimate of the population variance based on the sample; it's the weighted
-variance of the sample.
+In base julia a biased variance (`corrected=false`) is calculated as:
+
+``\\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }``
+
+An unbiased variance (`corrected=true`) is calculated by replacing
+``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
+(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+
+Here we calculate the biased weighted variance (`corrected=false`) as:
+
+``\\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }``
+
+An unbiased weighted variance (`corrected=true`) is dependent on the type of weights used:
+
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-Base.varm(v::RealArray, wv::AbstractWeights, m::Real; corrected=false) =
+Base.varm(v::RealArray, wv::AbstractWeights, m::Real, corrected::Bool) =
     _moment2(v, wv, m, corrected=corrected)
 
-"""
-    var(x, wv::AbstractWeights, [dim]; mean=nothing)
-
-Return the variance of a real-valued array `x`, optionally over a dimension `dim`.
-The weighting vector `wv` specifies frequency weights (also called case weights)
-for the estimate.
-
-This function differs from its counterpart in Base in that Bessel's correction
-is not used. That is, here the denominator for the variance is `sum(wv)`,
-whereas it's `length(x)-1` in `Base.var`. The impact is that this is not a
-weighted estimate of the population variance based on the sample; it's the weighted
-variance of the sample.
-"""
-function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=false)
-    if mean == 0
-        varm(v, wv, 0; corrected=corrected)
-    elseif mean == nothing
-        varm(v, wv, Base.mean(v, wv); corrected=corrected)
+function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int, corrected)
+    @static if VERSION < v"0.6.0-dev.1121"
+        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim,
+            corrected)
     else
-        varm(v, wv, mean; corrected=corrected)
+        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M,
+            dim, corrected)
     end
 end
 
-## var along dim
-
 function Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray,
-                    dim::Int; corrected=false)
+                    dim::Int, corrected::Bool)
     scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true),
         varcorrection(wv, corrected))
 end
 
-function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
-              corrected=false)
+"""
+    var(x, wv::AbstractWeights, [dim, corrected]; mean=nothing)
+
+Return the variance of a real-valued array `x` with a known mean `m`, optionally
+over a dimension `dim`. Observations in `x` or weighted via `wv`.
+
+In base julia a biased variance (`corrected=false`) is calculated as:
+
+``\\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }``
+
+An unbiased variance (`corrected=true`) is calculated by replacing
+``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
+(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+
+Here we calculate the biased weighted variance (`corrected=false`) as:
+
+``\\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }``
+
+An unbiased weighted variance (`corrected=true`) is dependent on the type of weights used:
+
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+"""
+function Base.var(v::RealArray, wv::AbstractWeights, corrected::Bool; mean=nothing)
     if mean == 0
-        Base.varm!(R, A, wv, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
-            corrected=corrected)
+        varm(v, wv, 0, corrected)
     elseif mean == nothing
-        Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim; corrected=corrected)
+        varm(v, wv, Base.mean(v, wv), corrected)
+    else
+        varm(v, wv, mean, corrected)
+    end
+end
+
+function Base.var(A::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool;
+                  mean=nothing)
+    @static if VERSION < v"0.6.0-dev.1121"
+        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim, corrected;
+            mean=mean)
+    else
+        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim,
+            corrected; mean=mean)
+    end
+end
+
+function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int,
+              corrected::Bool; mean=nothing)
+    if mean == 0
+        Base.varm!(R, A, wv, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim, corrected)
+    elseif mean == nothing
+        Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim, corrected)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -67,73 +106,102 @@ function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int; mea
                 dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
             end
         end
-        Base.varm!(R, A, wv, mean, dim; corrected=corrected)
-    end
-end
-
-function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int;
-                   corrected=false)
-    @static if VERSION < v"0.6.0-dev.1121"
-        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim;
-            corrected=corrected)
-    else
-        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M,
-            dim; corrected=corrected)
-    end
-end
-
-function Base.var(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
-                  corrected=false)
-    @static if VERSION < v"0.6.0-dev.1121"
-        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim;
-            mean=mean, corrected=corrected)
-    else
-        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim;
-            mean=mean, corrected=corrected)
+        Base.varm!(R, A, wv, mean, dim, corrected)
     end
 end
 
 ## std
 """
-    stdm(v, wv::AbstractWeights, m, [dim])
+    stdm(v, wv::AbstractWeights, m, [dim, corrected])
 
 Return the standard deviation of a real-valued array `v` with a known mean `m`,
-optionally over a dimension `dim`. The weighting vector `wv` specifies frequency
-weights (also called case weights) for the estimate.
+optionally over a dimension `dim`. Observations in `x` or weighted via `wv`.
+
+In base julia a biased standard deviation (`corrected=false`) is calculated as:
+
+``\\sqrt{\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }}``
+
+An unbiased standard deviation (`corrected=true`) is calculated by replacing
+``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
+(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+
+Here we calculate the biased weighted standard deviation (`corrected=false`) as:
+
+``\sqrt{\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }}``
+
+An unbiased standard deviation (`corrected=true`) is dependent on the type of weights used:
+
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-Base.stdm(v::RealArray, wv::AbstractWeights, m::Real; corrected=false) =
-    sqrt(varm(v, wv, m; corrected=corrected))
+Base.stdm(v::RealArray, wv::AbstractWeights, m::Real, corrected::Bool) =
+    sqrt(varm(v, wv, m, corrected))
+
+Base.stdm(v::RealArray, m::RealArray, dim::Int, corrected::Bool) =
+    Base.sqrt!(varm(v, m, dim, corrected=corrected))
+
+Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int, corrected::Bool) =
+    sqrt.(varm(v, wv, m, dim, corrected))
 
 """
-    std(v, wv::AbstractWeights, [dim]; mean=nothing)
+    std(v, wv::AbstractWeights, [dim, corrected]; mean=nothing)
 
-Return the standard deviation of a real-valued array `v`, optionally over a
-dimension `dim`. The weighting vector `wv` specifies frequency weights (also
-called case weights) for the estimate.
+Return the standard deviation of a real-valued array `v` with a known mean `m`,
+optionally over a dimension `dim`. Observations in `x` or weighted via `wv`.
+
+In base julia a biased standard deviation (`corrected=false`) is calculated as:
+
+``\\sqrt{\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }}``
+
+An unbiased standard deviation (`corrected=true`) is calculated by replacing
+``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
+(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+
+Here we calculate the biased weighted standard deviation (`corrected=false`) as:
+
+``\sqrt{\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }}``
+
+An unbiased standard deviation (`corrected=true`) is dependent on the type of weights used:
+
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-Base.std(v::RealArray, wv::AbstractWeights; mean=nothing, corrected=false) =
-    sqrt.(var(v, wv; mean=mean, corrected=corrected))
+Base.std(v::RealArray, wv::AbstractWeights, corrected::Bool; mean=nothing) =
+    sqrt.(var(v, wv, corrected; mean=mean))
 
-Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected=false) =
-    Base.sqrt!(varm(v, m, dim; corrected=corrected))
-
-Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int; corrected=false) =
-    sqrt.(varm(v, wv, m, dim; corrected=corrected))
-
-Base.std(v::RealArray, wv::AbstractWeights, dim::Int; mean=nothing, corrected=false) =
-    sqrt.(var(v, wv, dim; mean=mean, corrected=corrected))
+Base.std(v::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool; mean=nothing) =
+    sqrt.(var(v, wv, dim, corrected; mean=mean))
 
 ##### Fused statistics
 """
-    mean_and_var(x, [wv::AbstractWeights], [dim]) -> (mean, var)
+    mean_and_var(x, [wv::AbstractWeights, dim, corrected]) -> (mean, var)
 
 Return the mean and variance of a real-valued array `x`, optionally over a dimension
-`dim`, as a tuple. A weighting vector `wv` can be specified to weight the estimates.
-The weights are assumed to be frequency weights, also called case weights.
+`dim`, as a tuple.
 """
-function mean_and_var(A::RealArray; corrected=false)
+function mean_and_var(A::RealArray, corrected::Bool)
     m = mean(A)
-    v = varm(A, m; corrected=corrected)
+    v = varm(A, m; corrected=correted)
+    m, v
+end
+
+function mean_and_var(A::RealArray, wv::AbstractWeights, corrected::Bool)
+    m = mean(A, wv)
+    v = varm(A, wv, m, corrected)
+    m, v
+end
+
+function mean_and_var(A::RealArray, dim::Int, corrected::Bool)
+    m = mean(A, dim)
+    v = varm(A, m, dim; corrected=corrected)
+    m, v
+end
+
+function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int, corrected)
+    m = mean(A, wv, dim)
+    v = varm(A, wv, m, dim, corrected)
     m, v
 end
 
@@ -145,45 +213,27 @@ over a dimension `dim`, as a tuple. A weighting vector `wv` can be specified
 to weight the estimates. The weights are assumed to be frequency weights, also
 called case weights.
 """
-function mean_and_std(A::RealArray; corrected=false)
+function mean_and_std(A::RealArray, corrected::Bool)
     m = mean(A)
     s = stdm(A, m; corrected=corrected)
     m, s
 end
 
-function mean_and_var(A::RealArray, wv::AbstractWeights; corrected=false)
+function mean_and_std(A::RealArray, wv::AbstractWeights, corrected::Bool)
     m = mean(A, wv)
-    v = varm(A, wv, m; corrected=corrected)
-    m, v
-end
-
-function mean_and_std(A::RealArray, wv::AbstractWeights; corrected=false)
-    m = mean(A, wv)
-    s = stdm(A, wv, m; corrected=corrected)
+    s = stdm(A, wv, m, corrected)
     m, s
 end
 
-function mean_and_var(A::RealArray, dim::Int; corrected=false)
+function mean_and_std(A::RealArray, dim::Int, corrected::Bool)
     m = mean(A, dim)
-    v = varm(A, m, dim; corrected=corrected)
-    m, v
-end
-
-function mean_and_std(A::RealArray, dim::Int; corrected=false)
-    m = mean(A, dim)
-    s = stdm(A, m, dim; corrected=corrected)
+    s = stdm(A, m, dim, corrected)
     m, s
 end
 
-function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int; corrected=false)
+function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool)
     m = mean(A, wv, dim)
-    v = varm(A, wv, m, dim; corrected=corrected)
-    m, v
-end
-
-function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int; corrected=false)
-    m = mean(A, wv, dim)
-    s = stdm(A, wv, m, dim; corrected=corrected)
+    s = stdm(A, wv, m, dim, corrected)
     m, s
 end
 
