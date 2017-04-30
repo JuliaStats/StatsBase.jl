@@ -26,7 +26,7 @@ An unbiased weighted variance (`corrected=true`) is dependent on the type of wei
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
 Base.varm(v::RealArray, wv::AbstractWeights, m::Real, corrected::Bool) =
-    _moment2(v, wv, m, corrected=corrected)
+    _moment2(v, wv, m; corrected=corrected)
 
 function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int, corrected)
     @static if VERSION < v"0.6.0-dev.1121"
@@ -138,7 +138,7 @@ An unbiased standard deviation (`corrected=true`) is dependent on the type of we
 Base.stdm(v::RealArray, wv::AbstractWeights, m::Real, corrected::Bool) =
     sqrt(varm(v, wv, m, corrected))
 
-Base.stdm(v::RealArray, m::RealArray, dim::Int, corrected::Bool) =
+Base.stdm(v::RealArray, m::RealArray, dim::Int, corrected::Bool=true) =
     Base.sqrt!(varm(v, m, dim, corrected=corrected))
 
 Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int, corrected::Bool) =

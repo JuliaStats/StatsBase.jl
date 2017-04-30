@@ -23,11 +23,11 @@ m = mean(x, wv)
 @test m == mean(x)
 @test s == std(x)
 
-(m, v) = mean_and_var(x, wv)
+(m, v) = mean_and_var(x, wv, true)
 @test m == mean(x, wv)
 @test v == var(x, wv, true)
 
-(m, s) = mean_and_std(x, wv)
+(m, s) = mean_and_std(x, wv, true)
 @test m == mean(x, wv)
 @test s == std(x, wv, true)
 
@@ -65,7 +65,7 @@ for d in 1:2
     @test s == std(x, d; corrected=false)
 end
 
-(m, v) = mean_and_var(x, wv1, 1)
+(m, v) = mean_and_var(x, wv1, 1, true)
 @test m == mean(x, wv1, 1)
 @test v == var(x, wv1, 1, true)
 

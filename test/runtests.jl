@@ -1,5 +1,13 @@
 using StatsBase
 
+opts = Base.JLOptions()
+depwarns = isdefined(opts, :depwarn) ? opts.depwarn == "no" : true
+test_deprecates = if haskey(ENV, "TEST_DEPRECATES")
+    lowercase(ENV["TEST_DEPRECATES"]) == "true"
+else
+    false
+end
+
 tests = ["weights",
          "moments",
          "scalarstats",
@@ -16,6 +24,10 @@ tests = ["weights",
          "wsampling",
          "statmodels"]#,
          #"statquiz"]
+
+if !depwarns || test_deprecates
+    push!(tests, "deprecates")
+end
 
 println("Running tests:")
 

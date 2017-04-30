@@ -75,7 +75,7 @@ end
 Returns ``\\frac{1}{\sum w}`` when corrected is false and throws an `ArgumentError`
 when correction is true.
 """
-function varcorrections(w::WeightVec, corrected::Bool=false)
+function varcorrection(w::WeightVec, corrected::Bool=false)
     corrected && throw(ArgumentError("WeightVec does not support bias correction."))
     1 / w.sum
 end
@@ -129,31 +129,31 @@ end
 
 function mean_and_var(A::RealArray, wv::AbstractWeights)
     m = mean(A, wv)
-    v = varm(A, wv, m, true)
+    v = varm(A, wv, m)
     m, v
 end
 
 function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int)
     m = mean(A, wv, dim)
-    v = varm(A, wv, m, dim, true)
+    v = varm(A, wv, m, dim)
     m, v
 end
 
 function mean_and_std(A::RealArray, wv::AbstractWeights)
     m = mean(A, wv)
-    s = stdm(A, wv, m, true)
+    s = stdm(A, wv, m)
     m, s
 end
 
 function mean_and_std(A::RealArray, dim::Int)
     m = mean(A, dim)
-    s = stdm(A, m, dim, true)
+    s = stdm(A, m, dim)
     m, s
 end
 
 function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int)
     m = mean(A, wv, dim)
-    s = stdm(A, wv, m, dim, true)
+    s = stdm(A, wv, m, dim)
     m, s
 end
 
