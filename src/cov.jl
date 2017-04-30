@@ -62,7 +62,7 @@ matrix (`corrected=false`) can be computed by multiplying `scattermat(X, wv)` by
 ``\frac{1}{\sum{w}}`` to normalize. However, the unbiased covariance matrix
 (`corrected=true`) is dependent on the type of weights used:
 
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """

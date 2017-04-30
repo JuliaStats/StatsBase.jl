@@ -76,7 +76,7 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 """
     varcorrection(w::AnalyticWeights, corrected=false)
 
-``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 """
 function varcorrection(w::AnalyticWeights, corrected::Bool=false)
     s = w.sum

@@ -21,7 +21,7 @@ Here we calculate the biased weighted variance (`corrected=false`) as:
 
 An unbiased weighted variance (`corrected=true`) is dependent on the type of weights used:
 
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
@@ -64,7 +64,7 @@ Here we calculate the biased weighted variance (`corrected=false`) as:
 
 An unbiased weighted variance (`corrected=true`) is dependent on the type of weights used:
 
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
@@ -131,7 +131,7 @@ Here we calculate the biased weighted standard deviation (`corrected=false`) as:
 
 An unbiased standard deviation (`corrected=true`) is dependent on the type of weights used:
 
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
@@ -164,7 +164,7 @@ Here we calculate the biased weighted standard deviation (`corrected=false`) as:
 
 An unbiased standard deviation (`corrected=true`) is dependent on the type of weights used:
 
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum{w}^2}``
+* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
