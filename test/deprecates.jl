@@ -76,7 +76,7 @@ end
             @test s == std(x, wv)
         end
     end
-    
+
     @testset "Matrices" begin
         x = rand(5, 6)
         w1 = rand(5)
@@ -187,6 +187,10 @@ end
         (m, C) = mean_and_cov(X, 2)
         @test m == mean(X, 2)
         @test C == cov(X, 2)
+
+        (m, C) = mean_and_cov(X, wv1)
+        @test m == mean(X, wv1, 1)
+        @test C == cov(X, wv1, 1)
 
         (m, C) = mean_and_cov(X, wv1, 1)
         @test m == mean(X, wv1, 1)

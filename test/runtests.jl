@@ -1,7 +1,7 @@
 using StatsBase
 
 opts = Base.JLOptions()
-depwarns = isdefined(opts, :depwarn) ? opts.depwarn == "no" : true
+depwarns = isdefined(opts, :depwarn) ? opts.depwarn != 0 : true
 test_deprecates = if haskey(ENV, "TEST_DEPRECATES")
     lowercase(ENV["TEST_DEPRECATES"]) == "true"
 else
