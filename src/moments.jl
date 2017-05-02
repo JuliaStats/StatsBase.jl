@@ -25,24 +25,8 @@ An unbiased weighted variance (`corrected=true`) is dependent on the type of wei
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-Base.varm(v::RealArray, wv::AbstractWeights, m::Real, corrected::Bool) =
-    _moment2(v, wv, m; corrected=corrected)
-
-function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int, corrected)
-    @static if VERSION < v"0.6.0-dev.1121"
-        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim,
-            corrected)
-    else
-        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M,
-            dim, corrected)
-    end
-end
-
-function Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray,
-                    dim::Int, corrected::Bool)
-    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true),
-        varcorrection(wv, corrected))
-end
+Base.varm(v::RealArray, wv::AbstractWeights, m::Real; corrected::DepBool=nothing) =
+    _moment2(v, wv, m; corrected=depcheck(:varm, corrected))
 
 """
     var(x, wv::AbstractWeights, [dim, corrected]; mean=nothing)
@@ -68,33 +52,37 @@ An unbiased weighted variance (`corrected=true`) is dependent on the type of wei
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-function Base.var(v::RealArray, wv::AbstractWeights, corrected::Bool; mean=nothing)
+function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing,
+                  corrected::DepBool=nothing)
+    corrected = depcheck(:var, corrected)
+
     if mean == 0
-        varm(v, wv, 0, corrected)
+        varm(v, wv, 0; corrected=corrected)
     elseif mean == nothing
-        varm(v, wv, Base.mean(v, wv), corrected)
+        varm(v, wv, Base.mean(v, wv); corrected=corrected)
     else
-        varm(v, wv, mean, corrected)
+        varm(v, wv, mean; corrected=corrected)
     end
 end
 
-function Base.var(A::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool;
-                  mean=nothing)
-    @static if VERSION < v"0.6.0-dev.1121"
-        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim, corrected;
-            mean=mean)
-    else
-        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim,
-            corrected; mean=mean)
-    end
+## var along dim
+
+function Base.varm!(R::AbstractArray, A::RealArray, wv::AbstractWeights, M::RealArray,
+                    dim::Int; corrected::DepBool=nothing)
+    corrected = depcheck(:varm!, corrected)
+    scale!(_wsum_centralize!(R, abs2, A, values(wv), M, dim, true),
+           varcorrection(wv, corrected))
 end
 
-function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int,
-              corrected::Bool; mean=nothing)
+function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int;
+              mean=nothing, corrected::DepBool=nothing)
+    corrected = depcheck(:var!, corrected)
+
     if mean == 0
-        Base.varm!(R, A, wv, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim, corrected)
+        Base.varm!(R, A, wv, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
+                   corrected=corrected)
     elseif mean == nothing
-        Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim, corrected)
+        Base.varm!(R, A, wv, Base.mean(A, wv, dim), dim; corrected=corrected)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -106,7 +94,33 @@ function var!(R::AbstractArray, A::RealArray, wv::AbstractWeights, dim::Int,
                 dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
             end
         end
-        Base.varm!(R, A, wv, mean, dim, corrected)
+        Base.varm!(R, A, wv, mean, dim; corrected=corrected)
+    end
+end
+
+function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int;
+                   corrected::DepBool=nothing)
+    corrected = depcheck(:varm, corrected)
+
+    @static if VERSION < v"0.6.0-dev.1121"
+        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim;
+            corrected=corrected)
+    else
+        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M,
+            dim; corrected=corrected)
+    end
+end
+
+function Base.var(A::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
+                  corrected::DepBool=nothing)
+    corrected = depcheck(:var, corrected)
+
+    @static if VERSION < v"0.6.0-dev.1121"
+        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, dim; mean=mean,
+             corrected=corrected)
+    else
+        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, dim;
+             mean=mean, corrected=corrected)
     end
 end
 
@@ -135,14 +149,8 @@ An unbiased standard deviation (`corrected=true`) is dependent on the type of we
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-Base.stdm(v::RealArray, wv::AbstractWeights, m::Real, corrected::Bool) =
-    sqrt(varm(v, wv, m, corrected))
-
-Base.stdm(v::RealArray, m::RealArray, dim::Int, corrected::Bool=true) =
-    Base.sqrt!(varm(v, m, dim, corrected=corrected))
-
-Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int, corrected::Bool) =
-    sqrt.(varm(v, wv, m, dim, corrected))
+Base.stdm(v::RealArray, wv::AbstractWeights, m::Real; corrected::DepBool=nothing) =
+    sqrt(varm(v, wv, m, corrected=depcheck(:stdm, corrected)))
 
 """
     std(v, wv::AbstractWeights, [dim, corrected]; mean=nothing)
@@ -168,11 +176,19 @@ An unbiased standard deviation (`corrected=true`) is dependent on the type of we
 * FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
 * ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-Base.std(v::RealArray, wv::AbstractWeights, corrected::Bool; mean=nothing) =
-    sqrt.(var(v, wv, corrected; mean=mean))
+Base.std(v::RealArray, wv::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
+    sqrt.(var(v, wv; mean=mean, corrected=depcheck(:std, corrected)))
 
-Base.std(v::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool; mean=nothing) =
-    sqrt.(var(v, wv, dim, corrected; mean=mean))
+Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
+    Base.sqrt!(varm(v, m, dim; corrected=corrected))
+
+Base.stdm(v::RealArray, wv::AbstractWeights, m::RealArray, dim::Int;
+          corrected::DepBool=nothing) =
+    sqrt.(varm(v, wv, m, dim; corrected=depcheck(:stdm, corrected)))
+
+Base.std(v::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
+         corrected::DepBool=nothing) =
+    sqrt.(var(v, wv, dim; mean=mean, corrected=depcheck(:std, corrected)))
 
 ##### Fused statistics
 """
@@ -183,27 +199,9 @@ Return the mean and variance of a real-valued array `x`, optionally over a dimen
 can be applied to the variance calculation if `corrected=true`.
 See `var` documentation for more details.
 """
-function mean_and_var(A::RealArray, corrected::Bool=true)
+function mean_and_var(A::RealArray; corrected::Bool=true)
     m = mean(A)
     v = varm(A, m; corrected=corrected)
-    m, v
-end
-
-function mean_and_var(A::RealArray, wv::AbstractWeights, corrected::Bool)
-    m = mean(A, wv)
-    v = varm(A, wv, m, corrected)
-    m, v
-end
-
-function mean_and_var(A::RealArray, dim::Int, corrected::Bool=true)
-    m = mean(A, dim)
-    v = varm(A, m, dim; corrected=corrected)
-    m, v
-end
-
-function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int, corrected)
-    m = mean(A, wv, dim)
-    v = varm(A, wv, m, dim, corrected)
     m, v
 end
 
@@ -216,29 +214,50 @@ to weight the estimates. Finally, bias correction can be applied to the
 standard deviation calculation if `corrected=true`.
 See `std` documentation for more details.
 """
-function mean_and_std(A::RealArray, corrected::Bool=true)
+function mean_and_std(A::RealArray; corrected::Bool=true)
     m = mean(A)
     s = stdm(A, m; corrected=corrected)
     m, s
 end
 
-function mean_and_std(A::RealArray, wv::AbstractWeights, corrected::Bool)
+function mean_and_var(A::RealArray, wv::AbstractWeights; corrected::DepBool=nothing)
     m = mean(A, wv)
-    s = stdm(A, wv, m, corrected)
+    v = varm(A, wv, m; corrected=depcheck(:mean_and_var, corrected))
+    m, v
+end
+function mean_and_std(A::RealArray, wv::AbstractWeights; corrected::DepBool=nothing)
+    m = mean(A, wv)
+    s = stdm(A, wv, m; corrected=depcheck(:mean_and_std, corrected))
     m, s
 end
 
-function mean_and_std(A::RealArray, dim::Int, corrected::Bool)
+
+function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
     m = mean(A, dim)
-    s = stdm(A, m, dim, corrected)
+    v = varm(A, m, dim; corrected=corrected)
+    m, v
+end
+function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)
+    m = mean(A, dim)
+    s = stdm(A, m, dim; corrected=corrected)
     m, s
 end
 
-function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int, corrected::Bool)
+
+function mean_and_var(A::RealArray, wv::AbstractWeights, dim::Int;
+                      corrected::DepBool=nothing)
     m = mean(A, wv, dim)
-    s = stdm(A, wv, m, dim, corrected)
+    v = varm(A, wv, m, dim; corrected=depcheck(:mean_and_var, corrected))
+    m, v
+end
+function mean_and_std(A::RealArray, wv::AbstractWeights, dim::Int;
+                      corrected::DepBool=nothing)
+    m = mean(A, wv, dim)
+    s = stdm(A, wv, m, dim; corrected=depcheck(:mean_and_std, corrected))
     m, s
 end
+
+
 
 ##### General central moment
 function _moment2(v::RealArray, m::Real; corrected=false)

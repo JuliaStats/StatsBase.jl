@@ -59,43 +59,43 @@ Sz2w = X * diagm(w2) * X'
 end
 
 @testset "Weighted Covariance" begin
-    @test cov(X, wv1, false)    ≈ S1w ./ sum(wv1)
-    @test cov(X, wv2, 2, false) ≈ S2w ./ sum(wv2)
+    @test cov(X, wv1; corrected=false)    ≈ S1w ./ sum(wv1)
+    @test cov(X, wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
 
-    @test Base.covm(X, 0, wv1, 1, false) ≈ Sz1w ./ sum(wv1)
-    @test Base.covm(X, 0, wv2, 2, false) ≈ Sz2w ./ sum(wv2)
+    @test Base.covm(X, 0, wv1, 1; corrected=false) ≈ Sz1w ./ sum(wv1)
+    @test Base.covm(X, 0, wv2, 2; corrected=false) ≈ Sz2w ./ sum(wv2)
 
-    @test Base.covm(X, mean(X, wv1, 1), wv1, 1, false) ≈ S1w ./ sum(wv1)
-    @test Base.covm(X, mean(X, wv2, 2), wv2, 2, false) ≈ S2w ./ sum(wv2)
+    @test Base.covm(X, mean(X, wv1, 1), wv1, 1; corrected=false) ≈ S1w ./ sum(wv1)
+    @test Base.covm(X, mean(X, wv2, 2), wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
 
-    @test Base.covm(X, zeros(1,8), wv1, 1, false) ≈ Sz1w ./ sum(wv1)
-    @test Base.covm(X, zeros(3), wv2, 2, false)   ≈ Sz2w ./ sum(wv2)
+    @test Base.covm(X, zeros(1,8), wv1, 1; corrected=false) ≈ Sz1w ./ sum(wv1)
+    @test Base.covm(X, zeros(3), wv2, 2; corrected=false)   ≈ Sz2w ./ sum(wv2)
 end
 
 @testset "Mean and covariance" begin
-    (m, C) = mean_and_cov(X, false)
+    (m, C) = mean_and_cov(X; corrected=false)
     @test m == mean(X, 1)
     @test C == cov(X, 1, false)
 
-    (m, C) = mean_and_cov(X, 1, false)
+    (m, C) = mean_and_cov(X, 1; corrected=false)
     @test m == mean(X, 1)
     @test C == cov(X, 1, false)
 
-    (m, C) = mean_and_cov(X, 2, false)
+    (m, C) = mean_and_cov(X, 2; corrected=false)
     @test m == mean(X, 2)
     @test C == cov(X, 2, false)
 
-    (m, C) = mean_and_cov(X, wv1, false)
+    (m, C) = mean_and_cov(X, wv1; corrected=false)
     @test m == mean(X, wv1, 1)
-    @test C == cov(X, wv1, 1, false)
+    @test C == cov(X, wv1, 1; corrected=false)
 
-    (m, C) = mean_and_cov(X, wv1, 1, false)
+    (m, C) = mean_and_cov(X, wv1, 1; corrected=false)
     @test m == mean(X, wv1, 1)
-    @test C == cov(X, wv1, 1, false)
+    @test C == cov(X, wv1, 1; corrected=false)
 
-    (m, C) = mean_and_cov(X, wv2, 2, false)
+    (m, C) = mean_and_cov(X, wv2, 2; corrected=false)
     @test m == mean(X, wv2, 2)
-    @test C == cov(X, wv2, 2, false)
+    @test C == cov(X, wv2, 2; corrected=false)
 end
 
 end # @testset "StatsBase.Covariance"

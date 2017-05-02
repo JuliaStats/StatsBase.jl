@@ -13,39 +13,39 @@ weight_funcs = (aweights, fweights, pweights)
             @testset "Variance with $f" for f in weight_funcs
                 wv = f(w)
                 m = mean(x, wv)
-                @test var(x, wv, false)           ≈ sum(abs2.(x .- m), wv) ./ sum(wv)
-                @test var(x, wv, false; mean=0)   ≈ sum(abs2.(x), wv) ./ sum(wv)
-                @test var(x, wv, false; mean=1.0) ≈ sum(abs2.(x .- 1.0), wv) ./ sum(wv)
+                @test var(x, wv; corrected=false)           ≈ sum(abs2.(x .- m), wv) ./ sum(wv)
+                @test var(x, wv; mean=0, corrected=false)   ≈ sum(abs2.(x), wv) ./ sum(wv)
+                @test var(x, wv; mean=1.0, corrected=false) ≈ sum(abs2.(x .- 1.0), wv) ./ sum(wv)
             end
 
             @testset "Standard Deviation with $f" for f in weight_funcs
                 wv = f(w)
                 m = mean(x, wv)
-                @test std(x, wv, false)           ≈ sqrt(var(x, wv, false))
-                @test std(x, wv, false; mean=0)   ≈ sqrt(var(x, wv, false; mean=0))
-                @test std(x, wv, false; mean=1.0) ≈ sqrt(var(x, wv, false; mean=1.0))
+                @test std(x, wv; corrected=false)           ≈ sqrt(var(x, wv; corrected=false))
+                @test std(x, wv; mean=0, corrected=false)   ≈ sqrt(var(x, wv; mean=0, corrected=false))
+                @test std(x, wv; mean=1.0, corrected=false) ≈ sqrt(var(x, wv; mean=1.0, corrected=false))
             end
 
             @testset "Mean and Variance with $f" for f in weight_funcs
                 wv = f(w)
-                (m, v) = mean_and_var(x, false)
+                (m, v) = mean_and_var(x; corrected=false)
                 @test m == mean(x)
-                @test v == var(x, corrected=false)
+                @test v == var(x; corrected=corrected=false)
 
-                (m, v) = mean_and_var(x, wv, false)
+                (m, v) = mean_and_var(x, wv; corrected=false)
                 @test m == mean(x, wv)
-                @test v == var(x, wv, false)
+                @test v == var(x, wv; corrected=false)
             end
 
             @testset "Mean and Standard Deviation with $f" for f in weight_funcs
                 wv = f(w)
-                (m, s) = mean_and_std(x, false)
+                (m, s) = mean_and_std(x; corrected=false)
                 @test m == mean(x)
-                @test s == std(x, corrected=false)
+                @test s == std(x; corrected=false)
 
-                (m, s) = mean_and_std(x, wv, false)
+                (m, s) = mean_and_std(x, wv; corrected=false)
                 @test m == mean(x, wv)
-                @test s == std(x, wv, false)
+                @test s == std(x, wv; corrected=false)
             end
         end
 
@@ -60,42 +60,42 @@ weight_funcs = (aweights, fweights, pweights)
                     wv = weight_funcs[i](w)
                     m = mean(x, wv)
 
-                    @test var(x, wv, true)           ≈ expected[i]
-                    @test var(x, wv, true; mean=0)   ≈ expected_0[i]
-                    @test var(x, wv, true; mean=1.0) ≈ expected_1[i]
+                    @test var(x, wv; corrected=true)           ≈ expected[i]
+                    @test var(x, wv; mean=0, corrected=true)   ≈ expected_0[i]
+                    @test var(x, wv; mean=1.0, corrected=true) ≈ expected_1[i]
                 end
             end
 
             @testset "Standard Deviation with $f" for f in weight_funcs
                 wv = f(w)
                 m = mean(x, wv)
-                @test std(x, wv, true)           ≈ sqrt(var(x, wv, true))
-                @test std(x, wv, true; mean=0)   ≈ sqrt(var(x, wv, true; mean=0))
-                @test std(x, wv, true; mean=1.0) ≈ sqrt(var(x, wv, true; mean=1.0))
+                @test std(x, wv; corrected=true)           ≈ sqrt(var(x, wv; corrected=true))
+                @test std(x, wv; mean=0, corrected=true)   ≈ sqrt(var(x, wv; mean=0, corrected=true))
+                @test std(x, wv; mean=1.0, corrected=true) ≈ sqrt(var(x, wv; mean=1.0, corrected=true))
             end
 
             @testset "Mean and Variance with $f" for f in weight_funcs
                 wv = f(w)
 
-                (m, v) = mean_and_var(x, true)
+                (m, v) = mean_and_var(x; corrected=true)
                 @test m == mean(x)
-                @test v == var(x, corrected=true)
+                @test v == var(x; corrected=true)
 
-                (m, v) = mean_and_var(x, wv, true)
+                (m, v) = mean_and_var(x, wv; corrected=true)
                 @test m == mean(x, wv)
-                @test v == var(x, wv, true)
+                @test v == var(x, wv; corrected=true)
             end
 
             @testset "Mean and Standard Deviation with $f" for f in weight_funcs
                 wv = f(w)
 
-                (m, s) = mean_and_std(x, true)
+                (m, s) = mean_and_std(x; corrected=true)
                 @test m == mean(x)
-                @test s == std(x, corrected=true)
+                @test s == std(x; corrected=true)
 
-                (m, s) = mean_and_std(x, wv, true)
+                (m, s) = mean_and_std(x, wv; corrected=true)
                 @test m == mean(x, wv)
-                @test s == std(x, wv, true)
+                @test s == std(x, wv; corrected=true)
             end
         end
     end
@@ -109,47 +109,47 @@ weight_funcs = (aweights, fweights, pweights)
         m1 = mean(x, wv1, 1)
         m2 = mean(x, wv2, 2)
 
-        @test var(x, wv1, 1, false; mean=0) ≈ sum(abs2.(x) .* w1, 1) ./ sum(wv1)
-        @test var(x, wv2, 2, false; mean=0) ≈ sum(abs2.(x) .* w2', 2) ./ sum(wv2)
+        @test var(x, wv1, 1; mean=0, corrected=false) ≈ sum(abs2.(x) .* w1, 1) ./ sum(wv1)
+        @test var(x, wv2, 2; mean=0, corrected=false) ≈ sum(abs2.(x) .* w2', 2) ./ sum(wv2)
 
-        @test var(x, wv1, 1, false; mean=m1) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-        @test var(x, wv2, 2, false; mean=m2) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+        @test var(x, wv1, 1; mean=m1, corrected=false) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
+        @test var(x, wv2, 2; mean=m2, corrected=false) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
 
-        @test var(x, wv1, 1, false) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-        @test var(x, wv2, 2, false) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+        @test var(x, wv1, 1; corrected=false) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
+        @test var(x, wv2, 2; corrected=false) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
 
-        @test std(x, wv1, 1, false)          ≈ sqrt.(var(x, wv1, 1, false))
-        @test std(x, wv2, 2, false)          ≈ sqrt.(var(x, wv2, 2, false))
-        @test std(x, wv1, 1, false; mean=0)  ≈ sqrt.(var(x, wv1, 1, false; mean=0))
-        @test std(x, wv2, 2, false; mean=0)  ≈ sqrt.(var(x, wv2, 2, false; mean=0))
-        @test std(x, wv1, 1, false; mean=m1) ≈ sqrt.(var(x, wv1, 1, false; mean=m1))
-        @test std(x, wv2, 2, false; mean=m2) ≈ sqrt.(var(x, wv2, 2, false; mean=m2))
+        @test std(x, wv1, 1; corrected=false)          ≈ sqrt.(var(x, wv1, 1; corrected=false))
+        @test std(x, wv2, 2; corrected=false)          ≈ sqrt.(var(x, wv2, 2; corrected=false))
+        @test std(x, wv1, 1; mean=0, corrected=false)  ≈ sqrt.(var(x, wv1, 1; mean=0, corrected=false))
+        @test std(x, wv2, 2; mean=0, corrected=false)  ≈ sqrt.(var(x, wv2, 2; mean=0, corrected=false))
+        @test std(x, wv1, 1; mean=m1, corrected=false) ≈ sqrt.(var(x, wv1, 1; mean=m1, corrected=false))
+        @test std(x, wv2, 2; mean=m2, corrected=false) ≈ sqrt.(var(x, wv2, 2; mean=m2, corrected=false))
 
         for d in 1:2
-            (m, v) = mean_and_var(x, d, false)
+            (m, v) = mean_and_var(x, d; corrected=false)
             @test m == mean(x, d)
             @test v == var(x, d; corrected=false)
 
-            (m, s) = mean_and_std(x, d, false)
+            (m, s) = mean_and_std(x, d; corrected=false)
             @test m == mean(x, d)
             @test s == std(x, d; corrected=false)
         end
 
-        (m, v) = mean_and_var(x, wv1, 1, true)
+        (m, v) = mean_and_var(x, wv1, 1; corrected=true)
         @test m == mean(x, wv1, 1)
-        @test v == var(x, wv1, 1, true)
+        @test v == var(x, wv1, 1; corrected=true)
 
-        (m, v) = mean_and_var(x, wv2, 2, false)
+        (m, v) = mean_and_var(x, wv2, 2; corrected=false)
         @test m == mean(x, wv2, 2)
-        @test v == var(x, wv2, 2, false)
+        @test v == var(x, wv2, 2; corrected=false)
 
-        (m, s) = mean_and_std(x, wv1, 1, false)
+        (m, s) = mean_and_std(x, wv1, 1; corrected=false)
         @test m == mean(x, wv1, 1)
-        @test s == std(x, wv1, 1, false)
+        @test s == std(x, wv1, 1; corrected=false)
 
-        (m, s) = mean_and_std(x, wv2, 2, false)
+        (m, s) = mean_and_std(x, wv2, 2; corrected=false)
         @test m == mean(x, wv2, 2)
-        @test s == std(x, wv2, 2, false)
+        @test s == std(x, wv2, 2; corrected=false)
     end
 end
 
