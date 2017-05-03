@@ -27,6 +27,14 @@ end
 end
 
 
+# Need a generated function to promote edge types, because a simple
+# promote_type(map(eltype, h.edges)...) isn't type stable (tested
+# with Julia v0.5).
+@generated function _promote_edge_types{N}(edges::NTuple{N,AbstractVector})
+    promote_type(map(eltype, edges.parameters)...)
+end
+
+
 ## nice-valued ranges for histograms
 function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:default_left)
     closed = _check_closed_arg(closed,:histrange)
@@ -134,7 +142,7 @@ type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
                                                weights::Array{T,N}, closed::Symbol, isdensity::Bool=false)
         closed == :right || closed == :left || error("closed must :left or :right")
         isdensity && !(T <: AbstractFloat) && error("Density histogram must have float-type weights")
-        map(x -> length(x)-1,edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
+        _edges_nbins(edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
         new{T,N,E}(edges,weights,closed,isdensity)
     end
 end
@@ -143,7 +151,7 @@ Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},close
     Histogram{T,N,typeof(edges)}(edges,weights,_check_closed_arg(closed,:Histogram),isdensity)
 
 Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:default_left, isdensity::Bool=false) =
-    Histogram(edges,zeros(T,map(x -> length(x)-1,edges)...),_check_closed_arg(closed,:Histogram),isdensity)
+    Histogram(edges,zeros(T,_edges_nbins(edges)...),_check_closed_arg(closed,:Histogram),isdensity)
 
 Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:default_left, isdensity::Bool=false) =
     Histogram(edges,Int,_check_closed_arg(closed,:Histogram),isdensity)
@@ -180,7 +188,7 @@ binvolume{T,E}(h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(h, (bin
 binvolume{V,T,E}(::Type{V}, h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(V, h, (binidx,))
 
 binvolume{T,N,E}(h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
-    binvolume(promote_type(map(eltype, h.edges)...), h, binidx)
+    binvolume(_promote_edge_types(h.edges), h, binidx)
 
 binvolume{V,T,N,E}(::Type{V}, h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
     prod(map((edge, i) -> _edge_binvolume(V, edge, i), h.edges, binidx))
@@ -188,6 +196,11 @@ binvolume{V,T,N,E}(::Type{V}, h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
 @inline _edge_binvolume{V}(::Type{V}, edge::AbstractVector, i::Integer) = V(edge[i+1]) - V(edge[i])
 @inline _edge_binvolume{V}(::Type{V}, edge::Range, i::Integer) = V(step(edge))
 @inline _edge_binvolume(edge::AbstractVector, i::Integer) = _edge_binvolume(eltype(edge), edge, i)
+
+
+@inline _edges_nbins{N}(edges::NTuple{N,AbstractVector}) = map(_edge_nbins, edges)
+
+@inline _edge_nbins(edge::AbstractVector) = length(edge) - 1
 
 
 # 1-dimensional
@@ -259,12 +272,25 @@ end
 append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::WeightVec) = append!(h, vs, values(wv))
 
 
+# Turn kwargs nbins into a type-stable tuple of integers:
+function _nbins_tuple{N}(vs::NTuple{N,AbstractVector}, nbins)
+    template = map(length, vs)
+    result = if isa(nbins, Integer)
+        map(t -> typeof(t)(nbins), template)
+    elseif isa(nbins, NTuple{N, Integer})
+        map((t, x) -> typeof(t)(x), template, nbins)
+    else
+        throw(ArgumentError("nbins must be an Integer or NTuple{N, Integer}"))
+    end
+    result::typeof(template)
+end
+
 fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
     append!(Histogram(edges, T, _check_closed_arg(closed,:fit), false), vs)
 
 fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
     closed = _check_closed_arg(closed,:fit)
-    fit(Histogram{T}, vs, histrange(vs,nbins,closed); closed=closed)
+    fit(Histogram{T}, vs, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 end
 
 fit{T,N,W}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
@@ -272,7 +298,7 @@ fit{T,N,W}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W},
 
 fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
     closed = _check_closed_arg(closed,:fit)
-    fit(Histogram{T}, vs, wv, histrange(vs,nbins,closed); closed=closed)
+    fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 end
 
 fit(::Type{Histogram}, args...; kwargs...) = fit(Histogram{Int}, args...; kwargs...)
@@ -280,13 +306,8 @@ fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, args
 
 
 # Get a suitable high-precision type for the norm of a histogram.
-@generated function norm_type{T, N, E}(h::Histogram{T, N, E})
-    args = [:( eltype(edges[$d]) ) for d = 1:N]
-    quote
-        edges = h.edges
-        norm_type(promote_type(T, $(args...)))
-    end
-end
+norm_type{T, N, E}(h::Histogram{T, N, E}) =
+    promote_type(T, _promote_edge_types(h.edges))
 
 norm_type{T<:Integer}(::Type{T}) = promote_type(T, Int64)
 norm_type{T<:AbstractFloat}(::Type{T}) = promote_type(T, Float64)
