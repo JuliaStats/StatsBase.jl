@@ -13,20 +13,22 @@ using Base.Test
     h1 = Histogram(edg1, :left)
     h2 = Histogram((edg1, edg2), :left)
     h3 = Histogram((edg1f0, edg2), :left)
-    @test StatsBase.binindex(h1, -0.5) == 4
-    @test StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
+    @test @inferred StatsBase.binindex(h1, -0.5) == 4
+    @test @inferred StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
 
     @test [StatsBase.binvolume(h1, i) for i in indices(h1.weights, 1)] ≈ diff(edg1)
     @test [StatsBase.binvolume(h2, (i,j)) for i in indices(h2.weights, 1), j in indices(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
 
-    @test typeof(StatsBase.binvolume(h2, (1,1))) == Float64
-    @test typeof(StatsBase.binvolume(h3, (1,1))) == Float32
-    @test typeof(StatsBase.binvolume(Float64, h3, (1,1))) == Float64
+    @test typeof(@inferred(StatsBase.binvolume(h2, (1,1)))) == Float64
+    @test typeof(@inferred(StatsBase.binvolume(h3, (1,1)))) == Float32
+    @test typeof(@inferred(StatsBase.binvolume(Float64, h3, (1,1)))) == Float64
 end
 
 
 @testset "Histogram append" begin
     # FIXME: closed (all lines in this block):
+    h = Histogram(0:20:100, Float64, :left, false)
+    @test @inferred(append!(h, 0:0.5:99.99)) == h
     @test append!(Histogram(0:20:100, Float64, :left, false), 0:0.5:99.99).weights ≈ [40,40,40,40,40]
     @test append!(Histogram(0:20:100, Float64, :left, true), 0:0.5:99.99).weights ≈ [2,2,2,2,2]
     @test append!(Histogram(0:20:100, Float64, :left, false), 0:0.5:99.99, fill(2, 200)).weights ≈ [80,80,80,80,80]
@@ -64,16 +66,16 @@ end
 
 @testset "Histogram element type" begin
     # FIXME: closed (all lines in this block):
-    @test eltype(fit(Histogram,1:100,weights(ones(Int,100)),nbins=5, closed=:left).weights) == Int
-    @test eltype(fit(Histogram{Float32},1:100,weights(ones(Int,100)),nbins=5, closed=:left).weights) == Float32
-    @test eltype(fit(Histogram,1:100,weights(ones(Float64,100)),nbins=5, closed=:left).weights) == Float64
-    @test eltype(fit(Histogram{Float32},1:100,weights(ones(Float64,100)),nbins=5, closed=:left).weights) == Float32
+    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Int,100)),nbins=5, closed=:left)).weights) == Int
+    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Int,100)),nbins=5, closed=:left)).weights) == Float32
+    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float64
+    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float32
 end
 
 
 @testset "histrange" begin
     # Note: atm histrange must be qualified
-    @test StatsBase.histrange(Float64[], 0, :left) == 0.0:1.0:0.0
+    @test @inferred(StatsBase.histrange(Float64[], 0, :left)) == 0.0:1.0:0.0
     @test StatsBase.histrange(Float64[1:5;], 1, :left) == 0.0:5.0:10.0
     @test StatsBase.histrange(Float64[1:10;], 1, :left) == 0.0:10.0:20.0
     @test StatsBase.histrange(1.0, 10.0, 1, :left) == 0.0:10.0:20.0
@@ -90,7 +92,7 @@ end
     @test StatsBase.histrange([200.0,300.0], 10, :left) == 200.0:10.0:310.0
     @test StatsBase.histrange([200.0,300.0], 10, :right) == 190.0:10.0:300.0
 
-    @test StatsBase.histrange(Int64[1:5;], 1, :left) == 0:5:10
+    @test @inferred(StatsBase.histrange(Int64[1:5;], 1, :left)) == 0:5:10
     @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
 
     # FIXME: closed (all lines in this block):
@@ -149,24 +151,27 @@ end
 
     @test norm(h) ≈ sum(h.weights .* bin_vols)
 
-    @test normalize(h, mode = :none) == h
+    @test @inferred(normalize(h, mode = :none)) == h
 
 
     h_pdf = normalize(h, mode = :pdf)
     @test h_pdf.weights ≈ h.weights ./ bin_vols ./ weight_sum
     @test h_pdf.isdensity == true
-    @test norm(h_pdf) ≈ 1
-    @test normalize(h_pdf, mode = :pdf) == h_pdf
-    @test normalize(h_pdf, mode = :density) == h_pdf
+    @test @inferred(norm(h_pdf)) ≈ 1
+    @test @inferred(normalize(h_pdf, mode = :pdf)) == h_pdf
+    @test @inferred(normalize(h_pdf, mode = :density)) == h_pdf
 
     h_density = normalize(h, mode = :density)
     @test h_density.weights ≈ h.weights ./ bin_vols
     @test h_density.isdensity == true
-    @test norm(h_density) ≈ weight_sum
-    @test normalize(h_density, mode = :pdf) ==
+    @test @inferred(norm(h_density)) ≈ weight_sum
+    @test @inferred(normalize(h_density, mode = :pdf)) ==
         Histogram(h_density.edges, h_density.weights .* (1/norm(h_density)), h_density.closed, true)
     @test normalize(h_density, mode = :pdf).weights ≈ h_pdf.weights
     @test normalize(h_density, mode = :density) == h_density
+
+    h_copy = deepcopy(float(h))
+    @test @inferred(normalize!(h_copy, mode = :density)) == h_copy
 
     h2 = deepcopy(float(h))
     mod_h2 = normalize!(h2, mode = :density)
