@@ -48,9 +48,7 @@ function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
 
-    if mean == 0
-        varm(v, wv, 0; corrected=corrected)
-    elseif mean == nothing
+    if mean == nothing
         varm(v, wv, Base.mean(v, wv); corrected=corrected)
     else
         varm(v, wv, mean; corrected=corrected)
