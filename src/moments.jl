@@ -375,9 +375,8 @@ function skewness(v::RealArray, m::Real)
         cm2 += z2
         cm3 += z2 * z
     end
-    cf = varcorrection(n, false)
-    cm3 *= cf
-    cm2 *= cf
+    cm3 /= n
+    cm2 /= n
     return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
 end
 
@@ -396,9 +395,9 @@ function skewness(v::RealArray, wv::AbstractWeights, m::Real)
         cm2 += z2w
         cm3 += z2w * z
     end
-    cf = varcorrection(wv, false)
-    cm3 *= cf
-    cm2 *= cf
+    sw = sum(wv)
+    cm3 /= sw
+    cm2 /= sw
     return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
 end
 
@@ -423,9 +422,8 @@ function kurtosis(v::RealArray, m::Real)
         cm2 += z2
         cm4 += z2 * z2
     end
-    cf = varcorrection(n, false)
-    cm4 *= cf
-    cm2 *= cf
+    cm4 /= n
+    cm2 /= n
     return (cm4 / (cm2 * cm2)) - 3.0
 end
 
@@ -445,9 +443,9 @@ function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
         cm2 += z2w
         cm4 += z2w * z2
     end
-    cf = varcorrection(wv, false)
-    cm4 *= cf
-    cm2 *= cf
+    sw = sum(wv)
+    cm4 /= sw
+    cm2 /= sw
     return (cm4 / (cm2 * cm2)) - 3.0
 end
 
