@@ -151,7 +151,6 @@ a = sample(3:12, 5; replace=false, ordered=true)
 check_sample_norep(a, (3, 12), 0; ordered=true)
 
 # test of weighted sampling without replacement
-import StatsBase: sample
 a = [1:10;]
 wv = WeightVec([zeros(6); 1:4])
 x = vcat([sample(a, wv, 1, replace=false) for j in 1:100000]...)
