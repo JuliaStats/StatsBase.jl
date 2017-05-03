@@ -262,7 +262,7 @@ append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::Weight
 fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
     append!(Histogram(edges, T, _check_closed_arg(closed,:fit), false), vs)
 
-fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:default_left, isdensity::Bool=false, nbins=sturges(length(vs[1]))) = begin
+fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
     closed = _check_closed_arg(closed,:fit)
     fit(Histogram{T}, vs, histrange(vs,nbins,closed); closed=closed)
 end
@@ -270,7 +270,7 @@ end
 fit{T,N,W}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
     append!(Histogram(edges, T, _check_closed_arg(closed,:fit), false), vs, wv)
 
-fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:default_left, isdensity::Bool=false, nbins=sturges(length(vs[1]))) = begin
+fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
     closed = _check_closed_arg(closed,:fit)
     fit(Histogram{T}, vs, wv, histrange(vs,nbins,closed); closed=closed)
 end
