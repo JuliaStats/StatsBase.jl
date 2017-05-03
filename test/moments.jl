@@ -6,8 +6,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
 @testset "Variance and Standard Deviation" begin
     @testset "Vectors" begin
-        x = [0.57, 0.10, 0.91, 0.72, 0.46]
-        w = [3.84, 2.70, 8.29, 8.91, 9.71]
+        x = [0.57, 0.10, 0.91, 0.72, 0.46, 0.0]
+        w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
         @testset "Uncorrected with $f" for f in weight_funcs
             wv = f(w)

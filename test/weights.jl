@@ -4,7 +4,7 @@ using Compat
 import Compat: view
 
 @testset "StatsBase.Weights" begin
-weight_funcs = (aweights, fweights, pweights)
+weight_funcs = (weights, aweights, fweights, pweights)
 
 @testset "Construction" begin
     @testset "$f" for f in weight_funcs

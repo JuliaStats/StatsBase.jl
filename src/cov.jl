@@ -49,16 +49,15 @@ function scattermat end
 
 
 """
-    cov(X, wv::AbstractWeights; vardim=1, corrected=false)
+    cov(X, w::AbstractWeights; mean=nothing, vardim=1, corrected=false)
 
 Compute the weighted covariance matrix. Similar to `var` and `std` the biased covariance
-matrix (`corrected=false`) can be computed by multiplying `scattermat(X, wv)` by
+matrix (`corrected=false`) is computed by multiplying `scattermat(X, w)` by
 ``\\frac{1}{\\sum{w}}`` to normalize. However, the unbiased covariance matrix
 (`corrected=true`) is dependent on the type of weights used:
-
-* AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
-* FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
+* `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 cov
 
@@ -69,7 +68,7 @@ cov
 Return the mean and covariance matrix as a tuple. A weighting
 vector `wv` can be specified. `vardim` that designates whether
 the variables are columns in the matrix (`1`) or rows (`2`).
-Finally, bias correction will be applied to the covariance calculation if
+Finally, bias correction is applied to the covariance calculation if
 `corrected=true`. See [`cov`](@ref) documentation for more details.
 """
 function mean_and_cov end
@@ -88,13 +87,13 @@ scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
     scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
 
 ## weighted cov
-Base.covm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1;
+Base.covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
           corrected::DepBool=nothing) =
-    scale!(scattermatm(x, mean, wv, vardim), varcorrection(wv, depcheck(:covm, corrected)))
+    scale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
 
 
-Base.cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
-    Base.covm(x, Base.mean(x, wv, vardim), wv, vardim; corrected=depcheck(:cov, corrected))
+Base.cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
+    Base.covm(x, Base.mean(x, w, vardim), w, vardim; corrected=depcheck(:cov, corrected))
 
 
 function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)

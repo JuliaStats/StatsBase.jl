@@ -57,7 +57,8 @@ Construct a `Weights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
 The `Weights` type describes a generic weights vector which does not support
-bias correction.
+all operations possible for [`FrequencyWeights`](@ref), [`AnalyticWeights`](@ref)
+and [`ProbabilityWeights`](@ref)"
 """
 Weights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) = Weights{S, eltype(vs), V}(vs, s)
 
@@ -73,11 +74,12 @@ weights(vs::RealArray) = Weights(vec(vs))
 """
     varcorrection(w::Weights, corrected=false)
 
-Returns ``\\frac{1}{\sum w}`` when corrected is false and throws an `ArgumentError`
-when corrected is true.
+Returns ``\\frac{1}{\\sum w}`` when `corrected=false` and throws an `ArgumentError`
+if `corrected=true`.
 """
-function varcorrection(w::Weights, corrected::Bool=false)
-    corrected && throw(ArgumentError("Weights does not support bias correction."))
+@inline function varcorrection(w::Weights, corrected::Bool=false)
+    corrected && throw(ArgumentError("Weights type does not support bias correction: " *
+                                     "use FrequencyWeights, AnalyticWeights or ProbabilityWeights if applicable."))
     1 / w.sum
 end
 
@@ -91,7 +93,8 @@ A precomputed sum may be provided as `wsum`.
 
 Analytic weights describe a non-random relative importance (usually between 0 and 1)
 for each observation. These weights may also be referred to as reliability weights,
-precision weights or inverse variance weights.
+precision weights or inverse variance weights. These are typically used when the observations
+being weighted are aggregate values (e.g., averages) with differing variances.
 """
 AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     AnalyticWeights{S, eltype(vs), V}(vs, s)
@@ -108,7 +111,8 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 """
     varcorrection(w::AnalyticWeights, corrected=false)
 
-``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
+* `corrected=true`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::AnalyticWeights, corrected::Bool=false)
     s = w.sum
@@ -147,7 +151,8 @@ fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 """
     varcorrection(w::FrequencyWeights, corrected=false)
 
-``\\frac{1}{\sum{w} - 1}``
+* `corrected=true`: ``\\frac{1}{\\sum{w} - 1}``
+* `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::FrequencyWeights, corrected::Bool=false)
     s = w.sum
@@ -186,7 +191,8 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 """
     varcorrection(w::ProbabilityWeights, corrected=false)
 
-``\\frac{n}{(n - 1) \sum w}`` where ``n`` equals `count(!iszero, w)`
+* `corrected=true`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
     s = w.sum
@@ -427,8 +433,8 @@ Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int
 Compute the weighted mean of an array `v` with weights `w`.
 """
 function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
-    Base.depwarn("wmean is deprecated, use mean(v, fweights(w)) instead.", :wmean)
-    mean(v, fweights(w))
+    Base.depwarn("wmean is deprecated, use mean(v, weights(w)) instead.", :wmean)
+    mean(v, weights(w))
 end
 
 Base.mean(v::AbstractArray, w::AbstractWeights) = sum(v, w) / sum(w)
@@ -503,9 +509,9 @@ end
     wmedian(v, w)
 
 Compute the weighted median of an array `v` with weights `w`, given as either a
-vector or an `AbstractWeights` object/vector.
+vector or an `AbstractWeights` vector.
 """
-wmedian(v::RealVector, w::RealVector) = median(v, fweights(w))
+wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian{W<:Real}(v::RealVector, w::AbstractWeights{W}) = median(v, w)
 
 ###### Weighted quantile #####
@@ -595,9 +601,9 @@ quantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(
     wquantile(v, w, p)
 
 Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
-or an `AbstractWeights` object/vector.
+or an `AbstractWeights` vector.
 """
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(v, w, [p])[1]
-wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, fweights(w), p)
-wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, fweights(w), [p])[1]
+wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
+wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
