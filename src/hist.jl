@@ -275,13 +275,19 @@ append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::Weight
 # Turn kwargs nbins into a type-stable tuple of integers:
 function _nbins_tuple{N}(vs::NTuple{N,AbstractVector}, nbins)
     template = map(length, vs)
-    result = if isa(nbins, Integer)
-        map(t -> typeof(t)(nbins), template)
-    elseif isa(nbins, NTuple{N, Integer})
-        map((t, x) -> typeof(t)(x), template, nbins)
+
+    @static if VERSION < v"0.6.0-dev.695"
+        result = if isa(nbins, Integer)
+            map(t -> typeof(t)(nbins), template)
+        elseif isa(nbins, NTuple{N, Integer})
+            map((t, x) -> typeof(t)(x), template, nbins)
+        else
+            throw(ArgumentError("nbins must be an Integer or NTuple{N, Integer}"))
+        end
     else
-        throw(ArgumentError("nbins must be an Integer or NTuple{N, Integer}"))
+        result = broadcast((t, x) -> typeof(t)(x), template, nbins)
     end
+
     result::typeof(template)
 end
 
