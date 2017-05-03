@@ -2,55 +2,47 @@
 
 ## var
 """
-    varm(x, wv::AbstractWeights, m, [dim, corrected])
+    varm(x, w::AbstractWeights, m, [dim]; corrected=false)
 
-Return the variance of a real-valued array `x` with a known mean `m`, optionally
-over a dimension `dim`. Observations in `x` or weighted via `wv`.
+Compute the variance of a real-valued array `x` with a known mean `m`, optionally
+over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
 
-In base julia a biased variance (`corrected=false`) is calculated as:
+The uncorrected (when `corrected=false`) sample variance is defined as:
 
-``\\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }``
+```math
+\\frac{1}{\\sum{w}} \\sum{i=1}^n {w_i\\left({x_i - m}\\right)^2 }
+```
+where ``n`` is the length of the input.
 
-An unbiased variance (`corrected=true`) is calculated by replacing
-``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
-(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+The unbiased estimate of the population variance is computed by replacing
+``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights used:
 
-Here we calculate the biased weighted variance (`corrected=false`) as:
-
-``\\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }``
-
-An unbiased weighted variance (`corrected=true`) is dependent on the type of weights used:
-
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
-* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+* AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
 """
 Base.varm(v::RealArray, wv::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     _moment2(v, wv, m; corrected=depcheck(:varm, corrected))
 
 """
-    var(x, wv::AbstractWeights, [dim, corrected]; mean=nothing)
+    var(x, wv::AbstractWeights, [dim]; mean=nothing, corrected=false)
 
-Return the variance of a real-valued array `x` with a known mean `m`, optionally
-over a dimension `dim`. Observations in `x` or weighted via `wv`.
+Compute the variance of a real-valued array `x`, optionally over a dimension `dim`.
+Observations in `x` are weighted using weight vector  `wv`.
 
-In base julia a biased variance (`corrected=false`) is calculated as:
+The uncorrected (when `corrected=false`) sample variance is defined as:
 
-``\\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }``
+```math
+\\frac{1}{\\sum{w}} \\sum{i=1}^n {w_i\\left({x_i - μ}\\right)^2 }
+```
+where ``n`` is the length of the input and ``μ`` is the mean.
 
-An unbiased variance (`corrected=true`) is calculated by replacing
-``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
-(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+The unbiased estimate of the population variance is computed by replacing
+``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights used:
 
-Here we calculate the biased weighted variance (`corrected=false`) as:
-
-``\\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }``
-
-An unbiased weighted variance (`corrected=true`) is dependent on the type of weights used:
-
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
-* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+* AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
 """
 function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing,
                   corrected::DepBool=nothing)
@@ -104,10 +96,10 @@ function Base.varm(A::RealArray, wv::AbstractWeights, M::RealArray, dim::Int;
 
     @static if VERSION < v"0.6.0-dev.1121"
         Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, wv, M, dim;
-            corrected=corrected)
+                   corrected=corrected)
     else
         Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, wv, M,
-            dim; corrected=corrected)
+                   dim; corrected=corrected)
     end
 end
 
@@ -126,55 +118,47 @@ end
 
 ## std
 """
-    stdm(v, wv::AbstractWeights, m, [dim, corrected])
+    stdm(v, wv::AbstractWeights, m, [dim]; corrected=false)
 
-Return the standard deviation of a real-valued array `v` with a known mean `m`,
-optionally over a dimension `dim`. Observations in `x` or weighted via `wv`.
+Compute the standard deviation of a real-valued array `x` with a known mean `m`,
+optionally over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
 
-In base julia a biased standard deviation (`corrected=false`) is calculated as:
+The uncorrected (when `corrected=false`) sample standard deviation is defined as:
 
-``\\sqrt{\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }}``
+```math
+\\sqrt{\\frac{1}{\\sum{w}} \\sum{i=1}^n {w_i\\left({x_i - m}\\right)^2 }}
+```
+where ``n`` is the length of the input.
 
-An unbiased standard deviation (`corrected=true`) is calculated by replacing
-``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
-(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+The unbiased estimate of the population standard deviation is computed by replacing
+``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights used:
 
-Here we calculate the biased weighted standard deviation (`corrected=false`) as:
-
-``\sqrt{\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }}``
-
-An unbiased standard deviation (`corrected=true`) is dependent on the type of weights used:
-
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
-* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+* AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
 """
 Base.stdm(v::RealArray, wv::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     sqrt(varm(v, wv, m, corrected=depcheck(:stdm, corrected)))
 
 """
-    std(v, wv::AbstractWeights, [dim, corrected]; mean=nothing)
+    std(v, wv::AbstractWeights, [dim]; mean=nothing, corrected=false)
 
-Return the standard deviation of a real-valued array `v` with a known mean `m`,
-optionally over a dimension `dim`. Observations in `x` or weighted via `wv`.
+Compute the standard deviation of a real-valued array `x`,
+optionally over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
 
-In base julia a biased standard deviation (`corrected=false`) is calculated as:
+The uncorrected (when `corrected=false`) sample standard deviation is defined as:
 
-``\\sqrt{\frac{1}{N} \sum\limits_{i = 1}^N {\left( {x_i - \bar x} \right)^2 }}``
+```math
+\\sqrt{\\frac{1}{\\sum{w}} \\sum{i=1}^n {w_i\\left({x_i - μ}\\right)^2 }}
+```
+where ``n`` is the length of the input and ``μ`` is the mean.
 
-An unbiased standard deviation (`corrected=true`) is calculated by replacing
-``\\frac{1}{N - 1}`` with ``\\frac{1}{N - 1}``
-(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)).
+The unbiased estimate of the population standard deviation is computed by replacing
+``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights used:
 
-Here we calculate the biased weighted standard deviation (`corrected=false`) as:
-
-``\sqrt{\frac{1}{\sum{w}} \sum\limits_{i = 1}^N {w_i\left( {x_i - \bar x} \right)^2 }}``
-
-An unbiased standard deviation (`corrected=true`) is dependent on the type of weights used:
-
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
-* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+* AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
 """
 Base.std(v::RealArray, wv::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, wv; mean=mean, corrected=depcheck(:std, corrected)))
@@ -192,12 +176,12 @@ Base.std(v::RealArray, wv::AbstractWeights, dim::Int; mean=nothing,
 
 ##### Fused statistics
 """
-    mean_and_var(x, [wv::AbstractWeights, dim, corrected]) -> (mean, var)
+    mean_and_var(x, [wv::AbstractWeights], [dim]; corrected=false) -> (mean, var)
 
 Return the mean and variance of a real-valued array `x`, optionally over a dimension
 `dim`, as a tuple. Observations in `x` can be weighted via `wv`. Finally, bias correction
 can be applied to the variance calculation if `corrected=true`.
-See `var` documentation for more details.
+See [`var`](@ref) documentation for more details.
 """
 function mean_and_var(A::RealArray; corrected::Bool=true)
     m = mean(A)
@@ -206,13 +190,13 @@ function mean_and_var(A::RealArray; corrected::Bool=true)
 end
 
 """
-    mean_and_std(x, [wv::AbstractWeights, dim, corrected]) -> (mean, std)
+    mean_and_std(x, [wv::AbstractWeights], [dim]; corrected=false) -> (mean, std)
 
 Return the mean and standard deviation of a real-valued array `x`, optionally
 over a dimension `dim`, as a tuple. A weighting vector `wv` can be specified
 to weight the estimates. Finally, bias correction can be applied to the
 standard deviation calculation if `corrected=true`.
-See `std` documentation for more details.
+See [`std`](@ref) documentation for more details.
 """
 function mean_and_std(A::RealArray; corrected::Bool=true)
     m = mean(A)
@@ -289,7 +273,7 @@ function _moment3(v::RealArray, m::Real)
         @inbounds z = v[i] - m
         s += z * z * z
     end
-    varcorrection(n, false) * s
+    s / n
 end
 
 function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
@@ -300,7 +284,7 @@ function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * w[i]
     end
-    varcorrection(wv, false) * s
+    s / sum(wv)
 end
 
 function _moment4(v::RealArray, m::Real; corrected=false)
@@ -310,7 +294,7 @@ function _moment4(v::RealArray, m::Real; corrected=false)
         @inbounds z = v[i] - m
         s += abs2(z * z)
     end
-    varcorrection(n, false) * s
+    s / n
 end
 
 function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
@@ -321,7 +305,7 @@ function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * w[i]
     end
-    varcorrection(wv, false) * s
+    s / sum(wv)
 end
 
 function _momentk(v::RealArray, k::Int, m::Real)
@@ -331,7 +315,7 @@ function _momentk(v::RealArray, k::Int, m::Real)
         @inbounds z = v[i] - m
         s += (z ^ k)
     end
-    varcorrection(n, false) * s
+    s / n
 end
 
 function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
@@ -342,7 +326,7 @@ function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * w[i]
     end
-    varcorrection(wv, false) * s
+    s / sum(wv)
 end
 
 

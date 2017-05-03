@@ -18,11 +18,11 @@ module StatsBase
 
     ## weights
     AbstractWeights,    # abstract type to represent any weight vector
-    WeightVec,          # deprecated type to represent any weight vector
+    Weights,            # to represent a generic weight vector
     AnalyticWeights,    # to represent an analytic/precision/reliability weight vector
     FrequencyWeights,   # to representing a frequency/case/repeat weight vector
     ProbabilityWeights, # to representing a probability/sampling weight vector
-    weights,            # deprecated function for constructing a WeightVec vector
+    weights,            # construct a generic Weights vector
     aweights,           # construct an AnalyticWeights vector
     fweights,           # construct a FrequencyWeights vector
     pweights,           # construct a ProbabilityWeights vector

@@ -49,29 +49,28 @@ function scattermat end
 
 
 """
-    cov(X, wv::AbstractWeights, [vardim, corrected])
+    cov(X, wv::AbstractWeights; vardim=1, corrected=false)
 
 Compute the weighted covariance matrix. Similar to `var` and `std` the biased covariance
 matrix (`corrected=false`) can be computed by multiplying `scattermat(X, wv)` by
-``\frac{1}{\sum{w}}`` to normalize. However, the unbiased covariance matrix
+``\\frac{1}{\\sum{w}}`` to normalize. However, the unbiased covariance matrix
 (`corrected=true`) is dependent on the type of weights used:
 
-* AnalyticWeights: ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
-* FrequencyWeights: ``\\frac{1}{\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+* AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where `n = length(w)`
 """
 cov
 
 
 """
-    mean_and_cov(x, [wv::AbstractWeights, vardim, corrected]) -> (mean, cov)
+    mean_and_cov(x, [wv::AbstractWeights]; vardim=1, corrected=false) -> (mean, cov)
 
 Return the mean and covariance matrix as a tuple. A weighting
 vector `wv` can be specified. `vardim` that designates whether
 the variables are columns in the matrix (`1`) or rows (`2`).
-Finally, bias correction can be applied to the covariance calculation if
-`corrected=true`.
-See `cov` documentation for more details.
+Finally, bias correction will be applied to the covariance calculation if
+`corrected=true`. See [`cov`](@ref) documentation for more details.
 """
 function mean_and_cov end
 

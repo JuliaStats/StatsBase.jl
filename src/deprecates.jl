@@ -1,5 +1,6 @@
 import Base.@deprecate
 import Base.depwarn
+import Base.@deprecate_binding
 
 import Base.varm, Base.stdm
 @deprecate varm(v::RealArray, m::Real, wv::AbstractWeights) varm(v, wv, m)
@@ -44,38 +45,4 @@ findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(size(b)), a, b)
 @deprecate df(obj::StatisticalModel) dof(obj)
 @deprecate df_residual(obj::StatisticalModel) dof_residual(obj)
 
-@weights WeightVec
-
-"""
-    WeightVec(vs, wsum=sum(vs))
-
-Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
-"""
-function WeightVec{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs))
-    new_types = "AnalyticWeights, FrequencyWeights or ProbabilityWeights"
-    Base.depwarn("WeightVec is deprecated, use $new_types instead", :WeightVec)
-    WeightVec{S, eltype(vs), V}(vs, s)
-end
-
-"""
-    weights(vs)
-
-Construct a `WeightVec` from a given array.
-"""
-function weights(vs::RealArray)
-    Base.depwarn("weights is deprecated, use aweights, fweights or pweights instead", :weights)
-    v = vec(vs)
-    s = sum(v)
-    WeightVec{typeof(s), eltype(v), typeof(v)}(v, s)
-end
-
-"""
-    varcorrection(w::WeightVec, corrected=false)
-
-Returns ``\\frac{1}{\sum w}`` when corrected is false and throws an `ArgumentError`
-when correction is true.
-"""
-function varcorrection(w::WeightVec, corrected::Bool=false)
-    corrected && throw(ArgumentError("WeightVec does not support bias correction."))
-    1 / w.sum
-end
+@deprecate_binding WeightVec Weights

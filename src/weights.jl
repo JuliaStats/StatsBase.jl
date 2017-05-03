@@ -44,10 +44,42 @@ Base.size(wv::AbstractWeights) = size(wv.values)
 Compute a bias correction factor for calculating `var`, `std` and `cov` with
 `n` observations. Returns ``\\frac{1}{n - 1}`` when `corrected=true`
 (i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
-otherwise returns ``\\frac{1}{n}`` (i.e no correction).
+otherwise returns ``\\frac{1}{n}`` (i.e. no correction).
 """
-varcorrection(n::Integer, corrected::Bool=false) = 1 / (n - Int(corrected))
+@inline varcorrection(n::Integer, corrected::Bool=false) = 1 / (n - Int(corrected))
 
+@weights Weights
+
+"""
+    Weights(vs, wsum=sum(vs))
+
+Construct a `Weights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
+
+The `Weights` type describes a generic weights vector which does not support
+bias correction.
+"""
+Weights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) = Weights{S, eltype(vs), V}(vs, s)
+
+"""
+    weights(vs)
+
+Construct a `Weights` vector from array `vs`.
+See the documentation for [`Weights`](@ref) for more details.
+"""
+weights(vs::RealVector) = Weights(vs)
+weights(vs::RealArray) = Weights(vec(vs))
+
+"""
+    varcorrection(w::Weights, corrected=false)
+
+Returns ``\\frac{1}{\sum w}`` when corrected is false and throws an `ArgumentError`
+when corrected is true.
+"""
+function varcorrection(w::Weights, corrected::Bool=false)
+    corrected && throw(ArgumentError("Weights does not support bias correction."))
+    1 / w.sum
+end
 
 @weights AnalyticWeights
 
@@ -68,7 +100,7 @@ AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     aweights(vs)
 
 Construct an `AnalyticWeights` vector from array `vs`.
-See the documentation for `AnalyticWeights` for more details.
+See the documentation for [`AnalyticWeights`](@ref) for more details.
 """
 aweights(vs::RealVector) = AnalyticWeights(vs)
 aweights(vs::RealArray) = AnalyticWeights(vec(vs))
@@ -78,11 +110,11 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 
 ``\\frac{1}{\sum w - \sum {w^2} / \sum w}``
 """
-function varcorrection(w::AnalyticWeights, corrected::Bool=false)
+@inline function varcorrection(w::AnalyticWeights, corrected::Bool=false)
     s = w.sum
 
     if corrected
-        sum_sn = zero(eltype(w)) / one(typeof(s)) ^ 2  # to ensure type stability
+        sum_sn = zero((zero(eltype(w)) / one(typeof(s))) ^ 2)  # to ensure type stability
         @inbounds for x in w
             sum_sn += (x / s) ^ 2
         end
@@ -102,7 +134,7 @@ Construct a `FrequencyWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
 Frequency weights describe the number of times (or frequency) each observation
-was observed. These weight may also be referred to as case weights or repeat weights.
+was observed. These weights may also be referred to as case weights or repeat weights.
 """
 FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     FrequencyWeights{S, eltype(vs), V}(vs, s)
@@ -111,7 +143,7 @@ FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     fweights(vs)
 
 Construct a `FrequencyWeights` vector from a given array.
-See the documentation for `FrequencyWeights` for more details.
+See the documentation for [`FrequencyWeights`](@ref) for more details.
 """
 fweights(vs::RealVector) = FrequencyWeights(vs)
 fweights(vs::RealArray) = FrequencyWeights(vec(vs))
@@ -121,7 +153,7 @@ fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 
 ``\\frac{1}{\sum{w} - 1}``
 """
-function varcorrection(w::FrequencyWeights, corrected::Bool=false)
+@inline function varcorrection(w::FrequencyWeights, corrected::Bool=false)
     s = w.sum
 
     if corrected
@@ -150,7 +182,7 @@ ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
     pweights(vs)
 
 Construct a `ProbabilityWeights` vector from a given array.
-See the documentation for `ProbabilityWeights` for more details.
+See the documentation for [`ProbabilityWeights`](@ref) for more details.
 """
 pweights(vs::RealVector) = ProbabilityWeights(vs)
 pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
@@ -160,7 +192,7 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 
 ``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
 """
-function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
+@inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
     s = w.sum
 
     if corrected
@@ -492,7 +524,7 @@ end
     wmedian(v, w)
 
 Compute the weighted median of an array `v` with weights `w`, given as either a
-vector or `AbstractWeights`.
+vector or an `AbstractWeights` object/vector.
 """
 wmedian(v::RealVector, w::RealVector) = median(v, fweights(w))
 wmedian{W<:Real}(v::RealVector, w::AbstractWeights{W}) = median(v, w)
@@ -584,7 +616,7 @@ quantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(
     wquantile(v, w, p)
 
 Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
-or a `AbstractWeights`.
+or an `AbstractWeights` object/vector.
 """
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::RealVector) = quantile(v, w, p)
 wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(v, w, [p])[1]

@@ -30,13 +30,13 @@ fptype(::Type{Complex128}) = Complex128
 # A convenient typealias for deprecating default corrected Bool
 @compat const DepBool = Union{Bool, Void}
 
-const CORRECTED_DEP_MSG = string("Will default to `corrected=true` in the future.",
-                                 "Use `corrected=false` for previous behaviour.")
+const CORRECTED_DEP_MSG = string("will default to corrected=true in the future. ",
+                                 "Use corrected=false for previous behaviour.")
 
 function depcheck(fname::Symbol, b::DepBool; msg::AbstractString=CORRECTED_DEP_MSG,
                   default::Bool=false)
     if b == nothing
-        Base.depwarn(string(fname, ": ", msg), fname)
+        Base.depwarn(string(fname, " ", msg), fname)
         default
     else
         b
