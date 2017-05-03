@@ -58,7 +58,7 @@ matrix (`corrected=false`) can be computed by multiplying `scattermat(X, wv)` by
 
 * AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where `n = length(w)`
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 cov
 

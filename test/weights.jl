@@ -37,12 +37,6 @@ weight_funcs = (aweights, fweights, pweights)
         @test sum(ba, wv) === 4.0
         @test sum(sa, wv) === 7.0
     end
-
-    @testset "eweights" begin
-        λ = 0.2
-        wv = eweights(4, λ)
-        @test round(values(wv), 4) == [0.2, 0.25, 0.3125, 0.3906]
-    end
 end
 
 @testset "Sum" begin
@@ -163,31 +157,31 @@ end
 @testset "Sum and mean syntax" begin
     a = reshape(1.0:27.0, 3, 3, 3)
 
-    @testset "Sum" begin
-        @test sum([1.0, 2.0, 3.0], fweights([1.0, 0.5, 0.5])) ≈ 3.5
-        @test sum(1:3, fweights([1.0, 1.0, 0.5]))             ≈ 4.5
+    @testset "Sum $f" for f in weight_funcs
+        @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
+        @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
 
         for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-            @test sum(a, fweights(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
-            @test sum(a, fweights(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
-            @test sum(a, fweights(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
+            @test sum(a, f(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
+            @test sum(a, f(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
+            @test sum(a, f(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
         end
     end
 
-    @testset "Mean" begin
-        @test mean([1:3;], fweights([1.0, 1.0, 0.5])) ≈ 1.8
-        @test mean(1:3, fweights([1.0, 1.0, 0.5]))    ≈ 1.8
+    @testset "Mean $f" for f in weight_funcs
+        @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
+        @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
 
         for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-            @test mean(a, fweights(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
-            @test mean(a, fweights(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
-            @test mean(a, fweights(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
+            @test mean(a, f(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
+            @test mean(a, f(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
+            @test mean(a, f(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
             @test_throws ErrorException mean(a, fweights(wt), 4)
         end
     end
 end
 
-@testset "Median" begin
+@testset "Median $f" for f in weight_funcs
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -244,38 +238,38 @@ end
     num_tests = length(data)
     for i = 1:num_tests
         @test wmedian(data[i], wt[i]) == median_answers[i]
-        @test wmedian(data[i], fweights(wt[i])) == median_answers[i]
-        @test median(data[i], fweights(wt[i])) == median_answers[i]
+        @test wmedian(data[i], f(wt[i])) == median_answers[i]
+        @test median(data[i], f(wt[i])) == median_answers[i]
         for j = 1:100
             # Make sure the weighted median does not change if the data
             # and weights are reordered.
             reorder = sortperm(rand(length(data[i])))
-            @test median(data[i][reorder], fweights(wt[i][reorder])) == median_answers[i]
+            @test median(data[i][reorder], f(wt[i][reorder])) == median_answers[i]
         end
     end
     data = [4, 3, 2, 1]
     wt = [0, 0, 0, 0]
     @test_throws MethodError wmedian(data[1])
-    @test_throws ErrorException median(data, fweights(wt))
+    @test_throws ErrorException median(data, f(wt))
     @test_throws ErrorException wmedian(data, wt)
-    @test_throws ErrorException median((Float64)[], fweights((Float64)[]))
+    @test_throws ErrorException median((Float64)[], f((Float64)[]))
     wt = [1, 2, 3, 4, 5]
-    @test_throws ErrorException median(data, fweights(wt))
-    @test_throws MethodError median([4 3 2 1 0], fweights(wt))
-    @test_throws MethodError median([[1 2];[4 5];[7 8];[10 11];[13 14]], fweights(wt))
+    @test_throws ErrorException median(data, f(wt))
+    @test_throws MethodError median([4 3 2 1 0], f(wt))
+    @test_throws MethodError median([[1 2];[4 5];[7 8];[10 11];[13 14]], f(wt))
     data = [1, 3, 2, NaN, 2]
     @test isnan(median(data, fweights(wt)))
     wt = [1, 2, NaN, 4, 5]
-    @test_throws ErrorException median(data, fweights(wt))
+    @test_throws ErrorException median(data, f(wt))
     data = [1, 3, 2, 1, 2]
-    @test_throws ErrorException median(data, fweights(wt))
+    @test_throws ErrorException median(data, f(wt))
     wt = [-1, -1, -1, -1, -1]
-    @test_throws ErrorException median(data, fweights(wt))
+    @test_throws ErrorException median(data, f(wt))
     wt = [-1, -1, -1, 0, 0]
-    @test_throws ErrorException median(data, fweights(wt))
+    @test_throws ErrorException median(data, f(wt))
 end
 
-@testset "Quantile" begin
+@testset "Quantile $f" for f in weight_funcs
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -298,25 +292,25 @@ end
         [-10, 1, 1, -10, -10],
     )
     wt = (
-        fweights([1, 1/3, 1/3, 1/3, 1]),
-        fweights([1, 1, 1, 1, 1]),
-        fweights([1, 1/3, 1/3, 1/3, 1, 1]),
-        fweights([1/3, 1/3, 1/3, 1, 1, 1]),
-        fweights([30, 191, 9, 0]),
-        fweights([10, 1, 1, 1, 9]),
-        fweights([10, 1, 1, 1, 900]),
-        fweights([1, 3, 5, 4, 2]),
-        fweights([2, 2, 5, 1, 2, 2, 1, 6]),
-        fweights([0.1, 0.1, 0.8]),
-        fweights([5, 5, 4, 1]),
-        fweights([30, 56, 144, 24, 55, 43, 67]),
-        fweights([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
-        fweights([12]),
-        fweights([7, 1, 1, 1, 6]),
-        fweights([1, 0, 0, 0, 2]),
-        fweights([1, 2, 3, 4, 5]),
-        fweights([0.1, 0.2, 0.3, 0.2, 0.1]),
-        fweights([1, 1, 1, 1, 1]),
+        f([1, 1/3, 1/3, 1/3, 1]),
+        f([1, 1, 1, 1, 1]),
+        f([1, 1/3, 1/3, 1/3, 1, 1]),
+        f([1/3, 1/3, 1/3, 1, 1, 1]),
+        f([30, 191, 9, 0]),
+        f([10, 1, 1, 1, 9]),
+        f([10, 1, 1, 1, 900]),
+        f([1, 3, 5, 4, 2]),
+        f([2, 2, 5, 1, 2, 2, 1, 6]),
+        f([0.1, 0.1, 0.8]),
+        f([5, 5, 4, 1]),
+        f([30, 56, 144, 24, 55, 43, 67]),
+        f([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
+        f([12]),
+        f([7, 1, 1, 1, 6]),
+        f([1, 0, 0, 0, 2]),
+        f([1, 2, 3, 4, 5]),
+        f([0.1, 0.2, 0.3, 0.2, 0.1]),
+        f([1, 1, 1, 1, 1]),
     )
     quantile_answers = (
         [1.0,3.6000000000000005,6.181818181818182,8.2,10.0],
@@ -352,15 +346,15 @@ end
         for j = 1:10
             # order of w does not matter
             reorder = sortperm(rand(length(data[i])))
-            @test quantile(data[i][reorder], fweights(wt[i][reorder]), p) ≈ quantile_answers[i]
+            @test quantile(data[i][reorder], f(wt[i][reorder]), p) ≈ quantile_answers[i]
         end
     end
     # w = 1 corresponds to base quantile
     for i = 1:length(data)
-        @test quantile(data[i], fweights(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p)
+        @test quantile(data[i], f(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p)
         for j = 1:10
             prandom = rand(4)
-            @test quantile(data[i], fweights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom)
+            @test quantile(data[i], f(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom)
         end
     end
 
@@ -368,9 +362,9 @@ end
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.181818181818182
-    @test quantile(data[1], fweights(w), 0.5)    ≈  answer
-    @test wquantile(data[1], fweights(w), [0.5]) ≈ [answer]
-    @test wquantile(data[1], fweights(w), 0.5)   ≈  answer
+    @test quantile(data[1], f(w), 0.5)    ≈  answer
+    @test wquantile(data[1], f(w), [0.5]) ≈ [answer]
+    @test wquantile(data[1], f(w), 0.5)   ≈  answer
     @test wquantile(data[1], w, [0.5])          ≈ [answer]
     @test wquantile(data[1], w, 0.5)            ≈  answer
 end

@@ -114,11 +114,7 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
     s = w.sum
 
     if corrected
-        sum_sn = zero((zero(eltype(w)) / one(typeof(s))) ^ 2)  # to ensure type stability
-        @inbounds for x in w
-            sum_sn += (x / s) ^ 2
-        end
-
+        sum_sn = sum(x -> (x / s) ^ 2, w)
         1 / (s * (1 - sum_sn))
     else
         1 / s
@@ -190,34 +186,17 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 """
     varcorrection(w::ProbabilityWeights, corrected=false)
 
-``\\frac{n}{(n - 1) \sum w}`` where `n = length(w)`
+``\\frac{n}{(n - 1) \sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 @inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
     s = w.sum
 
     if corrected
-        n = length(w)
+        n = count(!iszero, w)
         n / (s * (n - 1))
     else
         1 / s
     end
-end
-
-"""
-    eweights(n, λ)
-
-Construct an `AnalyticWeights` vector with length `n`,
-where each element in position ``i`` is set to ``λ * (1 - λ)^(1 - i)``.
-
-``λ`` is a smoothing factor or rate parameter between 0 and 1.
-As this value approaches 0 the resulting weights will be almost equal,
-while values closer to 1 will put higher weight on the end elements of the vector.
-"""
-function eweights(n::Integer, λ::Real)
-    n > 0 || throw(ArgumentError("cannot construct weights of length < 1"))
-    0 <= λ <= 1 || throw(ArgumentError("smoothing factor must be between 0 and 1"))
-    w0 = map(i -> λ * (1 - λ)^(1 - i), 1:n)
-    aweights(w0)
 end
 
 ##### Weighted sum #####

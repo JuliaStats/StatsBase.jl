@@ -19,7 +19,7 @@ The unbiased estimate of the population variance is computed by replacing
 
 * AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 Base.varm(v::RealArray, wv::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     _moment2(v, wv, m; corrected=depcheck(:varm, corrected))
@@ -42,7 +42,7 @@ The unbiased estimate of the population variance is computed by replacing
 
 * AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 function Base.var(v::RealArray, wv::AbstractWeights; mean=nothing,
                   corrected::DepBool=nothing)
@@ -135,7 +135,7 @@ The unbiased estimate of the population standard deviation is computed by replac
 
 * AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 Base.stdm(v::RealArray, wv::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     sqrt(varm(v, wv, m, corrected=depcheck(:stdm, corrected)))
@@ -158,7 +158,7 @@ The unbiased estimate of the population standard deviation is computed by replac
 
 * AnalyticWeights: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * FrequencyWeights: ``\\frac{1}{\\sum{w} - 1}``
-* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}``
+* ProbabilityWeights: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 """
 Base.std(v::RealArray, wv::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, wv; mean=mean, corrected=depcheck(:std, corrected)))
