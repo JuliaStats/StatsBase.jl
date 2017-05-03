@@ -40,20 +40,20 @@ Moments
 
   Compute the (standardized) `skewness <http://en.wikipedia.org/wiki/Skewness>`_ of ``x``.
 
-  One can optionally supply a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
+  One can optionally supply a weight vector of type ``AbstractWeights`` (see :ref:`weightvec`).
 
 .. function:: kurtosis(x[, wv])
 
   Compute the (excessive) `kurtosis <http://en.wikipedia.org/wiki/Kurtosis>`_ of ``x``.
 
-  One can optionally supply a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
+  One can optionally supply a weight vector of type ``AbstractWeights`` (see :ref:`weightvec`).
 
 .. function:: moment(x, k[, m][, wv])
 
   Compute the ``k``-th order central moment of the values in `x`. It is the sample mean of
   ``(x - mean(x)).^k``.
 
-  One can optionally supply the center ``m``, and/or a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
+  One can optionally supply the center ``m``, and/or a weight vector of type ``AbstractWeights`` (see :ref:`weightvec`).
 
 
 Measurements of Variation
@@ -160,7 +160,7 @@ Quantile and Friends
 
 .. function:: median(x, w)
 
-  Compute the weighted median of ``x``, using weights given by a weight vector ``w`` (of type ``WeightVec``).  The weight and data vectors must have the same length.  The weighted median :math:`x_k` is the element of ``x`` that satisfies :math:`\sum_{x_i < x_k} w_i \le \frac{1}{2} \sum_{j} w_j` and :math:`\sum_{x_i > x_k} w_i \le \frac{1}{2} \sum_{j} w_j`.  If a weight has value zero, then its associated data point is ignored.  If none of the weights are positive, an error is thrown.  ``NaN`` is returned if ``x`` contains any ``NaN`` values.  An error is raised if ``w`` contains any ``NaN`` values.
+  Compute the weighted median of ``x``, using weights given by a weight vector ``w`` (of type ``AbstractWeights``).  The weight and data vectors must have the same length.  The weighted median :math:`x_k` is the element of ``x`` that satisfies :math:`\sum_{x_i < x_k} w_i \le \frac{1}{2} \sum_{j} w_j` and :math:`\sum_{x_i > x_k} w_i \le \frac{1}{2} \sum_{j} w_j`.  If a weight has value zero, then its associated data point is ignored.  If none of the weights are positive, an error is thrown.  ``NaN`` is returned if ``x`` contains any ``NaN`` values.  An error is raised if ``w`` contains any ``NaN`` values.
 
   **Examples:**
 
@@ -171,8 +171,8 @@ Quantile and Friends
 
 .. function:: quantile(x, w, p)
 
-  Compute the weighted quantiles of a vector ``x`` at a specified set of probability values ``p``, using weights given by a weight vector ``w`` (of type ``WeightVec``).  Weights must not be negative. The weights and data vectors must have the same length. The quantile for :math:`p` is defined as follows.  Denoting :math:`S_k = (k-1)w_k + (n-1) \sum_{i<k}w_i`, define :math:`x_{k+1}` the smallest element of ``x`` such that :math:`S_{k+1}/S_{n}` is strictly superior to :math:`p`. The function returns :math:`(1-\gamma) x_k + \gamma x_{k+1}` with  :math:`\gamma = (pS_n- S_k)/(S_{k+1}-S_k)`. This corresponds to  R-7, Excel, SciPy-(1,1), Maple-6 when ``w`` is one (see https://en.wikipedia.org/wiki/Quantile).
-  
+  Compute the weighted quantiles of a vector ``x`` at a specified set of probability values ``p``, using weights given by a weight vector ``w`` (of type ``AbstractWeights``).  Weights must not be negative. The weights and data vectors must have the same length. The quantile for :math:`p` is defined as follows.  Denoting :math:`S_k = (k-1)w_k + (n-1) \sum_{i<k}w_i`, define :math:`x_{k+1}` the smallest element of ``x`` such that :math:`S_{k+1}/S_{n}` is strictly superior to :math:`p`. The function returns :math:`(1-\gamma) x_k + \gamma x_{k+1}` with  :math:`\gamma = (pS_n- S_k)/(S_{k+1}-S_k)`. This corresponds to  R-7, Excel, SciPy-(1,1), Maple-6 when ``w`` is one (see https://en.wikipedia.org/wiki/Quantile).
+
 Mode and Modes
 ---------------
 

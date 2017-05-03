@@ -32,7 +32,7 @@ The package provides functions to compute means of different kinds.
 
 .. function:: mean(x, w)
 
-  The ``mean`` function is also extended to accept a weight vector of type ``WeightVec`` (see :ref:`weightvec`) to compute weighted mean.
+  The ``mean`` function is also extended to accept a weight vector of type ``AbstractWeights`` (see :ref:`weightvec`) to compute weighted mean.
 
   **Examples:**
 
@@ -43,7 +43,7 @@ The package provides functions to compute means of different kinds.
 
 .. function:: mean(x, w, dim)
 
-  Compute weighted means of ``x`` along a certain dimension (specified by an integer ``dim``). The weights are given by a weight vector ``w`` (of type ``WeightVec``).
+  Compute weighted means of ``x`` along a certain dimension (specified by an integer ``dim``). The weights are given by a weight vector ``w`` (of type ``AbstractWeights``).
 
 .. function:: mean!(dst, x, w, dim)
 

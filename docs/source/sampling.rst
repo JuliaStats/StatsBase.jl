@@ -9,12 +9,11 @@ The package provides functions for sampling from a given population (with or wit
 .. function:: sample([rng], a)
 
     Randomly draw an element from an array ``a``.
-
     Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
-.. function:: sample([rng], a, n[; replace=true, ordered=false])  
+.. function:: sample([rng], a, n[; replace=true, ordered=false])
 
-    Randomly draw ``n`` elements from ``a``. 
+    Randomly draw ``n`` elements from ``a``.
 
     Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
@@ -26,14 +25,13 @@ The package provides functions for sampling from a given population (with or wit
 .. function:: sample!([rng], a, x[; replace=true, ordered=false])
 
     Draw ``length(x)`` elements from ``a`` and write them to a pre-allocated array ``x``.
-
     Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
-.. function:: sample([rng], wv) 
+.. function:: sample([rng], wv)
 
-    Draw an integer in ``1:length(wv)`` with probabilities proportional to the weights given in ``wv``. 
+    Draw an integer in ``1:length(wv)`` with probabilities proportional to the weights given in ``wv``.
 
-    Here, ``wv`` should be a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
+    Here, ``wv`` should be a weight vector of type ``AbstractWeights`` (see :ref:`weightvec`).
 
     Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
@@ -52,7 +50,7 @@ The package provides functions for sampling from a given population (with or wit
     **Keyword arguments**
 
     - ``replace``: indicates whether to have replacement (default = ``true``).
-    - ``ordered``: indicates whether to arrange the samples in ascending order (default = ``false``).    
+    - ``ordered``: indicates whether to arrange the samples in ascending order (default = ``false``).
 
 .. function:: sample!([rng], a, wv, x[; replace=true, ordered=false])
 
@@ -74,7 +72,7 @@ Here are a list of algorithms implemented in the package. The functions below ar
 
 - ``a``: source array representing the population
 - ``x``: the destination array
-- ``wv``: the weight vector (of type ``WeightVec``), for weighted sampling
+- ``wv``: the weight vector (of type ``AbstractWeights``), for weighted sampling
 - ``n``: the length of ``a``
 - ``k``: the length of ``x``. For sampling without replacement, ``k`` must not exceed ``n``.
 - ``rng``: optional random number generator (defaults to ``Base.GLOBAL_RNG``)
@@ -108,7 +106,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
 .. function:: fisher_yates_sample!([rng], a, x)
 
-    *Fisher-Yates shuffling* (with early termination). 
+    *Fisher-Yates shuffling* (with early termination).
 
     Pseudo-code ::
 
@@ -118,15 +116,15 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
             swap inds[i] with a random one in inds[i:n]
             set x[i] = a[inds[i]]
         end
-    
+
 
     This algorithm consumes ``k`` random numbers. It uses an integer array of length ``n`` internally to maintain the shuffled indices. It is considerably faster than Knuth's algorithm especially when ``n`` is greater than ``k``.
 
 .. function:: self_avoid_sample!([rng], a, x)
 
-    Use a set to maintain the index that has been sampled. Each time draw a new index, if the index has already been sampled, redraw until it draws an unsampled one. 
+    Use a set to maintain the index that has been sampled. Each time draw a new index, if the index has already been sampled, redraw until it draws an unsampled one.
 
-    This algorithm consumes about (or slightly more than) ``k`` random numbers, and requires ``O(k)`` memory to store the set of sampled indices. Very fast when ``n >> k``. 
+    This algorithm consumes about (or slightly more than) ``k`` random numbers, and requires ``O(k)`` memory to store the set of sampled indices. Very fast when ``n >> k``.
 
     However, if ``k`` is large and approaches ``n``, the rejection rate would increase drastically, resulting in poorer performance.
 
@@ -153,7 +151,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     *Direct sampling.*
 
-    Draw each sample by scanning the weight vector. 
+    Draw each sample by scanning the weight vector.
 
     This algorithm: (1) consumes ``k`` random numbers; (2) has time complexity ``O(n k)``, as scanning the weight vector each time takes ``O(n)``; and (3) requires no additional memory space.
 
@@ -173,5 +171,4 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     It makes a copy of the weight vector at initialization, and sets the weight to zero when the corresponding sample is picked.
 
-    This algorithm consumes ``O(k)`` random numbers, and has overall time complexity ``O(n k)``. 
-
+    This algorithm consumes ``O(k)`` random numbers, and has overall time complexity ``O(n k)``.

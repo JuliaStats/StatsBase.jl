@@ -8,7 +8,7 @@ Counting over an Integer Range
 
 .. function:: counts(x, a:b[, wv])
 
-    Count the number of times (or total weights if a weight vector ``wv`` is given) values in ``a:b`` appear in array ``x``. Here, the optional argument ``wv`` should be a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
+    Count the number of times (or total weights if a weight vector ``wv`` is given) values in ``a:b`` appear in array ``x``. Here, the optional argument ``wv`` should be a weight vector of type ``AbstractWeights`` (see :ref:`weightvec`).
 
     This function returns a vector ``r`` of length ``n``, with ``n = length(a:b) = b-a+1``. In particular, we have
 

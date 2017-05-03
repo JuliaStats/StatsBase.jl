@@ -22,14 +22,14 @@ This package implements functions for computing scatter matrix, as well as weigh
 
 .. function:: scatter(X, wv[; vardim=..., mean=...])
 
-    Weighted scatter matrix. The weights are given by a weight vector ``wv`` of type ``WeightVec`` (see :ref:`weightvec`).
+    Weighted scatter matrix. The weights are given by a weight vector ``wv`` of type ``AbstractWeights`` (see :ref:`weightvec`).
 
-.. function:: cov(X, wv[; vardim=..., mean=...])
+.. function:: cov(X, wv[; vardim=..., mean=..., corrected=...])
 
-    Weighted covariance matrix. 
+    Weighted covariance matrix.
 
-    **Note:** By default, the covariance is normalized by the sum of weights, that is, ``cov(X, wv)`` is equal to ``scatter(X, wv) / sum(wv)``.
+    **Note:** By default, the covariance is normalized by the sum of weights, that is, ``cov(X, wv)`` is equal to ``scatter(X, wv) / sum(wv)``. However, if ``corrected`` is set to ``true`` then the appropriate bias correction is used for that `wv`.
 
-.. function:: mean_and_cov(x[, wv][; vardim=...])
+.. function:: mean_and_cov(x[, wv][; vardim=..., corrected=...])
 
-  Jointly compute the mean and covariance of ``x``. 
+  Jointly compute the mean and covariance of ``x``.
