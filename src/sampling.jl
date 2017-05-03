@@ -133,7 +133,8 @@ function fisher_yates_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArr
     end
     return x
 end
-fisher_yates_sample!(a::AbstractArray, x::AbstractArray) = fisher_yates_sample!(Base.GLOBAL_RNG, a, x)
+fisher_yates_sample!(a::AbstractArray, x::AbstractArray) =
+    fisher_yates_sample!(Base.GLOBAL_RNG, a, x)
 
 # Self-avoid sampling
 #
@@ -167,7 +168,8 @@ function self_avoid_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray
     end
     return x
 end
-self_avoid_sample!(a::AbstractArray, x::AbstractArray) = self_avoid_sample!(Base.GLOBAL_RNG, a, x)
+self_avoid_sample!(a::AbstractArray, x::AbstractArray) =
+    self_avoid_sample!(Base.GLOBAL_RNG, a, x)
 
 # Random subsequence sampling
 #
@@ -379,7 +381,8 @@ sample(wv::WeightVec) = sample(Base.GLOBAL_RNG, wv)
 sample(rng::AbstractRNG, a::AbstractArray, wv::WeightVec) = a[sample(rng, wv)]
 sample(a::AbstractArray, wv::WeightVec) = sample(Base.GLOBAL_RNG, a, wv)
 
-function direct_sample!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function direct_sample!(rng::AbstractRNG, a::AbstractArray,
+                        wv::WeightVec, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     for i = 1:length(x)
@@ -469,7 +472,8 @@ end
 alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
     alias_sample!(Base.GLOBAL_RNG, a, wv, x)
 
-function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
+                              wv::WeightVec, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
@@ -504,9 +508,11 @@ naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
 #     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
-function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
+                                     wv::WeightVec, x::AbstractArray)
     n = length(a)
-    length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
+    length(wv) == n || throw(DimensionMismatch(
+	    "a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
 
     # calculate keys for all items
@@ -534,9 +540,11 @@ efraimidis_a_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
 #     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
-function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
+                                        wv::WeightVec, x::AbstractArray)
     n = length(a)
-    length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
+    length(wv) == n || throw(DimensionMismatch(
+        "a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
     k > 0 || return x
 
@@ -594,9 +602,11 @@ efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray
 #     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
-function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
+                                         wv::WeightVec, x::AbstractArray)
     n = length(a)
-    length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
+    length(wv) == n || throw(DimensionMismatch(
+        "a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
     k > 0 || return x
 
@@ -676,18 +686,21 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractA
     end
     return x
 end
-sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray) = sample!(Base.GLOBAL_RNG, a, wv, x)
+sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+    sample!(Base.GLOBAL_RNG, a, wv, x)
 
 sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::WeightVec, n::Integer;
           replace::Bool=true, ordered::Bool=false) =
     sample!(rng, a, wv, Vector{T}(n); replace=replace, ordered=ordered)
-sample(a::AbstractArray, wv::WeightVec, n::Integer; replace::Bool=true, ordered::Bool=false) =
+sample(a::AbstractArray, wv::WeightVec, n::Integer;
+       replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, wv, n; replace=replace, ordered=ordered)
 
 sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::WeightVec, dims::Dims;
           replace::Bool=true, ordered::Bool=false) =
     sample!(rng, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
-sample(a::AbstractArray, wv::WeightVec, dims::Dims; replace::Bool=true, ordered::Bool=false) =
+sample(a::AbstractArray, wv::WeightVec, dims::Dims;
+       replace::Bool=true, ordered::Bool=false) =
     sample!(Base.GLOBAL_RNG, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
 
 # wsample interface
@@ -731,7 +744,8 @@ sample, should be taken.
 wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
            replace::Bool=true, ordered::Bool=false) =
     wsample!(rng, a, w, Vector{T}(n); replace=replace, ordered=ordered)
-wsample(a::AbstractArray, w::RealVector, n::Integer; replace::Bool=true, ordered::Bool=false) =
+wsample(a::AbstractArray, w::RealVector, n::Integer;
+        replace::Bool=true, ordered::Bool=false) =
     wsample(Base.GLOBAL_RNG, a, w, n; replace=replace, ordered=ordered)
 
 """
@@ -744,5 +758,6 @@ weights given in `w` if `a` is present, otherwise select a random sample of size
 wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
            replace::Bool=true, ordered::Bool=false) =
     wsample!(rng, a, w, Array{T}(dims); replace=replace, ordered=ordered)
-wsample(a::AbstractArray, w::RealVector, dims::Dims; replace::Bool=true, ordered::Bool=false) =
+wsample(a::AbstractArray, w::RealVector, dims::Dims;
+        replace::Bool=true, ordered::Bool=false) =
     wsample(Base.GLOBAL_RNG, a, w, dims; replace=replace, ordered=ordered)
