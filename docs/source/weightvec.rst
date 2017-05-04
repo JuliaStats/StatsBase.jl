@@ -3,12 +3,14 @@
 Weight Vectors
 ================
 
-In statistical applications, it is not uncommon to assign weights to samples. To facilitate the use of weight vectors, we introduce the abstract type ``AbstractWeights`` for the purpose of representing weight vectors.
+In statistical applications, it is not uncommon to assign weights to samples. To facilitate the use of weight vectors, we introduce the abstract type ``AbstractWeights`` for the purpose of representing weight vectors, which has two advantages:
+
+- A different type ``AbstractWeights`` distinguishes the role of the weight vector from other data vectors in the input arguments.
+- Statistical functions that utilize weights often need the sum of weights for various purposes. The weight vector maintains the sum of weights, so that it needn't be computed repeatedly each time the sum of weights is needed.
 
 **Note:**
 
 - The weight vector is a light-weight wrapper of the input vector. The input vector is NOT copied during construction.
-
 - The weight vector maintains the sum of weights, which is computed upon construction. If the value of the sum is pre-computed, one can supply it as the second argument to the constructor and save the time of computing the sum again.
 
 
@@ -87,12 +89,3 @@ Let ``w`` be an instance of ``AbstractWeights``:
     Get the sum of weights.
 
     :note: The sum of weights is maintained by the weight vector, and thus this function can immediately return the value in ``O(1)`` (without computation).
-
-
-Why we want an ``AbstractWeights`` type
-----------------------------------------
-
-The ``AbstractWeights`` type is introduced as the standard way to pass weights, which has two advantages:
-
-- A different type ``AbstractWeights`` distinguishes the role of the weight vector from other data vectors in the input arguments.
-- Statistical functions that utilize weights often need the sum of weights for various purposes. The weight vector maintains the sum of weights, so that it needn't be computed repeatedly each time the sum of weights is needed.
