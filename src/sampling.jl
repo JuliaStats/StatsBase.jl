@@ -511,8 +511,7 @@ naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
 function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                      wv::WeightVec, x::AbstractArray)
     n = length(a)
-    length(wv) == n || throw(DimensionMismatch(
-	    "a and wv must be of same length (got $n and $(length(wv)))."))
+    length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
 
     # calculate keys for all items
@@ -543,8 +542,7 @@ efraimidis_a_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
 function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                         wv::WeightVec, x::AbstractArray)
     n = length(a)
-    length(wv) == n || throw(DimensionMismatch(
-        "a and wv must be of same length (got $n and $(length(wv)))."))
+    length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
     k > 0 || return x
 
@@ -605,8 +603,7 @@ efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                          wv::WeightVec, x::AbstractArray)
     n = length(a)
-    length(wv) == n || throw(DimensionMismatch(
-        "a and wv must be of same length (got $n and $(length(wv)))."))
+    length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
     k > 0 || return x
 
