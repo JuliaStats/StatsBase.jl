@@ -515,16 +515,28 @@ function efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abst
 
     # initialize priority queue
     pq = Vector{Pair{Float64,Int}}(k)
-    @inbounds for i in 1:k
-        pq[i] = (wv.values[i]/randexp() => i)
+    i = 0
+    s = 0
+    @inbounds for s in 1:n
+        w = wv.values[s]
+        w < 0 && error("Negative weight found in weight vector at index $s")
+        if w > 0
+            i += 1
+            pq[i] = (w/randexp() => s)
+        end
+        i >= k && break
     end
+    i < k && throw(DimensionMismatch("wv must have at least $k strictly positive entries (got $i)"))
     heapify!(pq)
 
     # set threshold
     @inbounds threshold = pq[1].first
 
-    @inbounds for i in k+1:n
-        key = wv.values[i]/randexp()
+    @inbounds for i in s+1:n
+        w = wv.values[i]
+        w < 0 && error("Negative weight found in weight vector at index $i")
+        w > 0 || continue
+        key = w/randexp()
 
         # if key is larger than the threshold
         if key > threshold
@@ -561,17 +573,28 @@ function efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::Abs
 
     # initialize priority queue
     pq = Vector{Pair{Float64,Int}}(k)
-    @inbounds for i in 1:k
-        pq[i] = (wv.values[i]/randexp() => i)
+    i = 0
+    s = 0
+    @inbounds for s in 1:n
+        w = wv.values[s]
+        w < 0 && error("Negative weight found in weight vector at index $s")
+        if w > 0
+            i += 1
+            pq[i] = (w/randexp() => s)
+        end
+        i >= k && break
     end
+    i < k && throw(DimensionMismatch("wv must have at least $k strictly positive entries (got $i)"))
     heapify!(pq)
 
     # set threshold
     @inbounds threshold = pq[1].first
     X = threshold*randexp()
 
-    @inbounds for i in k+1:n
+    @inbounds for i in s+1:n
         w = wv.values[i]
+        w < 0 && error("Negative weight found in weight vector at index $i")
+        w > 0 || continue
         X -= w
         X <= 0 || continue
 
