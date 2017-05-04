@@ -61,10 +61,10 @@ The ``AbstractWeights`` type is introduced as the standard way to pass weights, 
 - Statistical functions that utilize weights often need the sum of weights for various purposes. The weight vector maintains the sum of weights, so that it needn't be computed repeatedly each time the sum of weights is needed.
 
 
-Other AbstractWeights types and bias correction
+Variance bias correction
 -------------------------------------------------
 
-When computing the weighted uncorrected (when `corrected=false`) sample variance, standard deviation or covariance a of :math:`\frac{1}{\sum{w}}` is used instead of :math:`\frac{1}{n}` where `n` is the number of observations.
+When computing the weighted uncorrected (when ``corrected=false``) sample variance, standard deviation or covariance :math:`\frac{1}{\sum{w}}` is used instead of :math:`\frac{1}{n}` (where ``n`` is the number of observations).
 
 Example:
 
@@ -74,10 +74,57 @@ vs
 
 :math:`s^2 = \frac{1}{n} \sum_{i=1}^n {\left({x_i - m}\right)^2 }`
 
-The unbiased estimate of the population variance, standard deviation or covariance is computed by replacing :math:`\frac{1}{\sum{w}}` with a factor dependent on the type of weights used:
+However, unbiased estimates (when ``corrected=true``) are dependent on the types of weights used. All weights presented here are a subtype of ``AbstractWeights``.
 
-- ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
-- ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
-- ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals `count(!iszero, w)`
+Weights
+~~~~~~~
 
-These weights can be created with the appropriate constructor (i.e., ``AnalyticWeights(a)``, ``FrequencyWeights(a)``, ``ProbabilityWeights(a)``) or the utility functions ``aweights(a)``, ``fweights(a)`` and ``pweights(a)``.
+The `Weights` type describes a generic weights vector which does not support all operations possible for ``FrequencyWeights``, ``AnalyticWeights`` and ``ProbabilityWeights``.
+
+- ``corrected=true``: ``ArgumentError``
+- ``corrected=false``: :math:`\frac{1}{\sum{w}}`
+
+AnalyticWeights
+~~~~~~~~~~~~~~~~
+
+Analytic weights describe a non-random relative importance (usually between 0 and 1) for each observation. These weights may also be referred to as reliability weights, precision weights or inverse variance weights. These are typically used when the observations being weighted are aggregate values (e.g., averages) with differing variances.
+
+- ``corrected=true``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
+- ``corrected=false``: :math:`\frac{1}{\sum{w}}`
+
+.. code-block:: julia
+
+    w = AnalyticWeights([0.2, 0.1, 0.3])
+
+    w = aweights([0.2, 0.1, 0.3])
+
+
+FrequencyWeights
+~~~~~~~~~~~~~~~~~
+
+Frequency weights describe the number of times (or frequency) each observation
+was observed. These weights may also be referred to as case weights or repeat weights.
+
+- ``corrected=true``: :math:`\frac{1}{\sum{w} - 1}`
+- ``corrected=false``: :math:`\frac{1}{\sum{w}}`
+
+.. code-block:: julia
+
+    w = FrequencyWeights([2, 1, 3])
+
+    w = fweights([2, 1, 3])
+
+
+ProbabilityWeights
+~~~~~~~~~~~~~~~~~~~
+
+Probability weights represent the inverse of the sampling probability for each observation, providing a correction mechanism for under- or over-sampling certain population groups. These weights may also be referred to as sampling weights.
+
+- ``corrected=true``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
+- ``corrected=false``: :math:`\frac{1}{\sum{w}}`
+
+.. code-block:: julia
+
+    w = ProbabilityWeights([0.2, 0.1, 0.3])
+
+    w = pweights([0.2, 0.1, 0.3])

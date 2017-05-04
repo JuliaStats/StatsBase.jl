@@ -58,7 +58,7 @@ A precomputed sum may be provided as `wsum`.
 
 The `Weights` type describes a generic weights vector which does not support
 all operations possible for [`FrequencyWeights`](@ref), [`AnalyticWeights`](@ref)
-and [`ProbabilityWeights`](@ref)"
+and [`ProbabilityWeights`](@ref).
 """
 Weights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) = Weights{S, eltype(vs), V}(vs, s)
 
