@@ -16,6 +16,7 @@ the population variance is computed by replacing
 * `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `Weights`: `ArgumentError` (bias correction not supported)
 """
 Base.varm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     _moment2(v, w, m; corrected=depcheck(:varm, corrected))
@@ -35,6 +36,7 @@ replacing ``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights
 * `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `Weights`: `ArgumentError` (bias correction not supported)
 """
 function Base.var(v::RealArray, w::AbstractWeights; mean=nothing,
                   corrected::DepBool=nothing)
@@ -122,6 +124,7 @@ dependent on the type of weights used:
 * `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `Weights`: `ArgumentError` (bias correction not supported)
 """
 Base.stdm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     sqrt(varm(v, w, m, corrected=depcheck(:stdm, corrected)))
@@ -142,6 +145,7 @@ weights used:
 * `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
 * `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `Weights`: `ArgumentError` (bias correction not supported)
 """
 Base.std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
