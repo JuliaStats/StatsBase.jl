@@ -58,8 +58,6 @@ The ``Weights`` type describes a generic weights vector which does not support a
 .. code-block:: julia
 
     w = Weights([1., 2., 3.])
-    w = Weights([1., 2., 3.,], 6.)
-
     w = weights([1., 2., 3.])
 
 
