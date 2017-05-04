@@ -4,242 +4,239 @@ using Base.Test
 @testset "StatsBase.Moments" begin
 weight_funcs = (weights, aweights, fweights, pweights)
 
-@testset "Variance and Standard Deviation" begin
-    @testset "Vectors" begin
-        x = [0.57, 0.10, 0.91, 0.72, 0.46, 0.0]
-        w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
+##### weighted var & std
 
-        @testset "Uncorrected with $f" for f in weight_funcs
-            wv = f(w)
-            m = mean(x, wv)
+x = [0.57, 0.10, 0.91, 0.72, 0.46, 0.0]
+w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
-            # expected uncorrected output
-            expected_var = sum(abs2.(x .- m), wv) / sum(wv)
-            expected_std = sqrt(expected_var)
+@testset "Uncorrected with $f" for f in weight_funcs
+    wv = f(w)
+    m = mean(x, wv)
 
-            @testset "Variance" begin
-                @test var(x, wv; corrected=false)           ≈ expected_var
-                @test var(x, wv; mean=m, corrected=false)   ≈ expected_var
-            end
+    # expected uncorrected output
+    expected_var = sum(abs2.(x .- m), wv) / sum(wv)
+    expected_std = sqrt(expected_var)
 
-            @testset "Standard Deviation" begin
-                @test std(x, wv; corrected=false)           ≈ expected_std
-                @test std(x, wv; mean=m, corrected=false)   ≈ expected_std
-            end
+    @testset "Variance" begin
+        @test var(x, wv; corrected=false)           ≈ expected_var
+        @test var(x, wv; mean=m, corrected=false)   ≈ expected_var
+    end
 
-            @testset "Mean and Variance" begin
-                (m, v) = mean_and_var(x; corrected=false)
-                @test m == mean(x)
-                @test v == var(x; corrected=corrected=false)
+    @testset "Standard Deviation" begin
+        @test std(x, wv; corrected=false)           ≈ expected_std
+        @test std(x, wv; mean=m, corrected=false)   ≈ expected_std
+    end
 
-                (m, v) = mean_and_var(x, wv; corrected=false)
-                @test m == mean(x, wv)
-                @test v == var(x, wv; corrected=false)
-            end
+    @testset "Mean and Variance" begin
+        (m, v) = mean_and_var(x; corrected=false)
+        @test m == mean(x)
+        @test v == var(x; corrected=corrected=false)
 
-            @testset "Mean and Standard Deviation" begin
-                (m, s) = mean_and_std(x; corrected=false)
-                @test m == mean(x)
-                @test s == std(x; corrected=false)
+        (m, v) = mean_and_var(x, wv; corrected=false)
+        @test m == mean(x, wv)
+        @test v == var(x, wv; corrected=false)
+    end
 
-                (m, s) = mean_and_std(x, wv; corrected=false)
-                @test m == mean(x, wv)
-                @test s == std(x, wv; corrected=false)
-            end
-        end
+    @testset "Mean and Standard Deviation" begin
+        (m, s) = mean_and_std(x; corrected=false)
+        @test m == mean(x)
+        @test s == std(x; corrected=false)
 
-        # expected corrected output for (weights, aweights, fweights, pweights)
-        expected_var = [NaN, 0.0694434191182236, 0.05466601256158146, 0.06628969012045285]
-        expected_std = sqrt(expected_var)
+        (m, s) = mean_and_std(x, wv; corrected=false)
+        @test m == mean(x, wv)
+        @test s == std(x, wv; corrected=false)
+    end
+end
 
-        @testset "Corrected with $(weight_funcs[i])" for i in eachindex(weight_funcs)
-            wv = weight_funcs[i](w)
-            m = mean(x, wv)
+# expected corrected output for (weights, aweights, fweights, pweights)
+expected_var = [NaN, 0.0694434191182236, 0.05466601256158146, 0.06628969012045285]
+expected_std = sqrt(expected_var)
 
-            @testset "Variance" begin
-                if isa(wv, Weights)
-                    @test_throws ArgumentError var(x, wv; corrected=true)
-                else
-                    @test var(x, wv; corrected=true)           ≈ expected_var[i]
-                    @test var(x, wv; mean=m, corrected=true)   ≈ expected_var[i]
-                end
-            end
+@testset "Corrected with $(weight_funcs[i])" for i in eachindex(weight_funcs)
+    wv = weight_funcs[i](w)
+    m = mean(x, wv)
 
-            @testset "Standard Deviation" begin
-                if isa(wv, Weights)
-                    @test_throws ArgumentError std(x, wv; corrected=true)
-                else
-                    @test std(x, wv; corrected=true)           ≈ expected_std[i]
-                    @test std(x, wv; mean=m, corrected=true)   ≈ expected_std[i]
-                end
-            end
-
-            @testset "Mean and Variance" begin
-                (m, v) = mean_and_var(x; corrected=true)
-                @test m == mean(x)
-                @test v == var(x; corrected=true)
-
-                if isa(wv, Weights)
-                    @test_throws ArgumentError mean_and_var(x, wv; corrected=true)
-                else
-                    (m, v) = mean_and_var(x, wv; corrected=true)
-                    @test m == mean(x, wv)
-                    @test v == var(x, wv; corrected=true)
-                end
-            end
-
-            @testset "Mean and Standard Deviation" begin
-                (m, s) = mean_and_std(x; corrected=true)
-                @test m == mean(x)
-                @test s == std(x; corrected=true)
-
-                if isa(wv, Weights)
-                    @test_throws ArgumentError mean_and_std(x, wv; corrected=true)
-                else
-                    (m, s) = mean_and_std(x, wv; corrected=true)
-                    @test m == mean(x, wv)
-                    @test s == std(x, wv; corrected=true)
-                end
-            end
+    @testset "Variance" begin
+        if isa(wv, Weights)
+            @test_throws ArgumentError var(x, wv; corrected=true)
+        else
+            @test var(x, wv; corrected=true)           ≈ expected_var[i]
+            @test var(x, wv; mean=m, corrected=true)   ≈ expected_var[i]
         end
     end
-    @testset "Matrices" begin
-        x = rand(5, 6)
-        w1 = rand(5)
-        w2 = rand(6)
 
-        @testset "Uncorrected with $f" for f in weight_funcs
-            wv1 = f(w1)
-            wv2 = f(w2)
-            m1 = mean(x, wv1, 1)
-            m2 = mean(x, wv2, 2)
+    @testset "Standard Deviation" begin
+        if isa(wv, Weights)
+            @test_throws ArgumentError std(x, wv; corrected=true)
+        else
+            @test std(x, wv; corrected=true)           ≈ expected_std[i]
+            @test std(x, wv; mean=m, corrected=true)   ≈ expected_std[i]
+        end
+    end
 
-            expected_var1 = sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-            expected_var2 = sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
-            expected_std1 = sqrt.(expected_var1)
-            expected_std2 = sqrt.(expected_var2)
+    @testset "Mean and Variance" begin
+        (m, v) = mean_and_var(x; corrected=true)
+        @test m == mean(x)
+        @test v == var(x; corrected=true)
 
-            @testset "Variance" begin
-                @test var(x, wv1, 1; corrected=false) ≈ expected_var1
-                @test var(x, wv2, 2; corrected=false) ≈ expected_var2
-                @test var(x, wv1, 1; mean=m1, corrected=false) ≈ expected_var1
-                @test var(x, wv2, 2; mean=m2, corrected=false) ≈ expected_var2
-            end
+        if isa(wv, Weights)
+            @test_throws ArgumentError mean_and_var(x, wv; corrected=true)
+        else
+            (m, v) = mean_and_var(x, wv; corrected=true)
+            @test m == mean(x, wv)
+            @test v == var(x, wv; corrected=true)
+        end
+    end
 
-            @testset "Standard Deviation" begin
-                @test std(x, wv1, 1; corrected=false)          ≈ expected_std1
-                @test std(x, wv2, 2; corrected=false)          ≈ expected_std2
-                @test std(x, wv1, 1; mean=m1, corrected=false) ≈ expected_std1
-                @test std(x, wv2, 2; mean=m2, corrected=false) ≈ expected_std2
-            end
+    @testset "Mean and Standard Deviation" begin
+        (m, s) = mean_and_std(x; corrected=true)
+        @test m == mean(x)
+        @test s == std(x; corrected=true)
 
-            @testset "Mean and Variance" begin
-                for d in 1:2
-                    (m, v) = mean_and_var(x, d; corrected=false)
-                    @test m == mean(x, d)
-                    @test v == var(x, d; corrected=false)
-                end
+        if isa(wv, Weights)
+            @test_throws ArgumentError mean_and_std(x, wv; corrected=true)
+        else
+            (m, s) = mean_and_std(x, wv; corrected=true)
+            @test m == mean(x, wv)
+            @test s == std(x, wv; corrected=true)
+        end
+    end
+end
 
-                (m, v) = mean_and_var(x, wv1, 1; corrected=false)
-                @test m == mean(x, wv1, 1)
-                @test v == var(x, wv1, 1; corrected=false)
+x = rand(5, 6)
+w1 = rand(5)
+w2 = rand(6)
 
-                (m, v) = mean_and_var(x, wv2, 2; corrected=false)
-                @test m == mean(x, wv2, 2)
-                @test v == var(x, wv2, 2; corrected=false)
-            end
+@testset "Uncorrected with $f" for f in weight_funcs
+    wv1 = f(w1)
+    wv2 = f(w2)
+    m1 = mean(x, wv1, 1)
+    m2 = mean(x, wv2, 2)
 
-            @testset "Mean and Standard Deviation" begin
-                for d in 1:2
-                    (m, s) = mean_and_std(x, d; corrected=false)
-                    @test m == mean(x, d)
-                    @test s == std(x, d; corrected=false)
-                end
+    expected_var1 = sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
+    expected_var2 = sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+    expected_std1 = sqrt.(expected_var1)
+    expected_std2 = sqrt.(expected_var2)
 
-                (m, s) = mean_and_std(x, wv1, 1; corrected=false)
-                @test m == mean(x, wv1, 1)
-                @test s == std(x, wv1, 1; corrected=false)
+    @testset "Variance" begin
+        @test var(x, wv1, 1; corrected=false) ≈ expected_var1
+        @test var(x, wv2, 2; corrected=false) ≈ expected_var2
+        @test var(x, wv1, 1; mean=m1, corrected=false) ≈ expected_var1
+        @test var(x, wv2, 2; mean=m2, corrected=false) ≈ expected_var2
+    end
 
-                (m, s) = mean_and_std(x, wv2, 2; corrected=false)
-                @test m == mean(x, wv2, 2)
-                @test s == std(x, wv2, 2; corrected=false)
-            end
+    @testset "Standard Deviation" begin
+        @test std(x, wv1, 1; corrected=false)          ≈ expected_std1
+        @test std(x, wv2, 2; corrected=false)          ≈ expected_std2
+        @test std(x, wv1, 1; mean=m1, corrected=false) ≈ expected_std1
+        @test std(x, wv2, 2; mean=m2, corrected=false) ≈ expected_std2
+    end
+
+    @testset "Mean and Variance" begin
+        for d in 1:2
+            (m, v) = mean_and_var(x, d; corrected=false)
+            @test m == mean(x, d)
+            @test v == var(x, d; corrected=false)
         end
 
-        @testset "Corrected with $f" for f in weight_funcs
-            wv1 = f(w1)
-            wv2 = f(w2)
-            m1 = mean(x, wv1, 1)
-            m2 = mean(x, wv2, 2)
+        (m, v) = mean_and_var(x, wv1, 1; corrected=false)
+        @test m == mean(x, wv1, 1)
+        @test v == var(x, wv1, 1; corrected=false)
 
-            if !isa(wv1, Weights)
-                expected_var1 = sum(abs2.(x .- m1) .* w1, 1) .* StatsBase.varcorrection(wv1, true)
-                expected_var2 = sum(abs2.(x .- m2) .* w2', 2) .* StatsBase.varcorrection(wv2, true)
-                expected_std1 = sqrt.(expected_var1)
-                expected_std2 = sqrt.(expected_var2)
-            end
+        (m, v) = mean_and_var(x, wv2, 2; corrected=false)
+        @test m == mean(x, wv2, 2)
+        @test v == var(x, wv2, 2; corrected=false)
+    end
 
-            @testset "Variance" begin
-                if isa(wv1, Weights)
-                    @test_throws ArgumentError var(x, wv1, 1; corrected=true)
-                else
-                    @test var(x, wv1, 1; corrected=true) ≈ expected_var1
-                    @test var(x, wv2, 2; corrected=true) ≈ expected_var2
-                    @test var(x, wv1, 1; mean=m1, corrected=true) ≈ expected_var1
-                    @test var(x, wv2, 2; mean=m2, corrected=true) ≈ expected_var2
-                end
-            end
+    @testset "Mean and Standard Deviation" begin
+        for d in 1:2
+            (m, s) = mean_and_std(x, d; corrected=false)
+            @test m == mean(x, d)
+            @test s == std(x, d; corrected=false)
+        end
 
-            @testset "Standard Deviation" begin
-                if isa(wv1, Weights)
-                    @test_throws ArgumentError std(x, wv1, 1; corrected=true)
-                else
-                    @test std(x, wv1, 1; corrected=true)          ≈ expected_std1
-                    @test std(x, wv2, 2; corrected=true)          ≈ expected_std2
-                    @test std(x, wv1, 1; mean=m1, corrected=true) ≈ expected_std1
-                    @test std(x, wv2, 2; mean=m2, corrected=true) ≈ expected_std2
-                end
-            end
+        (m, s) = mean_and_std(x, wv1, 1; corrected=false)
+        @test m == mean(x, wv1, 1)
+        @test s == std(x, wv1, 1; corrected=false)
 
-            @testset "Mean and Variance" begin
-                for d in 1:2
-                    (m, v) = mean_and_var(x, d; corrected=true)
-                    @test m == mean(x, d)
-                    @test v == var(x, d; corrected=true)
-                end
+        (m, s) = mean_and_std(x, wv2, 2; corrected=false)
+        @test m == mean(x, wv2, 2)
+        @test s == std(x, wv2, 2; corrected=false)
+    end
+end
 
-                if isa(wv1, Weights)
-                    @test_throws ArgumentError mean_and_var(x, wv1, 1; corrected=true)
-                else
-                    (m, v) = mean_and_var(x, wv1, 1; corrected=true)
-                    @test m == mean(x, wv1, 1)
-                    @test v == var(x, wv1, 1; corrected=true)
+@testset "Corrected with $f" for f in weight_funcs
+    wv1 = f(w1)
+    wv2 = f(w2)
+    m1 = mean(x, wv1, 1)
+    m2 = mean(x, wv2, 2)
 
-                    (m, v) = mean_and_var(x, wv2, 2; corrected=true)
-                    @test m == mean(x, wv2, 2)
-                    @test v == var(x, wv2, 2; corrected=true)
-                end
-            end
+    if !isa(wv1, Weights)
+        expected_var1 = sum(abs2.(x .- m1) .* w1, 1) .* StatsBase.varcorrection(wv1, true)
+        expected_var2 = sum(abs2.(x .- m2) .* w2', 2) .* StatsBase.varcorrection(wv2, true)
+        expected_std1 = sqrt.(expected_var1)
+        expected_std2 = sqrt.(expected_var2)
+    end
 
-            @testset "Mean and Standard Deviation" begin
-                for d in 1:2
-                    (m, s) = mean_and_std(x, d; corrected=true)
-                    @test m == mean(x, d)
-                    @test s == std(x, d; corrected=true)
-                end
+    @testset "Variance" begin
+        if isa(wv1, Weights)
+            @test_throws ArgumentError var(x, wv1, 1; corrected=true)
+        else
+            @test var(x, wv1, 1; corrected=true) ≈ expected_var1
+            @test var(x, wv2, 2; corrected=true) ≈ expected_var2
+            @test var(x, wv1, 1; mean=m1, corrected=true) ≈ expected_var1
+            @test var(x, wv2, 2; mean=m2, corrected=true) ≈ expected_var2
+        end
+    end
 
-                if isa(wv1, Weights)
-                    @test_throws ArgumentError mean_and_std(x, wv1, 1; corrected=true)
-                else
-                    (m, s) = mean_and_std(x, wv1, 1; corrected=true)
-                    @test m == mean(x, wv1, 1)
-                    @test s == std(x, wv1, 1; corrected=true)
+    @testset "Standard Deviation" begin
+        if isa(wv1, Weights)
+            @test_throws ArgumentError std(x, wv1, 1; corrected=true)
+        else
+            @test std(x, wv1, 1; corrected=true)          ≈ expected_std1
+            @test std(x, wv2, 2; corrected=true)          ≈ expected_std2
+            @test std(x, wv1, 1; mean=m1, corrected=true) ≈ expected_std1
+            @test std(x, wv2, 2; mean=m2, corrected=true) ≈ expected_std2
+        end
+    end
 
-                    (m, s) = mean_and_std(x, wv2, 2; corrected=true)
-                    @test m == mean(x, wv2, 2)
-                    @test s == std(x, wv2, 2; corrected=true)
-                end
-            end
+    @testset "Mean and Variance" begin
+        for d in 1:2
+            (m, v) = mean_and_var(x, d; corrected=true)
+            @test m == mean(x, d)
+            @test v == var(x, d; corrected=true)
+        end
+
+        if isa(wv1, Weights)
+            @test_throws ArgumentError mean_and_var(x, wv1, 1; corrected=true)
+        else
+            (m, v) = mean_and_var(x, wv1, 1; corrected=true)
+            @test m == mean(x, wv1, 1)
+            @test v == var(x, wv1, 1; corrected=true)
+
+            (m, v) = mean_and_var(x, wv2, 2; corrected=true)
+            @test m == mean(x, wv2, 2)
+            @test v == var(x, wv2, 2; corrected=true)
+        end
+    end
+
+    @testset "Mean and Standard Deviation" begin
+        for d in 1:2
+            (m, s) = mean_and_std(x, d; corrected=true)
+            @test m == mean(x, d)
+            @test s == std(x, d; corrected=true)
+        end
+
+        if isa(wv1, Weights)
+            @test_throws ArgumentError mean_and_std(x, wv1, 1; corrected=true)
+        else
+            (m, s) = mean_and_std(x, wv1, 1; corrected=true)
+            @test m == mean(x, wv1, 1)
+            @test s == std(x, wv1, 1; corrected=true)
+
+            (m, s) = mean_and_std(x, wv2, 2; corrected=true)
+            @test m == mean(x, wv2, 2)
+            @test s == std(x, wv2, 2; corrected=true)
         end
     end
 end

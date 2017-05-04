@@ -6,178 +6,172 @@ import Compat: view
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
 
-@testset "Construction" begin
-    @testset "$f" for f in weight_funcs
-        @test isa(f([1, 2, 3]), AbstractWeights{Int})
-        @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
-        @test isa(f([1 2 3; 4 5 6]), AbstractWeights{Int})
+# Construction
+@testset "$f" for f in weight_funcs
+    @test isa(f([1, 2, 3]), AbstractWeights{Int})
+    @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
+    @test isa(f([1 2 3; 4 5 6]), AbstractWeights{Int})
 
-        @test isempty(f(Float64[]))
-        @test size(f([1, 2, 3])) == (3,)
+    @test isempty(f(Float64[]))
+    @test size(f([1, 2, 3])) == (3,)
 
-        w  = [1., 2., 3.]
-        wv = f(w)
-        @test eltype(wv) === Float64
-        @test length(wv) === 3
-        @test values(wv) === w
-        @test sum(wv) === 6.0
-        @test !isempty(wv)
+    w  = [1., 2., 3.]
+    wv = f(w)
+    @test eltype(wv) === Float64
+    @test length(wv) === 3
+    @test values(wv) === w
+    @test sum(wv) === 6.0
+    @test !isempty(wv)
 
-        b  = trues(3)
-        bv = f(b)
-        @test eltype(bv) === Bool
-        @test length(bv) === 3
-        @test values(bv) === b
-        @test sum(bv)    === 3
-        @test !isempty(bv)
+    b  = trues(3)
+    bv = f(b)
+    @test eltype(bv) === Bool
+    @test length(bv) === 3
+    @test values(bv) === b
+    @test sum(bv)    === 3
+    @test !isempty(bv)
 
-        ba = BitArray([true, false, true])
-        sa = sparsevec([1., 0., 2.])
+    ba = BitArray([true, false, true])
+    sa = sparsevec([1., 0., 2.])
 
-        @test sum(ba, wv) === 4.0
-        @test sum(sa, wv) === 7.0
+    @test sum(ba, wv) === 4.0
+    @test sum(sa, wv) === 7.0
+end
+
+## wsum
+x = [6., 8., 9.]
+w = [2., 3., 4.]
+p = [1. 2. ; 3. 4.]
+q = [1., 2., 3., 4.]
+
+@test wsum(Float64[], Float64[]) === 0.0
+@test wsum(x, w) === 72.0
+@test wsum(p, q) === 29.0
+
+## wsum along dimension
+@test wsum(x, w, 1) == [72.0]
+
+x  = rand(6, 8)
+w1 = rand(6)
+w2 = rand(8)
+
+@test size(wsum(x, w1, 1)) == (1, 8)
+@test size(wsum(x, w2, 2)) == (6, 1)
+
+@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
+
+x = rand(6, 5, 4)
+w1 = rand(6)
+w2 = rand(5)
+w3 = rand(4)
+
+@test size(wsum(x, w1, 1)) == (1, 5, 4)
+@test size(wsum(x, w2, 2)) == (6, 1, 4)
+@test size(wsum(x, w3, 3)) == (6, 5, 1)
+
+@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
+@test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), 3)
+
+v = view(x, 2:4, :, :)
+
+@test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], 1)
+@test wsum(v, w2, 2)      ≈ sum(v .* w2', 2)
+@test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), 3)
+
+## wsum for Arrays with non-BlasReal elements
+x = rand(1:100, 6, 8)
+w1 = rand(6)
+w2 = rand(8)
+
+@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
+
+## wsum!
+x = rand(6)
+w = rand(6)
+
+r = ones(1)
+@test wsum!(r, x, w, 1; init=true) === r
+@test r ≈ [dot(x, w)]
+
+r = ones(1)
+@test wsum!(r, x, w, 1; init=false) === r
+@test r ≈ [dot(x, w) + 1.0]
+
+x = rand(6, 8)
+w1 = rand(6)
+w2 = rand(8)
+
+r = ones(1, 8)
+@test wsum!(r, x, w1, 1; init=true) === r
+@test r ≈ sum(x .* w1, 1)
+
+r = ones(1, 8)
+@test wsum!(r, x, w1, 1; init=false) === r
+@test r ≈ sum(x .* w1, 1) .+ 1.0
+
+r = ones(6)
+@test wsum!(r, x, w2, 2; init=true) === r
+@test r ≈ sum(x .* w2', 2)
+
+r = ones(6)
+@test wsum!(r, x, w2, 2; init=false) === r
+@test r ≈ sum(x .* w2', 2) .+ 1.0
+
+x = rand(8, 6, 5)
+w1 = rand(8)
+w2 = rand(6)
+w3 = rand(5)
+
+r = ones(1, 6, 5)
+@test wsum!(r, x, w1, 1; init=true) === r
+@test r ≈ sum(x .* w1, 1)
+
+r = ones(1, 6, 5)
+@test wsum!(r, x, w1, 1; init=false) === r
+@test r ≈ sum(x .* w1, 1) .+ 1.0
+
+r = ones(8, 1, 5)
+@test wsum!(r, x, w2, 2; init=true) === r
+@test r ≈ sum(x .* w2', 2)
+
+r = ones(8, 1, 5)
+@test wsum!(r, x, w2, 2; init=false) === r
+@test r ≈ sum(x .* w2', 2) .+ 1.0
+
+r = ones(8, 6)
+@test wsum!(r, x, w3, 3; init=true) === r
+@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3)
+
+r = ones(8, 6)
+@test wsum!(r, x, w3, 3; init=false) === r
+@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3) .+ 1.0
+
+## the sum and mean syntax
+a = reshape(1.0:27.0, 3, 3, 3)
+
+@testset "Sum $f" for f in weight_funcs
+    @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
+    @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
+
+    for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
+        @test sum(a, f(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
+        @test sum(a, f(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
+        @test sum(a, f(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
     end
 end
 
-@testset "Sum" begin
-    x = [6., 8., 9.]
-    w = [2., 3., 4.]
-    p = [1. 2. ; 3. 4.]
-    q = [1., 2., 3., 4.]
+@testset "Mean $f" for f in weight_funcs
+    @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
+    @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
 
-    @test wsum(Float64[], Float64[]) === 0.0
-    @test wsum(x, w) === 72.0
-    @test wsum(p, q) === 29.0
-
-    @testset "Along dimensions" begin
-        @test wsum(x, w, 1) == [72.0]
-
-        x  = rand(6, 8)
-        w1 = rand(6)
-        w2 = rand(8)
-
-        @test size(wsum(x, w1, 1)) == (1, 8)
-        @test size(wsum(x, w2, 2)) == (6, 1)
-
-        @test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
-        @test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
-
-        x = rand(6, 5, 4)
-        w1 = rand(6)
-        w2 = rand(5)
-        w3 = rand(4)
-
-        @test size(wsum(x, w1, 1)) == (1, 5, 4)
-        @test size(wsum(x, w2, 2)) == (6, 1, 4)
-        @test size(wsum(x, w3, 3)) == (6, 5, 1)
-
-        @test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
-        @test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
-        @test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), 3)
-
-        v = view(x, 2:4, :, :)
-
-        @test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], 1)
-        @test wsum(v, w2, 2)      ≈ sum(v .* w2', 2)
-        @test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), 3)
-    end
-
-    @testset "Arrays with non-BlasReal elements" begin
-        x = rand(1:100, 6, 8)
-        w1 = rand(6)
-        w2 = rand(8)
-
-        @test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
-        @test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
-    end
-
-    @testset "In place" begin
-        x = rand(6)
-        w = rand(6)
-
-        r = ones(1)
-        @test wsum!(r, x, w, 1; init=true) === r
-        @test r ≈ [dot(x, w)]
-
-        r = ones(1)
-        @test wsum!(r, x, w, 1; init=false) === r
-        @test r ≈ [dot(x, w) + 1.0]
-
-        x = rand(6, 8)
-        w1 = rand(6)
-        w2 = rand(8)
-
-        r = ones(1, 8)
-        @test wsum!(r, x, w1, 1; init=true) === r
-        @test r ≈ sum(x .* w1, 1)
-
-        r = ones(1, 8)
-        @test wsum!(r, x, w1, 1; init=false) === r
-        @test r ≈ sum(x .* w1, 1) .+ 1.0
-
-        r = ones(6)
-        @test wsum!(r, x, w2, 2; init=true) === r
-        @test r ≈ sum(x .* w2', 2)
-
-        r = ones(6)
-        @test wsum!(r, x, w2, 2; init=false) === r
-        @test r ≈ sum(x .* w2', 2) .+ 1.0
-
-        x = rand(8, 6, 5)
-        w1 = rand(8)
-        w2 = rand(6)
-        w3 = rand(5)
-
-        r = ones(1, 6, 5)
-        @test wsum!(r, x, w1, 1; init=true) === r
-        @test r ≈ sum(x .* w1, 1)
-
-        r = ones(1, 6, 5)
-        @test wsum!(r, x, w1, 1; init=false) === r
-        @test r ≈ sum(x .* w1, 1) .+ 1.0
-
-        r = ones(8, 1, 5)
-        @test wsum!(r, x, w2, 2; init=true) === r
-        @test r ≈ sum(x .* w2', 2)
-
-        r = ones(8, 1, 5)
-        @test wsum!(r, x, w2, 2; init=false) === r
-        @test r ≈ sum(x .* w2', 2) .+ 1.0
-
-        r = ones(8, 6)
-        @test wsum!(r, x, w3, 3; init=true) === r
-        @test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3)
-
-        r = ones(8, 6)
-        @test wsum!(r, x, w3, 3; init=false) === r
-        @test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3) .+ 1.0
-    end
-end
-
-@testset "Sum and mean syntax" begin
-    a = reshape(1.0:27.0, 3, 3, 3)
-
-    @testset "Sum $f" for f in weight_funcs
-        @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
-        @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
-
-        for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-            @test sum(a, f(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
-            @test sum(a, f(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
-            @test sum(a, f(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
-        end
-    end
-
-    @testset "Mean $f" for f in weight_funcs
-        @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
-        @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
-
-        for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-            @test mean(a, f(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
-            @test mean(a, f(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
-            @test mean(a, f(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
-            @test_throws ErrorException mean(a, f(wt), 4)
-        end
+    for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
+        @test mean(a, f(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
+        @test mean(a, f(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
+        @test mean(a, f(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
+        @test_throws ErrorException mean(a, f(wt), 4)
     end
 end
 
