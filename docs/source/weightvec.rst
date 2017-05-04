@@ -17,19 +17,6 @@ Implementations
 
 Several statistical weight types are provided which subtype ``AbstractWeights``. The choice of weights impacts how bias is corrected in several methods. See the ``var``, ``std`` and ``cov`` docstrings for more details.
 
-``Weights``
-~~~~~~~~~~~~
-
-The ``Weights`` type describes a generic weights vector which does not support all operations possible for ``FrequencyWeights``, ``AnalyticWeights`` and ``ProbabilityWeights``.
-
-.. code-block:: julia
-
-    w = Weights([1., 2., 3.])
-    w = Weights([1., 2., 3.,], 6.)
-
-    w = weights([1., 2., 3.])
-
-
 ``AnalyticWeights``
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -61,6 +48,19 @@ Probability weights represent the inverse of the sampling probability for each o
 
     w = ProbabilityWeights([0.2, 0.1, 0.3])
     w = pweights([0.2, 0.1, 0.3])
+
+
+``Weights``
+~~~~~~~~~~~~
+
+The ``Weights`` type describes a generic weights vector which does not support all operations possible for ``FrequencyWeights``, ``AnalyticWeights`` and ``ProbabilityWeights``.
+
+.. code-block:: julia
+
+    w = Weights([1., 2., 3.])
+    w = Weights([1., 2., 3.,], 6.)
+
+    w = weights([1., 2., 3.])
 
 
 Methods
