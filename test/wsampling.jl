@@ -39,13 +39,10 @@ wv = weights([0.2, 0.8, 0.4, 0.6])
 
 a = direct_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
-@test direct_sample!(MersenneTwister(1), 4:7, wv, zeros(Int, 10000)) == 
-      direct_sample!(MersenneTwister(1), 4:7, wv, zeros(Int, 10000))
+test_rng_use(direct_sample!, 4:7, wv, zeros(Int, 100))
 
 a = alias_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
-@test alias_sample!(MersenneTwister(1), 4:7, wv, zeros(Int, 10000)) == 
-      alias_sample!(MersenneTwister(1), 4:7, wv, zeros(Int, 10000))
 
 a = sample(4:7, wv, n; ordered=false)
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
@@ -87,34 +84,30 @@ wv = weights([0.2, 0.8, 0.4, 0.6])
 a = zeros(Int, 3, n)
 for j = 1:n
     naive_wsample_norep!(4:7, wv, view(a,:,j))
-	@test naive_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2)) == 
-          naive_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(naive_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = zeros(Int, 3, n)
 for j = 1:n
     efraimidis_a_wsample_norep!(4:7, wv, view(a,:,j))
-	@test efraimidis_a_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2)) == 
-          efraimidis_a_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(efraimidis_a_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = zeros(Int, 3, n)
 for j = 1:n
     efraimidis_ares_wsample_norep!(4:7, wv, view(a,:,j))
-	@test efraimidis_ares_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2)) == 
-          efraimidis_ares_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(efraimidis_ares_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = zeros(Int, 3, n)
 for j = 1:n
     efraimidis_aexpj_wsample_norep!(4:7, wv, view(a,:,j))
-	@test efraimidis_aexpj_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2)) == 
-          efraimidis_aexpj_wsample_norep!(MersenneTwister(j), 4:7, wv, zeros(Int, 2))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(efraimidis_aexpj_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = sample(4:7, wv, 3; replace=false, ordered=false)
 check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
