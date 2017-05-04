@@ -57,19 +57,19 @@ end
     @test fit(Histogram,(0:99,0:99),nbins=(5,5), closed=:left).weights == diagm([20,20,20,20,20])
 
     # FIXME: closed (all lines in this block):
-    @test fit(Histogram,0:99,fweights(ones(100)),nbins=5, closed=:left).weights == [20,20,20,20,20]
-    @test fit(Histogram,0:99,fweights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
-    @test fit(Histogram{Int32},0:99,fweights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
-    @test fit(Histogram{Float32},0:99,fweights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
+    @test fit(Histogram,0:99,weights(ones(100)),nbins=5, closed=:left).weights == [20,20,20,20,20]
+    @test fit(Histogram,0:99,weights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
+    @test fit(Histogram{Int32},0:99,weights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
+    @test fit(Histogram{Float32},0:99,weights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
 end
 
 
 @testset "Histogram element type" begin
     # FIXME: closed (all lines in this block):
-    @test eltype(@inferred(fit(Histogram,1:100,fweights(ones(Int,100)),nbins=5, closed=:left)).weights) == Int
-    @test eltype(@inferred(fit(Histogram{Float32},1:100,fweights(ones(Int,100)),nbins=5, closed=:left)).weights) == Float32
-    @test eltype(@inferred(fit(Histogram,1:100,fweights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float64
-    @test eltype(@inferred(fit(Histogram{Float32},1:100,fweights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float32
+    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Int,100)),nbins=5, closed=:left)).weights) == Int
+    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Int,100)),nbins=5, closed=:left)).weights) == Float32
+    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float64
+    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float32
 end
 
 

@@ -176,7 +176,7 @@ end
             @test mean(a, f(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
             @test mean(a, f(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
             @test mean(a, f(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
-            @test_throws ErrorException mean(a, fweights(wt), 4)
+            @test_throws ErrorException mean(a, f(wt), 4)
         end
     end
 end
@@ -258,7 +258,7 @@ end
     @test_throws MethodError median([4 3 2 1 0], f(wt))
     @test_throws MethodError median([[1 2];[4 5];[7 8];[10 11];[13 14]], f(wt))
     data = [1, 3, 2, NaN, 2]
-    @test isnan(median(data, fweights(wt)))
+    @test isnan(median(data, f(wt)))
     wt = [1, 2, NaN, 4, 5]
     @test_throws ErrorException median(data, f(wt))
     data = [1, 3, 2, 1, 2]
