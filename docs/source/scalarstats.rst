@@ -6,33 +6,33 @@ The package implements functions for computing various statistics over an array 
 Moments
 ---------
 
-.. function:: var(x, wv[; mean=...])
+.. function:: var(x, w[; mean=..., corrected=...])
 
   Compute weighted variance.
 
   One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
 
-  **Note:** the result is normalized by ``sum(wv)`` without correction.
+  **Note:** the result is normalized by ``sum(w)`` without correction unless ``corrected=true``.
 
-.. function:: var(x, wv, dim[; mean=...])
+.. function:: var(x, w, dim[; mean=..., corrected=...])
 
   Weighted variance along a specific dimension.
 
-.. function:: std(x, wv[; mean=...])
+.. function:: std(x, w[; mean=..., corrected=...])
 
   Compute weighted standard deviation.
 
   One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
 
-.. function:: std(x, wv, dim[; mean=...])
+.. function:: std(x, w, dim[; mean=..., corrected=...])
 
   Weighted standard deviation along a specific dimension.
 
-.. function:: mean_and_var(x[, wv][, dim])
+.. function:: mean_and_var(x[, w][, dim][; corrected=...])
 
   Jointly compute the mean and variance of ``x``.
 
-.. function:: mean_and_std(x[, wv][, dim])
+.. function:: mean_and_std(x[, w][, dim][; corrected=...])
 
   Jointly compute the mean and standard deviation of ``x``.
 
