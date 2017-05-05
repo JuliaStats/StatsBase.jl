@@ -120,6 +120,13 @@ module StatsBase
     hist,
     # histrange,
     midpoints,
+    
+    ## robust
+    trim,           # trimmed set
+    trim!,          # trimmed set
+    winsor,         # Winsorized set
+    winsor!,        # Winsorized set
+    trimvar,        # variance of the mean of a trimmed set
 
     ## misc
     rle,            # run-length encoding
@@ -180,6 +187,7 @@ module StatsBase
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
+    include("robust.jl")
 
     include("sampling.jl")
     include("statmodels.jl")
