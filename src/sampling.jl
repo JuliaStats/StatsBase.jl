@@ -45,6 +45,9 @@ direct_sample!(a::AbstractArray, x::AbstractArray) = direct_sample!(Base.GLOBAL_
     samplepair([rng], n)
 
 Draw a pair of distinct integers between 1 and `n` without replacement.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 function samplepair(rng::AbstractRNG, n::Int)
     i1 = randi(rng, n)
@@ -57,6 +60,9 @@ samplepair(n::Int) = samplepair(Base.GLOBAL_RNG, n)
     samplepair([rng], a)
 
 Draw a pair of distinct elements from the array `a` without replacement.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 function samplepair(rng::AbstractRNG, a::AbstractArray)
     i1, i2 = samplepair(rng, length(a))
@@ -264,6 +270,9 @@ seqsample_c!(a::AbstractArray, x::AbstractArray) = seqsample_c!(Base.GLOBAL_RNG,
 
 Select a single random element of `a`. Sampling probabilities are proportional to
 the weights given in `wv`, if provided.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 sample(rng::AbstractRNG, a::AbstractArray) = a[randi(rng, length(a))]
 sample(a::AbstractArray) = sample(Base.GLOBAL_RNG, a)
@@ -278,6 +287,9 @@ Sampling probabilities are proportional to the weights given in `wv`,
 if provided. `replace` dictates whether sampling is performed with
 replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
@@ -327,6 +339,9 @@ using a polyalgorithm. Sampling probabilities are proportional to the weights
 given in `wv`, if provided. `replace` dictates whether sampling is performed
 with replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 function sample{T}(rng::AbstractRNG, a::AbstractArray{T}, n::Integer;
                    replace::Bool=true, ordered::Bool=false)
@@ -344,6 +359,9 @@ the dimensions `dims` of the output array. Sampling probabilities are
 proportional to the weights given in `wv`, if provided. `replace` dictates
 whether sampling is performed with replacement and `order` dictates whether
 an ordered sample, also called a sequential sample, should be taken.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 function sample{T}(rng::AbstractRNG, a::AbstractArray{T}, dims::Dims;
                    replace::Bool=true, ordered::Bool=false)
@@ -363,6 +381,9 @@ sample(a::AbstractArray, dims::Dims; replace::Bool=true, ordered::Bool=false) =
 
 Select a single random integer in `1:length(wv)` with probabilities
 proportional to the weights given in `wv`.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 function sample(rng::AbstractRNG, wv::WeightVec)
     t = rand(rng) * sum(wv)
@@ -709,6 +730,9 @@ Select a weighted sample from an array `a` and store the result in `x`. Sampling
 probabilities are proportional to the weights given in `w`. `replace` dictates
 whether sampling is performed with replacement and `order` dictates whether an
 ordered sample, also called a sequential sample, should be taken.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 wsample!(rng::AbstractRNG, a::AbstractArray, w::RealVector, x::AbstractArray;
          replace::Bool=true, ordered::Bool=false) =
@@ -722,6 +746,9 @@ wsample!(a::AbstractArray, w::RealVector, x::AbstractArray;
 
 Select a weighted random sample of size 1 from `a` with probabilities proportional
 to the weights given in `w`. If `a` is not present, select a random weight from `w`.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 wsample(rng::AbstractRNG, w::RealVector) = sample(rng, weights(w))
 wsample(w::RealVector) = wsample(Base.GLOBAL_RNG, w)
@@ -737,6 +764,9 @@ to the weights given in `w` if `a` is present, otherwise select a random sample 
 `n` of the weights given in `w`. `replace` dictates whether sampling is performed with
 replacement and `order` dictates whether an ordered sample, also called a sequential
 sample, should be taken.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
            replace::Bool=true, ordered::Bool=false) =
@@ -751,6 +781,9 @@ wsample(a::AbstractArray, w::RealVector, n::Integer;
 Select a weighted random sample from `a` with probabilities proportional to the
 weights given in `w` if `a` is present, otherwise select a random sample of size
 `n` of the weights given in `w`. The dimensions of the output are given by `dims`.
+
+Optionally specify a random number generator ``rng`` as the first argument
+(defaults to ``Base.GLOBAL_RNG``).
 """
 wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
            replace::Bool=true, ordered::Bool=false) =
