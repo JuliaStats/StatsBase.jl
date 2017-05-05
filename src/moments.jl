@@ -151,7 +151,7 @@ Base.std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=noth
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
 
 Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    Base.sqrt!(varm(v, m, dim; corrected=corrected))
+    Base.sqrt!(varm(v, m, dim; corrected=depcheck(:stdm, corrected)))
 
 Base.stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
           corrected::DepBool=nothing) =
