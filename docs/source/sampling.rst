@@ -6,45 +6,59 @@ Sampling API
 
 The package provides functions for sampling from a given population (with or without replacement).
 
-.. function:: sample(a)
+.. function:: sample([rng], a)
 
     Randomly draw an element from an array ``a``.
 
-.. function:: sample(a, n[; replace=true, ordered=false])  
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
+
+.. function:: sample([rng], a, n[; replace=true, ordered=false])  
 
     Randomly draw ``n`` elements from ``a``. 
+
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
     **Keyword arguments**
 
     - ``replace``: indicates whether to have replacement (default = ``true``).
     - ``ordered``: indicates whether to arrange the samples in ascending order (default = ``false``).
 
-.. function:: sample!(a, x[; replace=true, ordered=false])
+.. function:: sample!([rng], a, x[; replace=true, ordered=false])
 
     Draw ``length(x)`` elements from ``a`` and write them to a pre-allocated array ``x``.
 
-.. function:: sample(wv) 
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
+
+.. function:: sample([rng], wv) 
 
     Draw an integer in ``1:length(wv)`` with probabilities proportional to the weights given in ``wv``. 
 
     Here, ``wv`` should be a weight vector of type ``WeightVec`` (see :ref:`weightvec`).
 
-.. function:: sample(a, wv)
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
+
+.. function:: sample([rng], a, wv)
 
     Draw an element from ``a`` with probabilities proportional to the corresponding weights given in ``wv``.
 
-.. function:: sample(a, wv, n[; replace=true, ordered=false])
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
+
+.. function:: sample([rng], a, wv, n[; replace=true, ordered=false])
 
     Draw ``n`` elements from ``a`` with probabilities proportional to the corresponding weights given in ``wv``.
+
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
     **Keyword arguments**
 
     - ``replace``: indicates whether to have replacement (default = ``true``).
     - ``ordered``: indicates whether to arrange the samples in ascending order (default = ``false``).    
 
-.. function:: sample!(a, wv, x[; replace=true, ordered=false])
+.. function:: sample!([rng], a, wv, x[; replace=true, ordered=false])
 
     Weighted sampling with results written to a pre-allocated array ``x``.
+
+    Optionally specify a random number generator ``rng`` as the first argument (defaults to ``Base.GLOBAL_RNG``).
 
 
 Algorithms
@@ -63,13 +77,14 @@ Here are a list of algorithms implemented in the package. The functions below ar
 - ``wv``: the weight vector (of type ``WeightVec``), for weighted sampling
 - ``n``: the length of ``a``
 - ``k``: the length of ``x``. For sampling without replacement, ``k`` must not exceed ``n``.
+- ``rng``: optional random number generator (defaults to ``Base.GLOBAL_RNG``)
 
 All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
 
 **Sampling Algorithms (Non-Weighted):**
 
-.. function:: direct_sample!(a, x)
+.. function:: direct_sample!([rng], a, x)
 
     *Direct sampling.*
 
@@ -77,13 +92,13 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm consumes ``k`` random numbers.
 
-.. function:: samplepair(a)
+.. function:: samplepair([rng], a)
 
     Pick two elements at distinct positions from ``a``, and return them as a pair.
 
     This algorithm consumes exactly two random numbers.
 
-.. function:: knuths_sample!(a, x)
+.. function:: knuths_sample!([rng], a, x)
 
     *Knuth's Algorithm S* for random sampling without replacement.
 
@@ -91,7 +106,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm consumes ``n`` random numbers. It requires no additional memory space. Suitable for the case where memory is tight.
 
-.. function:: fisher_yates_sample!(a, x)
+.. function:: fisher_yates_sample!([rng], a, x)
 
     *Fisher-Yates shuffling* (with early termination). 
 
@@ -107,7 +122,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm consumes ``k`` random numbers. It uses an integer array of length ``n`` internally to maintain the shuffled indices. It is considerably faster than Knuth's algorithm especially when ``n`` is greater than ``k``.
 
-.. function:: self_avoid_sample!(a, x)
+.. function:: self_avoid_sample!([rng], a, x)
 
     Use a set to maintain the index that has been sampled. Each time draw a new index, if the index has already been sampled, redraw until it draws an unsampled one. 
 
@@ -115,7 +130,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     However, if ``k`` is large and approaches ``n``, the rejection rate would increase drastically, resulting in poorer performance.
 
-.. function:: seqsample_a!(a, x)
+.. function:: seqsample_a!([rng], a, x)
 
     *Algorithm A* described in the following paper (page 714).
 
@@ -123,7 +138,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm consumes ``O(n)`` random numbers. The outputs are ordered.
 
-.. function:: seqsample_c!(a, x)
+.. function:: seqsample_c!([rng], a, x)
 
     *Algorithm C* described in the following paper (page 714).
 
@@ -134,7 +149,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
 **Weighted Sampling Algorithms:**
 
-.. function:: direct_sample!(a, wv, x)
+.. function:: direct_sample!([rng], a, wv, x)
 
     *Direct sampling.*
 
@@ -142,7 +157,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm: (1) consumes ``k`` random numbers; (2) has time complexity ``O(n k)``, as scanning the weight vector each time takes ``O(n)``; and (3) requires no additional memory space.
 
-.. function:: alias_sample!(a, wv, x)
+.. function:: alias_sample!([rng], a, wv, x)
 
     *Alias method.*
 
@@ -152,7 +167,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm takes ``O(n log n)`` time for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
 
-.. function:: naive_wsample_norep!(a, wv, x)
+.. function:: naive_wsample_norep!([rng], a, wv, x)
 
     Naive implementation of weighted sampling without replacement.
 

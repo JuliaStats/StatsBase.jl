@@ -39,6 +39,7 @@ wv = weights([0.2, 0.8, 0.4, 0.6])
 
 a = direct_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(direct_sample!, 4:7, wv, zeros(Int, 100))
 
 a = alias_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
@@ -85,24 +86,28 @@ for j = 1:n
     naive_wsample_norep!(4:7, wv, view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(naive_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = zeros(Int, 3, n)
 for j = 1:n
     efraimidis_a_wsample_norep!(4:7, wv, view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(efraimidis_a_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = zeros(Int, 3, n)
 for j = 1:n
     efraimidis_ares_wsample_norep!(4:7, wv, view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(efraimidis_ares_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = zeros(Int, 3, n)
 for j = 1:n
     efraimidis_aexpj_wsample_norep!(4:7, wv, view(a,:,j))
 end
 check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(efraimidis_aexpj_wsample_norep!, 4:7, wv, zeros(Int, 2))
 
 a = sample(4:7, wv, 3; replace=false, ordered=false)
 check_wsample_norep(a, (4, 7), wv, -1; ordered=false)

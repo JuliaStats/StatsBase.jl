@@ -5,6 +5,26 @@ import StatsBase: norepeat, randi
 
 srand(1234)
 
+# test that rng specification is working correctly
+# a) if the same rng is passed to a sample function twice, 
+#    the results should be the same (repeatability)
+# b) not specifying a rng should be the same as specifying Base.GLOBAL_RNG
+function test_rng_use(func, non_rng_args...)
+    # some sampling methods mutate a passed array and return it
+    # so that the tests don't pass trivially, we need to copy those
+    # pre-allocated storage arrays
+
+    # repeatability
+    @test func(MersenneTwister(1), deepcopy(non_rng_args)...) ==
+          func(MersenneTwister(1), deepcopy(non_rng_args)...)
+    # default RNG is Base.GLOBAL_RNG
+    srand(47)
+    x = func(deepcopy(non_rng_args)...)
+    srand(47)
+    y = func(Base.GLOBAL_RNG, deepcopy(non_rng_args)...)
+    @test x == y
+end
+
 #### randi
 
 n = 10^5
@@ -13,6 +33,7 @@ x = [randi(10) for i = 1:n]
 @test isa(x, Vector{Int})
 @test extrema(x) == (1, 10)
 @test isapprox(proportions(x, 1:10), fill(0.1, 10), atol=5.0e-3)
+test_rng_use(randi, 1000)
 
 
 x = [randi(3, 12) for i = 1:n]
@@ -58,6 +79,8 @@ check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 a = direct_sample!([11:20;], zeros(Int, n, 3))
 check_sample_wrep(a, (11, 20), 5.0e-3; ordered=false)
 
+test_rng_use(direct_sample!, 1:10, zeros(Int, 6))
+
 a = sample(3:12, n)
 check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
@@ -67,6 +90,7 @@ check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
 a = sample(3:12, 10; ordered=true)
 check_sample_wrep(a, (3, 12), 0; ordered=true)
 
+test_rng_use(sample, 1:10, 10)
 
 #### sampling pairs
 
@@ -78,6 +102,7 @@ srand(1);
 @test samplepair([3, 4, 2, 6, 8]) === (4, 3)
 @test samplepair([1, 2])          === (1, 2)
 
+test_rng_use(samplepair, 1000)
 
 #### sample without replacement
 
@@ -120,11 +145,15 @@ for j = 1:size(a,2)
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
+test_rng_use(knuths_sample!, 1:10, zeros(Int, 6))
+
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
     fisher_yates_sample!(3:12, view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
+
+test_rng_use(fisher_yates_sample!, 1:10, zeros(Int, 6))
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
@@ -132,17 +161,23 @@ for j = 1:size(a,2)
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
+test_rng_use(self_avoid_sample!, 1:10, zeros(Int, 6))
+
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
     seqsample_a!(3:12, view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
+test_rng_use(seqsample_a!, 1:10, zeros(Int, 6))
+
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
     seqsample_c!(3:12, view(a,:,j))
 end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
+
+test_rng_use(seqsample_c!, 1:10, zeros(Int, 6))
 
 a = sample(3:12, 5; replace=false)
 check_sample_norep(a, (3, 12), 0; ordered=false)
