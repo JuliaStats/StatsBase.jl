@@ -6,35 +6,54 @@ The package implements functions for computing various statistics over an array 
 Moments
 ---------
 
-.. function:: var(x, w[; mean=..., corrected=...])
+.. function:: var(x, w, [dim][; mean=..., corrected=...])
 
-  Compute weighted variance.
+  Compute the variance of a real-valued array ``x``, optionally over a dimension ``dim``.
+  Observations in ``x`` are weighted using weight vector ``w``.
+  The uncorrected (when ``corrected=false``) sample variance is defined as:
 
-  One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
+  :math:`\frac{1}{\sum{w}} \sum_{i=1}^n {w_i\left({x_i - m}\right)^2 }`
 
-  **Note:** the result is normalized by ``sum(w)`` without correction unless ``corrected=true``.
+  where ``n`` is the length of the input and ``m`` is the mean.
+  The unbiased estimate (when ``corrected=true``) of the population variance is computed by
+  replacing :math:`\frac{1}{\sum{w}}` with a factor dependent on the type of weights used:
 
-.. function:: var(x, w, dim[; mean=..., corrected=...])
+  - ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
+  - ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
+  - ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
+  - ``Weights``: ``ArgumentError`` (bias correction not supported)
 
-  Weighted variance along a specific dimension.
+.. function:: std(v, w, [dim][; mean=..., corrected=...])
 
-.. function:: std(x, w[; mean=..., corrected=...])
+  Compute the standard deviation of a real-valued array ``x``, optionally over a dimension ``dim``.
+  Observations in ``x`` are weighted using weight vector ``w``.
+  The uncorrected (when ``corrected=false``) sample standard deviation is defined as:
 
-  Compute weighted standard deviation.
+  :math:`\sqrt{\frac{1}{\sum{w}} \sum_{i=1}^n {w_i\left({x_i - m}\right)^2 }}`
 
-  One can set the keyword argument ``mean``, which can be either ``nothing`` (to compute the mean value within the function), ``0``, or a pre-computed mean value.
+  where ``n`` is the length of the input and ``m`` is the mean.
+  The unbiased estimate (when ``corrected=true``) of the population standard deviation is
+  computed by replacing :math:`\frac{1}{\sum{w}}` with a factor dependent on the type of
+  weights used:
 
-.. function:: std(x, w, dim[; mean=..., corrected=...])
-
-  Weighted standard deviation along a specific dimension.
+  - ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
+  - ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
+  - ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
+  - ``Weights``: ``ArgumentError`` (bias correction not supported)
 
 .. function:: mean_and_var(x[, w][, dim][; corrected=...])
 
-  Jointly compute the mean and variance of ``x``.
+  Jointly compute the mean and variance of a real-valued array ``x``, optionally over a dimension ``dim``, as a tuple.
+  Observations in ``x`` can be weighted using weight vector ``w``.
+  Finally, bias correction is be applied to the variance calculation if ``corrected=true``.
+  See ``var`` documentation for more details.
 
 .. function:: mean_and_std(x[, w][, dim][; corrected=...])
 
-  Jointly compute the mean and standard deviation of ``x``.
+  Jointly compute the mean and standard deviation of a real-valued array `x`, optionally over a dimension `dim`, as a tuple.
+  A weighting vector `w` can be specified to weight the estimates.
+  Finally, bias correction is applied to the standard deviation calculation if `corrected=true`.
+  See ``std`` documentation for more details.
 
 .. function:: skewness(x[, wv])
 

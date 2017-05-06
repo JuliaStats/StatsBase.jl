@@ -26,10 +26,17 @@ This package implements functions for computing scatter matrix, as well as weigh
 
 .. function:: cov(X, w[; vardim=..., mean=..., corrected=...])
 
-    Weighted covariance matrix.
+  Compute the weighted covariance matrix. Similar to ``var`` and ``std`` the biased covariance matrix (``corrected=false``) is computed by multiplying ``scattermat(X, w)`` by :math:`\frac{1}{\sum{w}}` to normalize.
+  However, the unbiased covariance matrix (``corrected=true``) is dependent on the type of weights used:
 
-    **Note:** By default, the covariance is normalized by the sum of weights, that is, ``cov(X, w)`` is equal to ``scatter(X, w) / sum(w)``. However, if ``corrected`` is set to ``true`` then the appropriate bias correction is used for that `w`.
+  - ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
+  - ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
+  - ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
+  - ``Weights``: ``ArgumentError`` (bias correction not supported)
 
 .. function:: mean_and_cov(x[, wv][; vardim=..., corrected=...])
 
-  Jointly compute the mean and covariance of ``x``.
+  Jointly compute the mean and covariance matrix as a tuple.
+  A weighting vector `wv` can be specified. `vardim` that designates whether the variables are columns in the matrix (`1`) or rows (`2`).
+  Finally, bias correction is applied to the covariance calculation if ``corrected=true``.
+  See ``cov`` documentation for more details.
