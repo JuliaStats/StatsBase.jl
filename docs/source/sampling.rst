@@ -175,3 +175,26 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
 
     This algorithm consumes ``O(k)`` random numbers, and has overall time complexity ``O(n k)``. 
 
+.. function:: efraimidis_a_wsample_norep!([rng], a, wv, x)
+
+    Implementation of weighted sampling without replacement using Efraimidis-Spirakis A algorithm.
+    
+    Reference: Efraimidis, P. S., Spirakis, P. G. *Weighted random sampling with a reservoir.* Information Processing  Letters, 97 (5), 181-185, 2006.
+    
+    This algorithm takes ``O(n + k log k)`` processing time to draw ``k`` elements. It consumes ``n`` random numbers.
+
+.. function:: efraimidis_ares_wsample_norep!([rng], a, wv, x)
+
+    Implementation of weighted sampling without replacement using Efraimidis-Spirakis A-Res algorithm.
+    
+    Reference: Efraimidis, P. S., Spirakis, P. G. *Weighted random sampling with a reservoir.* Information Processing  Letters, 97 (5), 181-185, 2006.
+    
+    This algorithm takes ``O(k log(k) log(n / k))`` processing time to draw ``k`` elements. It consumes ``O(n)`` random numbers.
+
+.. function:: efraimidis_aexpj_wsample_norep!([rng], a, wv, x)
+
+    Implementation of weighted sampling without replacement using Efraimidis-Spirakis A-ExpJ algorithm.
+    
+    Reference: Efraimidis, P. S., Spirakis, P. G. *Weighted random sampling with a reservoir.* Information Processing  Letters, 97 (5), 181-185, 2006.
+    
+    This algorithm takes ``O(k log(k) log(n / k))`` processing time to draw ``k`` elements. It consumes ``O(k log(n / k))`` random numbers.
