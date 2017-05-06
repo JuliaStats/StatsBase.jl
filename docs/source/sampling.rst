@@ -189,7 +189,7 @@ All following functions write results to ``x`` (pre-allocated) and return ``x``.
     
     Reference: Efraimidis, P. S., Spirakis, P. G. *Weighted random sampling with a reservoir.* Information Processing  Letters, 97 (5), 181-185, 2006.
     
-    This algorithm takes ``O(k log(k) log(n / k))`` processing time to draw ``k`` elements. It consumes ``O(n)`` random numbers.
+    This algorithm takes ``O(k log(k) log(n / k))`` processing time to draw ``k`` elements. It consumes ``n`` random numbers.
 
 .. function:: efraimidis_aexpj_wsample_norep!([rng], a, wv, x)
 
