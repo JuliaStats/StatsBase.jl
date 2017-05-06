@@ -18,10 +18,10 @@ Moments
   The unbiased estimate (when ``corrected=true``) of the population variance is computed by
   replacing :math:`\frac{1}{\sum{w}}` with a factor dependent on the type of weights used:
 
-  - ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
-  - ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
-  - ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
-  - ``Weights``: ``ArgumentError`` (bias correction not supported)
+    * ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
+    * ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
+    * ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
+    * ``Weights``: ``ArgumentError`` (bias correction not supported)
 
 .. function:: std(v, w, [dim][; mean=..., corrected=...])
 
@@ -36,10 +36,10 @@ Moments
   computed by replacing :math:`\frac{1}{\sum{w}}` with a factor dependent on the type of
   weights used:
 
-  - ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
-  - ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
-  - ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
-  - ``Weights``: ``ArgumentError`` (bias correction not supported)
+    * ``AnalyticWeights``: :math:`\frac{1}{\sum w - \sum {w^2} / \sum w}`
+    * ``FrequencyWeights``: :math:`\frac{1}{\sum{w} - 1}`
+    * ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
+    * ``Weights``: ``ArgumentError`` (bias correction not supported)
 
 .. function:: mean_and_var(x[, w][, dim][; corrected=...])
 
@@ -50,9 +50,9 @@ Moments
 
 .. function:: mean_and_std(x[, w][, dim][; corrected=...])
 
-  Jointly compute the mean and standard deviation of a real-valued array `x`, optionally over a dimension `dim`, as a tuple.
-  A weighting vector `w` can be specified to weight the estimates.
-  Finally, bias correction is applied to the standard deviation calculation if `corrected=true`.
+  Jointly compute the mean and standard deviation of a real-valued array ``x``, optionally over a dimension ``dim``, as a tuple.
+  A weighting vector ``w`` can be specified to weight the estimates.
+  Finally, bias correction is applied to the standard deviation calculation if ``corrected=true``.
   See ``std`` documentation for more details.
 
 .. function:: skewness(x[, wv])
