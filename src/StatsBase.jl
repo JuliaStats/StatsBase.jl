@@ -17,14 +17,21 @@ module StatsBase
     export
 
     ## weights
-    WeightVec,   # the type to represent a weight vector
-    weights,     # construct a weight vector
-    wsum,        # weighted sum with vector as second argument
-    wsum!,       # weighted sum across dimensions with provided storage
-    wmean,       # weighted mean
-    wmean!,      # weighted mean across dimensions with provided storage
-    wmedian,     # weighted median
-    wquantile,   # weighted quantile
+    AbstractWeights,    # abstract type to represent any weight vector
+    Weights,            # to represent a generic weight vector
+    AnalyticWeights,    # to represent an analytic/precision/reliability weight vector
+    FrequencyWeights,   # to representing a frequency/case/repeat weight vector
+    ProbabilityWeights, # to representing a probability/sampling weight vector
+    weights,            # construct a generic Weights vector
+    aweights,           # construct an AnalyticWeights vector
+    fweights,           # construct a FrequencyWeights vector
+    pweights,           # construct a ProbabilityWeights vector
+    wsum,               # weighted sum with vector as second argument
+    wsum!,              # weighted sum across dimensions with provided storage
+    wmean,              # weighted mean
+    wmean!,             # weighted mean across dimensions with provided storage
+    wmedian,            # weighted median
+    wquantile,          # weighted quantile
 
     ## moments
     skewness,       # (standardized) skewness

@@ -218,20 +218,18 @@ Histogram(edge::AbstractVector, closed::Symbol=:default_left, isdensity::Bool=fa
 push!{T,E}(h::AbstractHistogram{T,1,E}, x::Real, w::Real) = push!(h, (x,), w)
 push!{T,E}(h::AbstractHistogram{T,1,E}, x::Real) = push!(h,x,one(T))
 append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector) = append!(h, (v,))
-append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,WeightVec}) = append!(h, (v,), wv)
-
+append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) = append!(h, (v,), wv)
 
 fit{T}(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:default_left) =
     fit(Histogram{T},(v,), (edg,), closed=closed)
 fit{T}(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:default_left, nbins=sturges(length(v))) =
     fit(Histogram{T},(v,); closed=closed, nbins=nbins)
-fit{T}(::Type{Histogram{T}},v::AbstractVector, wv::WeightVec, edg::AbstractVector; closed::Symbol=:default_left) =
+fit{T}(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:default_left) =
     fit(Histogram{T},(v,), wv, (edg,), closed=closed)
-fit{T}(::Type{Histogram{T}},v::AbstractVector, wv::WeightVec; closed::Symbol=:default_left, nbins=sturges(length(v))) =
+fit{T}(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(v))) =
     fit(Histogram{T}, (v,), wv; closed=closed, nbins=nbins)
 
-fit{W}(::Type{Histogram}, v::AbstractVector, wv::WeightVec{W}, args...; kwargs...) = fit(Histogram{W}, v, wv, args...; kwargs...)
-
+fit{W}(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) = fit(Histogram{W}, v, wv, args...; kwargs...)
 
 # N-dimensional
 
@@ -269,7 +267,7 @@ function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, w
     end
     h
 end
-append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::WeightVec) = append!(h, vs, values(wv))
+append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights) = append!(h, vs, values(wv))
 
 
 # Turn kwargs nbins into a type-stable tuple of integers:
@@ -299,16 +297,16 @@ fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:def
     fit(Histogram{T}, vs, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 end
 
-fit{T,N,W}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
+fit{T,N,W}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
     append!(Histogram(edges, T, _check_closed_arg(closed,:fit), false), vs, wv)
 
-fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::WeightVec; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
+fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
     closed = _check_closed_arg(closed,:fit)
     fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 end
 
 fit(::Type{Histogram}, args...; kwargs...) = fit(Histogram{Int}, args...; kwargs...)
-fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::WeightVec{W}, args...; kwargs...) = fit(Histogram{W}, vs, wv, args...; kwargs...)
+fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, args...; kwargs...) = fit(Histogram{W}, vs, wv, args...; kwargs...)
 
 
 # Get a suitable high-precision type for the norm of a histogram.

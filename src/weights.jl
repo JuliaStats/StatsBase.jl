@@ -2,44 +2,208 @@
 ###### Weight vector #####
 
 if VERSION < v"0.6.0-dev.2123"
-    immutable WeightVec{S<:Real, T<:Real, V<:RealVector} <: RealVector{T}
-        values::V
-        sum::S
-    end
+    @compat abstract type AbstractWeights{S<:Real, T<:Real, V<:RealVector} <: RealVector{T} end
 else
-    immutable WeightVec{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T}
-        values::V
-        sum::S
+    @compat abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
+end
+
+"""
+    @weights name
+
+Generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
+and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
+"""
+macro weights(name)
+    return quote
+        if VERSION < v"0.6.0-dev.2123"
+            immutable $name{S<:Real, T<:Real, V<:RealVector} <: AbstractWeights{S, T, V}
+                values::V
+                sum::S
+            end
+        else
+            immutable $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
+                values::V
+                sum::S
+            end
+        end
     end
 end
 
-"""
-    WeightVec(vs, [wsum])
+eltype(wv::AbstractWeights) = eltype(wv.values)
+length(wv::AbstractWeights) = length(wv.values)
+values(wv::AbstractWeights) = wv.values
+sum(wv::AbstractWeights) = wv.sum
+isempty(wv::AbstractWeights) = isempty(wv.values)
 
-Construct a `WeightVec` with weight values `vs` and sum of weights `wsum`.
-If omitted, `wsum` is computed.
+Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
+Base.size(wv::AbstractWeights) = size(wv.values)
+
 """
-function WeightVec{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs))
-    return WeightVec{S, eltype(vs), V}(vs, s)
-end
+    varcorrection(n::Integer, corrected=false)
+
+Compute a bias correction factor for calculating `var`, `std` and `cov` with
+`n` observations. Returns ``\\frac{1}{n - 1}`` when `corrected=true`
+(i.e. [Bessel's correction](https://en.wikipedia.org/wiki/Bessel's_correction)),
+otherwise returns ``\\frac{1}{n}`` (i.e. no correction).
+"""
+@inline varcorrection(n::Integer, corrected::Bool=false) = 1 / (n - Int(corrected))
+
+@weights Weights
+
+"""
+    Weights(vs, wsum=sum(vs))
+
+Construct a `Weights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
+
+The `Weights` type describes a generic weights vector which does not support
+all operations possible for [`FrequencyWeights`](@ref), [`AnalyticWeights`](@ref)
+and [`ProbabilityWeights`](@ref).
+"""
+Weights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) = Weights{S, eltype(vs), V}(vs, s)
 
 """
     weights(vs)
 
-Construct a `WeightVec` from a given array.
+Construct a `Weights` vector from array `vs`.
+See the documentation for [`Weights`](@ref) for more details.
 """
-weights(vs::RealVector) = WeightVec(vs)
-weights(vs::RealArray) = WeightVec(vec(vs))
+weights(vs::RealVector) = Weights(vs)
+weights(vs::RealArray) = Weights(vec(vs))
 
-eltype(wv::WeightVec) = eltype(wv.values)
-length(wv::WeightVec) = length(wv.values)
-values(wv::WeightVec) = wv.values
-sum(wv::WeightVec) = wv.sum
-isempty(wv::WeightVec) = isempty(wv.values)
+"""
+    varcorrection(w::Weights, corrected=false)
 
-Base.getindex(wv::WeightVec, i) = getindex(wv.values, i)
-Base.size(wv::WeightVec) = size(wv.values)
+Returns ``\\frac{1}{\\sum w}`` when `corrected=false` and throws an `ArgumentError`
+if `corrected=true`.
+"""
+@inline function varcorrection(w::Weights, corrected::Bool=false)
+    corrected && throw(ArgumentError("Weights type does not support bias correction: " *
+                                     "use FrequencyWeights, AnalyticWeights or ProbabilityWeights if applicable."))
+    1 / w.sum
+end
 
+@weights AnalyticWeights
+
+"""
+    AnalyticWeights(vs, wsum=sum(vs))
+
+Construct an `AnalyticWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
+
+Analytic weights describe a non-random relative importance (usually between 0 and 1)
+for each observation. These weights may also be referred to as reliability weights,
+precision weights or inverse variance weights. These are typically used when the observations
+being weighted are aggregate values (e.g., averages) with differing variances.
+"""
+AnalyticWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
+    AnalyticWeights{S, eltype(vs), V}(vs, s)
+
+"""
+    aweights(vs)
+
+Construct an `AnalyticWeights` vector from array `vs`.
+See the documentation for [`AnalyticWeights`](@ref) for more details.
+"""
+aweights(vs::RealVector) = AnalyticWeights(vs)
+aweights(vs::RealArray) = AnalyticWeights(vec(vs))
+
+"""
+    varcorrection(w::AnalyticWeights, corrected=false)
+
+* `corrected=true`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
+* `corrected=false`: ``\\frac{1}{\\sum w}``
+"""
+@inline function varcorrection(w::AnalyticWeights, corrected::Bool=false)
+    s = w.sum
+
+    if corrected
+        sum_sn = sum(x -> (x / s) ^ 2, w)
+        1 / (s * (1 - sum_sn))
+    else
+        1 / s
+    end
+end
+
+@weights FrequencyWeights
+
+"""
+    FrequencyWeights(vs, wsum=sum(vs))
+
+Construct a `FrequencyWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
+
+Frequency weights describe the number of times (or frequency) each observation
+was observed. These weights may also be referred to as case weights or repeat weights.
+"""
+FrequencyWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
+    FrequencyWeights{S, eltype(vs), V}(vs, s)
+
+"""
+    fweights(vs)
+
+Construct a `FrequencyWeights` vector from a given array.
+See the documentation for [`FrequencyWeights`](@ref) for more details.
+"""
+fweights(vs::RealVector) = FrequencyWeights(vs)
+fweights(vs::RealArray) = FrequencyWeights(vec(vs))
+
+"""
+    varcorrection(w::FrequencyWeights, corrected=false)
+
+* `corrected=true`: ``\\frac{1}{\\sum{w} - 1}``
+* `corrected=false`: ``\\frac{1}{\\sum w}``
+"""
+@inline function varcorrection(w::FrequencyWeights, corrected::Bool=false)
+    s = w.sum
+
+    if corrected
+        1 / (s - 1)
+    else
+        1 / s
+    end
+end
+
+@weights ProbabilityWeights
+
+"""
+    ProbabilityWeights(vs, wsum=sum(vs))
+
+Construct a `ProbabilityWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
+
+Probability weights represent the inverse of the sampling probability for each observation,
+providing a correction mechanism for under- or over-sampling certain population groups.
+These weights may also be referred to as sampling weights.
+"""
+ProbabilityWeights{S<:Real, V<:RealVector}(vs::V, s::S=sum(vs)) =
+    ProbabilityWeights{S, eltype(vs), V}(vs, s)
+
+"""
+    pweights(vs)
+
+Construct a `ProbabilityWeights` vector from a given array.
+See the documentation for [`ProbabilityWeights`](@ref) for more details.
+"""
+pweights(vs::RealVector) = ProbabilityWeights(vs)
+pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
+
+"""
+    varcorrection(w::ProbabilityWeights, corrected=false)
+
+* `corrected=true`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `corrected=false`: ``\\frac{1}{\\sum w}``
+"""
+@inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
+    s = w.sum
+
+    if corrected
+        n = count(!iszero, w)
+        n / (s * (n - 1))
+    else
+        1 / s
+    end
+end
 
 ##### Weighted sum #####
 
@@ -54,9 +218,9 @@ wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
 # Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
-Base.sum(v::BitArray, w::WeightVec) = wsum(v, values(w))
-Base.sum(v::SparseMatrixCSC, w::WeightVec) = wsum(v, values(w))
-Base.sum(v::AbstractArray, w::WeightVec) = dot(v, values(w))
+Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, values(w))
+Base.sum(v::SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
+Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
 
 ## wsum along dimension
 #
@@ -255,10 +419,10 @@ end
 
 # extended sum! and wsum
 
-Base.sum!{W<:Real}(R::AbstractArray, A::AbstractArray, w::WeightVec{W}, dim::Int; init::Bool=true) =
+Base.sum!{W<:Real}(R::AbstractArray, A::AbstractArray, w::AbstractWeights{W}, dim::Int; init::Bool=true) =
     wsum!(R, A, values(w), dim; init=init)
 
-Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) = wsum(A, values(w), dim)
+Base.sum{T<:Number,W<:Real}(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) = wsum(A, values(w), dim)
 
 
 ###### Weighted means #####
@@ -273,15 +437,15 @@ function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
     mean(v, weights(w))
 end
 
-Base.mean(v::AbstractArray, w::WeightVec) = sum(v, w) / sum(w)
+Base.mean(v::AbstractArray, w::AbstractWeights) = sum(v, w) / sum(w)
 
-Base.mean!(R::AbstractArray, A::AbstractArray, w::WeightVec, dim::Int) =
+Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
     scale!(Base.sum!(R, A, w, dim), inv(sum(w)))
 
 wmeantype{T,W}(::Type{T}, ::Type{W}) = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
 wmeantype{T<:BlasReal}(::Type{T}, ::Type{T}) = T
 
-Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
+Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) =
     @static if VERSION < v"0.6.0-dev.1121"
         mean!(similar(A, wmeantype(T, W), Base.reduced_dims(size(A), dim)), A, w, dim)
     else
@@ -290,11 +454,11 @@ Base.mean{T<:Number,W<:Real}(A::AbstractArray{T}, w::WeightVec{W}, dim::Int) =
 
 
 ###### Weighted median #####
-function Base.median(v::AbstractArray, w::WeightVec)
+function Base.median(v::AbstractArray, w::AbstractWeights)
     throw(MethodError(median, (v, w)))
 end
 
-function Base.median{W<:Real}(v::RealVector, w::WeightVec{W})
+function Base.median{W<:Real}(v::RealVector, w::AbstractWeights{W})
     isempty(v) && error("median of an empty array is undefined")
     if length(v) != length(w)
         error("data and weight vectors must be the same size")
@@ -345,10 +509,10 @@ end
     wmedian(v, w)
 
 Compute the weighted median of an array `v` with weights `w`, given as either a
-vector or `WeightVec`.
+vector or an `AbstractWeights` vector.
 """
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
-wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
+wmedian{W<:Real}(v::RealVector, w::AbstractWeights{W}) = median(v, w)
 
 ###### Weighted quantile #####
 
@@ -358,11 +522,11 @@ wmedian{W<:Real}(v::RealVector, w::WeightVec{W}) = median(v, w)
 # Here there is a supplementary function from index to weighted index k -> Sk
 
 """
-    quantile(v, w::WeightVec, p)
+    quantile(v, w::AbstractWeights, p)
 
 Compute `p`th quantile(s) of `v` with weights `w`.
 """
-function quantile{V, W <: Real}(v::RealVector{V}, w::WeightVec{W}, p::RealVector)
+function quantile{V, W <: Real}(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector)
 
     # checks
     isempty(v) && error("quantile of an empty array is undefined")
@@ -430,16 +594,16 @@ function bound_quantiles{T <: Real}(qs::AbstractVector{T})
     T[min(one(T), max(zero(T), q)) for q = qs]
 end
 
-quantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
+quantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(v, w, [p])[1]
 
 
 """
     wquantile(v, w, p)
 
 Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
-or a `WeightVec`.
+or an `AbstractWeights` vector.
 """
-wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::RealVector) = quantile(v, w, p)
-wquantile{W <: Real}(v::RealVector, w::WeightVec{W}, p::Number) = quantile(v, w, [p])[1]
+wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::RealVector) = quantile(v, w, p)
+wquantile{W <: Real}(v::RealVector, w::AbstractWeights{W}, p::Number) = quantile(v, w, [p])[1]
 wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
 wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]

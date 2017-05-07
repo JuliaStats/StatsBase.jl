@@ -26,3 +26,16 @@
 @compat fptype{T<:Union{Float64,Int32,UInt32,Int64,UInt64,Int128,UInt128}}(::Type{T}) = Float64
 fptype(::Type{Complex64}) = Complex64
 fptype(::Type{Complex128}) = Complex128
+
+# A convenient typealias for deprecating default corrected Bool
+@compat const DepBool = Union{Bool, Void}
+
+function depcheck(fname::Symbol, b::DepBool)
+    if b == nothing
+        msg = "$fname will default to corrected=true in the future. Use corrected=false for previous behaviour."
+        Base.depwarn(msg, fname)
+        false
+    else
+        b
+    end
+end

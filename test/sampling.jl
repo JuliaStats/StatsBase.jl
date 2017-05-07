@@ -187,7 +187,7 @@ check_sample_norep(a, (3, 12), 0; ordered=true)
 
 # test of weighted sampling without replacement
 a = [1:10;]
-wv = WeightVec([zeros(6); 1:4])
+wv = Weights([zeros(6); 1:4])
 x = vcat([sample(a, wv, 1, replace=false) for j in 1:100000]...)
 @test minimum(x) == 7
 @test maximum(x) == 10
@@ -206,6 +206,5 @@ x = vcat([sample(a, wv, 4, replace=false) for j in 1:10000]...)
 
 @test_throws DimensionMismatch sample(a, wv, 5, replace=false)
 
-wv = WeightVec([zeros(5); 1:4; -1])
+wv = Weights([zeros(5); 1:4; -1])
 @test_throws ErrorException sample(a, wv, 1, replace=false)
-

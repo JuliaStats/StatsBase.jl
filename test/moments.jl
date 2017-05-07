@@ -1,122 +1,281 @@
 using StatsBase
 using Base.Test
 
+@testset "StatsBase.Moments" begin
+weight_funcs = (weights, aweights, fweights, pweights)
+
 ##### weighted var & std
 
-x = rand(10)
-wv = weights(rand(10))
-m = mean(x, wv)
+x = [0.57, 0.10, 0.91, 0.72, 0.46, 0.0]
+w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
-@test var(x, wv)           ≈ sum(abs2.(x .- m), wv) ./ sum(wv)
-@test var(x, wv; mean=0)   ≈ sum(abs2.(x), wv) ./ sum(wv)
-@test var(x, wv; mean=1.0) ≈ sum(abs2.(x .- 1.0), wv) ./ sum(wv)
+@testset "Uncorrected with $f" for f in weight_funcs
+    wv = f(w)
+    m = mean(x, wv)
 
-@test std(x, wv)           ≈ sqrt(var(x, wv))
-@test std(x, wv; mean=0)   ≈ sqrt(var(x, wv; mean=0))
-@test std(x, wv; mean=1.0) ≈ sqrt(var(x, wv; mean=1.0))
+    # expected uncorrected output
+    expected_var = sum(abs2.(x .- m), wv) / sum(wv)
+    expected_std = sqrt(expected_var)
 
-(m, v) = mean_and_var(x)
-@test m == mean(x)
-@test v == var(x)
+    @testset "Variance" begin
+        @test var(x, wv; corrected=false)           ≈ expected_var
+        @test var(x, wv; mean=m, corrected=false)   ≈ expected_var
+    end
 
-(m, s) = mean_and_std(x)
-@test m == mean(x)
-@test s == std(x)
+    @testset "Standard Deviation" begin
+        @test std(x, wv; corrected=false)           ≈ expected_std
+        @test std(x, wv; mean=m, corrected=false)   ≈ expected_std
+    end
 
-(m, v) = mean_and_var(x, wv)
-@test m == mean(x, wv)
-@test v == var(x, wv)
+    @testset "Mean and Variance" begin
+        (m, v) = mean_and_var(x; corrected=false)
+        @test m == mean(x)
+        @test v == var(x; corrected=corrected=false)
 
-(m, s) = mean_and_std(x, wv)
-@test m == mean(x, wv)
-@test s == std(x, wv)
+        (m, v) = mean_and_var(x, wv; corrected=false)
+        @test m == mean(x, wv)
+        @test v == var(x, wv; corrected=false)
+    end
+
+    @testset "Mean and Standard Deviation" begin
+        (m, s) = mean_and_std(x; corrected=false)
+        @test m == mean(x)
+        @test s == std(x; corrected=false)
+
+        (m, s) = mean_and_std(x, wv; corrected=false)
+        @test m == mean(x, wv)
+        @test s == std(x, wv; corrected=false)
+    end
+end
+
+# expected corrected output for (weights, aweights, fweights, pweights)
+expected_var = [NaN, 0.0694434191182236, 0.05466601256158146, 0.06628969012045285]
+expected_std = sqrt(expected_var)
+
+@testset "Corrected with $(weight_funcs[i])" for i in eachindex(weight_funcs)
+    wv = weight_funcs[i](w)
+    m = mean(x, wv)
+
+    @testset "Variance" begin
+        if isa(wv, Weights)
+            @test_throws ArgumentError var(x, wv; corrected=true)
+        else
+            @test var(x, wv; corrected=true)           ≈ expected_var[i]
+            @test var(x, wv; mean=m, corrected=true)   ≈ expected_var[i]
+        end
+    end
+
+    @testset "Standard Deviation" begin
+        if isa(wv, Weights)
+            @test_throws ArgumentError std(x, wv; corrected=true)
+        else
+            @test std(x, wv; corrected=true)           ≈ expected_std[i]
+            @test std(x, wv; mean=m, corrected=true)   ≈ expected_std[i]
+        end
+    end
+
+    @testset "Mean and Variance" begin
+        (m, v) = mean_and_var(x; corrected=true)
+        @test m == mean(x)
+        @test v == var(x; corrected=true)
+
+        if isa(wv, Weights)
+            @test_throws ArgumentError mean_and_var(x, wv; corrected=true)
+        else
+            (m, v) = mean_and_var(x, wv; corrected=true)
+            @test m == mean(x, wv)
+            @test v == var(x, wv; corrected=true)
+        end
+    end
+
+    @testset "Mean and Standard Deviation" begin
+        (m, s) = mean_and_std(x; corrected=true)
+        @test m == mean(x)
+        @test s == std(x; corrected=true)
+
+        if isa(wv, Weights)
+            @test_throws ArgumentError mean_and_std(x, wv; corrected=true)
+        else
+            (m, s) = mean_and_std(x, wv; corrected=true)
+            @test m == mean(x, wv)
+            @test s == std(x, wv; corrected=true)
+        end
+    end
+end
 
 x = rand(5, 6)
 w1 = rand(5)
 w2 = rand(6)
-wv1 = weights(w1)
-wv2 = weights(w2)
-m1 = mean(x, wv1, 1)
-m2 = mean(x, wv2, 2)
 
-@test var(x, wv1, 1; mean=0) ≈ sum(abs2.(x) .* w1, 1) ./ sum(wv1)
-@test var(x, wv2, 2; mean=0) ≈ sum(abs2.(x) .* w2', 2) ./ sum(wv2)
+@testset "Uncorrected with $f" for f in weight_funcs
+    wv1 = f(w1)
+    wv2 = f(w2)
+    m1 = mean(x, wv1, 1)
+    m2 = mean(x, wv2, 2)
 
-@test var(x, wv1, 1; mean=m1) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-@test var(x, wv2, 2; mean=m2) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+    expected_var1 = sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
+    expected_var2 = sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+    expected_std1 = sqrt.(expected_var1)
+    expected_std2 = sqrt.(expected_var2)
 
-@test var(x, wv1, 1) ≈ sum(abs2.(x .- m1) .* w1, 1) ./ sum(wv1)
-@test var(x, wv2, 2) ≈ sum(abs2.(x .- m2) .* w2', 2) ./ sum(wv2)
+    @testset "Variance" begin
+        @test var(x, wv1, 1; corrected=false) ≈ expected_var1
+        @test var(x, wv2, 2; corrected=false) ≈ expected_var2
+        @test var(x, wv1, 1; mean=m1, corrected=false) ≈ expected_var1
+        @test var(x, wv2, 2; mean=m2, corrected=false) ≈ expected_var2
+    end
 
-@test std(x, wv1, 1)          ≈ sqrt.(var(x, wv1, 1))
-@test std(x, wv2, 2)          ≈ sqrt.(var(x, wv2, 2))
-@test std(x, wv1, 1; mean=0)  ≈ sqrt.(var(x, wv1, 1; mean=0))
-@test std(x, wv2, 2; mean=0)  ≈ sqrt.(var(x, wv2, 2; mean=0))
-@test std(x, wv1, 1; mean=m1) ≈ sqrt.(var(x, wv1, 1; mean=m1))
-@test std(x, wv2, 2; mean=m2) ≈ sqrt.(var(x, wv2, 2; mean=m2))
+    @testset "Standard Deviation" begin
+        @test std(x, wv1, 1; corrected=false)          ≈ expected_std1
+        @test std(x, wv2, 2; corrected=false)          ≈ expected_std2
+        @test std(x, wv1, 1; mean=m1, corrected=false) ≈ expected_std1
+        @test std(x, wv2, 2; mean=m2, corrected=false) ≈ expected_std2
+    end
 
-for d in 1:2
-    (m, v) = mean_and_var(x, d)
-    @test m == mean(x, d)
-    @test v == var(x, d)
+    @testset "Mean and Variance" begin
+        for d in 1:2
+            (m, v) = mean_and_var(x, d; corrected=false)
+            @test m == mean(x, d)
+            @test v == var(x, d; corrected=false)
+        end
 
-    (m, s) = mean_and_std(x, d)
-    @test m == mean(x, d)
-    @test s == std(x, d)
+        (m, v) = mean_and_var(x, wv1, 1; corrected=false)
+        @test m == mean(x, wv1, 1)
+        @test v == var(x, wv1, 1; corrected=false)
+
+        (m, v) = mean_and_var(x, wv2, 2; corrected=false)
+        @test m == mean(x, wv2, 2)
+        @test v == var(x, wv2, 2; corrected=false)
+    end
+
+    @testset "Mean and Standard Deviation" begin
+        for d in 1:2
+            (m, s) = mean_and_std(x, d; corrected=false)
+            @test m == mean(x, d)
+            @test s == std(x, d; corrected=false)
+        end
+
+        (m, s) = mean_and_std(x, wv1, 1; corrected=false)
+        @test m == mean(x, wv1, 1)
+        @test s == std(x, wv1, 1; corrected=false)
+
+        (m, s) = mean_and_std(x, wv2, 2; corrected=false)
+        @test m == mean(x, wv2, 2)
+        @test s == std(x, wv2, 2; corrected=false)
+    end
 end
 
-(m, v) = mean_and_var(x, wv1, 1)
-@test m == mean(x, wv1, 1)
-@test v == var(x, wv1, 1)
+@testset "Corrected with $f" for f in weight_funcs
+    wv1 = f(w1)
+    wv2 = f(w2)
+    m1 = mean(x, wv1, 1)
+    m2 = mean(x, wv2, 2)
 
-(m, v) = mean_and_var(x, wv2, 2)
-@test m == mean(x, wv2, 2)
-@test v == var(x, wv2, 2)
+    if !isa(wv1, Weights)
+        expected_var1 = sum(abs2.(x .- m1) .* w1, 1) .* StatsBase.varcorrection(wv1, true)
+        expected_var2 = sum(abs2.(x .- m2) .* w2', 2) .* StatsBase.varcorrection(wv2, true)
+        expected_std1 = sqrt.(expected_var1)
+        expected_std2 = sqrt.(expected_var2)
+    end
 
-(m, s) = mean_and_std(x, wv1, 1)
-@test m == mean(x, wv1, 1)
-@test s == std(x, wv1, 1)
+    @testset "Variance" begin
+        if isa(wv1, Weights)
+            @test_throws ArgumentError var(x, wv1, 1; corrected=true)
+        else
+            @test var(x, wv1, 1; corrected=true) ≈ expected_var1
+            @test var(x, wv2, 2; corrected=true) ≈ expected_var2
+            @test var(x, wv1, 1; mean=m1, corrected=true) ≈ expected_var1
+            @test var(x, wv2, 2; mean=m2, corrected=true) ≈ expected_var2
+        end
+    end
 
-(m, s) = mean_and_std(x, wv2, 2)
-@test m == mean(x, wv2, 2)
-@test s == std(x, wv2, 2)
+    @testset "Standard Deviation" begin
+        if isa(wv1, Weights)
+            @test_throws ArgumentError std(x, wv1, 1; corrected=true)
+        else
+            @test std(x, wv1, 1; corrected=true)          ≈ expected_std1
+            @test std(x, wv2, 2; corrected=true)          ≈ expected_std2
+            @test std(x, wv1, 1; mean=m1, corrected=true) ≈ expected_std1
+            @test std(x, wv2, 2; mean=m2, corrected=true) ≈ expected_std2
+        end
+    end
 
+    @testset "Mean and Variance" begin
+        for d in 1:2
+            (m, v) = mean_and_var(x, d; corrected=true)
+            @test m == mean(x, d)
+            @test v == var(x, d; corrected=true)
+        end
 
+        if isa(wv1, Weights)
+            @test_throws ArgumentError mean_and_var(x, wv1, 1; corrected=true)
+        else
+            (m, v) = mean_and_var(x, wv1, 1; corrected=true)
+            @test m == mean(x, wv1, 1)
+            @test v == var(x, wv1, 1; corrected=true)
 
-##### skewness & kurtosis
+            (m, v) = mean_and_var(x, wv2, 2; corrected=true)
+            @test m == mean(x, wv2, 2)
+            @test v == var(x, wv2, 2; corrected=true)
+        end
+    end
 
-wv = weights(ones(5) * 2.0)
+    @testset "Mean and Standard Deviation" begin
+        for d in 1:2
+            (m, s) = mean_and_std(x, d; corrected=true)
+            @test m == mean(x, d)
+            @test s == std(x, d; corrected=true)
+        end
 
-@test skewness(1:5)             ≈  0.0
-@test skewness([1, 2, 3, 4, 5]) ≈  0.0
-@test skewness([1, 2, 2, 2, 5]) ≈  1.1731251294063556
-@test skewness([1, 4, 4, 4, 5]) ≈ -1.1731251294063556
+        if isa(wv1, Weights)
+            @test_throws ArgumentError mean_and_std(x, wv1, 1; corrected=true)
+        else
+            (m, s) = mean_and_std(x, wv1, 1; corrected=true)
+            @test m == mean(x, wv1, 1)
+            @test s == std(x, wv1, 1; corrected=true)
 
-@test skewness([1, 2, 2, 2, 5], wv) ≈ 1.1731251294063556
+            (m, s) = mean_and_std(x, wv2, 2; corrected=true)
+            @test m == mean(x, wv2, 2)
+            @test s == std(x, wv2, 2; corrected=true)
+        end
+    end
+end
 
-@test kurtosis(1:5)             ≈ -1.3
-@test kurtosis([1, 2, 3, 4, 5]) ≈ -1.3
-@test kurtosis([1, 2, 3, 3, 2]) ≈ -1.1530612244897953
+@testset "Skewness and Kurtosis with $f" for f in weight_funcs
+    wv = f(ones(5) * 2.0)
 
-@test kurtosis([1, 2, 3, 4, 5], wv) ≈ -1.3
+    @test skewness(1:5)             ≈  0.0
+    @test skewness([1, 2, 3, 4, 5]) ≈  0.0
+    @test skewness([1, 2, 2, 2, 5]) ≈  1.1731251294063556
+    @test skewness([1, 4, 4, 4, 5]) ≈ -1.1731251294063556
 
+    @test skewness([1, 2, 2, 2, 5], wv) ≈ 1.1731251294063556
 
-##### general moments
+    @test kurtosis(1:5)             ≈ -1.3
+    @test kurtosis([1, 2, 3, 4, 5]) ≈ -1.3
+    @test kurtosis([1, 2, 3, 3, 2]) ≈ -1.1530612244897953
 
-x = collect(2.0:8.0)
-@test moment(x, 2) ≈ sum((x .- 5).^2) / length(x)
-@test moment(x, 3) ≈ sum((x .- 5).^3) / length(x)
-@test moment(x, 4) ≈ sum((x .- 5).^4) / length(x)
-@test moment(x, 5) ≈ sum((x .- 5).^5) / length(x)
+    @test kurtosis([1, 2, 3, 4, 5], wv) ≈ -1.3
+end
 
-@test moment(x, 2, 4.0) ≈ sum((x .- 4).^2) / length(x)
-@test moment(x, 3, 4.0) ≈ sum((x .- 4).^3) / length(x)
-@test moment(x, 4, 4.0) ≈ sum((x .- 4).^4) / length(x)
-@test moment(x, 5, 4.0) ≈ sum((x .- 4).^5) / length(x)
+@testset "General Moments with $f" for f in weight_funcs
+    x = collect(2.0:8.0)
+    @test moment(x, 2) ≈ sum((x .- 5).^2) / length(x)
+    @test moment(x, 3) ≈ sum((x .- 5).^3) / length(x)
+    @test moment(x, 4) ≈ sum((x .- 5).^4) / length(x)
+    @test moment(x, 5) ≈ sum((x .- 5).^5) / length(x)
 
-w = weights([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
-x2 = collect(2.0:6.0)
-@test moment(x, 2, w) ≈ sum((x2 .- 4).^2) / 5
-@test moment(x, 3, w) ≈ sum((x2 .- 4).^3) / 5
-@test moment(x, 4, w) ≈ sum((x2 .- 4).^4) / 5
-@test moment(x, 5, w) ≈ sum((x2 .- 4).^5) / 5
+    @test moment(x, 2, 4.0) ≈ sum((x .- 4).^2) / length(x)
+    @test moment(x, 3, 4.0) ≈ sum((x .- 4).^3) / length(x)
+    @test moment(x, 4, 4.0) ≈ sum((x .- 4).^4) / length(x)
+    @test moment(x, 5, 4.0) ≈ sum((x .- 4).^5) / length(x)
+
+    w = f([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
+    x2 = collect(2.0:6.0)
+    @test moment(x, 2, w) ≈ sum((x2 .- 4).^2) / 5
+    @test moment(x, 3, w) ≈ sum((x2 .- 4).^3) / 5
+    @test moment(x, 4, w) ≈ sum((x2 .- 4).^4) / 5
+    @test moment(x, 5, w) ≈ sum((x2 .- 4).^5) / 5
+end
+
+end # @testset "StatsBase.Moments"

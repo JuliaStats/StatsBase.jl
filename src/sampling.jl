@@ -266,7 +266,7 @@ seqsample_c!(a::AbstractArray, x::AbstractArray) = seqsample_c!(Base.GLOBAL_RNG,
 
 ### Interface functions (poly-algorithms)
 """
-    sample([rng], a, [wv::WeightVec])
+    sample([rng], a, [wv::AbstractWeights])
 
 Select a single random element of `a`. Sampling probabilities are proportional to
 the weights given in `wv`, if provided.
@@ -279,7 +279,7 @@ sample(a::AbstractArray) = sample(Base.GLOBAL_RNG, a)
 
 
 """
-    sample!([rng], a, [wv::WeightVec], x; replace=true, ordered=false)
+    sample!([rng], a, [wv::AbstractWeights], x; replace=true, ordered=false)
 
 Draw a random sample of `length(x)` elements from an array `a`
 and store the result in `x`. A polyalgorithm is used for sampling.
@@ -332,7 +332,7 @@ sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=fa
 
 
 """
-    sample([rng], a, [wv::WeightVec], n::Integer; replace=true, ordered=false)
+    sample([rng], a, [wv::AbstractWeights], n::Integer; replace=true, ordered=false)
 
 Select a random, optionally weighted sample of size `n` from an array `a`
 using a polyalgorithm. Sampling probabilities are proportional to the weights
@@ -352,7 +352,7 @@ sample(a::AbstractArray, n::Integer; replace::Bool=true, ordered::Bool=false) =
 
 
 """
-    sample([rng], a, [wv::WeightVec], dims::Dims; replace=true, ordered=false)
+    sample([rng], a, [wv::AbstractWeights], dims::Dims; replace=true, ordered=false)
 
 Select a random, optionally weighted sample from an array `a` specifying
 the dimensions `dims` of the output array. Sampling probabilities are
@@ -377,7 +377,7 @@ sample(a::AbstractArray, dims::Dims; replace::Bool=true, ordered::Bool=false) =
 ################################################################
 
 """
-    sample([rng], wv::WeightVec)
+    sample([rng], wv::AbstractWeights)
 
 Select a single random integer in `1:length(wv)` with probabilities
 proportional to the weights given in `wv`.
@@ -385,7 +385,7 @@ proportional to the weights given in `wv`.
 Optionally specify a random number generator ``rng`` as the first argument
 (defaults to ``Base.GLOBAL_RNG``).
 """
-function sample(rng::AbstractRNG, wv::WeightVec)
+function sample(rng::AbstractRNG, wv::AbstractWeights)
     t = rand(rng) * sum(wv)
     w = values(wv)
     n = length(w)
@@ -397,13 +397,13 @@ function sample(rng::AbstractRNG, wv::WeightVec)
     end
     return i
 end
-sample(wv::WeightVec) = sample(Base.GLOBAL_RNG, wv)
+sample(wv::AbstractWeights) = sample(Base.GLOBAL_RNG, wv)
 
-sample(rng::AbstractRNG, a::AbstractArray, wv::WeightVec) = a[sample(rng, wv)]
-sample(a::AbstractArray, wv::WeightVec) = sample(Base.GLOBAL_RNG, a, wv)
+sample(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights) = a[sample(rng, wv)]
+sample(a::AbstractArray, wv::AbstractWeights) = sample(Base.GLOBAL_RNG, a, wv)
 
 function direct_sample!(rng::AbstractRNG, a::AbstractArray,
-                        wv::WeightVec, x::AbstractArray)
+                        wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     for i = 1:length(x)
@@ -411,7 +411,7 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray,
     end
     return x
 end
-direct_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Base.GLOBAL_RNG, a, wv, x)
 
 function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
@@ -473,7 +473,7 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     nothing
 end
 
-function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray)
+function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
@@ -490,11 +490,11 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::Abs
     end
     return x
 end
-alias_sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+alias_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     alias_sample!(Base.GLOBAL_RNG, a, wv, x)
 
 function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                              wv::WeightVec, x::AbstractArray)
+                              wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
@@ -517,7 +517,7 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     end
     return x
 end
-naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+naive_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     naive_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
 # Weighted sampling without replacement
@@ -530,7 +530,7 @@ naive_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
 function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                                     wv::WeightVec, x::AbstractArray)
+                                     wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -548,7 +548,7 @@ function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     end
     return x
 end
-efraimidis_a_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+efraimidis_a_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     efraimidis_a_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
 # Weighted sampling without replacement
@@ -561,7 +561,7 @@ efraimidis_a_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
 function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                                        wv::WeightVec, x::AbstractArray)
+                                        wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -609,7 +609,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     end
     return x
 end
-efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+efraimidis_ares_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     efraimidis_ares_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
 # Weighted sampling without replacement
@@ -622,7 +622,7 @@ efraimidis_ares_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray
 #
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                                         wv::WeightVec, x::AbstractArray)
+                                         wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -671,10 +671,10 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     end
     return x
 end
-efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     efraimidis_aexpj_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
-function sample!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractArray;
+function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
     n = length(a)
     k = length(x)
@@ -704,20 +704,20 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::WeightVec, x::AbstractA
     end
     return x
 end
-sample!(a::AbstractArray, wv::WeightVec, x::AbstractArray) =
+sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     sample!(Base.GLOBAL_RNG, a, wv, x)
 
-sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::WeightVec, n::Integer;
+sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, n::Integer;
           replace::Bool=true, ordered::Bool=false) =
     sample!(rng, a, wv, Vector{T}(n); replace=replace, ordered=ordered)
-sample(a::AbstractArray, wv::WeightVec, n::Integer;
+sample(a::AbstractArray, wv::AbstractWeights, n::Integer;
        replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, wv, n; replace=replace, ordered=ordered)
 
-sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::WeightVec, dims::Dims;
+sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, dims::Dims;
           replace::Bool=true, ordered::Bool=false) =
     sample!(rng, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
-sample(a::AbstractArray, wv::WeightVec, dims::Dims;
+sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
        replace::Bool=true, ordered::Bool=false) =
     sample!(Base.GLOBAL_RNG, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
 
