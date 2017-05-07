@@ -7,7 +7,7 @@ srand(1234)
 
 #### weighted sample with replacement
 
-function check_wsample_wrep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; ordered::Bool=false)
+function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
     K = length(wv)
     (vmin, vmax) = vrgn
     (amin, amax) = extrema(a)
@@ -53,7 +53,7 @@ check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
 
 #### weighted sampling without replacement
 
-function check_wsample_norep(a::AbstractArray, vrgn, wv::WeightVec, ptol::Real; ordered::Bool=false)
+function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
     # each column of a for one run
 
     vmin, vmax = vrgn

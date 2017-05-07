@@ -1,149 +1,158 @@
 using StatsBase
 using Base.Test
 
-X = randn(3, 8)
+@testset "StatsBase.Covariance" begin
+weight_funcs = (weights, aweights, fweights, pweights)
 
-Z1 = X .- mean(X, 1)
-Z2 = X .- mean(X, 2)
+@testset "$f" for f in weight_funcs
+    X = randn(3, 8)
 
-w1 = rand(3)
-w2 = rand(8)
+    Z1 = X .- mean(X, 1)
+    Z2 = X .- mean(X, 2)
 
-wv1 = weights(w1)
-wv2 = weights(w2)
+    w1 = rand(3)
+    w2 = rand(8)
 
-Z1w = X .- mean(X, wv1, 1)
-Z2w = X .- mean(X, wv2, 2)
+    wv1 = f(w1)
+    wv2 = f(w2)
 
-## reference results
+    Z1w = X .- mean(X, wv1, 1)
+    Z2w = X .- mean(X, wv2, 2)
 
-S1 = Z1'Z1
-S2 = Z2 * Z2'
+    ## reference results
 
-Sz1 = X'X
-Sz2 = X * X'
+    S1 = Z1'Z1
+    S2 = Z2 * Z2'
 
-S1w = Z1w' * diagm(w1) * Z1w
-S2w = Z2w * diagm(w2) * Z2w'
+    Sz1 = X'X
+    Sz2 = X * X'
 
-Sz1w = X' * diagm(w1) * X
-Sz2w = X * diagm(w2) * X'
+    S1w = Z1w' * diagm(w1) * Z1w
+    S2w = Z2w * diagm(w2) * Z2w'
 
-## scattermat
+    Sz1w = X' * diagm(w1) * X
+    Sz2w = X * diagm(w2) * X'
 
-if VERSION < v"0.5.0-dev+679"
-    @test scattermat(X)           ≈ S1
-    @test scattermat(X; vardim=2) ≈ S2
+    @testset "Scattermat" begin
+        @test scattermat(X)    ≈ S1
+        @test scattermat(X, 2) ≈ S2
 
-    @test scattermat(X; mean=0)           ≈ Sz1
-    @test scattermat(X; mean=0, vardim=2) ≈ Sz2
+        @test StatsBase.scattermatm(X, 0)    ≈ Sz1
+        @test StatsBase.scattermatm(X, 0, 2) ≈ Sz2
 
-    @test scattermat(X; mean=mean(X,1))           ≈ S1
-    @test scattermat(X; mean=mean(X,2), vardim=2) ≈ S2
+        @test StatsBase.scattermatm(X, mean(X,1))    ≈ S1
+        @test StatsBase.scattermatm(X, mean(X,2), 2) ≈ S2
 
-    @test scattermat(X; mean=zeros(1,8))         ≈ Sz1
-    @test scattermat(X; mean=zeros(3), vardim=2) ≈ Sz2
+        @test StatsBase.scattermatm(X, zeros(1,8))  ≈ Sz1
+        @test StatsBase.scattermatm(X, zeros(3), 2) ≈ Sz2
 
-    ## weighted scatter mat
+        @testset "Weighted" begin
+            @test scattermat(X, wv1)    ≈ S1w
+            @test scattermat(X, wv2, 2) ≈ S2w
 
-    @test scattermat(X, wv1)           ≈ S1w
-    @test scattermat(X, wv2; vardim=2) ≈ S2w
+            @test StatsBase.scattermatm(X, 0, wv1)    ≈ Sz1w
+            @test StatsBase.scattermatm(X, 0, wv2, 2) ≈ Sz2w
 
-    @test scattermat(X, wv1; mean=0)           ≈ Sz1w
-    @test scattermat(X, wv2; mean=0, vardim=2) ≈ Sz2w
+            @test StatsBase.scattermatm(X, mean(X, wv1, 1), wv1)    ≈ S1w
+            @test StatsBase.scattermatm(X, mean(X, wv2, 2), wv2, 2) ≈ S2w
 
-    @test scattermat(X, wv1; mean=mean(X, wv1, 1))           ≈ S1w
-    @test scattermat(X, wv2; mean=mean(X, wv2, 2), vardim=2) ≈ S2w
+            @test StatsBase.scattermatm(X, zeros(1,8), wv1)  ≈ Sz1w
+            @test StatsBase.scattermatm(X, zeros(3), wv2, 2) ≈ Sz2w
+        end
+    end
 
-    @test scattermat(X, wv1; mean=zeros(1,8))         ≈ Sz1w
-    @test scattermat(X, wv2; mean=zeros(3), vardim=2) ≈ Sz2w
-else
-    @test scattermat(X)    ≈ S1
-    @test scattermat(X, 2) ≈ S2
+    @testset "Uncorrected" begin
+        @testset "Weighted Covariance" begin
+            @test cov(X, wv1; corrected=false)    ≈ S1w ./ sum(wv1)
+            @test cov(X, wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
 
-    @test StatsBase.scattermatm(X, 0)    ≈ Sz1
-    @test StatsBase.scattermatm(X, 0, 2) ≈ Sz2
+            @test Base.covm(X, 0, wv1, 1; corrected=false) ≈ Sz1w ./ sum(wv1)
+            @test Base.covm(X, 0, wv2, 2; corrected=false) ≈ Sz2w ./ sum(wv2)
 
-    @test StatsBase.scattermatm(X, mean(X,1))    ≈ S1
-    @test StatsBase.scattermatm(X, mean(X,2), 2) ≈ S2
+            @test Base.covm(X, mean(X, wv1, 1), wv1, 1; corrected=false) ≈ S1w ./ sum(wv1)
+            @test Base.covm(X, mean(X, wv2, 2), wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
 
-    @test StatsBase.scattermatm(X, zeros(1,8))  ≈ Sz1
-    @test StatsBase.scattermatm(X, zeros(3), 2) ≈ Sz2
+            @test Base.covm(X, zeros(1,8), wv1, 1; corrected=false) ≈ Sz1w ./ sum(wv1)
+            @test Base.covm(X, zeros(3), wv2, 2; corrected=false)   ≈ Sz2w ./ sum(wv2)
+        end
 
-    ## weighted scatter mat
+        @testset "Mean and covariance" begin
+            (m, C) = mean_and_cov(X; corrected=false)
+            @test m == mean(X, 1)
+            @test C == cov(X, 1, false)
 
-    @test scattermat(X, wv1)    ≈ S1w
-    @test scattermat(X, wv2, 2) ≈ S2w
+            (m, C) = mean_and_cov(X, 1; corrected=false)
+            @test m == mean(X, 1)
+            @test C == cov(X, 1, false)
 
-    @test StatsBase.scattermatm(X, 0, wv1)    ≈ Sz1w
-    @test StatsBase.scattermatm(X, 0, wv2, 2) ≈ Sz2w
+            (m, C) = mean_and_cov(X, 2; corrected=false)
+            @test m == mean(X, 2)
+            @test C == cov(X, 2, false)
 
-    @test StatsBase.scattermatm(X, mean(X, wv1, 1), wv1)    ≈ S1w
-    @test StatsBase.scattermatm(X, mean(X, wv2, 2), wv2, 2) ≈ S2w
+            (m, C) = mean_and_cov(X, wv1; corrected=false)
+            @test m == mean(X, wv1, 1)
+            @test C == cov(X, wv1, 1; corrected=false)
 
-    @test StatsBase.scattermatm(X, zeros(1,8), wv1)  ≈ Sz1w
-    @test StatsBase.scattermatm(X, zeros(3), wv2, 2) ≈ Sz2w
+            (m, C) = mean_and_cov(X, wv1, 1; corrected=false)
+            @test m == mean(X, wv1, 1)
+            @test C == cov(X, wv1, 1; corrected=false)
+
+            (m, C) = mean_and_cov(X, wv2, 2; corrected=false)
+            @test m == mean(X, wv2, 2)
+            @test C == cov(X, wv2, 2; corrected=false)
+        end
+    end
+
+    @testset "Corrected" begin
+        @testset "Weighted Covariance" begin
+            if isa(wv1, Weights)
+                @test_throws ArgumentError cov(X, wv1; corrected=true)
+            else
+                var_corr1 = StatsBase.varcorrection(wv1, true)
+                var_corr2 = StatsBase.varcorrection(wv2, true)
+
+                @test cov(X, wv1; corrected=true)    ≈ S1w .* var_corr1
+                @test cov(X, wv2, 2; corrected=true) ≈ S2w .* var_corr2
+
+                @test Base.covm(X, 0, wv1, 1; corrected=true) ≈ Sz1w .* var_corr1
+                @test Base.covm(X, 0, wv2, 2; corrected=true) ≈ Sz2w .* var_corr2
+
+                @test Base.covm(X, mean(X, wv1, 1), wv1, 1; corrected=true) ≈ S1w .* var_corr1
+                @test Base.covm(X, mean(X, wv2, 2), wv2, 2; corrected=true) ≈ S2w .* var_corr2
+
+                @test Base.covm(X, zeros(1,8), wv1, 1; corrected=true) ≈ Sz1w .* var_corr1
+                @test Base.covm(X, zeros(3), wv2, 2; corrected=true)   ≈ Sz2w .* var_corr2
+            end
+        end
+        @testset "Mean and covariance" begin
+            (m, C) = mean_and_cov(X; corrected=true)
+            @test m == mean(X, 1)
+            @test C == cov(X, 1, true)
+
+            (m, C) = mean_and_cov(X, 1; corrected=true)
+            @test m == mean(X, 1)
+            @test C == cov(X, 1, true)
+
+            (m, C) = mean_and_cov(X, 2; corrected=true)
+            @test m == mean(X, 2)
+            @test C == cov(X, 2, true)
+
+            if isa(wv1, Weights)
+                @test_throws ArgumentError mean_and_cov(X, wv1; corrected=true)
+            else
+                (m, C) = mean_and_cov(X, wv1; corrected=true)
+                @test m == mean(X, wv1, 1)
+                @test C == cov(X, wv1, 1; corrected=true)
+
+                (m, C) = mean_and_cov(X, wv1, 1; corrected=true)
+                @test m == mean(X, wv1, 1)
+                @test C == cov(X, wv1, 1; corrected=true)
+
+                (m, C) = mean_and_cov(X, wv2, 2; corrected=true)
+                @test m == mean(X, wv2, 2)
+                @test C == cov(X, wv2, 2; corrected=true)
+            end
+        end
+    end
 end
-
-# weighted covariance
-
-if VERSION < v"0.5.0-dev+679"
-    @test cov(X, wv1)           ≈ S1w ./ sum(wv1)
-    @test cov(X, wv2; vardim=2) ≈ S2w ./ sum(wv2)
-
-    @test cov(X, wv1; mean=0)           ≈ Sz1w ./ sum(wv1)
-    @test cov(X, wv2; mean=0, vardim=2) ≈ Sz2w ./ sum(wv2)
-
-    @test cov(X, wv1; mean=mean(X, wv1, 1))           ≈ S1w ./ sum(wv1)
-    @test cov(X, wv2; mean=mean(X, wv2, 2), vardim=2) ≈ S2w ./ sum(wv2)
-
-    @test cov(X, wv1; mean=zeros(1,8))         ≈ Sz1w ./ sum(wv1)
-    @test cov(X, wv2; mean=zeros(3), vardim=2) ≈ Sz2w ./ sum(wv2)
-else
-    @test cov(X, wv1)    ≈ S1w ./ sum(wv1)
-    @test cov(X, wv2, 2) ≈ S2w ./ sum(wv2)
-
-    @test Base.covm(X, 0, wv1)    ≈ Sz1w ./ sum(wv1)
-    @test Base.covm(X, 0, wv2, 2) ≈ Sz2w ./ sum(wv2)
-
-    @test Base.covm(X, mean(X, wv1, 1), wv1)    ≈ S1w ./ sum(wv1)
-    @test Base.covm(X, mean(X, wv2, 2), wv2, 2) ≈ S2w ./ sum(wv2)
-
-    @test Base.covm(X, zeros(1,8), wv1)  ≈ Sz1w ./ sum(wv1)
-    @test Base.covm(X, zeros(3), wv2, 2) ≈ Sz2w ./ sum(wv2)
-end
-
-# mean_and_cov
-if VERSION < v"0.5.0-dev+679"
-    (m, C) = mean_and_cov(X; vardim=1)
-    @test m == mean(X, 1)
-    @test C == cov(X; vardim=1)
-
-    (m, C) = mean_and_cov(X; vardim=2)
-    @test m == mean(X, 2)
-    @test C == cov(X; vardim=2)
-
-    (m, C) = mean_and_cov(X, wv1; vardim=1)
-    @test m == mean(X, wv1, 1)
-    @test C == cov(X, wv1; vardim=1)
-
-    (m, C) = mean_and_cov(X, wv2; vardim=2)
-    @test m == mean(X, wv2, 2)
-    @test C == cov(X, wv2; vardim=2)
-else
-    (m, C) = mean_and_cov(X, 1)
-    @test m == mean(X, 1)
-    @test C == cov(X, 1)
-
-    (m, C) = mean_and_cov(X, 2)
-    @test m == mean(X, 2)
-    @test C == cov(X, 2)
-
-    (m, C) = mean_and_cov(X, wv1, 1)
-    @test m == mean(X, wv1, 1)
-    @test C == cov(X, wv1, 1)
-
-    (m, C) = mean_and_cov(X, wv2, 2)
-    @test m == mean(X, wv2, 2)
-    @test C == cov(X, wv2, 2)
-end
+end # @testset "StatsBase.Covariance"
