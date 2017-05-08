@@ -154,5 +154,20 @@ weight_funcs = (weights, aweights, fweights, pweights)
             end
         end
     end
+
+    @testset "Correlation" begin
+        @test cor(X, f(ones(3)), 1) ≈ cor(X, 1)
+        @test cor(X, f(ones(8)), 2) ≈ cor(X, 2)
+
+        cov1 = cov(X, wv1, 1; corrected=false)
+        std1 = std(X, wv1, 1; corrected=false)
+        cov2 = cov(X, wv2, 2; corrected=false)
+        std2 = std(X, wv2, 2; corrected=false)
+        expected_cor1 = Base.cov2cor!(cov1, std1)
+        expected_cor2 = Base.cov2cor!(cov2, std2)
+
+        @test cor(X, wv1, 1) ≈ expected_cor1
+        @test cor(X, wv2, 2) ≈ expected_cor2
+    end
 end
 end # @testset "StatsBase.Covariance"
