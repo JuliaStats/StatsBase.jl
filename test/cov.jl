@@ -101,6 +101,29 @@ weight_funcs = (weights, aweights, fweights, pweights)
             @test m == mean(X, wv2, 2)
             @test C == cov(X, wv2, 2; corrected=false)
         end
+        @testset "Conversions" begin
+            std1 = std(X, wv1, 1; corrected=false)
+            std2 = std(X, wv2, 2; corrected=false)
+
+            cov1 = cov(X, wv1, 1; corrected=false)
+            cov2 = cov(X, wv2, 2; corrected=false)
+
+            cor1 = cor(X, wv1, 1)
+            cor2 = cor(X, wv2, 2)
+
+            @testset "cov2cor" begin
+                @test cov2cor(cov(X, 1), std(X, 1)) ≈ cor(X, 1)
+                @test cov2cor(cov(X, 2), std(X, 2)) ≈ cor(X, 2)
+                @test cov2cor(cov1, std1) ≈ cor1
+                @test cov2cor(cov2, std2) ≈ cor2
+            end
+            @testset "cor2cov" begin
+                @test cor2cov(cor(X, 1), std(X, 1)) ≈ cov(X, 1)
+                @test cor2cov(cor(X, 2), std(X, 2)) ≈ cov(X, 2)
+                @test cor2cov(cor1, std1) ≈ cov1
+                @test cor2cov(cor2, std2) ≈ cov2
+            end
+        end
     end
 
     @testset "Corrected" begin
@@ -151,6 +174,31 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 (m, C) = mean_and_cov(X, wv2, 2; corrected=true)
                 @test m == mean(X, wv2, 2)
                 @test C == cov(X, wv2, 2; corrected=true)
+            end
+        end
+        @testset "Conversions" begin
+            if !isa(wv1, Weights)
+                std1 = std(X, wv1, 1; corrected=true)
+                std2 = std(X, wv2, 2; corrected=true)
+
+                cov1 = cov(X, wv1, 1; corrected=true)
+                cov2 = cov(X, wv2, 2; corrected=true)
+
+                cor1 = cor(X, wv1, 1)
+                cor2 = cor(X, wv2, 2)
+
+                @testset "cov2cor" begin
+                    @test cov2cor(cov(X, 1), std(X, 1)) ≈ cor(X, 1)
+                    @test cov2cor(cov(X, 2), std(X, 2)) ≈ cor(X, 2)
+                    @test cov2cor(cov1, std1) ≈ cor1
+                    @test cov2cor(cov2, std2) ≈ cor2
+                end
+                @testset "cor2cov" begin
+                    @test cor2cov(cor(X, 1), std(X, 1)) ≈ cov(X, 1)
+                    @test cor2cov(cor(X, 2), std(X, 2)) ≈ cov(X, 2)
+                    @test cor2cov(cor1, std1) ≈ cov1
+                    @test cor2cov(cor2, std2) ≈ cov2
+                end
             end
         end
     end

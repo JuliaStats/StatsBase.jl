@@ -44,3 +44,11 @@ This package implements functions for computing scatter matrix, as well as weigh
   A weighting vector ``wv`` can be specified. ``vardim`` that designates whether the variables are columns in the matrix (``1``) or rows (``2``).
   Finally, bias correction is applied to the covariance calculation if ``corrected=true``.
   See ``cov`` documentation for more details.
+
+.. function:: cov2cor(C, s)
+
+    Compute the correlation matrix from the covariance matrix `C` and a vector of standard deviations `s`.
+
+.. function:: cor2cov(C, s)
+
+    Compute the covariance matrix from the correlation matrix `C` and a vector of standard deviations `s`.
