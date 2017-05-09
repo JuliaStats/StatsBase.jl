@@ -64,15 +64,6 @@ cov
 
 
 """
-    cor(X, w::AbstractWeights; mean=nothing, vardim=1)
-
-Compute the Pearson correlation matrix of `X` along the dimension
-`vardim` with a weighting `w` .
-"""
-cor
-
-
-"""
     mean_and_cov(x, [wv::AbstractWeights]; vardim=1, corrected=false) -> (mean, cov)
 
 Return the mean and covariance matrix as a tuple. A weighting
@@ -111,6 +102,12 @@ function Base.corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
     Base.cov2cor!(c, s)
 end
 
+"""
+    cor(X, w::AbstractWeights; mean=nothing, vardim=1)
+
+Compute the Pearson correlation matrix of `X` along the dimension
+`vardim` with a weighting `w` .
+"""
 Base.cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
     Base.corm(x, Base.mean(x, w, vardim), w, vardim)
 
