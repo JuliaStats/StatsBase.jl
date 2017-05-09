@@ -103,7 +103,7 @@ function Base.corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
 end
 
 """
-    cor(X, w::AbstractWeights; mean=nothing, vardim=1)
+    cor(X, w::AbstractWeights, vardim=1)
 
 Compute the Pearson correlation matrix of `X` along the dimension
 `vardim` with a weighting `w` .
