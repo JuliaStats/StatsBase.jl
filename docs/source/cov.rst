@@ -34,6 +34,10 @@ This package implements functions for computing scatter matrix, as well as weigh
     * ``ProbabilityWeights``: :math:`\frac{n}{(n - 1) \sum w}` where ``n`` equals ``count(!iszero, w)``
     * ``Weights``: ``ArgumentError`` (bias correction not supported)
 
+.. function:: cor(X, w[, vardim])
+
+    Compute the Pearson correlation matrix of ``X`` along the dimension ``vardim`` with a weighting ``w``.
+
 .. function:: mean_and_cov(x[, wv][; vardim=..., corrected=...])
 
   Jointly compute the mean and covariance matrix as a tuple.
