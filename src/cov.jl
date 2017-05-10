@@ -125,18 +125,29 @@ end
     cov2cor(C, s)
 
 Compute the correlation matrix from the covariance matrix `C` and a vector of standard
-deviations `s`.
+deviations `s`. Use `Base.cov2cor!` for an in-place version.
 """
-cov2cor(C::AbstractMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), vec(s))
+cov2cor(C::AbstractMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), s)
 
 """
     cor2cov(C, s)
 
 Compute the covariance matrix from the correlation matrix `C` and a vector of standard
-deviations `s`.
+deviations `s`. Use `StatsBase.cor2cov!` for an in-place version.
 """
-function cor2cov(C::AbstractMatrix, s::AbstractArray)
-    # This could be optimized with for loops if necessary
-    D = Diagonal(vec(s))
-    D * C * D
+cor2cov(C::AbstractMatrix, s::AbstractArray) = cor2cov!(copy(C), s)
+
+"""
+    cor2cov!(C, s)
+
+Converts the correlation matrix `C` to a covariance matrix in-place using a vector of
+standard deviations `s`.
+"""
+function cor2cov!(C::AbstractMatrix, s::AbstractArray)
+    n = length(s)
+    size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
+    for i in CartesianRange(size(C))
+        C[i] = C[i] * s[i[1]] * s[i[2]]
+    end
+    return C
 end

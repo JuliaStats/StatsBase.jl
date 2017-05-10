@@ -47,8 +47,8 @@ This package implements functions for computing scatter matrix, as well as weigh
 
 .. function:: cov2cor(C, s)
 
-    Compute the correlation matrix from the covariance matrix `C` and a vector of standard deviations `s`.
+    Compute the correlation matrix from the covariance matrix ``C`` and a vector of standard deviations ``s``. Use ``Base.cov2cor!`` for an in-place version.
 
 .. function:: cor2cov(C, s)
 
-    Compute the covariance matrix from the correlation matrix `C` and a vector of standard deviations `s`.
+    Compute the covariance matrix from the correlation matrix ``C`` and a vector of standard deviations ``s``. Use ``StatsBase.cor2cov!`` for an in-place version.
