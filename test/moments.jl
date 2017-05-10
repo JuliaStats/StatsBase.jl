@@ -15,7 +15,7 @@ w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
     # expected uncorrected output
     expected_var = sum(abs2.(x .- m), wv) / sum(wv)
-    expected_std = sqrt(expected_var)
+    expected_std = sqrt.(expected_var)
 
     @testset "Variance" begin
         @test var(x, wv; corrected=false)           ≈ expected_var
@@ -50,7 +50,7 @@ end
 
 # expected corrected output for (weights, aweights, fweights, pweights)
 expected_var = [NaN, 0.0694434191182236, 0.05466601256158146, 0.06628969012045285]
-expected_std = sqrt(expected_var)
+expected_std = sqrt.(expected_var)
 
 @testset "Corrected with $(weight_funcs[i])" for i in eachindex(weight_funcs)
     wv = weight_funcs[i](w)
