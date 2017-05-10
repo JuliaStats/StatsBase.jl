@@ -127,7 +127,7 @@ end
 Compute the correlation matrix from the covariance matrix `C` and a vector of standard
 deviations `s`.
 """
-cov2cor(C::DenseMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), vec(s))
+cov2cor(C::AbstractMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), vec(s))
 
 """
     cor2cov(C, s)
@@ -135,7 +135,7 @@ cov2cor(C::DenseMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), vec(s))
 Compute the covariance matrix from the correlation matrix `C` and a vector of standard
 deviations `s`.
 """
-function cor2cov(C::DenseMatrix, s::AbstractArray)
+function cor2cov(C::AbstractMatrix, s::AbstractArray)
     # This could be optimized with for loops if necessary
     D = Diagonal(vec(s))
     D * C * D
