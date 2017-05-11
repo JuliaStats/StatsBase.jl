@@ -193,11 +193,36 @@ weight_funcs = (weights, aweights, fweights, pweights)
                     @test cov2cor(cov1, std1) ≈ cor1
                     @test cov2cor(cov2, std2) ≈ cor2
                 end
+
+                @testset "cov2cor!" begin
+                    tmp_cov1 = copy(cov1)
+                    @test !(tmp_cov1 ≈ cor1)
+                    Base.cov2cor!(tmp_cov1, std1)
+                    @test tmp_cov1 ≈ cor1
+
+                    tmp_cov2 = copy(cov2)
+                    @test !(tmp_cov2 ≈ cor2)
+                    Base.cov2cor!(tmp_cov2, std2)
+                    @test tmp_cov2 ≈ cor2
+                end
+
                 @testset "cor2cov" begin
                     @test cor2cov(cor(X, 1), std(X, 1)) ≈ cov(X, 1)
                     @test cor2cov(cor(X, 2), std(X, 2)) ≈ cov(X, 2)
                     @test cor2cov(cor1, std1) ≈ cov1
                     @test cor2cov(cor2, std2) ≈ cov2
+                end
+
+                @testset "cor2cov!" begin
+                    tmp_cor1 = copy(cor1)
+                    @test !(tmp_cor1 ≈ cov1)
+                    StatsBase.cor2cov!(tmp_cor1, std1)
+                    @test tmp_cor1 ≈ cov1
+
+                    tmp_cor2 = copy(cor2)
+                    @test !(tmp_cor2 ≈ cov2)
+                    StatsBase.cor2cov!(tmp_cor2, std2)
+                    @test tmp_cor2 ≈ cov2
                 end
             end
         end

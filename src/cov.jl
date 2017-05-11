@@ -147,7 +147,7 @@ function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
     for i in CartesianRange(size(C))
-        C[i] = C[i] * s[i[1]] * s[i[2]]
+        @inbounds C[i] *= s[i[1]] * s[i[2]]
     end
     return C
 end
