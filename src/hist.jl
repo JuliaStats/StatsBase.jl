@@ -8,7 +8,9 @@ import Base: show, ==, push!, append!, float, norm, normalize, normalize!
 # remove "closed=:left" in tests for all lines marked "FIXME: closed".
 function _check_closed_arg(closed::Symbol, funcsym)
     if closed == :default_left
-        Base.depwarn("Default for keyword argument \"closed\" has changed from :right to :left.", funcsym)
+        Base.depwarn("Default for keyword argument \"closed\" has changed from :right to :left.\n" *
+                     "To avoid this warning, specify closed=:right or closed=:left as appropriate.",
+                     funcsym)
         :left
     else
         closed
