@@ -86,6 +86,8 @@ module StatsBase
 
     # cov
     scattermat,     # scatter matrix (i.e. unnormalized covariance)
+    cov2cor,        # converts a covariance matrix to a correlation matrix
+    cor2cov,        # converts a correlation matrix to a covariance matrix
 
     ## counts
     addcounts!,     # add counts to an accumulating array or map

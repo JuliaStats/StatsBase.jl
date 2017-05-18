@@ -120,3 +120,34 @@ function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1;
     m = mean(x, wv, vardim)
     return m, Base.cov(x, wv, vardim; corrected=depcheck(:mean_and_cov, corrected))
 end
+
+"""
+    cov2cor(C, s)
+
+Compute the correlation matrix from the covariance matrix `C` and a vector of standard
+deviations `s`. Use `Base.cov2cor!` for an in-place version.
+"""
+cov2cor(C::AbstractMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), s)
+
+"""
+    cor2cov(C, s)
+
+Compute the covariance matrix from the correlation matrix `C` and a vector of standard
+deviations `s`. Use `StatsBase.cor2cov!` for an in-place version.
+"""
+cor2cov(C::AbstractMatrix, s::AbstractArray) = cor2cov!(copy(C), s)
+
+"""
+    cor2cov!(C, s)
+
+Converts the correlation matrix `C` to a covariance matrix in-place using a vector of
+standard deviations `s`.
+"""
+function cor2cov!(C::AbstractMatrix, s::AbstractArray)
+    n = length(s)
+    size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
+    for i in CartesianRange(size(C))
+        @inbounds C[i] *= s[i[1]] * s[i[2]]
+    end
+    return C
+end
