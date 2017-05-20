@@ -27,7 +27,7 @@ Particularly, instances of ``StatisticalModel`` implement the following methods.
   
 .. function:: coeftable(model)
 
-    Return a `CoefTable` modelect for the fitted model with rows corresponding to parameters and columns usually including the estimates, their standard errors, a test statistic and a p-value, if appropriate.
+    Return a `CoefTable` object for the fitted model with rows corresponding to parameters and columns usually including the estimates, their standard errors, a test statistic and a p-value, if appropriate.
   
 .. function:: confint(model[, prob])
 
