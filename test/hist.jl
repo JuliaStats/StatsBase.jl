@@ -195,7 +195,7 @@ end
 
 @testset "Histogram zero" begin
     h = fit(Histogram, (rand(100), rand(100)), closed=:left)
-    h2 = zero(h)
+    h2 = @inferred zero(h)
     @test all(x -> x≈0, h2.weights)
     @test !(h.weights === h2.weights)
     @test h.edges == h2.edges
@@ -209,7 +209,7 @@ end
     h = zero(histograms[1])
     merge!(h, histograms ...)
     @test h.weights == (+).((x->x.weights).(histograms)...)
-    @test merge(histograms...) == h
+    @test (@inferred merge(histograms...)) == h
 end
 
 
