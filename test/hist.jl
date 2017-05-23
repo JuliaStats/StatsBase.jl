@@ -193,4 +193,24 @@ end
 end
 
 
+@testset "Histogram similar" begin
+    h = fit(Histogram, (rand(100), rand(100)), closed=:left)
+    h2 = similar(h)
+    @test all(x -> x≈0, h2.weights)
+    @test !(h.weights === h2.weights)
+    @test h.edges == h2.edges
+    @test h.closed == h2.closed
+    @test h.isdensity == h2.isdensity
+end
+
+
+@testset "Histogram merge" begin
+    histograms = [fit(Histogram, (rand(100), 10 * rand(100)), (0:0.1:1, 0:1:10), closed=:left) for _ in 1:10]
+    h = similar(histograms[1])
+    merge!(h, histograms ...)
+    @test h.weights == (+).((x->x.weights).(histograms)...)
+    @test merge(histograms...) == h
+end
+
+
 end # @testset "StatsBase.Histogram"
