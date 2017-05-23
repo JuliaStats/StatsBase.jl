@@ -441,13 +441,13 @@ end
 
 
 """
-    similar(h::Histogram)
+    zero(h::Histogram)
 
 Create a new histogram with the same binning, type and shape of weights
-and the same properties (`closed` and `isdensity`) as `h`. The weights of the
-new histogram are set to zero.
+and the same properties (`closed` and `isdensity`) as `h`, with all weights
+set to zero.
 """
-Base.similar{T,N,E}(h::Histogram{T,N,E}) =
+Base.zero{T,N,E}(h::Histogram{T,N,E}) =
     Histogram{T,N,E}(deepcopy(h.edges), zero(h.weights), h.closed, h.isdensity)
 
 
@@ -479,4 +479,4 @@ have the same binning, shape of weights and properties (`closed` and
 `isdensity`). The weights of all histograms are summed up for each bin, the
 weights of the resulting histogram will have the same type as those of `h`.
 """
-Base.merge(h::Histogram, others::Histogram...) = merge!(similar(h), h, others...)
+Base.merge(h::Histogram, others::Histogram...) = merge!(zero(h), h, others...)
