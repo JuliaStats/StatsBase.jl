@@ -172,6 +172,10 @@ module StatsBase
 
     ConvergenceException
 
+    ## comparison tests for statistical models
+    testfit # Pairwise sequential tests of model fit.
+
+
     # source files
 
     include("common.jl")

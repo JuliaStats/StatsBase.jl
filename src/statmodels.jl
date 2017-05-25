@@ -162,6 +162,9 @@ predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj))
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
 dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
 
+## Tests for statistical models
+function testfit() # Pairwise sequential tests of model fit
+end
 
 ## coefficient tables with specialized show method
 
