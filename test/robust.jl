@@ -42,8 +42,8 @@ using Base.Test
 
 ### Variance
 
-@test_approx_eq trimvar([1,1,1,1,1]) 0.0
-@test_approx_eq trimvar([2,3,4,5,6,7,8,9], prop=0.25) 1.0
+@test trimvar([1,1,1,1,1]) ≈ 0.0
+@test trimvar([2,3,4,5,6,7,8,9], prop=0.25) ≈ 1.0
 
 @test_throws ArgumentError trimvar([])
 @test_throws ArgumentError trimvar([1,2,3,4,5], prop=0.5)
