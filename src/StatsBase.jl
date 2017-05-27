@@ -162,6 +162,7 @@ module StatsBase
     nulldeviance,
     nullloglikelihood,
     stderr,
+    testfit,
     vcov,
     predict,
     predict!,
@@ -171,10 +172,6 @@ module StatsBase
     model_response,
 
     ConvergenceException
-
-    ## comparison tests for statistical models
-    testfit # Pairwise sequential tests of model fit.
-
 
     # source files
 

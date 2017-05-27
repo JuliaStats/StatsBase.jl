@@ -161,10 +161,8 @@ it would generally be a `DataFrame` with the same variable names as the original
 predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
 dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
+function testfit end
 
-## Tests for statistical models
-function testfit() # Pairwise sequential tests of model fit
-end
 
 ## coefficient tables with specialized show method
 
