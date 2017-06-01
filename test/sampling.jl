@@ -208,3 +208,10 @@ x = vcat([sample(a, wv, 4, replace=false) for j in 1:10000]...)
 
 wv = Weights([zeros(5); 1:4; -1])
 @test_throws ErrorException sample(a, wv, 1, replace=false)
+
+#### weighted sampling with dimension
+srand(1);
+
+@test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
+@test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
+@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]
