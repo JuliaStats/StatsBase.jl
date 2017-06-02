@@ -719,7 +719,7 @@ sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, dims::Dims
     sample!(rng, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
 sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
        replace::Bool=true, ordered::Bool=false) =
-    sample!(Base.GLOBAL_RNG, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
+    sample(Base.GLOBAL_RNG, a, wv, dims; replace=replace, ordered=ordered)
 
 # wsample interface
 
