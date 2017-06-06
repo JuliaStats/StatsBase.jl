@@ -8,13 +8,11 @@
 
 # Trimmed set
 """
-    trim(x, [prop=0.0, count=0])
+    trim(x; prop=0.0, count=0)
 
-
-Remove either `count` or proportion `prop` of the highest and lowest
-elements in `x` and return the result. To compute the trimmed mean of
-`x`, use `mean(trim(x, prop=prop))`; to compute the variance of this
-quantity, use `trimvar(x, prop=prop)`.
+Return a copy of `x` with either `count` or proportion `prop` of the highest
+and lowest elements removed.  To compute the trimmed mean of `x` use
+`mean(trim(x))`; to compute the variance use `trimvar(x)` (see [`trimvar`](@ref)).
 
 # Example
 ```julia
@@ -30,9 +28,9 @@ function trim(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 end
 
 """
-    trim!(x, [prop=0.0, count=0])
+    trim!(x; prop=0.0, count=0)
 
-A variant of `trim` that modifies `x` in place.
+A variant of [`trim`](@ref) that modifies `x` in place.
 """
 function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     n = length(x)
@@ -42,6 +40,7 @@ function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
         count = floor(Int, n * prop)
     else
+        prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
@@ -54,13 +53,12 @@ function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 end
 
 """
-    winsor(x, [prop=0.0, count=0])
+    winsor(x; prop=0.0, count=0)
 
-Return a Winsorized version of vector `x`; i.e. replace either `count` or
-proportion `prop` of the lowest elements of `x` with the next-lowest, and
-replace an equal number of the highest elements with the previous-highest.
-This function is used to compute the Winsorized mean of `x`. It is also
-used by `trimvar` to compute the variance of the trimmed mean of `x`.
+Return a copy of `x` with either `count` or proportion `prop` of the lowest
+elements of `x` replaced with the next-lowest, and an equal number of the
+highest elements replaced with the previous-highest.  To compute the Winsorized
+mean of `x` use `mean(winsor(x))`.
 
 # Example
 ```julia
@@ -78,9 +76,9 @@ function winsor(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 end
 
 """
-    winsor!(x, [prop=0.0, count=0])
+    winsor!(x; prop=0.0, count=0)
 
-A variant of `winsor` that modifies vector `x` in place.
+A variant of [`winsor`](@ref) that modifies vector `x` in place.
 """
 function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     n = length(x)
@@ -90,6 +88,7 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
         count = floor(Int, n * prop)
     else
+        prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
@@ -110,7 +109,7 @@ end
 
 # Variance of a trimmed set.
 """
-    trimvar(x, [prop=0.0, count=0])
+    trimvar(x; prop=0.0, count=0)
 
 Compute the variance of the trimmed mean of `x`. This function uses
 the Winsorized variance, as described in Wilcox (2010).
@@ -129,5 +128,3 @@ function trimvar(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 
     return var(winsor(x, count=count)) / (n * (1 - 2prop)^2)
 end
-
-

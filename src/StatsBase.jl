@@ -184,6 +184,7 @@ module StatsBase
     include("weights.jl")
     include("moments.jl")
     include("scalarstats.jl")
+    include("robust.jl")
     include("deviation.jl")
     include("cov.jl")
     include("counts.jl")
@@ -195,7 +196,6 @@ module StatsBase
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
-    include("robust.jl")
 
     include("sampling.jl")
     include("statmodels.jl")

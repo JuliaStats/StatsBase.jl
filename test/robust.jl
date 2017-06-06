@@ -47,3 +47,8 @@ using Base.Test
 
 @test_throws ArgumentError trimvar([])
 @test_throws ArgumentError trimvar([1,2,3,4,5], prop=0.5)
+
+### Other
+
+@test mean(trim([-Inf,1,2,3,4], count=1)) == 2
+@test mean(winsor([-Inf,1,2,3,4], count=1)) == 2

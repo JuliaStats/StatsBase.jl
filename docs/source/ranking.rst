@@ -1,7 +1,7 @@
 Rankings
 ==========
 
-This package implements various stragies for computing ranks. 
+This package implements various strategies for computing ranks. 
 
 .. function:: ordinalrank(x)
 
