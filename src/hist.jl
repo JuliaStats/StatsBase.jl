@@ -438,3 +438,45 @@ function normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; m
     normalize!(h_fltcp, aux_weights_fltcp..., mode = mode)
     (h_fltcp, aux_weights_fltcp...)
 end
+
+
+"""
+    zero(h::Histogram)
+
+Create a new histogram with the same binning, type and shape of weights
+and the same properties (`closed` and `isdensity`) as `h`, with all weights
+set to zero.
+"""
+Base.zero{T,N,E}(h::Histogram{T,N,E}) =
+    Histogram{T,N,E}(deepcopy(h.edges), zero(h.weights), h.closed, h.isdensity)
+
+
+"""
+    merge!(target::Histogram, others::Histogram...)
+
+Update histogram `target` by merging it with the histograms `others`. See
+`merge(histogram::Histogram, others::Histogram...)` for details.
+"""
+function Base.merge!(target::Histogram, others::Histogram...)
+    for h in others
+        target.edges != h.edges && throw(ArgumentError("can't merge histograms with different binning"))
+        size(target.weights) != size(h.weights) && throw(ArgumentError("can't merge histograms with different dimensions"))
+        target.closed != h.closed && throw(ArgumentError("can't merge histograms with different closed left/right settings"))
+        target.isdensity != h.isdensity && throw(ArgumentError("can't merge histograms with different isdensity settings"))
+    end
+    for h in others
+        target.weights .+= h.weights
+    end
+    target
+end
+
+
+"""
+    merge(h::Histogram, others::Histogram...)
+
+Construct a new histogram by merging `h` with `others`. All histograms must
+have the same binning, shape of weights and properties (`closed` and
+`isdensity`). The weights of all histograms are summed up for each bin, the
+weights of the resulting histogram will have the same type as those of `h`.
+"""
+Base.merge(h::Histogram, others::Histogram...) = merge!(zero(h), h, others...)
