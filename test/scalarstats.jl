@@ -28,15 +28,6 @@ using Base.Test
 # Test numerical stability for large `p` (genmean should be close to max).
 @test isapprox(genmean([0.98,1.02], 1e4), 1.02, atol=1e-4)
 
-
-## trimmean
-
-@test trimmean([-100, 2, 3, 7, 200], 0.0) ≈ 22.4
-@test trimmean([-100, 2, 3, 7, 200], 0.4) ≈ 4.0
-@test trimmean([-100, 2, 3, 7, 200], 0.8) ≈ 3.0
-@test trimmean([2, 3, -100, 200, 7], 0.4) ≈ 4.0
-@test trimmean([2, 3, -100, 200, 7], 0.8) ≈ 3.0
-
 ## mode & modes
 
 @test mode([1, 2, 3, 3, 2, 2, 1], 1:3) == 2

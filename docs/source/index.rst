@@ -14,6 +14,7 @@ Welcome to StatsBase.jl's Documentation!
    weightvec.rst
    means.rst
    scalarstats.rst
+   robust.rst
    deviation.rst
    cov.rst
    counts.rst
