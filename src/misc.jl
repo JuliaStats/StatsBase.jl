@@ -19,6 +19,15 @@ Return the run-length encoding of a vector as a tuple. The
 first element of the tuple is a vector of values of the input
 and the second is the number of consecutive occurrences of each
 element.
+
+# Examples
+
+```jldoctest
+julia> using StatsBase
+
+julia> rle([1,1,1,2,2,3,3,3,3,2,2,2])
+([1, 2, 3, 2], [3, 2, 4, 3])
+```
 """
 function rle{T}(v::Vector{T})
     n = length(v)
@@ -55,8 +64,8 @@ end
 """
     inverse_rle(vals, lens)
 
-Reconstruct a vector from its run-length encoding. `vals` is a
-vector of the values and `lens` is a vector of the corresponding
+Reconstruct a vector from its run-length encoding (see [`rle`](@ref)).
+`vals` is a vector of the values and `lens` is a vector of the corresponding
 run lengths.
 """
 function inverse_rle{T}(vals::AbstractVector{T}, lens::IntegerVector)
@@ -114,12 +123,6 @@ function levelsmap{T}(a::AbstractArray{T})
     return d
 end
 
-# indicatormat
-
-# x: input elements,
-# c: categories
-# k: the maximum integer in x
-
 """
     indicatormat(x, k::Integer; sparse=false)
 
@@ -127,6 +130,18 @@ Construct a boolean matrix `I` of size `(k, length(x))` such that
 `I[x[i], i] = true` and all other elements are set to `false`.
 If `sparse` is `true`, the output will be a sparse matrix, otherwise
 it will be dense (default).
+
+# Examples
+
+```jldoctest
+julia> using StatsBase
+
+julia> indicatormat([1 2 2], 2)
+2×3 Array{Bool,2}:
+  true  false  false
+ false   true   true
+
+```
 """
 function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)

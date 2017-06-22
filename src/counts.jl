@@ -226,6 +226,14 @@ end
 
 ## 1D
 
+
+"""
+    addcounts!(dict, x[, wv])
+
+Add counts based on `x` to a count map. New entries will be added if new values come up.
+If a weighting vector `wv` is specified, the sum of the weights is used rather than the
+raw counts.
+"""
 function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T})
     for v in x
         cm[v] = get(cm, v, 0) + 1

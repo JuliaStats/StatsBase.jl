@@ -7,13 +7,6 @@
 
 ### Algorithms for sampling with replacement
 
-# Direct sampling
-#
-#   for each i, draw an index from 1:length(a), and
-#   pick the corresponding element from a.
-#
-#   x[i] and x[j] are independent, when i != j
-#
 function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
     s = RandIntSampler(length(a))
     b = a[1] - 1
@@ -30,6 +23,14 @@ function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
 end
 direct_sample!(a::UnitRange, x::AbstractArray) = direct_sample!(Base.GLOBAL_RNG, a, x)
 
+"""
+    direct_sample!([rng], a::AbstractArray, x::AbstractArray)
+
+Direct sampling: for each `j` in `1:k`, randomly pick `i` from `1:n`,
+and set `x[j] = a[i]`, with `n=length(a)` and `k=length(x)`.
+
+This algorithm consumes `k` random numbers.
+"""
 function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     s = RandIntSampler(length(a))
     for i = 1:length(x)
@@ -46,8 +47,8 @@ direct_sample!(a::AbstractArray, x::AbstractArray) = direct_sample!(Base.GLOBAL_
 
 Draw a pair of distinct integers between 1 and `n` without replacement.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 function samplepair(rng::AbstractRNG, n::Int)
     i1 = randi(rng, n)
@@ -61,8 +62,8 @@ samplepair(n::Int) = samplepair(Base.GLOBAL_RNG, n)
 
 Draw a pair of distinct elements from the array `a` without replacement.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 function samplepair(rng::AbstractRNG, a::AbstractArray)
     i1, i2 = samplepair(rng, length(a))
@@ -72,10 +73,16 @@ samplepair(a::AbstractArray) = samplepair(Base.GLOBAL_RNG, a)
 
 ### Algorithm for sampling without replacement
 
-# Knuth's Algorithm S
-#
-#   Reference: The Art of Computer Programming, Vol 2, 3.4.2, p.142
-#
+"""
+    knuths_sample!([rng], a, x)
+
+*Knuth's Algorithm S* for random sampling without replacement.
+
+Reference: D. Knuth. *The Art of Computer Programming*. Vol 2, 3.4.2, p.142.
+
+This algorithm consumes `length(a)` random numbers. It requires no additional
+memory space. Suitable for the case where memory is tight.
+"""
 function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                         initshuffle::Bool=true)
     n = length(a)
@@ -109,17 +116,29 @@ end
 knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=true) =
     knuths_sample!(Base.GLOBAL_RNG, a, x; initshuffle=initshuffle)
 
-# Fisher-Yates sampling
-#
-#   create an array of index inds = [1:n]
-#
-#   for i = 1:k
-#       swap inds[i] with a random one in inds[i:n]
-#       set x[i] = a[inds[i]]
-#   end
-#
-#   O(n) for initialization + O(k) for random shuffling
-#
+"""
+    fisher_yates_sample!([rng], a::AbstractArray, x::AbstractArray)
+
+Fisher-Yates shuffling (with early termination).
+
+Pseudo-code:
+```
+n = length(a)
+k = length(x)
+
+create an array of index inds = [1:n]
+
+for i = 1:k
+    swap inds[i] with a random one in inds[i:n]
+    set x[i] = a[inds[i]]
+end
+```
+
+This algorithm consumes `k=length(x)` random numbers. It uses an integer array of
+length `n=length(a)` internally to maintain the shuffled indices. It is considerably
+faster than Knuth's algorithm especially when `n` is greater than `k`.
+It is ``O(n)`` for initialization, plus ``O(k)`` for random shuffling
+"""
 function fisher_yates_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
@@ -142,13 +161,20 @@ end
 fisher_yates_sample!(a::AbstractArray, x::AbstractArray) =
     fisher_yates_sample!(Base.GLOBAL_RNG, a, x)
 
-# Self-avoid sampling
-#
-#   Use a set to maintain the index that has been sampled,
-#
-#   each time draw a new index, if the index has already
-#   been sampled, redraw until it draws an unsampled one.
-#
+"""
+    self_avoid_sample!([rng], a::AbstractArray, x::AbstractArray)
+
+Self-avoid sampling: use a set to maintain the index that has been sampled.
+Each time draw a new index, if the index has already been sampled,
+redraw until it draws an unsampled one.
+
+This algorithm consumes about (or slightly more than) `k=length(x)` random numbers,
+and requires ``O(k)`` memory to store the set of sampled indices.
+Very fast when ``n >> k``, with `n=length(a)`.
+
+However, if `k` is large and approaches ``n``, the rejection rate would increase
+drastically, resulting in poorer performance.
+"""
 function self_avoid_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
@@ -177,26 +203,16 @@ end
 self_avoid_sample!(a::AbstractArray, x::AbstractArray) =
     self_avoid_sample!(Base.GLOBAL_RNG, a, x)
 
-# Random subsequence sampling
-#
-#  References:
-#
-#   Jeffrey Scott Vitter.
-#   "Faster Methods for Random Sampling"
-#   Communications of the ACM, 27 (7), July 1984
-#
-#
-# This paper presents three algorithms, respectively
-# named Algorithm A, C, and D.
-#
-# These algorithms are for sequential sampling, and the
-# outputs are ordered. They are implemented below
-#
+"""
+    seqsample_a!([rng], a::AbstractArray, x::AbstractArray)
 
-## Algorithm A (page 714)
-#
-#  Require O(n) random numbers.
-#
+Random subsequence sampling using algorithm A described in the following paper (page 714):
+Jeffrey Scott Vitter. "Faster Methods for Random Sampling". Communications of the ACM,
+27 (7), July 1984.
+
+This algorithm consumes ``O(n)`` random numbers, with `n=length(a)`.
+The outputs are ordered.
+"""
 function seqsample_a!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
@@ -225,10 +241,16 @@ function seqsample_a!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 end
 seqsample_a!(a::AbstractArray, x::AbstractArray) = seqsample_a!(Base.GLOBAL_RNG, a, x)
 
-## Algorithm C (page 715)
-#
-#  Require O(k^2) random numbers
-#
+"""
+    seqsample_c!([rng], a::AbstractArray, x::AbstractArray)
+
+Random subsequence sampling using algorithm C described in the following paper (page 715):
+Jeffrey Scott Vitter. "Faster Methods for Random Sampling". Communications of the ACM,
+27 (7), July 1984.
+
+This algorithm consumes ``O(k^2)`` random numbers, with `k=length(x)`.
+The outputs are ordered.
+"""
 function seqsample_c!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
@@ -271,8 +293,8 @@ seqsample_c!(a::AbstractArray, x::AbstractArray) = seqsample_c!(Base.GLOBAL_RNG,
 Select a single random element of `a`. Sampling probabilities are proportional to
 the weights given in `wv`, if provided.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 sample(rng::AbstractRNG, a::AbstractArray) = a[randi(rng, length(a))]
 sample(a::AbstractArray) = sample(Base.GLOBAL_RNG, a)
@@ -288,8 +310,8 @@ if provided. `replace` dictates whether sampling is performed with
 replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
@@ -340,8 +362,8 @@ given in `wv`, if provided. `replace` dictates whether sampling is performed
 with replacement and `order` dictates whether an ordered sample, also called
 a sequential sample, should be taken.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 function sample{T}(rng::AbstractRNG, a::AbstractArray{T}, n::Integer;
                    replace::Bool=true, ordered::Bool=false)
@@ -360,8 +382,8 @@ proportional to the weights given in `wv`, if provided. `replace` dictates
 whether sampling is performed with replacement and `order` dictates whether
 an ordered sample, also called a sequential sample, should be taken.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 function sample{T}(rng::AbstractRNG, a::AbstractArray{T}, dims::Dims;
                    replace::Bool=true, ordered::Bool=false)
@@ -382,8 +404,8 @@ sample(a::AbstractArray, dims::Dims; replace::Bool=true, ordered::Bool=false) =
 Select a single random integer in `1:length(wv)` with probabilities
 proportional to the weights given in `wv`.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     t = rand(rng) * sum(wv)
@@ -402,6 +424,18 @@ sample(wv::AbstractWeights) = sample(Base.GLOBAL_RNG, wv)
 sample(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights) = a[sample(rng, wv)]
 sample(a::AbstractArray, wv::AbstractWeights) = sample(Base.GLOBAL_RNG, a, wv)
 
+"""
+    direct_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+
+Direct sampling.
+
+Draw each sample by scanning the weight vector.
+
+Noting `k=length(x)` and `n=length(a)`, this algorithm:
+* consumes `k` random numbers
+* has time complexity ``O(n k)``, as scanning the weight vector each time takes ``O(n)``
+* requires no additional memory space.
+"""
 function direct_sample!(rng::AbstractRNG, a::AbstractArray,
                         wv::AbstractWeights, x::AbstractArray)
     n = length(a)
@@ -473,6 +507,19 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     nothing
 end
 
+"""
+    alias_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+
+Alias method.
+
+Build an alias table, and sample therefrom.
+
+Reference: Walker, A. J. "An Efficient Method for Generating Discrete Random Variables
+with General Distributions." *ACM Transactions on Mathematical Software* 3 (3): 253, 1977.
+
+Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n \\log n)`` time
+for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
+"""
 function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
@@ -493,6 +540,17 @@ end
 alias_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     alias_sample!(Base.GLOBAL_RNG, a, wv, x)
 
+"""
+    naive_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+
+Naive implementation of weighted sampling without replacement.
+
+It makes a copy of the weight vector at initialization, and sets the weight to zero
+when the corresponding sample is picked.
+
+Noting `k=length(x)` and `n=length(a)`, this algorithm consumes ``O(k)`` random numbers,
+and has overall time complexity ``O(n k)``.
+"""
 function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                               wv::AbstractWeights, x::AbstractArray)
     n = length(a)
@@ -521,14 +579,18 @@ naive_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     naive_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
 # Weighted sampling without replacement
-#
-# Algorithm A from:
-#     Efraimidis PS, Spirakis PG (2006). "Weighted random sampling with a reservoir."
-#     Information Processing  Letters, 97 (5), 181-185. ISSN 0020-0190.
-#     doi:10.1016/j.ipl.2005.11.003.
-#     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
-#
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
+"""
+    efraimidis_a_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+
+Weighted sampling without replacement using Efraimidis-Spirakis A algorithm.
+
+Reference: Efraimidis, P. S., Spirakis, P. G. "Weighted random sampling with a reservoir."
+*Information Processing Letters*, 97 (5), 181-185, 2006. doi:10.1016/j.ipl.2005.11.003.
+
+Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n + k \\log k)``
+processing time to draw ``k`` elements. It consumes ``n`` random numbers.
+"""
 function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                      wv::AbstractWeights, x::AbstractArray)
     n = length(a)
@@ -552,14 +614,18 @@ efraimidis_a_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractAr
     efraimidis_a_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
 # Weighted sampling without replacement
-#
-# Algorithm A-Res from:
-#     Efraimidis PS, Spirakis PG (2006). "Weighted random sampling with a reservoir."
-#     Information Processing  Letters, 97 (5), 181-185. ISSN 0020-0190.
-#     doi:10.1016/j.ipl.2005.11.003.
-#     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
-#
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
+"""
+    efraimidis_ares_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+
+Implementation of weighted sampling without replacement using Efraimidis-Spirakis A-Res algorithm.
+
+Reference: Efraimidis, P. S., Spirakis, P. G. "Weighted random sampling with a reservoir."
+*Information Processing Letters*, 97 (5), 181-185, 2006. doi:10.1016/j.ipl.2005.11.003.
+
+Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(k \\log(k) \\log(n / k))``
+processing time to draw ``k`` elements. It consumes ``n`` random numbers.
+"""
 function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                         wv::AbstractWeights, x::AbstractArray)
     n = length(a)
@@ -613,14 +679,18 @@ efraimidis_ares_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstrac
     efraimidis_ares_wsample_norep!(Base.GLOBAL_RNG, a, wv, x)
 
 # Weighted sampling without replacement
-#
-# Algorithm A-ExpJ from:
-#     Efraimidis PS, Spirakis PG (2006). "Weighted random sampling with a reservoir."
-#     Information Processing  Letters, 97 (5), 181-185. ISSN 0020-0190.
-#     doi:10.1016/j.ipl.2005.11.003.
-#     URL http://www.sciencedirect.com/science/article/pii/S002001900500298X
-#
 # Instead of keys u^(1/w) where u = random(0,1) keys w/v where v = randexp(1) are used.
+"""
+    efraimidis_aexpj_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+
+Implementation of weighted sampling without replacement using Efraimidis-Spirakis A-ExpJ algorithm.
+
+Reference: Efraimidis, P. S., Spirakis, P. G. "Weighted random sampling with a reservoir."
+*Information Processing Letters*, 97 (5), 181-185, 2006. doi:10.1016/j.ipl.2005.11.003.
+
+Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(k \\log(k) \\log(n / k))``
+processing time to draw ``k`` elements. It consumes ``O(k \\log(n / k))`` random numbers.
+"""
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                          wv::AbstractWeights, x::AbstractArray)
     n = length(a)
@@ -731,8 +801,8 @@ probabilities are proportional to the weights given in `w`. `replace` dictates
 whether sampling is performed with replacement and `order` dictates whether an
 ordered sample, also called a sequential sample, should be taken.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 wsample!(rng::AbstractRNG, a::AbstractArray, w::RealVector, x::AbstractArray;
          replace::Bool=true, ordered::Bool=false) =
@@ -747,8 +817,8 @@ wsample!(a::AbstractArray, w::RealVector, x::AbstractArray;
 Select a weighted random sample of size 1 from `a` with probabilities proportional
 to the weights given in `w`. If `a` is not present, select a random weight from `w`.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 wsample(rng::AbstractRNG, w::RealVector) = sample(rng, weights(w))
 wsample(w::RealVector) = wsample(Base.GLOBAL_RNG, w)
@@ -765,8 +835,8 @@ to the weights given in `w` if `a` is present, otherwise select a random sample 
 replacement and `order` dictates whether an ordered sample, also called a sequential
 sample, should be taken.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
            replace::Bool=true, ordered::Bool=false) =
@@ -782,8 +852,8 @@ Select a weighted random sample from `a` with probabilities proportional to the
 weights given in `w` if `a` is present, otherwise select a random sample of size
 `n` of the weights given in `w`. The dimensions of the output are given by `dims`.
 
-Optionally specify a random number generator ``rng`` as the first argument
-(defaults to ``Base.GLOBAL_RNG``).
+Optionally specify a random number generator `rng` as the first argument
+(defaults to `Base.GLOBAL_RNG`).
 """
 wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
            replace::Bool=true, ordered::Bool=false) =
