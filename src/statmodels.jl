@@ -165,10 +165,14 @@ dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(ty
 """
     params(model)
 
-Return a tuple of model parameters.
+Return all parameters of a model.
 """
 params(obj) = error("params is not defined for $(typeof(obj))")
-params!(obj) = error("params! is not defined for $(typeof(obj))")
+
+"""
+Write the parameters of a model into preallocated storage
+"""
+function params! end
 
 ## coefficient tables with specialized show method
 
