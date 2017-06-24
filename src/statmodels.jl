@@ -165,12 +165,12 @@ dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(ty
 """
     params(model)
 
-Return all parameters of a model.
+Return all parameters of a model.  For a linear model, this would return coefficients as well as variance components.
 """
 params(obj) = error("params is not defined for $(typeof(obj))")
 
 """
-Write the parameters of a model into preallocated storage
+Write the parameters of a model into preallocated storage.
 """
 function params! end
 
