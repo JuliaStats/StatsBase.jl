@@ -162,7 +162,11 @@ predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj))
 predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
 dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
 
+"""
+    params(obj)
 
+Return all parameters of a model. 
+"""
 params(obj) = error("params is not defined for $(typeof(obj))")
 function params! end
 
