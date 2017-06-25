@@ -14,6 +14,8 @@ coeftable
 confint
 deviance
 dof
+fit
+fit!
 loglikelihood
 nobs
 nulldeviance

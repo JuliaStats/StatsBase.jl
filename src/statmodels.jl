@@ -86,7 +86,14 @@ Return the variance-covariance matrix for the coefficients of the model.
 """
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 
+"""
+Fit a statistical model.
+"""
 fit(obj::StatisticalModel, args...) = error("fit is not defined for $(typeof(obj)).")
+
+"""
+Fit a statistical model in-place.
+"""
 fit!(obj::StatisticalModel, args...) = error("fit! is not defined for $(typeof(obj)).")
 
 """

@@ -10,7 +10,7 @@
 
 #### functions for counting a single list of integers (1D)
 """
-    addcounts!(r, x, levels, [wv])
+    addcounts!(r, x, levels::UnitRange{<:Int}, [wv::AbstractWeights])
 
 Add the number of occurrences in `x` of each value in `levels` to an existing
 array `r`. If a weighting vector `wv` is specified, the sum of weights is used
@@ -55,23 +55,26 @@ end
 
 
 """
-    counts(x, levels=span(x), [wv::AbstractWeights])
+    counts(x, [wv::AbstractWeights])
+    counts(x, levels::UnitRange{<:Integer}, [wv::AbstractWeights])
+    counts(x, k::Integer, [wv::AbstractWeights])
 
-Count the number of times that values in the range `levels` occur in
-`x`. The output is a vector of length `length(levels)`. If a weighting
-vector `wv` is specified, the sum of the weights is used rather than the
+Count the number of times each value in `x` occurs. If `levels` is provided, only values
+falling in that range will be considered (the others will be ignored without
+raising an error or a warning). If an integer `k` is provided, only values in the
+range `1:k` will be considered.
+
+If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
+
+The output is a vector of length `length(levels)`.
 """
+function counts end
+
 counts(x::IntegerArray, levels::IntUnitRange) =
     addcounts!(zeros(Int, length(levels)), x, levels)
 counts(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
     addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
-
-"""
-    counts(x, k::Integer, [wv::AbstractWeights])
-
-Count the number of times integers in the range 1 to `k` occur in `x`.
-"""
 counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
 counts(x::IntegerArray, k::Integer, wv::AbstractWeights) = counts(x, 1:k, wv)
 counts(x::IntegerArray) = counts(x, span(x))

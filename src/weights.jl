@@ -484,8 +484,8 @@ Compute the weighted median of `x`, using weights given by a weight vector `w`
 (of type `AbstractWeights`). The weight and data vectors must have the same length.
 
 The weighted median ``x_k`` is the element of `x` that satisfies
-``\sum_{x_i < x_k} w_i \le \frac{1}{2} \sum_{j} w_j`` and
-``\sum_{x_i > x_k} w_i \le \frac{1}{2} \sum_{j} w_j``.
+``\\sum_{x_i < x_k} w_i \\le \\frac{1}{2} \\sum_{j} w_j`` and
+``\\sum_{x_i > x_k} w_i \\le \\frac{1}{2} \\sum_{j} w_j``.
 
 If a weight has value zero, then its associated data point is ignored.
 If none of the weights are positive, an error is thrown.
@@ -563,9 +563,9 @@ values `p`, using weights given by a weight vector `w` (of type `AbstractWeights
 Weights must not be negative. The weights and data vectors must have the same length.
 
 The quantile for `p` is defined as follows. Denoting
-``S_k = (k-1)w_k + (n-1) \sum_{i<k}w_i``, define ``x_{k+1}`` the smallest element of `x`
+``S_k = (k-1)w_k + (n-1) \\sum_{i<k}w_i``, define ``x_{k+1}`` the smallest element of `x`
 such that ``S_{k+1}/S_{n}`` is strictly superior to `p`. The function returns
-``(1-\gamma) x_k + \gamma x_{k+1}`` with  ``\gamma = (pS_n- S_k)/(S_{k+1}-S_k)``.
+``(1-\\gamma) x_k + \\gamma x_{k+1}`` with  ``\\gamma = (pS_n- S_k)/(S_{k+1}-S_k)``.
 
 This corresponds to  R-7, Excel, SciPy-(1,1) and Maple-6 when `w` contains only ones
 (see [Wikipedia](https://en.wikipedia.org/wiki/Quantile)).

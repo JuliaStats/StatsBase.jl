@@ -126,11 +126,12 @@ Pseudo-code:
 n = length(a)
 k = length(x)
 
-create an array of index inds = [1:n]
+# Create an array of the indices
+inds = collect(1:n)
 
 for i = 1:k
-    swap inds[i] with a random one in inds[i:n]
-    set x[i] = a[inds[i]]
+    # swap element `i` with another random element in inds[i:n]
+    # set element `i` in `x`
 end
 ```
 

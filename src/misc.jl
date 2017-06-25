@@ -140,7 +140,6 @@ julia> indicatormat([1 2 2], 2)
 2×3 Array{Bool,2}:
   true  false  false
  false   true   true
-
 ```
 """
 function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
