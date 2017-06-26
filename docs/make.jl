@@ -22,11 +22,6 @@ makedocs(
 )
 
 deploydocs(
-    # options
     repo = "github.com/JuliaStats/StatsBase.jl.git",
-    target = "build",
-    julia  = "nightly",
-    osname = "linux",
-    deps = nothing,
-    make = nothing
+    julia  = "0.6"
 )
