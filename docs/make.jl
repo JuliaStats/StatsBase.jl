@@ -3,7 +3,6 @@ using Documenter, StatsBase
 makedocs(
     format = :html,
     sitename = "StatsBase.jl",
-    # options
     modules = [StatsBase],
     pages = ["index.md",
              "weights.md",
@@ -18,10 +17,12 @@ makedocs(
              "empirical.md",
              "signalcorr.md",
              "misc.md",
-             "statmodels.md"]   
+             "statmodels.md"]
 )
 
 deploydocs(
     repo = "github.com/JuliaStats/StatsBase.jl.git",
-    julia  = "0.6"
+    julia  = "0.6",
+    deps   = nothing,
+    make   = nothing
 )
