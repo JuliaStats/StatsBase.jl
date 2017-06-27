@@ -34,7 +34,8 @@ end
 """
     ordinalrank(x)
 
-Return the ordinal ranking ("1234" ranking) of a real-valued array.
+Return the [ordinal ranking](https://en.wikipedia.org/wiki/Ranking#Ordinal_ranking_.28.221234.22_ranking.29)
+("1234" ranking) of a real-valued array.
 All items in `x` are given distinct, successive ranks based on their
 position in `sort(x)`.
 """
@@ -71,7 +72,8 @@ end
 """
     competerank(x)
 
-Return the standard competition ranking ("1224" ranking) of a real-valued
+Return the [standard competition ranking](http://en.wikipedia.org/wiki/Ranking#Standard_competition_ranking_.28.221224.22_ranking.29)
+("1224" ranking) of a real-valued
 array. Items that compare equal are given the same rank, then a gap is left
 in the rankings the size of the number of tied items - 1.
 """
@@ -108,7 +110,8 @@ end
 """
     denserank(x)
 
-Return the dense ranking ("1223" ranking) of a real-valued array. Items that
+Return the [dense ranking](http://en.wikipedia.org/wiki/Ranking#Dense_ranking_.28.221223.22_ranking.29)
+("1223" ranking) of a real-valued array. Items that
 compare equal receive the same ranking, and the next subsequent rank is
 assigned with no gap.
 """
@@ -153,7 +156,8 @@ end
 """
     tiedrank(x)
 
-Return the tied ranking, also called fractional or "1 2.5 2.5 4" ranking,
+Return the [tied ranking](http://en.wikipedia.org/wiki/Ranking#Fractional_ranking_.28.221_2.5_2.5_4.22_ranking.29),
+also called fractional or "1 2.5 2.5 4" ranking,
 of a real-valued array. Items that compare equal receive the mean of the
 rankings they would have been assigned under ordinal ranking.
 """

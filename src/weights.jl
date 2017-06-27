@@ -437,8 +437,27 @@ function wmean{T<:Number}(v::AbstractArray{T}, w::AbstractVector)
     mean(v, weights(w))
 end
 
-Base.mean(v::AbstractArray, w::AbstractWeights) = sum(v, w) / sum(w)
+"""
+    mean(A::AbstractArray, w::AbstractWeights[, dim::Int])
 
+Compute the weighted mean of array `A` with weight vector `w`
+(of type `AbstractWeights`). If `dim` is provided, compute the
+weighted mean along dimension `dim`.
+
+# Examples
+```julia
+w = rand(n)
+mean(x, weights(w))
+```
+"""
+Base.mean(A::AbstractArray, w::AbstractWeights) = sum(A, w) / sum(w)
+
+"""
+    mean(R::AbstractArray, , A::AbstractArray, w::AbstractWeights[, dim::Int])
+
+Compute the weighted mean of array `A` with weight vector `w`
+(of type `AbstractWeights`) along dimension `dim`, and write results to `R`.
+"""
 Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
     scale!(Base.sum!(R, A, w, dim), inv(sum(w)))
 
@@ -458,6 +477,21 @@ function Base.median(v::AbstractArray, w::AbstractWeights)
     throw(MethodError(median, (v, w)))
 end
 
+"""
+    median(v::RealVector, w::AbstractWeights)
+
+Compute the weighted median of `x`, using weights given by a weight vector `w`
+(of type `AbstractWeights`). The weight and data vectors must have the same length.
+
+The weighted median ``x_k`` is the element of `x` that satisfies
+``\\sum_{x_i < x_k} w_i \\le \\frac{1}{2} \\sum_{j} w_j`` and
+``\\sum_{x_i > x_k} w_i \\le \\frac{1}{2} \\sum_{j} w_j``.
+
+If a weight has value zero, then its associated data point is ignored.
+If none of the weights are positive, an error is thrown.
+`NaN` is returned if `x` contains any `NaN` values. 
+An error is raised if `w` contains any `NaN` values.
+"""
 function Base.median{W<:Real}(v::RealVector, w::AbstractWeights{W})
     isempty(v) && error("median of an empty array is undefined")
     if length(v) != length(w)
@@ -524,7 +558,17 @@ wmedian{W<:Real}(v::RealVector, w::AbstractWeights{W}) = median(v, w)
 """
     quantile(v, w::AbstractWeights, p)
 
-Compute `p`th quantile(s) of `v` with weights `w`.
+Compute the weighted quantiles of a vector `x` at a specified set of probability
+values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
+Weights must not be negative. The weights and data vectors must have the same length.
+
+The quantile for `p` is defined as follows. Denoting
+``S_k = (k-1)w_k + (n-1) \\sum_{i<k}w_i``, define ``x_{k+1}`` the smallest element of `x`
+such that ``S_{k+1}/S_{n}`` is strictly superior to `p`. The function returns
+``(1-\\gamma) x_k + \\gamma x_{k+1}`` with  ``\\gamma = (pS_n- S_k)/(S_{k+1}-S_k)``.
+
+This corresponds to  R-7, Excel, SciPy-(1,1) and Maple-6 when `w` contains only ones
+(see [Wikipedia](https://en.wikipedia.org/wiki/Quantile)).
 """
 function quantile{V, W <: Real}(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector)
 

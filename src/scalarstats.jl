@@ -42,7 +42,7 @@ end
     genmean(a, p)
 
 Return the generalized/power mean with exponent `p` of a real-valued array,
-i.e. ``\left( \frac{1}{n} \sum_{i=1}^n a_i^p \right)^{\frac{1}{p}}``, where `n = length(a)`.
+i.e. ``\\left( \\frac{1}{n} \\sum_{i=1}^n a_i^p \\right)^{\\frac{1}{p}}``, where `n = length(a)`.
 It is taken to be the geometric mean when `p == 0`.
 """
 function genmean(a::RealArray, p::Real)
@@ -63,8 +63,9 @@ end
 """
     mode(a, [r])
 
-Return the first mode (most common number) of an array, optionally
-over a specified range `r`.
+Return the mode (most common number) of an array, optionally
+over a specified range `r`. If several modes exist, the first
+one (in order of appearance) is returned.
 """
 function mode{T<:Integer}(a::AbstractArray{T}, r::UnitRange{T})
     isempty(a) && error("mode: input array cannot be empty.")
@@ -183,7 +184,7 @@ end
 """
     percentile(v, p)
 
-Return the `p`th percentile of a real-valued array `v`.
+Return the `p`th percentile of a real-valued array `v`, i.e. `quantile(x, p / 100)`.
 """
 percentile{T<:Real}(v::AbstractArray{T}, p) = quantile(v, p * 0.01)
 
@@ -194,6 +195,9 @@ quantile{T<:Real}(v::AbstractArray{T}) = quantile(v, [.0, .25, .5, .75, 1.0])
 
 Return the n-quantiles of a real-valued array, i.e. the values which
 partition `v` into `n` subsets of nearly equal size.
+
+Equivalent to `quantile(v, [0:n]/n)`. For example, `nquantiles(x, 5)`
+returns a vector of quantiles, respectively at `[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]`.
 """
 nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
 
@@ -209,6 +213,7 @@ nquantile{T<:Real}(v::AbstractArray{T}, n::Integer) = quantile(v, (0:n)/n)
     span(x)
 
 Return the span of an integer array, i.e. the range `minimum(x):maximum(x)`.
+The minimum and maximum of `x` are computed in one-pass using `extrema`.
 """
 span{T<:Integer}(x::AbstractArray{T}) = ((a, b) = extrema(x); a:b)
 
@@ -329,8 +334,10 @@ end
 
 Compute the z-scores of an array `X` with mean `μ` and standard deviation `σ`.
 z-scores are the signed number of standard deviations above the mean that an
-observation lies. If a destination array `Z` is provided, the scores are stored
-in `Z`, otherwise `X` is overwritten.
+observation lies, i.e. ``(x - μ) / σ``.
+
+If a destination array `Z` is provided, the scores are stored
+in `Z` and it must have the same shape as `X`. Otherwise `X` is overwritten.
 """
 function zscore!{ZT<:AbstractFloat,T<:Real}(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real)
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
@@ -355,8 +362,11 @@ zscore!{T<:AbstractFloat,U<:Real,S<:Real}(X::AbstractArray{T}, μ::AbstractArray
 
 Compute the z-scores of `X`, optionally specifying a precomputed mean `μ` and
 standard deviation `σ`. z-scores are the signed number of standard deviations
-above the mean that an observation lies. The mean and standard deviation can be
-real numbers or arrays of real numbers.
+above the mean that an observation lies, i.e. ``(x - μ) / σ``.
+
+`μ` and `σ` should be both scalars or both arrays. The computation is broadcasting.
+In particular, when `μ` and `σ` are arrays, they should have the same size, and
+`size(μ, i) == 1  || size(μ, i) == size(X, i)` for each dimension.
 """
 function zscore{T<:Real}(X::AbstractArray{T}, μ::Real, σ::Real)
     ZT = typeof((zero(T) - zero(μ)) / one(σ))
@@ -543,7 +553,7 @@ end
 """
     describe(a)
 
-Pretty-print the summary statistics provided by `summarystats`:
+Pretty-print the summary statistics provided by [`summarystats`](@ref):
 the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """

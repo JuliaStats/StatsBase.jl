@@ -52,6 +52,10 @@ _autodot{T<:RealFP}(x::AbstractVector{T}, lx::Int, l::Int) = dot(x, 1:lx-l, x, 1
 Compute the autocovariance of a vector or matrix `x` at `lags` and store the result
 in `r`. `demean` denotes whether the mean of `x` should be subtracted from `x`
 before computing the autocovariance.
+
+If `x` is a vector, `r` must be a vector of the same length as `x`.
+If `x` is a matrix, `r` must be a matrix of size `(length(lags), size(x,2))`, and
+where each column in the result will correspond to a column in `x`.
 """
 function autocov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -91,6 +95,10 @@ Compute the autocovariance of a vector or matrix `x`, optionally specifying
 the `lags` at which to compute the autocovariance. `demean` denotes whether
 the mean of `x` should be subtracted from `x` before computing the autocovariance.
 
+If `x` is a vector, return a vector of the same length as `x`.
+If `x` is a matrix, return a matrix of size `(length(lags), size(x,2))`,
+where each column in the result corresponds to a column in `x`.
+
 When left unspecified, the lags used are the integers from 0 to
 `min(size(x,1)-1, 10*log10(size(x,1)))`.
 """
@@ -112,6 +120,10 @@ autocov{T<:Real}(x::AbstractVecOrMat{T}; demean::Bool=true) = autocov(x, default
 Compute the autocorrelation function (ACF) of a vector or matrix `x` at `lags`
 and store the result in `r`. `demean` denotes whether the mean of `x` should
 be subtracted from `x` before computing the ACF.
+
+If `x` is a vector, `r` must be a vector of the same length as `x`.
+If `x` is a matrix, `r` must be a matrix of size `(length(lags), size(x,2))`, and
+where each column in the result will correspond to a column in `x`.
 """
 function autocor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -153,6 +165,10 @@ Compute the autocorrelation function (ACF) of a vector or matrix `x`,
 optionally specifying the `lags`. `demean` denotes whether the mean
 of `x` should be subtracted from `x` before computing the ACF.
 
+If `x` is a vector, return a vector of the same length as `x`.
+If `x` is a matrix, return a matrix of size `(length(lags), size(x,2))`,
+where each column in the result corresponds to a column in `x`.
+
 When left unspecified, the lags used are the integers from 0 to
 `min(size(x,1)-1, 10*log10(size(x,1)))`.
 """
@@ -186,6 +202,12 @@ Compute the cross covariance function (CCF) between real-valued vectors or matri
 `x` and `y` at `lags` and store the result in `r`. `demean` specifies whether the
 respective means of `x` and `y` should be subtracted from them before computing their
 CCF.
+
+If both `x` and `y` are vectors, `r` must be a vector of the same length as
+`lags`. If either `x` is a matrix and `y` is a vector, `r` must be a matrix of size
+`(length(lags), size(x, 2))`; if `x` is a vector and `y` is a matrix, `r` must be a matrix
+of size `(length(lags), size(y, 2))`. If both `x` and `y` are matrices, `r` must be a
+three-dimensional array of size `(length(lags), size(x, 2), size(y, 2))`.
 """
 function crosscov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -282,6 +304,9 @@ matrices `x` and `y`, optionally specifying the `lags`. `demean` specifies
 whether the respective means of `x` and `y` should be subtracted from them
 before computing their CCF.
 
+If both `x` and `y` are vectors, return a vector of the same length as
+`lags`. Otherwise, compute cross covariances between each pairs of columns in `x` and `y`.
+
 When left unspecified, the lags used are the integers from
 `-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
 """
@@ -311,6 +336,12 @@ crosscov{T<:Real}(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=t
 Compute the cross correlation between real-valued vectors or matrices `x` and `y` at
 `lags` and store the result in `r`. `demean` specifies whether the respective means of
 `x` and `y` should be subtracted from them before computing their cross correlation.
+
+If both `x` and `y` are vectors, `r` must be a vector of the same length as
+`lags`. If either `x` is a matrix and `y` is a vector, `r` must be a matrix of size
+`(length(lags), size(x, 2))`; if `x` is a vector and `y` is a matrix, `r` must be a matrix
+of size `(length(lags), size(y, 2))`. If both `x` and `y` are matrices, `r` must be a
+three-dimensional array of size `(length(lags), size(x, 2), size(y, 2))`.
 """
 function crosscor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
     lx = length(x)
@@ -416,6 +447,9 @@ Compute the cross correlation between real-valued vectors or matrices `x` and `y
 optionally specifying the `lags`. `demean` specifies whether the respective means of
 `x` and `y` should be subtracted from them before computing their cross correlation.
 
+If both `x` and `y` are vectors, return a vector of the same length as
+`lags`. Otherwise, compute cross covariances between each pairs of columns in `x` and `y`.
+
 When left unspecified, the lags used are the integers from
 `-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
 """
@@ -484,6 +518,8 @@ store the result in `r`. `method` designates the estimation method. Recognized v
 are `:regression`, which computes the partial autocorrelations via successive
 regression models, and `:yulewalker`, which computes the partial autocorrelations
 using the Yule-Walker equations.
+
+`r` must be a matrix of size `(length(lags), size(x, 2))`.
 """
 function pacf!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression)
     lx = size(X, 1)
@@ -511,6 +547,10 @@ or matrix `X` at `lags`. `method` designates the estimation method. Recognized
 values are `:regression`, which computes the partial autocorrelations via successive
 regression models, and `:yulewalker`, which computes the partial autocorrelations
 using the Yule-Walker equations.
+
+If `x` is a vector, return a vector of the same length as `lags`.
+If `x` is a matrix, return a matrix of size `(length(lags), size(x, 2))`,
+where each column in the result corresponds to a column in `x`.
 """
 function pacf{T<:Real}(X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression)
     pacf!(Matrix{fptype(T)}(length(lags), size(X,2)), float(X), lags; method=method)

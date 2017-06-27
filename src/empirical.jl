@@ -5,8 +5,11 @@
 """
     ecdf(X)
 
-Compute the empirical cumulative distribution function (ECDF)
-of a real-valued vector.
+Return an empirical cumulative distribution function (ECDF) based on a vector of samples
+given in `X`.
+
+Note: this is a higher-level function that returns a function, which can then be applied
+to evaluate CDF values on other samples.
 """
 function ecdf{T<:Real}(X::RealVector{T})
     Xs = sort(X)
