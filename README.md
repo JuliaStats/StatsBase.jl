@@ -7,6 +7,7 @@
   [![StatsBase](http://pkg.julialang.org/badges/StatsBase_0.6.svg)](http://pkg.julialang.org/?pkg=StatsBase)
 - **Build & Testing Status:**
   [![Build Status](https://travis-ci.org/JuliaStats/StatsBase.jl.svg?branch=master)](https://travis-ci.org/JuliaStats/StatsBase.jl)
+  [![Build status](https://ci.appveyor.com/api/projects/status/fsut3j3onulvws1w?svg=true)](https://ci.appveyor.com/project/nalimilan/statsbase-jl)
   [![Coverage Status](https://coveralls.io/repos/JuliaStats/StatsBase.jl/badge.svg?branch=master)](https://coveralls.io/r/JuliaStats/StatsBase.jl?branch=master)
 
 - **Documentation**: [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url]
