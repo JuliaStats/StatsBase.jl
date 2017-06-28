@@ -96,11 +96,19 @@ test_rng_use(sample, 1:10, 10)
 
 srand(1);
 
-@test samplepair(2)  === (1, 2)
-@test samplepair(10) === (7, 3)
+if Int === Int64
+    @test samplepair(2)  === (1, 2)
+    @test samplepair(10) === (7, 3)
 
-@test samplepair([3, 4, 2, 6, 8]) === (4, 3)
-@test samplepair([1, 2])          === (1, 2)
+    @test samplepair([3, 4, 2, 6, 8]) === (4, 3)
+    @test samplepair([1, 2])          === (1, 2)
+else
+    @test samplepair(2)  ===  (1, 2)
+    @test samplepair(10) === (10, 6)
+
+    @test samplepair([3, 4, 2, 6, 8]) === (6, 2)
+    @test samplepair([1, 2])          === (1, 2)
+end
 
 test_rng_use(samplepair, 1000)
 
