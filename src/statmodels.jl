@@ -248,6 +248,13 @@ Return the residual degrees of freedom of the model.
 """
 dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
 
+"""
+    params(obj)
+
+Return all parameters of a model. 
+"""
+params(obj) = error("params is not defined for $(typeof(obj))")
+function params! end
 
 ## coefficient tables with specialized show method
 
