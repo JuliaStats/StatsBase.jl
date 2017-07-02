@@ -1,7 +1,7 @@
 using StatsBase
 using Base.Test
 import Base: maxabs
-import StatsBase: norepeat, randi
+import StatsBase: norepeat
 
 srand(1234)
 
@@ -24,22 +24,6 @@ function test_rng_use(func, non_rng_args...)
     y = func(Base.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
 end
-
-#### randi
-
-n = 10^5
-
-x = [randi(10) for i = 1:n]
-@test isa(x, Vector{Int})
-@test extrema(x) == (1, 10)
-@test isapprox(proportions(x, 1:10), fill(0.1, 10), atol=5.0e-3)
-test_rng_use(randi, 1000)
-
-
-x = [randi(3, 12) for i = 1:n]
-@test isa(x, Vector{Int})
-@test extrema(x) == (3, 12)
-@test isapprox(proportions(x, 3:12), fill(0.1, 10), atol=5.0e-3)
 
 #### sample with replacement
 
@@ -96,10 +80,10 @@ test_rng_use(sample, 1:10, 10)
 
 srand(1);
 
-@test samplepair(2)  === (1, 2)
-@test samplepair(10) === (7, 3)
+@test samplepair(2)  ===  (1, 2)
+@test samplepair(10) === (10, 6)
 
-@test samplepair([3, 4, 2, 6, 8]) === (4, 3)
+@test samplepair([3, 4, 2, 6, 8]) === (6, 2)
 @test samplepair([1, 2])          === (1, 2)
 
 test_rng_use(samplepair, 1000)

@@ -192,7 +192,6 @@ module StatsBase
     include("toeplitzsolvers.jl")
     include("rankcorr.jl")
     include("signalcorr.jl")
-    include("rand.jl")
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
