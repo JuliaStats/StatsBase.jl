@@ -1,6 +1,7 @@
 using StatsBase
 
-tests = ["weights",
+tests = ["ambiguous",
+         "weights",
          "moments",
          "scalarstats",
          "deviation",
