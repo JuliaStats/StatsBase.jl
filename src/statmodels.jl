@@ -336,12 +336,30 @@ function show(io::IO, ct::CoefTable)
 end
 
 """
-	ConvergenceException(iters::Int)
+	ConvergenceException(iters::Int, change::Real, tol::Real)
 
 The fitting procedure failed to converge in `iters` number of iterations.
+`change` on final iteration was greater than specified tolerance `tol`.
 """
 type ConvergenceException <: Exception
     iters::Int
+    change::Real
+    tol::Real
+    function ConvergenceException(iters,change,tol)
+        if tol > change 
+            error("Change must be greater than tol.")
+        else
+            new(iters,change,tol)
+        end
+    end
 end
 
-Base.showerror(io::IO, ce::ConvergenceException) = print(io, "failure to converge after $(ce.iters) iterations")
+ConvergenceException(iters) = ConvergenceException(iters,NaN,NaN)
+
+function Base.showerror(io::IO, ce::ConvergenceException)
+    if isnan(ce.change)
+        print(io, "failure to converge after $(ce.iters) iterations.")
+    else
+        print(io, "failure to converge after $(ce.iters) iterations. Last change ($(ce.change)) > tol($(ce.tol)).")
+    end
+end
