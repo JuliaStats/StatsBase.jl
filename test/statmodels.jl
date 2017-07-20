@@ -34,5 +34,13 @@ x3   0.453058  0.72525 0.999172 0.5567
 try
     throw(ConvergenceException(10))
 catch ex
-    @test sprint(showerror, ex) == "failure to converge after 10 iterations"
+    @test sprint(showerror, ex) == "failure to converge after 10 iterations."
 end
+
+try
+    throw(ConvergenceException(10, 0.2, 0.1))
+catch ex
+    @test sprint(showerror, ex) == "failure to converge after 10 iterations. Last change (0.2) > tol(0.1)."
+end
+
+@test_throws ErrorException ConvergenceException(10,.1,.2)
