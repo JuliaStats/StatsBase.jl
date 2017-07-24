@@ -14,7 +14,7 @@
 default_laglen(lx::Int) = min(lx-1, round(Int,10*log10(lx)))
 check_lags(lx::Int, lags::AbstractVector) = (maximum(lags) < lx || error("lags must be less than the sample length."))
 
-function demean_col!{T<:RealFP}(z::AbstractVector{T}, x::AbstractMatrix{T}, j::Int, demean::Bool)
+function demean_col!(z::AbstractVector{T}, x::AbstractMatrix{T}, j::Int, demean::Bool) where T<:RealFP
     m = size(x, 1)
     @assert m == length(z)
     b = m * (j-1)
@@ -42,7 +42,7 @@ end
 
 default_autolags(lx::Int) = 0 : default_laglen(lx)
 
-_autodot{T<:RealFP}(x::AbstractVector{T}, lx::Int, l::Int) = dot(x, 1:lx-l, x, 1+l:lx)
+_autodot(x::AbstractVector{<:RealFP}, lx::Int, l::Int) = dot(x, 1:lx-l, x, 1+l:lx)
 
 
 ## autocov
@@ -57,7 +57,7 @@ If `x` is a vector, `r` must be a vector of the same length as `x`.
 If `x` is a matrix, `r` must be a matrix of size `(length(lags), size(x,2))`, and
 where each column in the result will correspond to a column in `x`.
 """
-function autocov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function autocov!(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
     m = length(lags)
     length(r) == m || throw(DimensionMismatch())
@@ -70,7 +70,7 @@ function autocov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerV
     return r
 end
 
-function autocov!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocov!(r::RealMatrix, x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
@@ -102,15 +102,15 @@ where each column in the result corresponds to a column in `x`.
 When left unspecified, the lags used are the integers from 0 to
 `min(size(x,1)-1, 10*log10(size(x,1)))`.
 """
-function autocov{T<:Real}(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function autocov(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     autocov!(Vector{fptype(T)}(length(lags)), float(x), lags; demean=demean)
 end
 
-function autocov{T<:Real}(x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocov(x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     autocov!(Matrix{fptype(T)}(length(lags), size(x,2)), float(x), lags; demean=demean)
 end
 
-autocov{T<:Real}(x::AbstractVecOrMat{T}; demean::Bool=true) = autocov(x, default_autolags(size(x,1)); demean=demean)
+autocov(x::AbstractVecOrMat{<:Real}; demean::Bool=true) = autocov(x, default_autolags(size(x,1)); demean=demean)
 
 ## autocor
 
@@ -125,7 +125,7 @@ If `x` is a vector, `r` must be a vector of the same length as `x`.
 If `x` is a matrix, `r` must be a matrix of size `(length(lags), size(x,2))`, and
 where each column in the result will correspond to a column in `x`.
 """
-function autocor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function autocor!(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
     m = length(lags)
     length(r) == m || throw(DimensionMismatch())
@@ -139,7 +139,7 @@ function autocor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, lags::IntegerV
     return r
 end
 
-function autocor!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocor!(r::RealMatrix, x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
@@ -172,15 +172,15 @@ where each column in the result corresponds to a column in `x`.
 When left unspecified, the lags used are the integers from 0 to
 `min(size(x,1)-1, 10*log10(size(x,1)))`.
 """
-function autocor{T<:Real}(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function autocor(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     autocor!(Vector{fptype(T)}(length(lags)), float(x), lags; demean=demean)
 end
 
-function autocor{T<:Real}(x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function autocor(x::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     autocor!(Matrix{fptype(T)}(length(lags), size(x,2)), float(x), lags; demean=demean)
 end
 
-autocor{T<:Real}(x::AbstractVecOrMat{T}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
+autocor(x::AbstractVecOrMat{<:Real}; demean::Bool=true) = autocor(x, default_autolags(size(x,1)); demean=demean)
 
 
 #######################################
@@ -191,7 +191,8 @@ autocor{T<:Real}(x::AbstractVecOrMat{T}; demean::Bool=true) = autocor(x, default
 
 default_crosslags(lx::Int) = (l=default_laglen(lx); -l:l)
 
-_crossdot{T<:RealFP}(x::AbstractVector{T}, y::AbstractVector{T}, lx::Int, l::Int) = (l >= 0 ? dot(x, 1:lx-l, y, 1+l:lx) : dot(x, 1-l:lx, y, 1:lx+l))
+_crossdot(x::AbstractVector{T}, y::AbstractVector{T}, lx::Int, l::Int) where {T<:RealFP} =
+    (l >= 0 ? dot(x, 1:lx-l, y, 1+l:lx) : dot(x, 1-l:lx, y, 1:lx+l))
 
 ## crosscov
 
@@ -209,7 +210,7 @@ If both `x` and `y` are vectors, `r` must be a vector of the same length as
 of size `(length(lags), size(y, 2))`. If both `x` and `y` are matrices, `r` must be a
 three-dimensional array of size `(length(lags), size(x, 2), size(y, 2))`.
 """
-function crosscov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
     m = length(lags)
     (length(y) == lx && length(r) == m) || throw(DimensionMismatch())
@@ -223,7 +224,7 @@ function crosscov!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVe
     return r
 end
 
-function crosscov!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
@@ -241,7 +242,7 @@ function crosscov!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVe
     return r
 end
 
-function crosscov!{T<:RealFP}(r::RealMatrix, x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!(r::RealMatrix, x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
     ns = size(y, 2)
     m = length(lags)
@@ -259,7 +260,7 @@ function crosscov!{T<:RealFP}(r::RealMatrix, x::AbstractVector{T}, y::AbstractMa
     return r
 end
 
-function crosscov!{T<:RealFP}(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov!(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
@@ -310,23 +311,23 @@ If both `x` and `y` are vectors, return a vector of the same length as
 When left unspecified, the lags used are the integers from
 `-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
 """
-function crosscov{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscov!(Vector{fptype(T)}(length(lags)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscov{T<:Real}(x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov(x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscov!(Matrix{fptype(T)}(length(lags), size(x,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscov{T<:Real}(x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov(x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscov!(Matrix{fptype(T)}(length(lags), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscov{T<:Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscov(x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscov!(Array{fptype(T),3}(length(lags), size(x,2), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-crosscov{T<:Real}(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=true) = crosscov(x, y, default_crosslags(size(x,1)); demean=demean)
+crosscov(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=true) where {T<:Real} = crosscov(x, y, default_crosslags(size(x,1)); demean=demean)
 
 
 ## crosscor
@@ -343,7 +344,7 @@ If both `x` and `y` are vectors, `r` must be a vector of the same length as
 of size `(length(lags), size(y, 2))`. If both `x` and `y` are matrices, `r` must be a
 three-dimensional array of size `(length(lags), size(x, 2), size(y, 2))`.
 """
-function crosscor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
     m = length(lags)
     (length(y) == lx && length(r) == m) || throw(DimensionMismatch())
@@ -358,7 +359,7 @@ function crosscor!{T<:RealFP}(r::RealVector, x::AbstractVector{T}, y::AbstractVe
     return r
 end
 
-function crosscor!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = size(x, 1)
     ns = size(x, 2)
     m = length(lags)
@@ -378,7 +379,7 @@ function crosscor!{T<:RealFP}(r::RealMatrix, x::AbstractMatrix{T}, y::AbstractVe
     return r
 end
 
-function crosscor!{T<:RealFP}(r::RealMatrix, x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!(r::RealMatrix, x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
     ns = size(y, 2)
     m = length(lags)
@@ -398,7 +399,7 @@ function crosscor!{T<:RealFP}(r::RealMatrix, x::AbstractVector{T}, y::AbstractMa
     return r
 end
 
-function crosscor!{T<:RealFP}(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor!(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
@@ -453,23 +454,23 @@ If both `x` and `y` are vectors, return a vector of the same length as
 When left unspecified, the lags used are the integers from
 `-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
 """
-function crosscor{T<:Real}(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscor!(Vector{fptype(T)}(length(lags)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscor{T<:Real}(x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor(x::AbstractMatrix{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscor!(Matrix{fptype(T)}(length(lags), size(x,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscor{T<:Real}(x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor(x::AbstractVector{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscor!(Matrix{fptype(T)}(length(lags), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-function crosscor{T<:Real}(x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true)
+function crosscor(x::AbstractMatrix{T}, y::AbstractMatrix{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscor!(Array{fptype(T),3}(length(lags), size(x,2), size(y,2)), float(x), float(y), lags; demean=demean)
 end
 
-crosscor{T<:Real}(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=true) = crosscor(x, y, default_crosslags(size(x,1)); demean=demean)
+crosscor(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=true) where {T<:Real} = crosscor(x, y, default_crosslags(size(x,1)); demean=demean)
 
 
 #######################################
@@ -480,7 +481,7 @@ crosscor{T<:Real}(x::AbstractVecOrMat{T}, y::AbstractVecOrMat{T}; demean::Bool=t
 #
 #######################################
 
-function pacf_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer)
+function pacf_regress!(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer) where T<:RealFP
     lx = size(X, 1)
     tmpX = ones(T, lx, mk + 1)
     for j = 1 : size(X,2)
@@ -498,7 +499,7 @@ function pacf_regress!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::Int
     r
 end
 
-function pacf_yulewalker!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer)
+function pacf_yulewalker!(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector, mk::Integer) where T<:RealFP
     tmp = Vector{T}(mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
@@ -521,7 +522,7 @@ using the Yule-Walker equations.
 
 `r` must be a matrix of size `(length(lags), size(x, 2))`.
 """
-function pacf!{T<:RealFP}(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression)
+function pacf!(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression) where T<:RealFP
     lx = size(X, 1)
     m = length(lags)
     minlag, maxlag = extrema(lags)
@@ -552,11 +553,11 @@ If `x` is a vector, return a vector of the same length as `lags`.
 If `x` is a matrix, return a matrix of size `(length(lags), size(x, 2))`,
 where each column in the result corresponds to a column in `x`.
 """
-function pacf{T<:Real}(X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression)
+function pacf(X::AbstractMatrix{T}, lags::IntegerVector; method::Symbol=:regression) where T<:Real
     pacf!(Matrix{fptype(T)}(length(lags), size(X,2)), float(X), lags; method=method)
 end
 
-function pacf{T<:Real}(x::AbstractVector{T}, lags::IntegerVector; method::Symbol=:regression)
+function pacf(x::AbstractVector{T}, lags::IntegerVector; method::Symbol=:regression) where T<:Real
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
 

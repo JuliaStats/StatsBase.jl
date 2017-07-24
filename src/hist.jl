@@ -38,7 +38,7 @@ end
 
 
 ## nice-valued ranges for histograms
-function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:default_left)
+function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:default_left) where T
     closed = _check_closed_arg(closed,:histrange)
     F = float(T)
     nv = length(v)
@@ -54,7 +54,7 @@ function histrange{T}(v::AbstractArray{T}, n::Integer, closed::Symbol=:default_l
     histrange(F(lo), F(hi), n, closed)
 end
 
-function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:default_left)
+function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:default_left) where F
     closed = _check_closed_arg(closed,:histrange)
     if hi == lo
         start = F(hi)
@@ -119,9 +119,9 @@ function histrange{F}(lo::F, hi::F, n::Integer, closed::Symbol=:default_left)
     end
 end
 
-histrange{N}(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) =
+histrange(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) where {N} =
     map((v,n) -> histrange(v,n,closed),vs,nbins)
-histrange{N}(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) =
+histrange(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) where {N} =
     map(v -> histrange(v,nbins,closed),vs)
 
 
@@ -132,16 +132,16 @@ function sturges(n)  # Sturges' formula
     ceil(Integer, log2(n))+1
 end
 
-@compat abstract type AbstractHistogram{T<:Real,N,E} end
+abstract type AbstractHistogram{T<:Real,N,E} end
 
 # N-dimensional histogram object
-type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
+mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     edges::E
     weights::Array{T,N}
     closed::Symbol
     isdensity::Bool
-    function (::Type{Histogram{T,N,E}}){T,N,E}(edges::NTuple{N,AbstractArray},
-                                               weights::Array{T,N}, closed::Symbol, isdensity::Bool=false)
+    function Histogram{T,N,E}(edges::NTuple{N,AbstractArray}, weights::Array{T,N},
+                              closed::Symbol, isdensity::Bool=false) where {T,N,E}
         closed == :right || closed == :left || error("closed must :left or :right")
         isdensity && !(T <: AbstractFloat) && error("Density histogram must have float-type weights")
         _edges_nbins(edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
@@ -149,13 +149,13 @@ type Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     end
 end
 
-Histogram{T,N}(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:default_left, isdensity::Bool=false) =
+Histogram(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:default_left, isdensity::Bool=false) where {T,N} =
     Histogram{T,N,typeof(edges)}(edges,weights,_check_closed_arg(closed,:Histogram),isdensity)
 
-Histogram{T,N}(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:default_left, isdensity::Bool=false) =
+Histogram(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:default_left, isdensity::Bool=false) where {T,N} =
     Histogram(edges,zeros(T,_edges_nbins(edges)...),_check_closed_arg(closed,:Histogram),isdensity)
 
-Histogram{N}(edges::NTuple{N,AbstractVector},closed::Symbol=:default_left, isdensity::Bool=false) =
+Histogram(edges::NTuple{N,AbstractVector},closed::Symbol=:default_left, isdensity::Bool=false) where {N} =
     Histogram(edges,Int,_check_closed_arg(closed,:Histogram),isdensity)
 
 function show(io::IO, h::AbstractHistogram)
@@ -172,9 +172,9 @@ end
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
 
 
-binindex{T,E}(h::AbstractHistogram{T,1,E}, x::Real) = binindex(h, (x,))[1]
+binindex(h::AbstractHistogram{T,1,E}, x::Real) where {T,E} = binindex(h, (x,))[1]
 
-binindex{T,N,E}(h::Histogram{T,N,E}, xs::NTuple{N,Real}) =
+binindex(h::Histogram{T,N,E}, xs::NTuple{N,Real}) where {T,N,E} =
     map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
 
 @inline function _edge_binindex(edge::AbstractVector, closed::Symbol, x::Real)
@@ -186,56 +186,56 @@ binindex{T,N,E}(h::Histogram{T,N,E}, xs::NTuple{N,Real}) =
 end
 
 
-binvolume{T,E}(h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(h, (binidx,))
-binvolume{V,T,E}(::Type{V}, h::AbstractHistogram{T,1,E}, binidx::Integer) = binvolume(V, h, (binidx,))
+binvolume(h::AbstractHistogram{T,1,E}, binidx::Integer) where {T,E} = binvolume(h, (binidx,))
+binvolume(::Type{V}, h::AbstractHistogram{T,1,E}, binidx::Integer) where {V,T,E} = binvolume(V, h, (binidx,))
 
-binvolume{T,N,E}(h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
+binvolume(h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) where {T,N,E} =
     binvolume(_promote_edge_types(h.edges), h, binidx)
 
-binvolume{V,T,N,E}(::Type{V}, h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) =
+binvolume(::Type{V}, h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) where {V,T,N,E} =
     prod(map((edge, i) -> _edge_binvolume(V, edge, i), h.edges, binidx))
 
-@inline _edge_binvolume{V}(::Type{V}, edge::AbstractVector, i::Integer) = V(edge[i+1]) - V(edge[i])
-@inline _edge_binvolume{V}(::Type{V}, edge::Range, i::Integer) = V(step(edge))
+@inline _edge_binvolume(::Type{V}, edge::AbstractVector, i::Integer) where {V} = V(edge[i+1]) - V(edge[i])
+@inline _edge_binvolume(::Type{V}, edge::Range, i::Integer) where {V} = V(step(edge))
 @inline _edge_binvolume(edge::AbstractVector, i::Integer) = _edge_binvolume(eltype(edge), edge, i)
 
 
-@inline _edges_nbins{N}(edges::NTuple{N,AbstractVector}) = map(_edge_nbins, edges)
+@inline _edges_nbins(edges::NTuple{N,AbstractVector}) where {N} = map(_edge_nbins, edges)
 
 @inline _edge_nbins(edge::AbstractVector) = length(edge) - 1
 
 
 # 1-dimensional
 
-Histogram{T}(edge::AbstractVector, weights::AbstractVector{T}, closed::Symbol=:default_left, isdensity::Bool=false) =
+Histogram(edge::AbstractVector, weights::AbstractVector{T}, closed::Symbol=:default_left, isdensity::Bool=false) where {T} =
     Histogram((edge,), weights, closed, isdensity)
 
-Histogram{T}(edge::AbstractVector, ::Type{T}, closed::Symbol=:default_left, isdensity::Bool=false) =
+Histogram(edge::AbstractVector, ::Type{T}, closed::Symbol=:default_left, isdensity::Bool=false) where {T} =
     Histogram((edge,), T, closed, isdensity)
 
 Histogram(edge::AbstractVector, closed::Symbol=:default_left, isdensity::Bool=false) =
     Histogram((edge,), closed, isdensity)
 
 
-push!{T,E}(h::AbstractHistogram{T,1,E}, x::Real, w::Real) = push!(h, (x,), w)
-push!{T,E}(h::AbstractHistogram{T,1,E}, x::Real) = push!(h,x,one(T))
-append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector) = append!(h, (v,))
-append!{T}(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) = append!(h, (v,), wv)
+push!(h::AbstractHistogram{T,1,E}, x::Real, w::Real) where {T,E} = push!(h, (x,), w)
+push!(h::AbstractHistogram{T,1,E}, x::Real) where {T,E} = push!(h,x,one(T))
+append!(h::AbstractHistogram{T,1}, v::AbstractVector) where {T} = append!(h, (v,))
+append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) where {T} = append!(h, (v,), wv)
 
-fit{T}(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:default_left) =
+fit(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:default_left) where {T} =
     fit(Histogram{T},(v,), (edg,), closed=closed)
-fit{T}(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:default_left, nbins=sturges(length(v))) =
+fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:default_left, nbins=sturges(length(v))) where {T} =
     fit(Histogram{T},(v,); closed=closed, nbins=nbins)
-fit{T}(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:default_left) =
+fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:default_left) where {T} =
     fit(Histogram{T},(v,), wv, (edg,), closed=closed)
-fit{T}(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(v))) =
+fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(v))) where {T} =
     fit(Histogram{T}, (v,), wv; closed=closed, nbins=nbins)
 
-fit{W}(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) = fit(Histogram{W}, v, wv, args...; kwargs...)
+fit(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) where {W} = fit(Histogram{W}, v, wv, args...; kwargs...)
 
 # N-dimensional
 
-function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
+function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T,N}
     h.isdensity && error("Density histogram must have float-type weights")
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
@@ -244,7 +244,7 @@ function push!{T,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
     h
 end
 
-function push!{T<:AbstractFloat,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
+function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T<:AbstractFloat,N}
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
         @inbounds h.weights[idx...] += h.isdensity ? w / binvolume(h, idx) : w
@@ -252,57 +252,45 @@ function push!{T<:AbstractFloat,N}(h::Histogram{T,N},xs::NTuple{N,Real},w::Real)
     h
 end
 
-push!{T,N}(h::AbstractHistogram{T,N},xs::NTuple{N,Real}) = push!(h,xs,one(T))
+push!(h::AbstractHistogram{T,N},xs::NTuple{N,Real}) where {T,N} = push!(h,xs,one(T))
 
 
-function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector})
+function append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}) where {T,N}
     @inbounds for i in eachindex(vs...)
         xs = _multi_getindex(i, vs...)
         push!(h, xs, one(T))
     end
     h
 end
-function append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractVector)
+function append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractVector) where {T,N}
     @inbounds for i in eachindex(wv, vs...)
         xs = _multi_getindex(i, vs...)
         push!(h, xs, wv[i])
     end
     h
 end
-append!{T,N}(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights) = append!(h, vs, values(wv))
+append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights) where {T,N} = append!(h, vs, values(wv))
 
 
 # Turn kwargs nbins into a type-stable tuple of integers:
-function _nbins_tuple{N}(vs::NTuple{N,AbstractVector}, nbins)
+function _nbins_tuple(vs::NTuple{N,AbstractVector}, nbins) where N
     template = map(length, vs)
-
-    @static if VERSION < v"0.6.0-dev.695"
-        result = if isa(nbins, Integer)
-            map(t -> typeof(t)(nbins), template)
-        elseif isa(nbins, NTuple{N, Integer})
-            map((t, x) -> typeof(t)(x), template, nbins)
-        else
-            throw(ArgumentError("nbins must be an Integer or NTuple{N, Integer}"))
-        end
-    else
-        result = broadcast((t, x) -> typeof(t)(x), template, nbins)
-    end
-
+    result = broadcast((t, x) -> typeof(t)(x), template, nbins)
     result::typeof(template)
 end
 
-fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
+fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) where {T,N} =
     append!(Histogram(edges, T, _check_closed_arg(closed,:fit), false), vs)
 
-fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
+function fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) where {T,N}
     closed = _check_closed_arg(closed,:fit)
     fit(Histogram{T}, vs, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 end
 
-fit{T,N,W}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) =
+fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:default_left) where {T,N,W} =
     append!(Histogram(edges, T, _check_closed_arg(closed,:fit), false), vs, wv)
 
-fit{T,N}(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) = begin
+function fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(vs[1]))) where {T,N}
     closed = _check_closed_arg(closed,:fit)
     fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 end
@@ -350,15 +338,15 @@ h = fit(Histogram, (rand(100),rand(100)),nbins=10)
 ```
 """
 fit(::Type{Histogram}, args...; kwargs...) = fit(Histogram{Int}, args...; kwargs...)
-fit{N,W}(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, args...; kwargs...) = fit(Histogram{W}, vs, wv, args...; kwargs...)
+fit(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, args...; kwargs...) where {N,W} = fit(Histogram{W}, vs, wv, args...; kwargs...)
 
 
 # Get a suitable high-precision type for the norm of a histogram.
-norm_type{T, N, E}(h::Histogram{T, N, E}) =
+norm_type(h::Histogram{T,N,E}) where {T,N,E} =
     promote_type(T, _promote_edge_types(h.edges))
 
-norm_type{T<:Integer}(::Type{T}) = promote_type(T, Int64)
-norm_type{T<:AbstractFloat}(::Type{T}) = promote_type(T, Float64)
+norm_type(::Type{T}) where {T<:Integer} = promote_type(T, Int64)
+norm_type(::Type{T}) where {T<:AbstractFloat} = promote_type(T, Float64)
 
 
 """
@@ -366,7 +354,7 @@ norm_type{T<:AbstractFloat}(::Type{T}) = promote_type(T, Float64)
 
 Calculate the norm of histogram `h` as the absolute value of its integral.
 """
-@generated function norm{T, N, E}(h::Histogram{T, N, E})
+@generated function norm(h::Histogram{T,N,E}) where {T,N,E}
     quote
         edges = h.edges
         weights = h.weights
@@ -391,19 +379,19 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
 end
 
 
-float{T<:AbstractFloat, N, E}(h::Histogram{T, N, E}) = h
+float(h::Histogram{T,N,E}) where {T<:AbstractFloat,N,E} = h
 
-float{T, N, E}(h::Histogram{T, N, E}) = Histogram(h.edges, float(h.weights), h.closed, h.isdensity)
+float(h::Histogram{T,N,E}) where {T,N,E} = Histogram(h.edges, float(h.weights), h.closed, h.isdensity)
 
 
 
 """
-    normalize!{T<:AbstractFloat, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :pdf)
+    normalize!(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N,E}
 
 Normalize the histogram `h` and optionally scale one or more auxiliary weight
 arrays appropriately. See description of `normalize` for details. Returns `h`.
 """
-@generated function normalize!{T<:AbstractFloat, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :pdf)
+@generated function normalize!(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N,E}
     quote
         edges = h.edges
         weights = h.weights
@@ -447,7 +435,7 @@ end
 
 
 """
-    normalize{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :pdf)
+    normalize(h::Histogram{T,N,E}; mode::Symbol=:pdf) where {T,N,E}
 
 Normalize the histogram `h`.
 
@@ -461,12 +449,12 @@ Valid values for `mode` are:
 *  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
    conditionally apply different modes of normalization.
 """
-normalize{T, N, E}(h::Histogram{T, N, E}; mode::Symbol = :pdf) =
+normalize(h::Histogram{T,N,E}; mode::Symbol=:pdf) where {T,N,E} =
     normalize!(deepcopy(float(h)), mode = mode)
 
 
 """
-    normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :pdf)
+    normalize(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N,E}
 
 Normalize the histogram `h` and rescales one or more auxiliary weight arrays
 at the same time (`aux_weights` may, e.g., contain estimated statistical
@@ -474,7 +462,7 @@ uncertainties). The values of the auxiliary arrays are scaled by the same
 factor as the corresponding histogram weight values. Returns a tuple of the
 normalized histogram and scaled auxiliary weights.
 """
-function normalize{T, N, E}(h::Histogram{T, N, E}, aux_weights::Array{T,N}...; mode::Symbol = :pdf)
+function normalize(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N,E}
     h_fltcp = deepcopy(float(h))
     aux_weights_fltcp = map(x -> deepcopy(float(x)), aux_weights)
     normalize!(h_fltcp, aux_weights_fltcp..., mode = mode)
@@ -489,7 +477,7 @@ Create a new histogram with the same binning, type and shape of weights
 and the same properties (`closed` and `isdensity`) as `h`, with all weights
 set to zero.
 """
-Base.zero{T,N,E}(h::Histogram{T,N,E}) =
+Base.zero(h::Histogram{T,N,E}) where {T,N,E} =
     Histogram{T,N,E}(deepcopy(h.edges), zero(h.weights), h.closed, h.isdensity)
 
 

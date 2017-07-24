@@ -2,55 +2,54 @@
 
 using BenchmarkLite
 using StatsBase
-using Compat
 
 import StatsBase: direct_sample!, alias_sample!, xmultinom_sample!
 
 ### procedure definition
 
-type WSampleProc{Alg} <: Proc end
+mutable struct WSampleProc{Alg} <: Proc end
 
-@compat abstract type WithRep end
-@compat abstract type NoRep end
+abstract type WithRep end
+abstract type NoRep end
 
-type Direct <: WithRep end
+mutable struct Direct <: WithRep end
 tsample!(s::Direct, wv, x) = direct_sample!(1:length(wv), wv, x)
 
-type Alias <: WithRep end
+mutable struct Alias <: WithRep end
 tsample!(s::Alias, wv, x) = alias_sample!(1:length(wv), wv, x)
 
-type Xmultinom_S <: WithRep end
+mutable struct Xmultinom_S <: WithRep end
 tsample!(s::Xmultinom_S, wv, x) = shuffle!(xmultinom_sample!(1:length(wv), wv, x))
 
-type Xmultinom <: WithRep end
+mutable struct Xmultinom <: WithRep end
 tsample!(s::Xmultinom, wv, x) = xmultinom_sample!(1:length(wv), wv, x)
 
-type Direct_S <: WithRep end
+mutable struct Direct_S <: WithRep end
 tsample!(s::Direct_S, wv, x) = sort!(direct_sample!(1:length(wv), wv, x))
 
-type Sample_WRep <: WithRep end
+mutable struct Sample_WRep <: WithRep end
 tsample!(s::Sample_WRep, wv, x) = sample!(1:length(wv), wv, x; ordered=false)
 
-type Sample_WRep_Ord <: WithRep end
+mutable struct Sample_WRep_Ord <: WithRep end
 tsample!(s::Sample_WRep_Ord, wv, x) = sample!(1:length(wv), wv, x; ordered=true)
 
 
 # config is in the form of (n, k)
 
-Base.string{Alg}(p::WSampleProc{Alg}) = lowercase(string(Alg))
+Base.string(p::WSampleProc{Alg}) where {Alg} = lowercase(string(Alg))
 
-Base.length(p::WSampleProc, cfg::(Int, Int)) = cfg[2]
-Base.isvalid{Alg<:WithRep}(p::WSampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg; n >= 1 && k >= 1)
-Base.isvalid{Alg<:NoRep}(p::WSampleProc{Alg}, cfg::(Int, Int)) = ((n, k) = cfg; n >= k >= 1)
+Base.length(p::WSampleProc, cfg::Tuple{Int,Int}) = cfg[2]
+Base.isvalid(p::WSampleProc{<:WithRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= 1 && k >= 1)
+Base.isvalid(p::WSampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= k >= 1)
 
-function Base.start(p::WSampleProc, cfg::(Int, Int))
+function Base.start(p::WSampleProc, cfg::Tuple{Int,Int})
     n, k = cfg
     x = Vector{Int}(k)
     w = weights(fill(1.0/n, n))
     return (w, x)
 end
 
-Base.run{Alg}(p::WSampleProc{Alg}, cfg::(Int, Int), s) = tsample!(Alg(), s[1], s[2])
+Base.run(p::WSampleProc{Alg}, cfg::Tuple{Int,Int}, s) where {Alg} = tsample!(Alg(), s[1], s[2])
 Base.done(p::WSampleProc, cfg, s) = nothing
 
 

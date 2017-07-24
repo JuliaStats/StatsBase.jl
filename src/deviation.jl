@@ -46,7 +46,7 @@ end
 Compute the squared L2 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|^2``.
 Efficient equivalent of `sumabs2(a - b)`.
 """
-function sqL2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
+function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
@@ -64,7 +64,7 @@ end
 Compute the L2 distance between two arrays: ``\\sqrt{\\sum_{i=1}^n |a_i - b_i|^2}``.
 Efficient equivalent of `sqrt(sumabs2(a - b))`.
 """
-L2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqrt(sqL2dist(a, b))
+L2dist(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqrt(sqL2dist(a, b))
 
 
 # L1 distance
@@ -74,7 +74,7 @@ L2dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqrt(sqL2dist(a, b
 Compute the L1 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|``.
 Efficient equivalent of `sum(abs, a - b)`.
 """
-function L1dist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
+function L1dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
@@ -93,7 +93,7 @@ Compute the L∞ distance, also called the Chebyshev distance, between
 two arrays: ``\\max_{i\\in1:n} |a_i - b_i|``.
 Efficient equivalent of `maxabs(a - b)`.
 """
-function Linfdist{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T})
+function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
@@ -115,7 +115,7 @@ Compute the generalized Kullback-Leibler divergence between two arrays:
 ``\\sum_{i=1}^n (a_i \\log(a_i/b_i) - a_i + b_i)``.
 Efficient equivalent of `sum(a*log(a/b)-a+b)`.
 """
-function gkldiv{T<:AbstractFloat}(a::AbstractArray{T}, b::AbstractArray{T})
+function gkldiv(a::AbstractArray{T}, b::AbstractArray{T}) where T<:AbstractFloat
     n = length(a)
     r = 0.0
     for i = 1:n
@@ -137,7 +137,7 @@ end
 
 Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
 """
-meanad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = L1dist(a, b) / length(a)
+meanad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = L1dist(a, b) / length(a)
 
 
 # MaxAD: maximum absolute deviation
@@ -146,7 +146,7 @@ meanad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = L1dist(a, b) / len
 
 Return the maximum absolute deviation between two arrays: `maxabs(a - b)`.
 """
-maxad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = Linfdist(a, b)
+maxad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = Linfdist(a, b)
 
 
 # MSD: mean squared deviation
@@ -155,7 +155,7 @@ maxad{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = Linfdist(a, b)
 
 Return the mean squared deviation between two arrays: `mean(abs2(a - b))`.
 """
-msd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}) = sqL2dist(a, b) / length(a)
+msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqL2dist(a, b) / length(a)
 
 
 # RMSD: root mean squared deviation
@@ -166,7 +166,7 @@ Return the root mean squared deviation between two optionally
 normalized arrays. The root mean squared deviation is computed
 as `sqrt(msd(a, b))`.
 """
-function rmsd{T<:Number}(a::AbstractArray{T}, b::AbstractArray{T}; normalize::Bool=false)
+function rmsd(a::AbstractArray{T}, b::AbstractArray{T}; normalize::Bool=false) where T<:Number
     v = sqrt(msd(a, b))
     if normalize
         amin, amax = extrema(a)
@@ -184,6 +184,6 @@ Compute the peak signal-to-noise ratio between two arrays `a` and `b`.
 `maxv` is the maximum possible value either array can take. The PSNR
 is computed as `10 * log10(maxv^2 / msd(a, b))`.
 """
-function psnr{T<:Real}(a::AbstractArray{T}, b::AbstractArray{T}, maxv::Real)
+function psnr(a::AbstractArray{T}, b::AbstractArray{T}, maxv::Real) where T<:Real
     20. * log10(maxv) - 10. * log10(msd(a, b))
 end

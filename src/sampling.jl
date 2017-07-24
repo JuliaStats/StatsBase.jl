@@ -368,8 +368,8 @@ a sequential sample, should be taken.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Base.GLOBAL_RNG`).
 """
-function sample{T}(rng::AbstractRNG, a::AbstractArray{T}, n::Integer;
-                   replace::Bool=true, ordered::Bool=false)
+function sample(rng::AbstractRNG, a::AbstractArray{T}, n::Integer;
+                replace::Bool=true, ordered::Bool=false) where T
     sample!(rng, a, Vector{T}(n); replace=replace, ordered=ordered)
 end
 sample(a::AbstractArray, n::Integer; replace::Bool=true, ordered::Bool=false) =
@@ -388,8 +388,8 @@ an ordered sample, also called a sequential sample, should be taken.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Base.GLOBAL_RNG`).
 """
-function sample{T}(rng::AbstractRNG, a::AbstractArray{T}, dims::Dims;
-                   replace::Bool=true, ordered::Bool=false)
+function sample(rng::AbstractRNG, a::AbstractArray{T}, dims::Dims;
+                replace::Bool=true, ordered::Bool=false) where T
     sample!(rng, a, Array{T}(dims), rng; replace=replace, ordered=ordered)
 end
 sample(a::AbstractArray, dims::Dims; replace::Bool=true, ordered::Bool=false) =
@@ -780,15 +780,15 @@ end
 sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     sample!(Base.GLOBAL_RNG, a, wv, x)
 
-sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, n::Integer;
-          replace::Bool=true, ordered::Bool=false) =
+sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, n::Integer;
+       replace::Bool=true, ordered::Bool=false) where {T} =
     sample!(rng, a, wv, Vector{T}(n); replace=replace, ordered=ordered)
 sample(a::AbstractArray, wv::AbstractWeights, n::Integer;
        replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, wv, n; replace=replace, ordered=ordered)
 
-sample{T}(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, dims::Dims;
-          replace::Bool=true, ordered::Bool=false) =
+sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, dims::Dims;
+       replace::Bool=true, ordered::Bool=false) where {T} =
     sample!(rng, a, wv, Array{T}(dims); replace=replace, ordered=ordered)
 sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
        replace::Bool=true, ordered::Bool=false) =
@@ -841,8 +841,8 @@ sample, should be taken.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Base.GLOBAL_RNG`).
 """
-wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
-           replace::Bool=true, ordered::Bool=false) =
+wsample(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
+        replace::Bool=true, ordered::Bool=false) where {T} =
     wsample!(rng, a, w, Vector{T}(n); replace=replace, ordered=ordered)
 wsample(a::AbstractArray, w::RealVector, n::Integer;
         replace::Bool=true, ordered::Bool=false) =
@@ -858,8 +858,8 @@ weights given in `w` if `a` is present, otherwise select a random sample of size
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Base.GLOBAL_RNG`).
 """
-wsample{T}(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
-           replace::Bool=true, ordered::Bool=false) =
+wsample(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
+        replace::Bool=true, ordered::Bool=false) where {T} =
     wsample!(rng, a, w, Array{T}(dims); replace=replace, ordered=ordered)
 wsample(a::AbstractArray, w::RealVector, dims::Dims;
         replace::Bool=true, ordered::Bool=false) =

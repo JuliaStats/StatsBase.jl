@@ -25,7 +25,7 @@ import Base.varm, Base.stdm
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
 @deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
 
-function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
+function findat!(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T}) where T
     Base.depwarn("findat! is deprecated, use indexin instead", :findat!)
     length(r) == length(b) || raise_dimerror()
     d = indexmap(a)
@@ -49,7 +49,7 @@ findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(size(b)), a, b)
 
 @deprecate_binding WeightVec Weights
 
-immutable RandIntSampler  # for generating Int samples in [0, K-1]
+struct RandIntSampler  # for generating Int samples in [0, K-1]
     a::Int
     Ku::UInt
     U::UInt
