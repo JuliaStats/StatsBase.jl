@@ -314,62 +314,66 @@ function _wsumN!{T<:BlasReal,N}(R::StridedArray{T}, A::DenseArray{T,N}, w::Strid
             _wsum2_blas!(view(Rv,:,i), view(A,:,:,i), w, dim, init)
         end
     else
-        _wsum_general!(R, @functorize(identity), A, w, dim, init)
+        _wsum_general!(R, identity, A, w, dim, init)
     end
     return R
 end
 
 # General Cartesian-based weighted sum across dimensions
-@ngenerate N typeof(R) function _wsum_general!{T,RT,WT,N}(R::AbstractArray{RT}, f::supertype(typeof(@functorize(abs))),
-                                                          A::AbstractArray{T,N}, w::AbstractVector{WT}, dim::Int, init::Bool)
-    init && fill!(R, zero(RT))
-    wi = zero(WT)
-    if dim == 1
-        @nextract N sizeR d->size(R,d)
-        sizA1 = size(A, 1)
-        @nloops N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
-            @inbounds r = (@nref N R j)
-            for i_1 = 1:sizA1
-                @inbounds r += f(@nref N A i) * w[i_1]
+@generated function _wsum_general!{T,RT,WT,N}(R::AbstractArray{RT}, f::supertype(typeof(abs)),
+                                              A::AbstractArray{T,N}, w::AbstractVector{WT}, dim::Int, init::Bool)
+    quote
+        init && fill!(R, zero(RT))
+        wi = zero(WT)
+        if dim == 1
+            @nextract $N sizeR d->size(R,d)
+            sizA1 = size(A, 1)
+            @nloops $N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
+                @inbounds r = (@nref $N R j)
+                for i_1 = 1:sizA1
+                    @inbounds r += f(@nref $N A i) * w[i_1]
+                end
+                @inbounds (@nref $N R j) = r
             end
-            @inbounds (@nref N R j) = r
+        else
+            @nloops $N i A d->(if d == dim
+                                   wi = w[i_d]
+                                   j_d = 1
+                               else
+                                   j_d = i_d
+                               end) @inbounds (@nref $N R j) += f(@nref $N A i) * wi
         end
-    else
-        @nloops N i A d->(if d == dim
-                               wi = w[i_d]
-                               j_d = 1
-                           else
-                               j_d = i_d
-                           end) @inbounds (@nref N R j) += f(@nref N A i) * wi
+        return R
     end
-    return R
 end
 
-@ngenerate N typeof(R) function _wsum_centralize!{T,RT,WT,N}(R::AbstractArray{RT}, f::supertype(typeof(@functorize(abs))),
-                                                             A::AbstractArray{T,N}, w::AbstractVector{WT}, means,
-                                                             dim::Int, init::Bool)
-    init && fill!(R, zero(RT))
-    wi = zero(WT)
-    if dim == 1
-        @nextract N sizeR d->size(R,d)
-        sizA1 = size(A, 1)
-        @nloops N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
-            @inbounds r = (@nref N R j)
-            @inbounds m = (@nref N means j)
-            for i_1 = 1:sizA1
-                @inbounds r += f((@nref N A i) - m) * w[i_1]
+@generated function _wsum_centralize!{T,RT,WT,N}(R::AbstractArray{RT}, f::supertype(typeof(abs)),
+                                                 A::AbstractArray{T,N}, w::AbstractVector{WT}, means,
+                                                 dim::Int, init::Bool)
+    quote
+        init && fill!(R, zero(RT))
+        wi = zero(WT)
+        if dim == 1
+            @nextract $N sizeR d->size(R,d)
+            sizA1 = size(A, 1)
+            @nloops $N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
+                @inbounds r = (@nref $N R j)
+                @inbounds m = (@nref $N means j)
+                for i_1 = 1:sizA1
+                    @inbounds r += f((@nref $N A i) - m) * w[i_1]
+                end
+                @inbounds (@nref $N R j) = r
             end
-            @inbounds (@nref N R j) = r
+        else
+            @nloops $N i A d->(if d == dim
+                                   wi = w[i_d]
+                                   j_d = 1
+                               else
+                                   j_d = i_d
+                               end) @inbounds (@nref $N R j) += f((@nref $N A i) - (@nref $N means j)) * wi
         end
-    else
-        @nloops N i A d->(if d == dim
-                               wi = w[i_d]
-                               j_d = 1
-                           else
-                               j_d = i_d
-                           end) @inbounds (@nref N R j) += f((@nref N A i) - (@nref N means j)) * wi
+        return R
     end
-    return R
 end
 
 
@@ -385,7 +389,8 @@ _wsum!{T<:BlasReal}(R::StridedArray{T}, A::DenseArray{T,2}, w::StridedVector{T},
 _wsum!{T<:BlasReal,N}(R::StridedArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, dim::Int, init::Bool) =
     _wsumN!(R, A, w, dim, init)
 
-_wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) = _wsum_general!(R, @functorize(identity), A, w, dim, init)
+_wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bool) =
+    _wsum_general!(R, identity, A, w, dim, init)
 
 ## wsum! and wsum
 

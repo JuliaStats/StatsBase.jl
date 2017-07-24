@@ -299,25 +299,28 @@ function _zscore!(Z::AbstractArray, X::AbstractArray, μ::Real, σ::Real)
     return Z
 end
 
-@ngenerate N typeof(Z) function _zscore!{S,T,N}(Z::AbstractArray{S,N}, X::AbstractArray{T,N}, μ::AbstractArray, σ::AbstractArray)
-    # Z and X are assumed to have the same size
-    # μ and σ are assumed to have the same size, that is compatible with size(X)
-    siz1 = size(X, 1)
-    @nextract N ud d->size(μ, d)
-    if size(μ, 1) == 1 && siz1 > 1
-        @nloops N i d->(d>1 ? (1:size(X,d)) : (1:1)) d->(j_d = ud_d ==1 ? 1 : i_d) begin
-            v = (@nref N μ j)
-            c = inv(@nref N σ j)
-            for i_1 = 1:siz1
-                (@nref N Z i) = ((@nref N X i) - v) * c
+@generated function _zscore!{S,T,N}(Z::AbstractArray{S,N}, X::AbstractArray{T,N},
+                                    μ::AbstractArray, σ::AbstractArray)
+    quote
+        # Z and X are assumed to have the same size
+        # μ and σ are assumed to have the same size, that is compatible with size(X)
+        siz1 = size(X, 1)
+        @nextract $N ud d->size(μ, d)
+        if size(μ, 1) == 1 && siz1 > 1
+            @nloops $N i d->(d>1 ? (1:size(X,d)) : (1:1)) d->(j_d = ud_d ==1 ? 1 : i_d) begin
+                v = (@nref $N μ j)
+                c = inv(@nref $N σ j)
+                for i_1 = 1:siz1
+                    (@nref $N Z i) = ((@nref $N X i) - v) * c
+                end
+            end
+        else
+            @nloops $N i X d->(j_d = ud_d ==1 ? 1 : i_d) begin
+                (@nref $N Z i) = ((@nref $N X i) - (@nref $N μ j)) / (@nref $N σ j)
             end
         end
-    else
-        @nloops N i X d->(j_d = ud_d ==1 ? 1 : i_d) begin
-            (@nref N Z i) = ((@nref N X i) - (@nref N μ j)) / (@nref N σ j)
-        end
+        return Z
     end
-    return Z
 end
 
 function _zscore_chksize(X::AbstractArray, μ::AbstractArray, σ::AbstractArray)
