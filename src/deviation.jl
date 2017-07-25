@@ -137,7 +137,8 @@ end
 
 Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
 """
-meanad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = L1dist(a, b) / length(a)
+meanad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
+    L1dist(a, b) / length(a)
 
 
 # MaxAD: maximum absolute deviation
@@ -155,7 +156,8 @@ maxad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = Linfdist(a, 
 
 Return the mean squared deviation between two arrays: `mean(abs2(a - b))`.
 """
-msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqL2dist(a, b) / length(a)
+msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
+    sqL2dist(a, b) / length(a)
 
 
 # RMSD: root mean squared deviation

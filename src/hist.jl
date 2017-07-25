@@ -172,9 +172,9 @@ end
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
 
 
-binindex(h::AbstractHistogram{T,1,E}, x::Real) where {T,E} = binindex(h, (x,))[1]
+binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]
 
-binindex(h::Histogram{T,N,E}, xs::NTuple{N,Real}) where {T,N,E} =
+binindex(h::Histogram{T,N}, xs::NTuple{N,Real}) where {T,N} =
     map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
 
 @inline function _edge_binindex(edge::AbstractVector, closed::Symbol, x::Real)
@@ -186,13 +186,13 @@ binindex(h::Histogram{T,N,E}, xs::NTuple{N,Real}) where {T,N,E} =
 end
 
 
-binvolume(h::AbstractHistogram{T,1,E}, binidx::Integer) where {T,E} = binvolume(h, (binidx,))
-binvolume(::Type{V}, h::AbstractHistogram{T,1,E}, binidx::Integer) where {V,T,E} = binvolume(V, h, (binidx,))
+binvolume(h::AbstractHistogram{T,1}, binidx::Integer) where {T} = binvolume(h, (binidx,))
+binvolume(::Type{V}, h::AbstractHistogram{T,1}, binidx::Integer) where {V,T} = binvolume(V, h, (binidx,))
 
-binvolume(h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) where {T,N,E} =
+binvolume(h::Histogram{T,N}, binidx::NTuple{N,Integer}) where {T,N} =
     binvolume(_promote_edge_types(h.edges), h, binidx)
 
-binvolume(::Type{V}, h::Histogram{T,N,E}, binidx::NTuple{N,Integer}) where {V,T,N,E} =
+binvolume(::Type{V}, h::Histogram{T,N}, binidx::NTuple{N,Integer}) where {V,T,N} =
     prod(map((edge, i) -> _edge_binvolume(V, edge, i), h.edges, binidx))
 
 @inline _edge_binvolume(::Type{V}, edge::AbstractVector, i::Integer) where {V} = V(edge[i+1]) - V(edge[i])
@@ -217,8 +217,8 @@ Histogram(edge::AbstractVector, closed::Symbol=:default_left, isdensity::Bool=fa
     Histogram((edge,), closed, isdensity)
 
 
-push!(h::AbstractHistogram{T,1,E}, x::Real, w::Real) where {T,E} = push!(h, (x,), w)
-push!(h::AbstractHistogram{T,1,E}, x::Real) where {T,E} = push!(h,x,one(T))
+push!(h::AbstractHistogram{T,1}, x::Real, w::Real) where {T} = push!(h, (x,), w)
+push!(h::AbstractHistogram{T,1}, x::Real) where {T} = push!(h,x,one(T))
 append!(h::AbstractHistogram{T,1}, v::AbstractVector) where {T} = append!(h, (v,))
 append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) where {T} = append!(h, (v,), wv)
 
@@ -342,7 +342,7 @@ fit(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, arg
 
 
 # Get a suitable high-precision type for the norm of a histogram.
-norm_type(h::Histogram{T,N,E}) where {T,N,E} =
+norm_type(h::Histogram{T,N}) where {T,N} =
     promote_type(T, _promote_edge_types(h.edges))
 
 norm_type(::Type{T}) where {T<:Integer} = promote_type(T, Int64)
@@ -354,7 +354,7 @@ norm_type(::Type{T}) where {T<:AbstractFloat} = promote_type(T, Float64)
 
 Calculate the norm of histogram `h` as the absolute value of its integral.
 """
-@generated function norm(h::Histogram{T,N,E}) where {T,N,E}
+@generated function norm(h::Histogram{T,N}) where {T,N}
     quote
         edges = h.edges
         weights = h.weights
@@ -379,19 +379,19 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
 end
 
 
-float(h::Histogram{T,N,E}) where {T<:AbstractFloat,N,E} = h
+float(h::Histogram{T,N}) where {T<:AbstractFloat,N} = h
 
-float(h::Histogram{T,N,E}) where {T,N,E} = Histogram(h.edges, float(h.weights), h.closed, h.isdensity)
+float(h::Histogram{T,N}) where {T,N} = Histogram(h.edges, float(h.weights), h.closed, h.isdensity)
 
 
 
 """
-    normalize!(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N,E}
+    normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N}
 
 Normalize the histogram `h` and optionally scale one or more auxiliary weight
 arrays appropriately. See description of `normalize` for details. Returns `h`.
 """
-@generated function normalize!(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N,E}
+@generated function normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N}
     quote
         edges = h.edges
         weights = h.weights
@@ -435,7 +435,7 @@ end
 
 
 """
-    normalize(h::Histogram{T,N,E}; mode::Symbol=:pdf) where {T,N,E}
+    normalize(h::Histogram{T,N}; mode::Symbol=:pdf) where {T,N}
 
 Normalize the histogram `h`.
 
@@ -449,12 +449,12 @@ Valid values for `mode` are:
 *  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
    conditionally apply different modes of normalization.
 """
-normalize(h::Histogram{T,N,E}; mode::Symbol=:pdf) where {T,N,E} =
+normalize(h::Histogram{T,N}; mode::Symbol=:pdf) where {T,N} =
     normalize!(deepcopy(float(h)), mode = mode)
 
 
 """
-    normalize(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N,E}
+    normalize(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N}
 
 Normalize the histogram `h` and rescales one or more auxiliary weight arrays
 at the same time (`aux_weights` may, e.g., contain estimated statistical
@@ -462,7 +462,7 @@ uncertainties). The values of the auxiliary arrays are scaled by the same
 factor as the corresponding histogram weight values. Returns a tuple of the
 normalized histogram and scaled auxiliary weights.
 """
-function normalize(h::Histogram{T,N,E}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N,E}
+function normalize(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N}
     h_fltcp = deepcopy(float(h))
     aux_weights_fltcp = map(x -> deepcopy(float(x)), aux_weights)
     normalize!(h_fltcp, aux_weights_fltcp..., mode = mode)
