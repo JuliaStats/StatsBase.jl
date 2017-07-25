@@ -149,13 +149,16 @@ mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     end
 end
 
-Histogram(edges::NTuple{N,AbstractVector},weights::AbstractArray{T,N},closed::Symbol=:default_left, isdensity::Bool=false) where {T,N} =
+Histogram(edges::NTuple{N,AbstractVector}, weights::AbstractArray{T,N},
+          closed::Symbol=:default_left, isdensity::Bool=false) where {T,N} =
     Histogram{T,N,typeof(edges)}(edges,weights,_check_closed_arg(closed,:Histogram),isdensity)
 
-Histogram(edges::NTuple{N,AbstractVector},::Type{T},closed::Symbol=:default_left, isdensity::Bool=false) where {T,N} =
+Histogram(edges::NTuple{N,AbstractVector}, ::Type{T}, closed::Symbol=:default_left,
+          isdensity::Bool=false) where {T,N} =
     Histogram(edges,zeros(T,_edges_nbins(edges)...),_check_closed_arg(closed,:Histogram),isdensity)
 
-Histogram(edges::NTuple{N,AbstractVector},closed::Symbol=:default_left, isdensity::Bool=false) where {N} =
+Histogram(edges::NTuple{N,AbstractVector}, closed::Symbol=:default_left,
+          isdensity::Bool=false) where {N} =
     Histogram(edges,Int,_check_closed_arg(closed,:Histogram),isdensity)
 
 function show(io::IO, h::AbstractHistogram)
