@@ -321,46 +321,6 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "scalarstats.html#StatsBase.percentile",
-    "page": "Scalar Statistics",
-    "title": "StatsBase.percentile",
-    "category": "Function",
-    "text": "percentile(v, p)\n\nReturn the pth percentile of a real-valued array v, i.e. quantile(x, p / 100).\n\n\n\n"
-},
-
-{
-    "location": "scalarstats.html#StatsBase.iqr",
-    "page": "Scalar Statistics",
-    "title": "StatsBase.iqr",
-    "category": "Function",
-    "text": "iqr(v)\n\nCompute the interquartile range (IQR) of an array, i.e. the 75th percentile minus the 25th percentile.\n\n\n\n"
-},
-
-{
-    "location": "scalarstats.html#StatsBase.nquantile",
-    "page": "Scalar Statistics",
-    "title": "StatsBase.nquantile",
-    "category": "Function",
-    "text": "nquantile(v, n)\n\nReturn the n-quantiles of a real-valued array, i.e. the values which partition v into n subsets of nearly equal size.\n\nEquivalent to quantile(v, [0:n]/n). For example, nquantiles(x, 5) returns a vector of quantiles, respectively at [0.0, 0.2, 0.4, 0.6, 0.8, 1.0].\n\n\n\n"
-},
-
-{
-    "location": "scalarstats.html#Base.quantile",
-    "page": "Scalar Statistics",
-    "title": "Base.quantile",
-    "category": "Function",
-    "text": "quantile(v, w::AbstractWeights, p)\n\nCompute the weighted quantiles of a vector x at a specified set of probability values p, using weights given by a weight vector w (of type AbstractWeights). Weights must not be negative. The weights and data vectors must have the same length.\n\nThe quantile for p is defined as follows. Denoting S_k = (k-1)w_k + (n-1) sum_ikw_i, define x_k+1 the smallest element of x such that S_k+1S_n is strictly superior to p. The function returns (1-gamma) x_k + gamma x_k+1 with  gamma = (pS_n- S_k)(S_k+1-S_k).\n\nThis corresponds to  R-7, Excel, SciPy-(1,1) and Maple-6 when w contains only ones (see Wikipedia).\n\n\n\n"
-},
-
-{
-    "location": "scalarstats.html#Base.median-Union{Tuple{AbstractArray{T,1} where T<:Real,StatsBase.AbstractWeights{W,T,V} where V<:AbstractArray{T,1} where T<:Real}, Tuple{W}} where W<:Real",
-    "page": "Scalar Statistics",
-    "title": "Base.median",
-    "category": "Method",
-    "text": "median(v::RealVector, w::AbstractWeights)\n\nCompute the weighted median of x, using weights given by a weight vector w (of type AbstractWeights). The weight and data vectors must have the same length.\n\nThe weighted median x_k is the element of x that satisfies sum_x_i  x_k w_i le frac12 sum_j w_j and sum_x_i  x_k w_i le frac12 sum_j w_j.\n\nIf a weight has value zero, then its associated data point is ignored. If none of the weights are positive, an error is thrown. NaN is returned if x contains any NaN values.  An error is raised if w contains any NaN values.\n\n\n\n"
-},
-
-{
     "location": "scalarstats.html#Quantile-and-Related-Functions-1",
     "page": "Scalar Statistics",
     "title": "Quantile and Related Functions",
