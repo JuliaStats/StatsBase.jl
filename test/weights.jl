@@ -1,7 +1,5 @@
 using StatsBase
 using Base.Test
-using Compat
-import Compat: view
 
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)

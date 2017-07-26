@@ -1,9 +1,6 @@
 __precompile__()
 
 module StatsBase
-    using Compat
-    import Compat: String, view
-
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
     import Base.LinAlg: BlasReal, BlasFloat

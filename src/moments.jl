@@ -85,27 +85,15 @@ end
 function Base.varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
                    corrected::DepBool=nothing)
     corrected = depcheck(:varm, corrected)
-
-    @static if VERSION < v"0.6.0-dev.1121"
-        Base.varm!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, w, M, dim;
-                   corrected=corrected)
-    else
-        Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, w, M,
-                   dim; corrected=corrected)
-    end
+    Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, w, M,
+               dim; corrected=corrected)
 end
 
 function Base.var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
-
-    @static if VERSION < v"0.6.0-dev.1121"
-        var!(similar(A, Float64, Base.reduced_dims(size(A), dim)), A, w, dim; mean=mean,
-             corrected=corrected)
-    else
-        var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, w, dim;
-             mean=mean, corrected=corrected)
-    end
+    var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, w, dim;
+         mean=mean, corrected=corrected)
 end
 
 ## std
