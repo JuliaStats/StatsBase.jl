@@ -165,6 +165,7 @@ module StatsBase
     nulldeviance,
     nullloglikelihood,
     stderr,
+    testfit,
     vcov,
     predict,
     predict!,

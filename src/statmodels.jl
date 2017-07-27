@@ -247,6 +247,7 @@ predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj
 Return the residual degrees of freedom of the model.
 """
 dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
+function testfit end
 
 """
     params(obj)
