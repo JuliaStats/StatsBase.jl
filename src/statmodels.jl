@@ -336,30 +336,30 @@ function show(io::IO, ct::CoefTable)
 end
 
 """
-    ConvergenceException(iters::Int, change::Real=NaN, tol::Real=Nan)
-The fitting procedure failed to converge in `iters` number of iterations.
-i.e. where the `change` between the cost of the final & penultimate iteration was greater than
+    ConvergenceException(iters::Int, lastchange::Real=NaN, tol::Real=NaN)
+The fitting procedure failed to converge in `iters` number of iterations,
+i.e. the `lastchange` between the cost of the final and penultimate iteration was greater than
 specified tolerance `tol`.
 """
 struct ConvergenceException{T<:Real} <: Exception
     iters::Int
-    change::T
+    lastchange::T
     tol::T
-    function ConvergenceException{T}(iters, change::T, tol::T) where T<:Real
-        if tol > change 
-            error("Change must be greater than tol.")
+    function ConvergenceException{T}(iters, lastchange::T, tol::T) where T<:Real
+        if tol > lastchange 
+            throw(ArgumentError("Change must be greater than tol."))
         else
-            new(iters, change, tol)
+            new(iters, lastchange, tol)
         end
     end
 end
 
-ConvergenceException(iters, change::T, tol::T) where {T<:Real} = ConvergenceException{T}(iters, change, tol)
+ConvergenceException(iters, lastchange::T, tol::T) where {T<:Real} = ConvergenceException{T}(iters, lastchange, tol)
 ConvergenceException(iters) = ConvergenceException(iters, NaN, NaN)
 
 function Base.showerror(io::IO, ce::ConvergenceException)
     print(io, "failure to converge after $(ce.iters) iterations.")
-    if !isnan(ce.change)
-        print(io, " Last change ($(ce.change)) was greater than tolerance ($(ce.tol)).")
+    if !isnan(ce.lastchange)
+        print(io, " Last change ($(ce.lastchange)) was greater than tolerance ($(ce.tol)).")
     end
 end

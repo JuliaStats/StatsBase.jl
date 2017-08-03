@@ -43,5 +43,5 @@ catch ex
     @test sprint(showerror, ex) == "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1)."
 end
 
-err = @test_throws ErrorException ConvergenceException(10,.1,.2)
+err = @test_throws ArgumentError ConvergenceException(10,.1,.2)
 @test err.value.msg == "Change must be greater than tol."
