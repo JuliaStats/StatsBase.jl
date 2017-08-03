@@ -6,8 +6,6 @@
 
 using StatsBase
 using Base.Test
-using Compat
-import Compat.view
 
 # random data for testing
 

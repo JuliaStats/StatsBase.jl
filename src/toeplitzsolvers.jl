@@ -1,5 +1,5 @@
 # Symmetric Toeplitz solver
-function durbin!{T<:BlasReal}(r::AbstractVector{T}, y::AbstractVector{T})
+function durbin!(r::AbstractVector{T}, y::AbstractVector{T}) where T<:BlasReal
     n = length(r)
     n <= length(y) || throw(DimensionMismatch("Auxiliary vector cannot be shorter than data vector"))
     y[1] = -r[1]
@@ -22,9 +22,9 @@ function durbin!{T<:BlasReal}(r::AbstractVector{T}, y::AbstractVector{T})
     end
     return y
 end
-durbin{T<:BlasReal}(r::AbstractVector{T}) = durbin!(r, zeros(T, length(r)))
+durbin(r::AbstractVector{T}) where {T<:BlasReal} = durbin!(r, zeros(T, length(r)))
 
-function levinson!{T<:BlasReal}(r::AbstractVector{T}, b::AbstractVector{T}, x::AbstractVector{T})
+function levinson!(r::AbstractVector{T}, b::AbstractVector{T}, x::AbstractVector{T}) where T<:BlasReal
     n = length(b)
     n == length(r) || throw(DimensionMismatch("Vectors must have same length"))
     n <= length(x) || throw(DimensionMismatch("Auxiliary vector cannot be shorter than data vector"))
@@ -63,4 +63,4 @@ function levinson!{T<:BlasReal}(r::AbstractVector{T}, b::AbstractVector{T}, x::A
     end
     return x
 end
-levinson{T<:BlasReal}(r::AbstractVector{T}, b::AbstractVector{T}) = levinson!(r, copy(b), zeros(T, length(b)))
+levinson(r::AbstractVector{T}, b::AbstractVector{T}) where {T<:BlasReal} = levinson!(r, copy(b), zeros(T, length(b)))

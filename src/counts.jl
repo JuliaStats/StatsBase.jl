@@ -6,7 +6,7 @@
 #
 #################################################
 
-@compat IntUnitRange{T<:Integer} = UnitRange{T}
+const IntUnitRange{T<:Integer} = UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
 """
@@ -219,7 +219,7 @@ proportions(x::IntegerArray, y::IntegerArray, wv::AbstractWeights) =
 
 ## auxiliary functions
 
-function _normalize_countmap{T}(cm::Dict{T}, s::Real)
+function _normalize_countmap(cm::Dict{T}, s::Real) where T
     r = Dict{T,Float64}()
     for (k, c) in cm
         r[k] = c / s
@@ -237,14 +237,14 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 """
-function addcounts!{T}(cm::Dict{T}, x::AbstractArray{T})
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
     for v in x
         cm[v] = get(cm, v, 0) + 1
     end
     return cm
 end
 
-function addcounts!{T,W}(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W})
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
     w = values(wv)
@@ -265,8 +265,8 @@ end
 Return a dictionary mapping each unique value in `x` to its number
 of occurrences.
 """
-countmap{T}(x::AbstractArray{T}) = addcounts!(Dict{T,Int}(), x)
-countmap{T,W}(x::AbstractArray{T}, wv::AbstractWeights{W}) = addcounts!(Dict{T,W}(), x, wv)
+countmap(x::AbstractArray{T}) where {T} = addcounts!(Dict{T,Int}(), x)
+countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
 
 
 """

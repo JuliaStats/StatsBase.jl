@@ -1,6 +1,6 @@
 # Statistical Models
 
-@compat abstract type StatisticalModel end
+abstract type StatisticalModel end
 
 """
     coef(obj::StatisticalModel)
@@ -197,7 +197,7 @@ end
 
 const adjr² = adjr2
 
-@compat abstract type RegressionModel <: StatisticalModel end
+abstract type RegressionModel <: StatisticalModel end
 
 """
     fitted(obj::RegressionModel)
@@ -251,7 +251,7 @@ dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(ty
 """
     params(obj)
 
-Return all parameters of a model. 
+Return all parameters of a model.
 """
 params(obj) = error("params is not defined for $(typeof(obj))")
 function params! end
@@ -259,7 +259,7 @@ function params! end
 ## coefficient tables with specialized show method
 
 ## Nms are the coefficient names, corresponding to rows in the table
-type CoefTable
+mutable struct CoefTable
     cols::Vector
     colnms::Vector
     rownms::Vector
@@ -284,7 +284,7 @@ type CoefTable
     end
 end
 
-type PValue
+mutable struct PValue
     v::Number
     function PValue(v::Number)
         0. <= v <= 1. || isnan(v) || error("p-values must be in [0.,1.]")
@@ -336,13 +336,12 @@ function show(io::IO, ct::CoefTable)
 end
 
 """
-	ConvergenceException(iters::Int, change::Real=NaN, tol::Real=Nan)
-
+    ConvergenceException(iters::Int, change::Real=NaN, tol::Real=Nan)
 The fitting procedure failed to converge in `iters` number of iterations.
 i.e. where the `change` between the cost of the final & penultimate iteration was greater than
 specified tolerance `tol`.
 """
-type ConvergenceException{T<:Real} <: Exception
+struct ConvergenceException{T<:Real} <: Exception
     iters::Int
     change::T
     tol::T

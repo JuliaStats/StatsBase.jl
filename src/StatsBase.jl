@@ -1,9 +1,6 @@
 __precompile__()
 
 module StatsBase
-    using Compat
-    import Compat: String, view
-
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base: rand, rand!
     import Base.LinAlg: BlasReal, BlasFloat
@@ -192,7 +189,6 @@ module StatsBase
     include("toeplitzsolvers.jl")
     include("rankcorr.jl")
     include("signalcorr.jl")
-    include("rand.jl")
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")

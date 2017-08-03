@@ -29,7 +29,7 @@ julia> rle([1,1,1,2,2,3,3,3,3,2,2,2])
 ([1, 2, 3, 2], [3, 2, 4, 3])
 ```
 """
-function rle{T}(v::Vector{T})
+function rle(v::Vector{T}) where T
     n = length(v)
     vals = T[]
     lens = Int[]
@@ -68,7 +68,7 @@ Reconstruct a vector from its run-length encoding (see [`rle`](@ref)).
 `vals` is a vector of the values and `lens` is a vector of the corresponding
 run lengths.
 """
-function inverse_rle{T}(vals::AbstractVector{T}, lens::IntegerVector)
+function inverse_rle(vals::AbstractVector{T}, lens::IntegerVector) where T
     m = length(vals)
     length(lens) == m || raise_dimerror()
 
@@ -92,7 +92,7 @@ end
 Construct a dictionary that maps each unique value in `a` to
 the index of its first occurrence in `a`.
 """
-function indexmap{T}(a::AbstractArray{T})
+function indexmap(a::AbstractArray{T}) where T
     d = Dict{T,Int}()
     for i = 1 : length(a)
         @inbounds k = a[i]
@@ -110,7 +110,7 @@ end
 Construct a dictionary that maps each of the `n` unique values
 in `a` to a number between 1 and `n`.
 """
-function levelsmap{T}(a::AbstractArray{T})
+function levelsmap(a::AbstractArray{T}) where T
     d = Dict{T,Int}()
     index = 1
     for i = 1 : length(a)
@@ -171,7 +171,7 @@ function _indicatormat_dense(x::IntegerArray, k::Integer)
     return r
 end
 
-function _indicatormat_dense{T}(x::AbstractArray{T}, c::AbstractArray{T})
+function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
     d = indexmap(c)
     m = length(c)
     n = length(x)
@@ -187,7 +187,7 @@ end
 
 _indicatormat_sparse(x::IntegerArray, k::Integer) = (n = length(x); sparse(x, 1:n, true, k, n))
 
-function _indicatormat_sparse{T}(x::AbstractArray{T}, c::AbstractArray{T})
+function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
     d = indexmap(c)
     m = length(c)
     n = length(x)

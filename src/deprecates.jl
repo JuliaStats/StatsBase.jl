@@ -25,7 +25,7 @@ import Base.varm, Base.stdm
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
 @deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
 
-function findat!{T}(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T})
+function findat!(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T}) where T
     Base.depwarn("findat! is deprecated, use indexin instead", :findat!)
     length(r) == length(b) || raise_dimerror()
     d = indexmap(a)
@@ -48,3 +48,37 @@ findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(size(b)), a, b)
 @deprecate df_residual(obj::StatisticalModel) dof_residual(obj)
 
 @deprecate_binding WeightVec Weights
+
+struct RandIntSampler  # for generating Int samples in [0, K-1]
+    a::Int
+    Ku::UInt
+    U::UInt
+
+    function RandIntSampler(K::Int)
+        Base.depwarn("RandIntSampler is deprecated, use Base.Random.RangeGenerator instead",
+                     :RandIntSampler)
+        Ku = UInt(K)
+        new(1, Ku, div(typemax(UInt), Ku) * Ku)
+    end
+    function RandIntSampler(a::Int, b::Int)
+        Base.depwarn("RandIntSampler is deprecated, use Base.Random.RangeGenerator instead",
+                     :RandIntSampler)
+        Ku = UInt(b-a+1)
+        new(a, Ku, div(typemax(UInt), Ku) * Ku)
+    end
+end
+
+function rand(rng::AbstractRNG, s::RandIntSampler)
+    x = rand(rng, UInt)
+    while x >= s.U
+        x = rand(rng, UInt)
+    end
+    s.a + Int(rem(x, s.Ku))
+end
+rand(s::RandIntSampler) = rand(Base.GLOBAL_RNG, s)
+
+@deprecate randi(rng::AbstractRNG, K::Int) rand(rng, 1:K)
+@deprecate randi(K::Int) rand(1:K)
+@deprecate randi(rng::AbstractRNG, a::Int, b::Int) rand(rng, a:b)
+@deprecate randi(a::Int, b::Int) rand(a:b)
+
