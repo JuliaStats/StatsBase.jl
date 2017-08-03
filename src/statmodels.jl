@@ -354,8 +354,7 @@ struct ConvergenceException{T<:Real} <: Exception
     end
 end
 
-ConvergenceException(iters, lastchange::T, tol::T) where {T<:Real} = ConvergenceException{T}(iters, lastchange, tol)
-ConvergenceException(iters) = ConvergenceException(iters, NaN, NaN)
+ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} = ConvergenceException{T}(iters, lastchange, tol)
 
 function Base.showerror(io::IO, ce::ConvergenceException)
     print(io, "failure to converge after $(ce.iters) iterations.")
