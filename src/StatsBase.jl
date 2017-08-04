@@ -119,13 +119,14 @@ module StatsBase
 
     ## empirical
     ecdf,           # empirical cumulative distribution function
+    epdf,           # empirical probability distribution function
 
     AbstractHistogram,
     Histogram,
     hist,
     # histrange,
     midpoints,
-    
+
     ## robust
     trim,           # trimmed set
     trim!,          # trimmed set
