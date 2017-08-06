@@ -13,7 +13,15 @@ fnecdf = ecdf([0.5])
 @test fnecdf([zeros(5000); ones(5000)]) == [zeros(5000); ones(5000)]
 
 fnepdf = epdf(X)
-@test isapprox(fnepdf.([-10.0,0.0]), [0.0,0.383]; atol = 2e-3)
+@test isapprox(fnepdf.([-10.0, 0.0]), [0.0, 0.383]; atol = 2e-3)
+
+fnepdf = epdf(X; closed = :right)
+@test isapprox(fnepdf.([-10.0, 0.0]), [0.0, 0.383]; atol = 2e-3)
+
 
 fnepdf = epdf(X; nbins = 100)
-@test isapprox(fnepdf.([-10.0,0.0]), [0.0,0.398]; atol = 2e-3)
+@test isapprox(fnepdf.([-10.0, 0.0]), [0.0, 0.398]; atol = 2e-3)
+
+
+fnepdf = epdf(X; nbins = 100, closed = :right)
+@test isapprox(fnepdf.([-10.0, 0.0]), [0.0, 0.398]; atol = 2e-3)
