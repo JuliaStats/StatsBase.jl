@@ -56,22 +56,26 @@ to evaluate PDF values on other samples.
 """
 function epdf(X::AbstractVector; nbins::Int = sturges(length(X)), closed::Symbol=:left)
     # TODO: Support edges
-    hg = normalize(fit(Histogram, X; closed=closed, nbins=nbins); mode=:pdf)
-    if hg.closed == :right
-        le = <=
-        ge = >
-    else
-        le = <
-        ge = >=
-    end
+    hg = normalize(fit(Histogram, X; closed = closed, nbins = nbins); mode = :pdf)
 
-    function ef(x)
-        if le(x,hg.edges[1][1]) || ge(x,hg.edges[1][end])
-            return zero(eltype(hg.weights))
+    ef = if hg.closed == :left
+        (x) -> begin
+            if (x < hg.edges[1][1]) || (x >= hg.edges[1][end])
+                return zero(eltype(hg.weights))
+            end
+
+            idx = searchsortedfirst(hg.edges[1], x; lt = <)
+            return hg.weights[idx-1]
         end
+    else
+        (x) -> begin
+            if (x <= hg.edges[1][1]) || (x > hg.edges[1][end])
+                return zero(eltype(hg.weights))
+            end
 
-        idx = findfirst(le.(x,hg.edges[1]))
-        return hg.weights[idx-1]
+            idx = searchsortedfirst(hg.edges[1], x; lt = <=)
+            return hg.weights[idx-1]
+        end
     end
 
     return ef
