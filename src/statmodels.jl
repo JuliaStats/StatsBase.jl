@@ -337,6 +337,7 @@ end
 
 """
     ConvergenceException(iters::Int, lastchange::Real=NaN, tol::Real=NaN)
+
 The fitting procedure failed to converge in `iters` number of iterations,
 i.e. the `lastchange` between the cost of the final and penultimate iteration was greater than
 specified tolerance `tol`.
@@ -354,7 +355,8 @@ struct ConvergenceException{T<:Real} <: Exception
     end
 end
 
-ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} = ConvergenceException{T}(iters, lastchange, tol)
+ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} = 
+    ConvergenceException{T}(iters, lastchange, tol)
 
 function Base.showerror(io::IO, ce::ConvergenceException)
     print(io, "failure to converge after $(ce.iters) iterations.")
