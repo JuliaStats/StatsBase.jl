@@ -557,7 +557,7 @@ the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
 describe(a::AbstractArray) = describe(STDOUT, a)
-function describe{T<:Real}(io::IO, a::AbstractArray{T})
+function describe(io::IO, a::AbstractArray{T}) where T<:Real
     show(io, summarystats(a))
     println(io, "Length:         $(length(a))")
     println(io, "Type:           $(string(eltype(a)))")

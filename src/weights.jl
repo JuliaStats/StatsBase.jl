@@ -404,11 +404,7 @@ end
 
 function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Number,W<:Real}
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    @static if VERSION < v"0.6.0-dev.1121"
-        _wsum!(similar(A, wsumtype(T,W), Base.reduced_dims(size(A), dim)), A, w, dim, true)
-    else
-        _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(indices(A), dim)), A, w, dim, true)
-    end
+    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(indices(A), dim)), A, w, dim, true)
 end
 
 # extended sum! and wsum
