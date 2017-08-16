@@ -173,9 +173,9 @@ end
     h_copy = deepcopy(float(h))
     @test @inferred(normalize!(h_copy, mode = :density)) == h_copy
 
-    h_proportion = normalize(h, mode = :pdf)
-    @test sum(h_pdf.weights) ≈ 1.
-    @test h_proportion = normalize(h_pdf, mode = :proportion)
+    h_proportion = normalize(h, mode = :proportion)
+    @test sum(h_proportion.weights) ≈ 1.
+    @test h_proportion.weights ≈ normalize(h_pdf, mode = :proportion).weights
 
     h2 = deepcopy(float(h))
     mod_h2 = normalize!(h2, mode = :density)
