@@ -425,8 +425,25 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 end
             end
             h.isdensity = true
+        elseif mode == :proportion
+            if h.isdensity #if it already is a density, reverse that operation
+                SumT = norm_type(h)
+                vs_0 = one(SumT)
+                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
+                    (@nref $N weights i) *= $(Symbol("vs_$N"))
+                    for A in aux_weights
+                        (@nref $N A i) *= $(Symbol("vs_$N"))
+                    end
+                end
+                h.isdensity = false
+            end
+            s = sum(weights)
+            weights ./= s
+            for A in aux_weights
+                A ./= s
+            end
         else mode != :pdf && mode != :density
-            throw(ArgumentError("Normalization mode must be :pdf, :density or :none"))
+            throw(ArgumentError("Normalization mode must be :pdf, :density, :proportion or :none"))
         end
         h
     end
