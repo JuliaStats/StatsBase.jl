@@ -442,8 +442,8 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
             for A in aux_weights
                 A ./= s
             end
-        else mode != :pdf && mode != :density
-            throw(ArgumentError("Normalization mode must be :pdf, :density, :proportion or :none"))
+        else 
+            throw(ArgumentError("Normalization mode must be :pdf, :density, :fraction or :none"))
         end
         h
     end
