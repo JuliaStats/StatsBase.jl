@@ -175,7 +175,10 @@ end
 
     h_proportion = normalize(h, mode = :fraction)
     @test sum(h_proportion.weights) ≈ 1.
-    @test h_proportion.weights ≈ normalize(h_pdf, mode = :proportion).weights
+    h_newpdf = normalize(h_proportion, mode = :density)
+    @test h_newpdf.weights ≈ h_pdf.weights
+    h_newpdf2 = normalize(h_density, mode = :fraction)
+    @test h_newpdf2.weights ≈ h_pdf.weights
 
     h2 = deepcopy(float(h))
     mod_h2 = normalize!(h2, mode = :density)
