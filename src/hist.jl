@@ -425,7 +425,6 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 end
             end
             h.isdensity = true
-        elseif mode == :proportion
             if h.isdensity #if it already is a density, reverse that operation
                 SumT = norm_type(h)
                 vs_0 = one(SumT)
@@ -437,6 +436,7 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 end
                 h.isdensity = false
             end
+        elseif mode == :fraction
             s = sum(weights)
             weights ./= s
             for A in aux_weights
