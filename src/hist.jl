@@ -399,6 +399,10 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
             (size(A) != size(weights)) && throw(DimensionMismatch("aux_weights must have same size as histogram weights"))
         end
 
+        if mode == :fraction && h.isdensity
+            mode = :pdf
+        end
+
         if mode == :none
             # nothing to do
         elseif mode == :pdf || mode == :density
@@ -425,17 +429,6 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 end
             end
             h.isdensity = true
-            if h.isdensity #if it already is a density, reverse that operation
-                SumT = norm_type(h)
-                vs_0 = one(SumT)
-                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
-                    (@nref $N weights i) *= $(Symbol("vs_$N"))
-                    for A in aux_weights
-                        (@nref $N A i) *= $(Symbol("vs_$N"))
-                    end
-                end
-                h.isdensity = false
-            end
         elseif mode == :fraction
             s = sum(weights)
             weights ./= s
