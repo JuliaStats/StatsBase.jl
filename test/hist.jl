@@ -160,6 +160,7 @@ end
     @test @inferred(norm(h_pdf)) ≈ 1
     @test @inferred(normalize(h_pdf, mode = :pdf)) == h_pdf
     @test @inferred(normalize(h_pdf, mode = :density)) == h_pdf
+    @test @inferred(normalize(h_pdf, mode = :probability)) == h_pdf
 
     h_density = normalize(h, mode = :density)
     @test h_density.weights ≈ h.weights ./ bin_vols
@@ -169,6 +170,14 @@ end
         Histogram(h_density.edges, h_density.weights .* (1/norm(h_density)), h_density.closed, true)
     @test normalize(h_density, mode = :pdf).weights ≈ h_pdf.weights
     @test normalize(h_density, mode = :density) == h_density
+    @test normalize(h_density, mode = :probability).weights ≈ h_pdf.weights
+
+    h_fraction = normalize(h, mode = :probability)
+    @test sum(h_fraction.weights) ≈ 1
+    @test h_fraction.isdensity == false
+    @test normalize(h_fraction, mode = :pdf).weights ≈ h_pdf.weights
+    @test normalize(h_fraction, mode = :density).weights ≈ h_pdf.weights
+    @test normalize(h_fraction, mode = :probability).weights ≈ h_fraction.weights
 
     h_copy = deepcopy(float(h))
     @test @inferred(normalize!(h_copy, mode = :density)) == h_copy

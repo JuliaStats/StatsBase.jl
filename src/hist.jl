@@ -401,9 +401,9 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
 
         if mode == :none
             # nothing to do
-        elseif mode == :pdf || mode == :density
+        elseif mode == :pdf || mode == :density || mode == :probability
             if h.isdensity
-                if mode == :pdf
+                if mode == :pdf || mode == :probability
                     # histogram already represents a density, just divide weights by norm
                     s = 1/norm(h)
                     weights .*= s
@@ -411,22 +411,31 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                         A .*= s
                     end
                 else
-                    # histogram already represents a density, nothing to do
+                    # :density - histogram already represents a density, nothing to do
                 end
             else
-                # Divide weights by bin volume, for :pdf also divide by sum of weights
-                SumT = norm_type(h)
-                vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
-                @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
-                    (@nref $N weights i) /= $(Symbol("vs_$N"))
+                if mode == :pdf || mode == :density
+                    # Divide weights by bin volume, for :pdf also divide by sum of weights
+                    SumT = norm_type(h)
+                    vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
+                    @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
+                        (@nref $N weights i) /= $(Symbol("vs_$N"))
+                        for A in aux_weights
+                            (@nref $N A i) /= $(Symbol("vs_$N"))
+                        end
+                    end
+                    h.isdensity = true
+                else
+                    # :probability - divide weights by sum of weights
+                    nf = inv(sum(weights))
+                    weights .*= nf
                     for A in aux_weights
-                        (@nref $N A i) /= $(Symbol("vs_$N"))
+                        A .*= nf
                     end
                 end
             end
-            h.isdensity = true
-        else mode != :pdf && mode != :density
-            throw(ArgumentError("Normalization mode must be :pdf, :density or :none"))
+        else
+            throw(ArgumentError("Normalization mode must be :pdf, :density, :probability or :none"))
         end
         h
     end
@@ -445,8 +454,14 @@ Valid values for `mode` are:
 * `:density`: Normalize by bin sizes only. Resulting histogram represents
    count density of input and does not have norm 1. Will not modify the
    histogram if it already represents a density (`h.isdensity == 1`).
+* `:probability`: Normalize by sum of weights only. Resulting histogram
+   represents the fraction of probability mass for each bin and does not have
+   norm 1.
 *  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
    conditionally apply different modes of normalization.
+
+Successive application of both `:probability` and `:density` normalization (in
+any order) is equivalent to `:pdf` normalization.
 """
 normalize(h::Histogram{T,N}; mode::Symbol=:pdf) where {T,N} =
     normalize!(deepcopy(float(h)), mode = mode)
