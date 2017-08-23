@@ -973,7 +973,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocov",
     "category": "Function",
-    "text": "autocov(x, [lags]; demean=true)\n\nCompute the autocovariance of a vector or matrix x, optionally specifying the lags at which to compute the autocovariance. demean denotes whether the mean of x should be subtracted from x before computing the autocovariance.\n\nIf x is a vector, return a vector of the same length as x. If x is a matrix, return a matrix of size (length(lags), size(x,2)), where each column in the result corresponds to a column in x.\n\nWhen left unspecified, the lags used are the integers from 0 to min(size(x,1)-1, 10*log10(size(x,1))).\n\n\n\n"
+    "text": "autocov(x, [lags]; demean=true)\n\nCompute the autocovariance of a vector or matrix x, optionally specifying the lags at which to compute the autocovariance. demean denotes whether the mean of x should be subtracted from x before computing the autocovariance.\n\nIf x is a vector, return a vector of the same length as x. If x is a matrix, return a matrix of size (length(lags), size(x,2)), where each column in the result corresponds to a column in x.\n\nWhen left unspecified, the lags used are the integers from 0 to min(size(x,1)-1, 10*log10(size(x,1))).\n\nThe output is not normalized. See autocor for a function with normalization.\n\n\n\n"
 },
 
 {
@@ -981,7 +981,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocov!",
     "category": "Function",
-    "text": "autocov!(r, x, lags; demean=true)\n\nCompute the autocovariance of a vector or matrix x at lags and store the result in r. demean denotes whether the mean of x should be subtracted from x before computing the autocovariance.\n\nIf x is a vector, r must be a vector of the same length as x. If x is a matrix, r must be a matrix of size (length(lags), size(x,2)), and where each column in the result will correspond to a column in x.\n\n\n\n"
+    "text": "autocov!(r, x, lags; demean=true)\n\nCompute the autocovariance of a vector or matrix x at lags and store the result in r. demean denotes whether the mean of x should be subtracted from x before computing the autocovariance.\n\nIf x is a vector, r must be a vector of the same length as x. If x is a matrix, r must be a matrix of size (length(lags), size(x,2)), and where each column in the result will correspond to a column in x.\n\nThe output is not normalized. See autocor! for a method with normalization.\n\n\n\n"
 },
 
 {
@@ -989,7 +989,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocor",
     "category": "Function",
-    "text": "autocor(x, [lags]; demean=true)\n\nCompute the autocorrelation function (ACF) of a vector or matrix x, optionally specifying the lags. demean denotes whether the mean of x should be subtracted from x before computing the ACF.\n\nIf x is a vector, return a vector of the same length as x. If x is a matrix, return a matrix of size (length(lags), size(x,2)), where each column in the result corresponds to a column in x.\n\nWhen left unspecified, the lags used are the integers from 0 to min(size(x,1)-1, 10*log10(size(x,1))).\n\n\n\n"
+    "text": "autocor(x, [lags]; demean=true)\n\nCompute the autocorrelation function (ACF) of a vector or matrix x, optionally specifying the lags. demean denotes whether the mean of x should be subtracted from x before computing the ACF.\n\nIf x is a vector, return a vector of the same length as x. If x is a matrix, return a matrix of size (length(lags), size(x,2)), where each column in the result corresponds to a column in x.\n\nWhen left unspecified, the lags used are the integers from 0 to min(size(x,1)-1, 10*log10(size(x,1))).\n\nThe output is normalized by the variance of x, i.e. so that the lag 0 autocorrelation is 1. See autocov for the unnormalized form.\n\n\n\n"
 },
 
 {
@@ -997,7 +997,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocor!",
     "category": "Function",
-    "text": "autocor!(r, x, lags; demean=true)\n\nCompute the autocorrelation function (ACF) of a vector or matrix x at lags and store the result in r. demean denotes whether the mean of x should be subtracted from x before computing the ACF.\n\nIf x is a vector, r must be a vector of the same length as x. If x is a matrix, r must be a matrix of size (length(lags), size(x,2)), and where each column in the result will correspond to a column in x.\n\n\n\n"
+    "text": "autocor!(r, x, lags; demean=true)\n\nCompute the autocorrelation function (ACF) of a vector or matrix x at lags and store the result in r. demean denotes whether the mean of x should be subtracted from x before computing the ACF.\n\nIf x is a vector, r must be a vector of the same length as x. If x is a matrix, r must be a matrix of size (length(lags), size(x,2)), and where each column in the result will correspond to a column in x.\n\nThe output is normalized by the variance of x, i.e. so that the lag 0 autocorrelation is 1. See autocov! for the unnormalized form.\n\n\n\n"
 },
 
 {
@@ -1013,7 +1013,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscov",
     "category": "Function",
-    "text": "crosscov(x, y, [lags]; demean=true)\n\nCompute the cross covariance function (CCF) between real-valued vectors or matrices x and y, optionally specifying the lags. demean specifies whether the respective means of x and y should be subtracted from them before computing their CCF.\n\nIf both x and y are vectors, return a vector of the same length as lags. Otherwise, compute cross covariances between each pairs of columns in x and y.\n\nWhen left unspecified, the lags used are the integers from -min(size(x,1)-1, 10*log10(size(x,1))) to min(size(x,1), 10*log10(size(x,1))).\n\n\n\n"
+    "text": "crosscov(x, y, [lags]; demean=true)\n\nCompute the cross covariance function (CCF) between real-valued vectors or matrices x and y, optionally specifying the lags. demean specifies whether the respective means of x and y should be subtracted from them before computing their CCF.\n\nIf both x and y are vectors, return a vector of the same length as lags. Otherwise, compute cross covariances between each pairs of columns in x and y.\n\nWhen left unspecified, the lags used are the integers from -min(size(x,1)-1, 10*log10(size(x,1))) to min(size(x,1), 10*log10(size(x,1))).\n\nThe output is not normalized. See crosscor for a function with normalization.\n\n\n\n"
 },
 
 {
@@ -1021,7 +1021,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscov!",
     "category": "Function",
-    "text": "crosscov!(r, x, y, lags; demean=true)\n\nCompute the cross covariance function (CCF) between real-valued vectors or matrices x and y at lags and store the result in r. demean specifies whether the respective means of x and y should be subtracted from them before computing their CCF.\n\nIf both x and y are vectors, r must be a vector of the same length as lags. If either x is a matrix and y is a vector, r must be a matrix of size (length(lags), size(x, 2)); if x is a vector and y is a matrix, r must be a matrix of size (length(lags), size(y, 2)). If both x and y are matrices, r must be a three-dimensional array of size (length(lags), size(x, 2), size(y, 2)).\n\n\n\n"
+    "text": "crosscov!(r, x, y, lags; demean=true)\n\nCompute the cross covariance function (CCF) between real-valued vectors or matrices x and y at lags and store the result in r. demean specifies whether the respective means of x and y should be subtracted from them before computing their CCF.\n\nIf both x and y are vectors, r must be a vector of the same length as lags. If either x is a matrix and y is a vector, r must be a matrix of size (length(lags), size(x, 2)); if x is a vector and y is a matrix, r must be a matrix of size (length(lags), size(y, 2)). If both x and y are matrices, r must be a three-dimensional array of size (length(lags), size(x, 2), size(y, 2)).\n\nThe output is not normalized. See crosscor! for a function with normalization.\n\n\n\n"
 },
 
 {
@@ -1029,7 +1029,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscor",
     "category": "Function",
-    "text": "crosscor(x, y, [lags]; demean=true)\n\nCompute the cross correlation between real-valued vectors or matrices x and y, optionally specifying the lags. demean specifies whether the respective means of x and y should be subtracted from them before computing their cross correlation.\n\nIf both x and y are vectors, return a vector of the same length as lags. Otherwise, compute cross covariances between each pairs of columns in x and y.\n\nWhen left unspecified, the lags used are the integers from -min(size(x,1)-1, 10*log10(size(x,1))) to min(size(x,1), 10*log10(size(x,1))).\n\n\n\n"
+    "text": "crosscor(x, y, [lags]; demean=true)\n\nCompute the cross correlation between real-valued vectors or matrices x and y, optionally specifying the lags. demean specifies whether the respective means of x and y should be subtracted from them before computing their cross correlation.\n\nIf both x and y are vectors, return a vector of the same length as lags. Otherwise, compute cross covariances between each pairs of columns in x and y.\n\nWhen left unspecified, the lags used are the integers from -min(size(x,1)-1, 10*log10(size(x,1))) to min(size(x,1), 10*log10(size(x,1))).\n\nThe output is normalized by sqrt(var(x)*var(y)). See crosscov for the unnormalized form.\n\n\n\n"
 },
 
 {
@@ -1037,7 +1037,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscor!",
     "category": "Function",
-    "text": "crosscor!(r, x, y, lags; demean=true)\n\nCompute the cross correlation between real-valued vectors or matrices x and y at lags and store the result in r. demean specifies whether the respective means of x and y should be subtracted from them before computing their cross correlation.\n\nIf both x and y are vectors, r must be a vector of the same length as lags. If either x is a matrix and y is a vector, r must be a matrix of size (length(lags), size(x, 2)); if x is a vector and y is a matrix, r must be a matrix of size (length(lags), size(y, 2)). If both x and y are matrices, r must be a three-dimensional array of size (length(lags), size(x, 2), size(y, 2)).\n\n\n\n"
+    "text": "crosscor!(r, x, y, lags; demean=true)\n\nCompute the cross correlation between real-valued vectors or matrices x and y at lags and store the result in r. demean specifies whether the respective means of x and y should be subtracted from them before computing their cross correlation.\n\nIf both x and y are vectors, r must be a vector of the same length as lags. If either x is a matrix and y is a vector, r must be a matrix of size (length(lags), size(x, 2)); if x is a vector and y is a matrix, r must be a matrix of size (length(lags), size(y, 2)). If both x and y are matrices, r must be a three-dimensional array of size (length(lags), size(x, 2), size(y, 2)).\n\nThe output is normalized by sqrt(var(x)*var(y)). See crosscov! for the unnormalized form.\n\n\n\n"
 },
 
 {
