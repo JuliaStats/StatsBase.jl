@@ -56,6 +56,8 @@ before computing the autocovariance.
 If `x` is a vector, `r` must be a vector of the same length as `x`.
 If `x` is a matrix, `r` must be a matrix of size `(length(lags), size(x,2))`, and
 where each column in the result will correspond to a column in `x`.
+
+The output is not normalized. See [`autocor!`](@ref) for a method with normalization.
 """
 function autocov!(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
@@ -101,6 +103,8 @@ where each column in the result corresponds to a column in `x`.
 
 When left unspecified, the lags used are the integers from 0 to
 `min(size(x,1)-1, 10*log10(size(x,1)))`.
+
+The output is not normalized. See [`autocor`](@ref) for a function with normalization.
 """
 function autocov(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     autocov!(Vector{fptype(T)}(length(lags)), float(x), lags; demean=demean)
@@ -124,6 +128,9 @@ be subtracted from `x` before computing the ACF.
 If `x` is a vector, `r` must be a vector of the same length as `x`.
 If `x` is a matrix, `r` must be a matrix of size `(length(lags), size(x,2))`, and
 where each column in the result will correspond to a column in `x`.
+
+The output is normalized by the variance of `x`, i.e. so that the lag 0
+autocorrelation is 1. See [`autocov!`](@ref) for the unnormalized form.
 """
 function autocor!(r::RealVector, x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
@@ -171,6 +178,9 @@ where each column in the result corresponds to a column in `x`.
 
 When left unspecified, the lags used are the integers from 0 to
 `min(size(x,1)-1, 10*log10(size(x,1)))`.
+
+The output is normalized by the variance of `x`, i.e. so that the lag 0
+autocorrelation is 1. See [`autocov`](@ref) for the unnormalized form.
 """
 function autocor(x::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     autocor!(Vector{fptype(T)}(length(lags)), float(x), lags; demean=demean)
@@ -209,6 +219,8 @@ If both `x` and `y` are vectors, `r` must be a vector of the same length as
 `(length(lags), size(x, 2))`; if `x` is a vector and `y` is a matrix, `r` must be a matrix
 of size `(length(lags), size(y, 2))`. If both `x` and `y` are matrices, `r` must be a
 three-dimensional array of size `(length(lags), size(x, 2), size(y, 2))`.
+
+The output is not normalized. See [`crosscor!`](@ref) for a function with normalization.
 """
 function crosscov!(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
@@ -310,6 +322,8 @@ If both `x` and `y` are vectors, return a vector of the same length as
 
 When left unspecified, the lags used are the integers from
 `-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
+
+The output is not normalized. See [`crosscor`](@ref) for a function with normalization.
 """
 function crosscov(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscov!(Vector{fptype(T)}(length(lags)), float(x), float(y), lags; demean=demean)
@@ -343,6 +357,9 @@ If both `x` and `y` are vectors, `r` must be a vector of the same length as
 `(length(lags), size(x, 2))`; if `x` is a vector and `y` is a matrix, `r` must be a matrix
 of size `(length(lags), size(y, 2))`. If both `x` and `y` are matrices, `r` must be a
 three-dimensional array of size `(length(lags), size(x, 2), size(y, 2))`.
+
+The output is normalized by `sqrt(var(x)*var(y))`. See [`crosscov!`](@ref) for the
+unnormalized form.
 """
 function crosscor!(r::RealVector, x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:RealFP
     lx = length(x)
@@ -453,6 +470,9 @@ If both `x` and `y` are vectors, return a vector of the same length as
 
 When left unspecified, the lags used are the integers from
 `-min(size(x,1)-1, 10*log10(size(x,1)))` to `min(size(x,1), 10*log10(size(x,1)))`.
+
+The output is normalized by `sqrt(var(x)*var(y))`. See [`crosscov`](@ref) for the
+unnormalized form.
 """
 function crosscor(x::AbstractVector{T}, y::AbstractVector{T}, lags::IntegerVector; demean::Bool=true) where T<:Real
     crosscor!(Vector{fptype(T)}(length(lags)), float(x), float(y), lags; demean=demean)
