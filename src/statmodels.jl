@@ -200,6 +200,13 @@ const adjr² = adjr2
 abstract type RegressionModel <: StatisticalModel end
 
 """
+    coefnames(obj::RegressionModel)
+
+Return the names of the coefficients as a `Vector{Symbol}`.
+"""
+coefnames(obj::RegressionModel) = error("coefnames is not defined for $(typeof(obj)).")
+
+"""
     fitted(obj::RegressionModel)
 
 Return the fitted values of the model.
@@ -213,6 +220,12 @@ Return the model response (a.k.a. the dependent variable).
 """
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
 
+"""
+    model_matrix(obj::RegressionModel)
+
+Return the model matrix (a.k.a. the design matrix).
+"""
+model_matrix(obj::RegressionModel) = error("model_matrix is not defined for $(typeof(obj)).")
 
 """
     residuals(obj::RegressionModel)
@@ -347,7 +360,7 @@ struct ConvergenceException{T<:Real} <: Exception
     lastchange::T
     tol::T
     function ConvergenceException{T}(iters, lastchange::T, tol::T) where T<:Real
-        if tol > lastchange 
+        if tol > lastchange
             throw(ArgumentError("Change must be greater than tol."))
         else
             new(iters, lastchange, tol)
@@ -355,7 +368,7 @@ struct ConvergenceException{T<:Real} <: Exception
     end
 end
 
-ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} = 
+ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} =
     ConvergenceException{T}(iters, lastchange, tol)
 
 function Base.showerror(io::IO, ce::ConvergenceException)
