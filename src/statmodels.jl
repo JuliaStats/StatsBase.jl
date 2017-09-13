@@ -10,6 +10,13 @@ Return the coefficients of the model.
 coef(obj::StatisticalModel) = error("coef is not defined for $(typeof(obj)).")
 
 """
+    coefnames(obj::StatisticalModel)
+
+Return the names of the coefficients.
+"""
+coefnames(obj::RegressionModel) = error("coefnames is not defined for $(typeof(obj)).")
+
+"""
     coeftable(obj::StatisticalModel)
 
 Return a table of class `CoefTable` with coefficients and related statistics.
@@ -200,13 +207,6 @@ const adjr² = adjr2
 abstract type RegressionModel <: StatisticalModel end
 
 """
-    coefnames(obj::RegressionModel)
-
-Return the names of the coefficients as a `Vector{Symbol}`.
-"""
-coefnames(obj::RegressionModel) = error("coefnames is not defined for $(typeof(obj)).")
-
-"""
     fitted(obj::RegressionModel)
 
 Return the fitted values of the model.
@@ -221,11 +221,11 @@ Return the model response (a.k.a. the dependent variable).
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
 
 """
-    model_matrix(obj::RegressionModel)
+    modelmatrix(obj::RegressionModel)
 
 Return the model matrix (a.k.a. the design matrix).
 """
-model_matrix(obj::RegressionModel) = error("model_matrix is not defined for $(typeof(obj)).")
+modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
 
 """
     residuals(obj::RegressionModel)
