@@ -317,7 +317,7 @@ end
         if dim == 1
             @nextract $N sizeR d->size(R,d)
             sizA1 = size(A, 1)
-            @nloops $N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
+            @nloops $N i d->(d>1 ? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
                 @inbounds r = (@nref $N R j)
                 for i_1 = 1:sizA1
                     @inbounds r += f(@nref $N A i) * w[i_1]
@@ -345,7 +345,7 @@ end
         if dim == 1
             @nextract $N sizeR d->size(R,d)
             sizA1 = size(A, 1)
-            @nloops $N i d->(d>1? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
+            @nloops $N i d->(d>1 ? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
                 @inbounds r = (@nref $N R j)
                 @inbounds m = (@nref $N means j)
                 for i_1 = 1:sizA1
@@ -506,7 +506,8 @@ function Base.median(v::RealVector, w::AbstractWeights{<:Real})
         permute = sortperm(v)
         cumulative_weight = zero(eltype(wt))
         i = 0
-        for (i, p) in enumerate(permute)
+        for (_i, p) in enumerate(permute)
+            i = _i
             if cumulative_weight == midpoint
                 i += 1
                 break

@@ -640,7 +640,8 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     pq = Vector{Pair{Float64,Int}}(k)
     i = 0
     s = 0
-    @inbounds for s in 1:n
+    @inbounds for _s in 1:n
+        s = _s
         w = wv.values[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
         if w > 0
@@ -705,7 +706,8 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     pq = Vector{Pair{Float64,Int}}(k)
     i = 0
     s = 0
-    @inbounds for s in 1:n
+    @inbounds for _s in 1:n
+        s = _s
         w = wv.values[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
         if w > 0

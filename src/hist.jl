@@ -308,7 +308,7 @@ Fit a histogram to `data`.
   data vectors), denoting the weight each observation contributes to the
   bin. If no weight vector is supplied, each observation has weight 1.
 
-* `edges`: a vector (typically a `Range` object), or tuple of vectors, that gives
+* `edges`: a vector (typically an `AbstractRange` object), or tuple of vectors, that gives
   the edges of the bins along each dimension. If no edges are provided, these
   are determined from the data.
 

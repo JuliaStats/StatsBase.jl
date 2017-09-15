@@ -139,9 +139,9 @@ end
     n = 100000
 
     data = (
-        maximum(edges[1]) * (randn(rng, n) / 6 + 0.5),
+        maximum(edges[1]) .* (randn(rng, n) ./ 6 .+ 0.5),
         rand(rng, 1:maximum(edges[2]), n),
-        maximum(edges[3]) * rand(rng, n)
+        maximum(edges[3]) .* rand(rng, n)
     )
 
     h = fit(Histogram, data, edges, closed = :left)
