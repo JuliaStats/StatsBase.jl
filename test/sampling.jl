@@ -6,7 +6,7 @@ import StatsBase: norepeat
 srand(1234)
 
 # test that rng specification is working correctly
-# a) if the same rng is passed to a sample function twice, 
+# a) if the same rng is passed to a sample function twice,
 #    the results should be the same (repeatability)
 # b) not specifying a rng should be the same as specifying Base.GLOBAL_RNG
 function test_rng_use(func, non_rng_args...)
@@ -184,18 +184,18 @@ wv = Weights([zeros(6); 1:4])
 x = vcat([sample(a, wv, 1, replace=false) for j in 1:100000]...)
 @test minimum(x) == 7
 @test maximum(x) == 10
-@test maximum(abs, proportions(x) - (1:4)/10) < 0.01
+@test maximum(abs, proportions(x) .- (1:4)/10) < 0.01
 
 x = vcat([sample(a, wv, 2, replace=false) for j in 1:50000]...)
 exact2 = [0.117261905, 0.220634921, 0.304166667, 0.357936508]
 @test minimum(x) == 7
 @test maximum(x) == 10
-@test maximum(abs, proportions(x) - exact2) < 0.01
+@test maximum(abs, proportions(x) .- exact2) < 0.01
 
 x = vcat([sample(a, wv, 4, replace=false) for j in 1:10000]...)
 @test minimum(x) == 7
 @test maximum(x) == 10
-@test maximum(abs, proportions(x) - 0.25) == 0
+@test maximum(abs, proportions(x) .- 0.25) == 0
 
 @test_throws DimensionMismatch sample(a, wv, 5, replace=false)
 
