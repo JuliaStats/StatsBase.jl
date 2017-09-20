@@ -14,7 +14,7 @@ coef(obj::StatisticalModel) = error("coef is not defined for $(typeof(obj)).")
 
 Return the names of the coefficients.
 """
-coefnames(obj::RegressionModel) = error("coefnames is not defined for $(typeof(obj)).")
+coefnames(obj::StatisticalModel) = error("coefnames is not defined for $(typeof(obj)).")
 
 """
     coeftable(obj::StatisticalModel)
