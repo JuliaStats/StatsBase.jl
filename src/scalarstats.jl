@@ -254,7 +254,7 @@ end
 """
     StatsBase.mad!(v, center=median!(v); constant=k)
 
-Compute the maximum absolute deviation (MAD) of `v` about a precomputed center
+Compute the median absolute deviation (MAD) of `v` about a precomputed center
 `center`, overwriting `v` in the process. Using the MAD as a consistent estimator
 of the standard deviation requires a scaling factor that depends on the underlying
 distribution. For normally distributed data, `k` is chosen as
