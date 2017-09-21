@@ -10,6 +10,13 @@ Return the coefficients of the model.
 coef(obj::StatisticalModel) = error("coef is not defined for $(typeof(obj)).")
 
 """
+    coefnames(obj::StatisticalModel)
+
+Return the names of the coefficients.
+"""
+coefnames(obj::StatisticalModel) = error("coefnames is not defined for $(typeof(obj)).")
+
+"""
     coeftable(obj::StatisticalModel)
 
 Return a table of class `CoefTable` with coefficients and related statistics.
@@ -213,6 +220,12 @@ Return the model response (a.k.a. the dependent variable).
 """
 model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
 
+"""
+    modelmatrix(obj::RegressionModel)
+
+Return the model matrix (a.k.a. the design matrix).
+"""
+modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
 
 """
     residuals(obj::RegressionModel)
@@ -347,7 +360,7 @@ struct ConvergenceException{T<:Real} <: Exception
     lastchange::T
     tol::T
     function ConvergenceException{T}(iters, lastchange::T, tol::T) where T<:Real
-        if tol > lastchange 
+        if tol > lastchange
             throw(ArgumentError("Change must be greater than tol."))
         else
             new(iters, lastchange, tol)
@@ -355,7 +368,7 @@ struct ConvergenceException{T<:Real} <: Exception
     end
 end
 
-ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} = 
+ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} =
     ConvergenceException{T}(iters, lastchange, tol)
 
 function Base.showerror(io::IO, ce::ConvergenceException)
