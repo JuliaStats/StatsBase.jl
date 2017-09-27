@@ -195,7 +195,7 @@ binvolume(::Type{V}, h::Histogram{T,N}, binidx::NTuple{N,Integer}) where {V,T,N}
     prod(map((edge, i) -> _edge_binvolume(V, edge, i), h.edges, binidx))
 
 @inline _edge_binvolume(::Type{V}, edge::AbstractVector, i::Integer) where {V} = V(edge[i+1]) - V(edge[i])
-@inline _edge_binvolume(::Type{V}, edge::Range, i::Integer) where {V} = V(step(edge))
+@inline _edge_binvolume(::Type{V}, edge::AbstractRange, i::Integer) where {V} = V(step(edge))
 @inline _edge_binvolume(edge::AbstractVector, i::Integer) = _edge_binvolume(eltype(edge), edge, i)
 
 

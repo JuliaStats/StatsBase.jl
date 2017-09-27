@@ -9,6 +9,8 @@ module StatsBase
 
     import SpecialFunctions: erfcinv
 
+    using Compat
+
     ## tackle compatibility issues
 
     export
