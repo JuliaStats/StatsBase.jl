@@ -41,8 +41,12 @@ function ordinalrank_rand!(rks::RealArray, x::RealArray, p::IntegerArray)
         while e <= n
             cx = x[p[e]]
             if cx != v
-                # fill random ranks in range s : e-1
-                rks[p[s : e-1]] = shuffle(s : e-1)
+                if s != e-1
+                    # fill random ranks in range s : e-1
+                    rks[p[s : e-1]] = shuffle(s : e-1)
+                else
+                    rks[p[s]] = s
+                end
                 # switch to next range
                 s = e
                 v = cx
@@ -51,9 +55,12 @@ function ordinalrank_rand!(rks::RealArray, x::RealArray, p::IntegerArray)
         end
 
         # the last range (e == n+1)
-        rks[p[s : n]] = shuffle(s : n)
-    end
-
+        if s != n
+            rks[p[s : n]] = shuffle(s : n)
+        else
+            rks[p[s]] = s
+        end
+        
     return rks
 end
 
