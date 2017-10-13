@@ -30,16 +30,45 @@ function ordinalrank!(rks::RealArray, x::RealArray, p::IntegerArray)
     return rks
 end
 
+# Ordinal ranking ("1234 ranking") -- break ties randomly
+function ordinalrank_rand!(rks::RealArray, x::RealArray, p::IntegerArray)
+    n = _check_randparams(rks, x, p)
+
+    if n > 0
+        v = x[p[1]]
+        s = 1  # starting index of current range
+        e = 2  # pass-by-end index of current range
+        while e <= n
+            cx = x[p[e]]
+            if cx != v
+                # fill random ranks in range s : e-1
+                rks[p[s : e-1]] = shuffle(s : e-1)
+                # switch to next range
+                s = e
+                v = cx
+            end
+            e += 1
+        end
+
+        # the last range (e == n+1)
+        rks[p[s : n]] = shuffle(s : n)
+    end
+
+    return rks
+end
 
 """
-    ordinalrank(x)
+    ordinalrank(x; rand=false)
 
 Return the [ordinal ranking](https://en.wikipedia.org/wiki/Ranking#Ordinal_ranking_.28.221234.22_ranking.29)
 ("1234" ranking) of a real-valued array.
 All items in `x` are given distinct, successive ranks based on their
 position in `sort(x)`.
+If `rand=true` then ties will be broken randomly, otherwise (default) they will be ranked in the order of appearance.
 """
-ordinalrank(x::RealArray) = ordinalrank!(Array{Int}(size(x)), x, sortperm(x))
+function ordinalrank(x::RealArray; rand::Bool=false)
+    rand ? ordinalrank_rand!(Array{Int}(size(x)), x, sortperm(x)) : ordinalrank!(Array{Int}(size(x)), x, sortperm(x))
+end
 
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
