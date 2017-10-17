@@ -525,7 +525,7 @@ function pacf_yulewalker!(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVect
         acfs = autocor(X[:,j], 1:mk)
         for i = 1 : length(lags)
             l = lags[i]
-            r[i,j] = l == 0 ? one(T) : l == 1 ? acfs[i] : -durbin!(view(acfs, 1:l), tmp)[l]
+            r[i,j] = l == 0 ? 1 : l == 1 ? acfs[i] : -durbin!(view(acfs, 1:l), tmp)[l]
         end
     end
 end
