@@ -221,5 +221,9 @@ end
     @test (@inferred merge(histograms...)) == h
 end
 
+@testset "Get n most frequent elements" begin
+    testvec = [13, 7, 9, 16, 12, 10, 7, 11, 18, 13, 7, 17, 9, 13, 17]
+    @test StatsBase.getfrequent(testvec, 4) == [7, 13, 9, 17]
+end
 
 end # @testset "StatsBase.Histogram"
