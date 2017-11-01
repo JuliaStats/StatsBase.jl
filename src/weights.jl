@@ -137,6 +137,18 @@ See the documentation for [`FrequencyWeights`](@ref) for more details.
 fweights(vs::RealVector) = FrequencyWeights(vs)
 fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 
+function Base.repeat(v::RealVector, w::FrequencyWeights{<:Integer, <:Integer})
+    result = Vector{eltype(v)}(sum(w))
+    i = 0
+    for (vi, wi) in zip(v, w)
+        for _ in 1:wi
+            i += 1
+            result[i] = vi
+        end
+    end
+    result 
+end
+
 """
     varcorrection(w::FrequencyWeights, corrected=false)
 
