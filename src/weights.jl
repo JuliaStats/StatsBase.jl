@@ -537,10 +537,6 @@ wmedian(v::RealVector, w::AbstractWeights{<:Real}) = median(v, w)
 
 ###### Weighted quantile #####
 
-# http://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
-# In the non weighted version, we compute a vector of index h(N, p)
-# and take interpolation between floor and ceil of this index
-# Here there is a supplementary function from index to weighted index k -> Sk
 
 """
     quantile(v, w::AbstractWeights, p)
@@ -549,15 +545,16 @@ Compute the weighted quantiles of a vector `x` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
 
-The quantile for `p` is defined as follows. Denoting
-``S_k = (k-1)w_k + (n-1) \\sum_{i<k}w_i``, define ``x_{k+1}`` the smallest element of `x`
-such that ``S_{k+1}/S_{n}`` is strictly superior to `p`. The function returns
-``(1-\\gamma) x_k + \\gamma x_{k+1}`` with  ``\\gamma = (pS_n- S_k)/(S_{k+1}-S_k)``.
+With frequency weights, the function returns the same result as `quantile` for a vector with repeated values.
+With non frequency weights,  denote N the length of the vector, w the vector of weights normalized to sum to N, `h = p (N - 1) + 1`  and ``S_k = N \\sum_{i<=k}w_i/\\sum_{i<=N}w_i``, define ``x_{k+1}`` the smallest element of `x` such that ``S_{k+1}`` is strictly superior to `h`. The function returns
+``x_k + \\gamma (x_{k+1} -x_k)`` with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``
+In particular, when `w` is a vector of one, the function returns the same result as `quantile`.
 
-This corresponds to  R-7, Excel, SciPy-(1,1) and Maple-6 when `w` contains only ones
-(see [Wikipedia](https://en.wikipedia.org/wiki/Quantile)).
 """
-function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
+
+
+function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V, W<:Real}
+
     # checks
     isempty(v) && error("quantile of an empty array is undefined")
     isempty(p) && throw(ArgumentError("empty quantile array"))
@@ -569,10 +566,15 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         x < 0 && error("weight vector cannot contain negative entries")
     end
 
-    # full sort
-    vw = sort!(collect(zip(v, w.values)))
+    wvalues = w.values
+    nz = find(w.values)
+    #normalize if non frequencyweight
+    if !isa(w, FrequencyWeights)
+        wvalues = wvalues / w.sum * length(nz)
+    end
 
-    wsum = w.sum
+    #remove zeros weights and sort
+    vw = sort!(collect(zip(view(v, nz), view(wvalues, nz))))
 
     # prepare percentiles
     ppermute = sortperm(p)
@@ -580,36 +582,31 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     p = bound_quantiles(p)
 
     # prepare out vector
-    N = length(vw)
     out = Vector{typeof(zero(V)/1)}(length(p))
     fill!(out, vw[end][1])
 
     # start looping on quantiles
-    cumulative_weight, Sk, Skold =  zero(W), zero(W), zero(W)
+    Sk, Skold =  zero(W), zero(W)
     vk, vkold = zero(V), zero(V)
-    k = 1
+    k = 0
+
+
     for i in 1:length(p)
-        h = p[i] * (N - 1) * wsum
-        if h == 0
-            # happens when N or p or wsum equal zero
-            out[ppermute[i]] = vw[1][1]
-        else
-            while Sk <= h
-                # happens in particular when k == 1
-                vk, wk = vw[k]
-                cumulative_weight += wk
-                if k >= N
-                    # out was initialized with maximum v
-                    return out
-                end
-                k += 1
-                Skold, vkold = Sk, vk
-                vk, wk = vw[k]
-                Sk = (k - 1) * wk + (N - 1) * cumulative_weight
+        h = p[i] * (w.sum - 1) + 1
+        while Sk <= h
+            k += 1
+            if k > length(vw)
+               # out was initialized with maximum v
+               return out
             end
-            # in particular, Sk is different from Skold
-            g = (h - Skold) / (Sk - Skold)
-            out[ppermute[i]] = vkold + g * (vk - vkold)
+            Skold, vkold = Sk, vk
+            vk, wk = vw[k]
+            Sk += wk
+        end
+        if isa(w, FrequencyWeights)
+            out[ppermute[i]] = vkold + min(h - Skold, 1) * (vk - vkold)
+        else
+            out[ppermute[i]] = vkold + (h - Skold) / (Sk - Skold) * (vk - vkold)
         end
     end
     return out
