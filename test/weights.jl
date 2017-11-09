@@ -285,24 +285,56 @@ end
         [-2, 2, -1, 3, 6],
         [-10, 1, 1, -10, -10],
     )
+    wt = (
+        Int[3, 1, 1, 1, 3],
+        Int[1, 1, 1, 1, 1],
+        Int[3, 1, 1, 1, 3, 3],
+        Int[1, 1, 1, 3, 3, 3],
+        Int[30, 191, 9, 0],
+        Int[10, 1, 1, 1, 9],
+        Int[10, 1, 1, 1, 900],
+        Int[1, 3, 5, 4, 2],
+        Int[2, 2, 5, 0, 2, 2, 1, 6],
+        Int[1, 1, 8],
+        Int[5, 5, 4, 1],
+        Int[30, 56, 144, 24, 55, 43, 67],
+        Int[1, 2, 3, 4, 5, 6],
+        Int[12],
+        Int[7, 1, 1, 1, 6],
+        Int[1, 0, 0, 0, 2],
+        Int[1, 2, 3, 4, 5],
+        Int[1, 2, 3, 2, 1],
+        Int[0, 1, 1, 1, 1],
+    )
     p = [0.0, 0.25, 0.5, 0.75, 1.0]
-    for x in data
-        @test quantile(x, fweights(ones(Int64, length(x))), p) ≈ quantile(x, p)
+    function _rep(x::AbstractVector, lengths::AbstractVector{Int})
+        res = similar(x, sum(lengths))
+        i = 1
+        for idx in 1:length(x)
+            tmp = x[idx]
+            for kdx in 1:lengths[idx]
+                res[i] = tmp
+                i += 1
+            end
+        end
+        return res
     end
-    # zero don't count
-    x = [1, 2, 3, 4, 5]
-    @test quantile(x, fweights([0,1,1,1,0]), p) ≈ quantile([2, 3, 4], p)
-    # repetitions dont count
-    @test quantile(x, fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
+    # quantile with fweights is the same as repeated vectors
+    for i = 1:length(data)
+        @test quantile(data[i], fweights(wt[i]), p) ≈ quantile(_rep(data[i], wt[i]), p)
+    end
+    # quantile with fweights = 1  is the same as quantile
+    for i = 1:length(data)
+        @test quantile(data[i], fweights(ones(wt[i])), p) ≈ quantile(data[i], p)
+    end
+ 
     # Issue #313
     @test quantile(x, fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
     @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
     @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
 end
   
-
 @testset "Quantile aweights" begin
-
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -390,19 +422,19 @@ end
             @test quantile(data[i], aweights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-3
         end
     end
-
-    # other syntaxes
+    # test zeros are removed
+    for i = 1:length(data)
+        @test quantile(vcat(1.0, data[i]), aweights(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-3
+    end
+    # Syntax
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
-    answer = 6.1818
-    @test quantile(data[1], aweights(w), 0.5)    ≈  answer atol = 1e-4
-    @test wquantile(data[1], aweights(w), [0.5]) ≈ [answer] atol = 1e-4
-    @test wquantile(data[1], aweights(w), 0.5)   ≈  answer atol = 1e-4
-    @test wquantile(data[1], w, [0.5])          ≈ [answer] atol = 1e-4
-    @test wquantile(data[1], w, 0.5)            ≈  answer atol = 1e-4
+    answer = 6.181
+    @test quantile(data[1], aweights(w), 0.5)    ≈  answer atol = 1e-3
+    @test wquantile(data[1], aweights(w), [0.5]) ≈ [answer] atol = 1e-3
+    @test wquantile(data[1], aweights(w), 0.5)   ≈  answer atol = 1e-3
+    @test wquantile(data[1], w, [0.5])          ≈ [answer] atol = 1e-3
+    @test wquantile(data[1], w, 0.5)            ≈  answer atol = 1e-3
 end
-
-
-
 
 end # @testset StatsBase.Weights
