@@ -583,7 +583,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     fill!(out, vw[end][1])
 
     # start looping on quantiles
-    Sk, Skold,cumwk, wk = zero(W), zero(W), zero(W), zero(W)
+    Sk, Skold = zero(W), zero(W)
     vk, vkold= zero(V), zero(V)
     k = 0
     
