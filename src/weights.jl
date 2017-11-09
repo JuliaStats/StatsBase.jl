@@ -552,7 +552,7 @@ In particular, when `w` is a vector of one, the function returns the same result
 """
 
 
-function quantile{V, W <: Real}(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector)
+function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V, W <: Real}
 
     # checks
     isempty(v) && error("quantile of an empty array is undefined")
