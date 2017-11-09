@@ -547,9 +547,8 @@ Weights must not be negative. The weights and data vectors must have the same le
 
 With [FrequencyWeights](@ref FrequencyWeights), the function returns the same result as 
 `quantile` for a vector with repeated values.
-Otherwise,  denote N the length of the vector, w the vector of weights normalized to sum to
- 1, ``h = p (N - 1) + 1`` a real valued index and 
- ``S_k = 1 + (k-1)w_k + (N-1) \\sum_{i<k}w_i`` the weighted index of each observation,
+With non FrequencyWeights,  denote N the length of the vector, w the vector of weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the index corresponding to the probability `p` and 
+ ``S_k = \\sum_{i<=k}w_i`` the weighted index corresponding to each observation,
   define ``x_{k+1}`` the smallest element of ``x`` such that ``S_{k+1}`` is strictly 
   superior to ``h``. The function returns``x_k + \\gamma (x_{k+1} -x_k)`` 
   with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when ``w`` is a vector
@@ -567,14 +566,9 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         x < 0 && error("weight vector cannot contain negative entries")
     end
 
-    wvalues = w.values
-    #normalize to 1 if non frequencyweight
-    if !isa(w, FrequencyWeights)
-        wvalues = wvalues / w.sum
-    end
-    wsum = sum(wvalues)
 
     #remove zeros weights and sort
+    wsum = sum(w.value)
     nz = .!iszero.(w.values)
     vw = sort!(collect(zip(view(v, nz), view(wvalues, nz))))
     N = length(vw)
@@ -596,31 +590,22 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     for i in 1:length(p)
         if isa(w, FrequencyWeights)
             h = p[i] * (wsum - 1) + 1
-            while Sk <= h
-                k += 1
-                if k > N
-                   # out was initialized with maximum v
-                   return out
-                end
-                Skold, vkold = Sk, vk
-                vk, wk = vw[k]
-                Sk += wk
+        else
+            h = p[i] * (wsum - vw[1][2]) + vw[1][2]
+        end
+        while Sk <= h
+            k += 1
+            if k > N
+               # out was initialized with maximum v
+               return out
             end
+            Skold, vkold = Sk, vk
+            vk, wk = vw[k]
+            Sk += wk
+        end
+        if isa(w, FrequencyWeights)
             out[ppermute[i]] = vkold + min(h - Skold, 1) * (vk - vkold)
         else
-            # https://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
-            h = p[i] * (N - 1) + 1
-            while Sk <= h
-                k += 1
-                if k > N
-                   # out was initialized with maximum v
-                   return out
-                end
-                Skold, vkold = Sk, vk
-                cumwk += wk
-                vk, wk = vw[k]
-                Sk = 1 + (k - 1) * wk + (N - 1) * cumwk
-            end
             out[ppermute[i]] = vkold + (h - Skold) / (Sk - Skold) * (vk - vkold)
         end
     end
