@@ -547,8 +547,8 @@ Weights must not be negative. The weights and data vectors must have the same le
 
 With [FrequencyWeights](@ref FrequencyWeights), the function returns the same result as 
 `quantile` for a vector with repeated values.
-With non FrequencyWeights,  denote N the length of the vector, w the vector of weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the index corresponding to the probability `p` and 
- ``S_k = \\sum_{i<=k}w_i`` the weighted index corresponding to each observation,
+With non FrequencyWeights,  denote N the length of the vector, w the vector of weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the probability `p` and 
+ ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for to each observation,
   define ``x_{k+1}`` the smallest element of ``x`` such that ``S_{k+1}`` is strictly 
   superior to ``h``. The function returns``x_k + \\gamma (x_{k+1} -x_k)`` 
   with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when ``w`` is a vector
