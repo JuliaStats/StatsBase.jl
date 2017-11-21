@@ -238,9 +238,45 @@ If a weighting vector `wv` is specified, the sum of the weights is used rather t
 raw counts.
 """
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
+    # if it's of bits type then can speed things up using radix sort
+    # from heuristics it was found that 2^16 = 65536 is the point at which
+    # radixsort is more performant
+    if isbits(T) & length(x) > 65536
+        addcounts_radixsort!(cm, x)
+        return cm
+    else
+        addcounts_dict!(cm,x)
+        return cm
+    end
+end
+
+function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     for v in x
         cm[v] = get(cm, v, 0) + 1
     end
+    return cm
+end
+
+
+function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
+    sx = sort(x, alg = RadixSort)
+    tmpcount = 1
+    last_sx1 = sx[1]
+
+    # now the data is sort can just run through and accumulate values before
+    # adding into the Dict
+    for sx1 = sx[2:end]
+        if last_sx1 == sx1
+            tmpcount += 1
+        else
+            cm[last_sx1] = tmpcount
+            last_sx1 = sx1
+            tmpcount = 1
+        end
+    end
+
+    cm[sx[end]] = tmpcount
+
     return cm
 end
 

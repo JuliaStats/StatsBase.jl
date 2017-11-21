@@ -9,7 +9,7 @@ module StatsBase
 
     import SpecialFunctions: erfcinv
 
-    using Compat
+    using Compat, SortingAlgorithms
 
     ## tackle compatibility issues
 
@@ -127,7 +127,7 @@ module StatsBase
     hist,
     # histrange,
     midpoints,
-    
+
     ## robust
     trim,           # trimmed set
     trim!,          # trimmed set
