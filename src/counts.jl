@@ -263,7 +263,7 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     tmpcount = 1
     last_sx1 = sx[1]
 
-    # now the data is sort can just run through and accumulate values before
+    # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
     for sx1 = sx[2:end]
         if last_sx1 == sx1
