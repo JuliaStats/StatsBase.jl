@@ -6,6 +6,9 @@
 #
 #################################################
 
+# used to make Dict-based countmap faster
+import Base: ht_keyindex2, _setindex!
+
 const IntUnitRange{T<:Integer} = UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
@@ -241,7 +244,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
     # if it's of bits type then can speed things up using radix sort
     # from heuristics it was found that 2^16 = 65536 is the point at which
     # radixsort is more performant
-    if isbits(T) & length(x) > 65536
+    if radixsort_safe(T) & length(x) > 65536
         addcounts_radixsort!(cm, x)
         return cm
     else
@@ -252,11 +255,19 @@ end
 
 function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     for v in x
-        cm[v] = get(cm, v, 0) + 1
+        index = ht_keyindex2(cm, v)
+        if index > 0
+          @inbounds cm.keys[index] = v
+          @inbounds cm.vals[index] += 1
+        else
+          @inbounds _setindex!(cm, 1, v, -index)
+        end
     end
     return cm
 end
 
+"Can the type be sorted by radixsort"
+radixsort_safe(T::Type) = isbits(T)
 
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     sx = sort(x, alg = RadixSort)
