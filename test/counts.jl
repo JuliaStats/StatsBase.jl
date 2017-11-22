@@ -85,6 +85,10 @@ pm = proportionmap(x)
 @test pm["b"] ≈ (1/3)
 @test pm["c"] ≈ (1/6)
 
+xx = vcat(repeat([1];inner = 100), rand(2:1000, 1_000_000))[sample(1:1_000_100, 1_000_100, replace=false)]
+cxx = countmap(xx)
+@test cxx[1] == 100
+
 cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
 @test cm["b"] == 4.5
