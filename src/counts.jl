@@ -241,7 +241,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}; uselessmem = false) where 
     # if it's of bits type then can speed things up using radix sort
     # from heuristics it was found that 2^16 = 65536 is the point at which
     # radixsort is more performant
-    if uselessmem && radixsort_safe(T) && length(x) > 65536
+    if uselessmem && radixsort_safe(T)
         addcounts_radixsort!(cm, x)
         return cm
     else
