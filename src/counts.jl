@@ -268,16 +268,16 @@ radixsort_safe(T::Type) = isbits(T)
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     sx = sort(x, alg = RadixSort)
     tmpcount = 1
-    last_sx1 = sx[1]
+    last_sx = sx[1]
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
     for sx1 = sx[2:end]
-        if last_sx1 == sx1
+        if last_sx == sx1
             tmpcount += 1
         else
-            cm[last_sx1] = tmpcount
-            last_sx1 = sx1
+            cm[last_sx] = tmpcount
+            last_sx = sx1
             tmpcount = 1
         end
     end
