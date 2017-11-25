@@ -250,6 +250,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
     end
 end
 
+"""Dict-based addcounts method"""
 function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     for v in x
         index = Base.ht_keyindex2(cm, v)
@@ -263,10 +264,19 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
 end
 
 "Can the type be sorted by radixsort"
-radixsort_safe(T::Type) = isbits(T)
+function radixsort_safe(T::Type)
+    if T <: Number
+        return isbits(T)
+    else
+        return false
+    end
+end
 
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
-    sx = sort(x, alg = RadixSort)
+    # it's much faster to make a copy of x and then sort! vs sort
+    sx = copy(x)
+    sort!(sx; alg = RadixSort)
+
     tmpcount = 1
     last_sx = sx[1]
 
@@ -286,6 +296,7 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
 
     return cm
 end
+
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W}
     n = length(x)
