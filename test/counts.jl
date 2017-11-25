@@ -85,9 +85,12 @@ pm = proportionmap(x)
 @test pm["b"] ≈ (1/3)
 @test pm["c"] ≈ (1/6)
 
-xx = vcat(repeat([1];inner = 100), rand(2:1000, 1_000_000))[sample(1:1_000_100, 1_000_100, replace=false)]
+# testing the radixsort branch of countmap
+xx = repeat([1, 1, 3, 6], outer=100_000)
 cxx = countmap(xx)
-@test cxx[1] == 100
+@test cxx[1] == 200000
+@test cxx[3] == 100000
+@test cxx[6] == 100000
 
 cm = countmap(x, weights(w))
 @test cm["a"] == 5.5

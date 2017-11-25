@@ -6,9 +6,6 @@
 #
 #################################################
 
-# used to make Dict-based countmap faster
-import Base: ht_keyindex2, _setindex!
-
 const IntUnitRange{T<:Integer} = UnitRange{T}
 
 #### functions for counting a single list of integers (1D)
@@ -255,12 +252,11 @@ end
 
 function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     for v in x
-        index = ht_keyindex2(cm, v)
+        index = Base.ht_keyindex2(cm, v)
         if index > 0
-          @inbounds cm.keys[index] = v
-          @inbounds cm.vals[index] += 1
+            @inbounds cm.vals[index] += 1
         else
-          @inbounds _setindex!(cm, 1, v, -index)
+            @inbounds Base._setindex!(cm, 1, v, -index)
         end
     end
     return cm
