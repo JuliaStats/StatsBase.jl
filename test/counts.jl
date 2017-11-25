@@ -87,25 +87,20 @@ pm = proportionmap(x)
 
 
 # testing the radixsort branch of countmap
-xx = repeat([1, 1, 3, 6], outer=100_000);
+xx = repeat([6, 1, 3, 1], outer=100_000)
 cm = countmap(xx)
-@test cm[1] == 200000
-@test cm[3] == 100_000
-@test cm[6] == 100_000
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
 
-xx = repeat([1, 1, 3, 6], outer=100_000);
+# testing the radixsort-based addcounts
+xx = repeat([6, 1, 3, 1], outer=100_000)
 cm = Dict{Int, Int}()
 StatsBase.addcounts_radixsort!(cm,xx)
-@test cm[1] == 200000
-@test cm[3] == 100_000
-@test cm[6] == 100_000
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
 
 # testing the Dict-based addcounts
 cm = Dict{Int, Int}()
 StatsBase.addcounts_dict!(cm,xx)
-@test cm[1] == 200000
-@test cm[3] == 100_000
-@test cm[6] == 100_000
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
 
 cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
