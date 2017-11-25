@@ -237,11 +237,10 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; uselessmem = false) where T
-    # if it's of bits type then can speed things up using radix sort
-    # from heuristics it was found that 2^16 = 65536 is the point at which
-    # radixsort is more performant
-    if uselessmem && radixsort_safe(T)
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
+    # if it's safe to be sorted using radixsort then it should be faster
+    # albeit using more RAM
+    if radixsort_safe(T)
         addcounts_radixsort!(cm, x)
         return cm
     else
@@ -263,26 +262,32 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
-"Can the type be sorted by radixsort"
-radixsort_safe(::Type{T}) where {T<:Number} = isbits(T)
+const BASE_RADIXSORT_SAFE_TYPE = Union{
+    Int8, Int16, Int32, Int64, Int128,
+    UInt8, UInt16, UInt32, UInt64, UInt128,
+    Float16, Float32, Float64, Bool,
+    BigInt, BigFloat}
+
+"Can the type be safely sorted by radixsort"
+radixsort_safe(::Type{T}) where {T<:BASE_RADIXSORT_SAFE_TYPE} = true
 radixsort_safe(::Type) = false
 
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
-    # it's much faster to make a copy of x and then sort! vs sort
-    sx = copy(x)
-    sort!(sx; alg = RadixSort)
+    # sort the x using radixsort
+    sx = sort(x, alg = RadixSort)::typeof(x)
 
     tmpcount = 1
     last_sx = sx[1]
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
-    for sx1 = sx[2:end]
-        if last_sx == sx1
+    for i in 2:length(sx)
+        sxi = sx[i]
+        if last_sx == sxi
             tmpcount += 1
         else
             cm[last_sx] = tmpcount
-            last_sx = sx1
+            last_sx = sxi
             tmpcount = 1
         end
     end
@@ -291,7 +296,6 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
 
     return cm
 end
-
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W}
     n = length(x)
