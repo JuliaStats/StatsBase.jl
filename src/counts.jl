@@ -237,11 +237,11 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}; uselessmem = false) where T
     # if it's of bits type then can speed things up using radix sort
     # from heuristics it was found that 2^16 = 65536 is the point at which
     # radixsort is more performant
-    if radixsort_safe(T) & length(x) > 65536
+    if uselessmem && radixsort_safe(T) && length(x) > 65536
         addcounts_radixsort!(cm, x)
         return cm
     else
@@ -264,13 +264,8 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
 end
 
 "Can the type be sorted by radixsort"
-function radixsort_safe(T::Type)
-    if T <: Number
-        return isbits(T)
-    else
-        return false
-    end
-end
+radixsort_safe(::Type{T}) where {T<:Number} = isbits(T)
+radixsort_safe(::Type) = false
 
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     # it's much faster to make a copy of x and then sort! vs sort
