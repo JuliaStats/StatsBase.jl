@@ -231,22 +231,30 @@ end
 
 
 """
-    addcounts!(dict, x[, wv])
+    addcounts!(dict, x[, wv]; alg = :auto)
 
 Add counts based on `x` to a count map. New entries will be added if new values come up.
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
+
+alg can be one of
+    :auto       -   default; uses :radixsort if safe to do so
+    :radixsort  -   if radixsort_safe(eltype(x)) == true then use radixsort to
+                    sort the input array in order to achieve faster performance
+                    by using more RAM. One should choose :dict if the
+                    amount of available RAM is a limitation.
+    :dict       -   Uses Dict-based method which is generally slower but uses
+                    less RAM and is safe for any data type.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
-    if radixsort_safe(T)
+    if radixsort_safe(T) & (alg == :auto | alg == :radixsort)
         addcounts_radixsort!(cm, x)
-        return cm
     else
         addcounts_dict!(cm,x)
-        return cm
     end
+    return cm
 end
 
 """Dict-based addcounts method"""
@@ -262,14 +270,13 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
-const BASE_RADIXSORT_SAFE_TYPE = Union{
-    Int8, Int16, Int32, Int64, Int128,
-    UInt8, UInt16, UInt32, UInt64, UInt128,
-    Float16, Float32, Float64, Bool,
-    BigInt, BigFloat}
+const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
+                                     UInt8, UInt16, UInt32, UInt64, UInt128,
+                                     Float16, Float32, Float64, Bool,
+                                     BigInt, BigFloat}
 
 "Can the type be safely sorted by radixsort"
-radixsort_safe(::Type{T}) where {T<:BASE_RADIXSORT_SAFE_TYPE} = true
+radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
 radixsort_safe(::Type) = false
 
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
@@ -313,12 +320,21 @@ end
 
 
 """
-    countmap(x)
+    countmap(x; alg = :auto)
 
 Return a dictionary mapping each unique value in `x` to its number
 of occurrences.
+
+alg can be one of
+    :auto       -   default; uses :radixsort if implemented and safe to do so
+    :radixsort  -   if radixsort_safe(eltype(x)) == true then use radixsort to
+                    sort the input array in order to achieve faster performance
+                    by using more RAM. One should choose :dict if the
+                    amount of available RAM is a limitation.
+    :dict       -   Uses Dict-based method which is generally slower but uses
+                    less RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}) where {T} = addcounts!(Dict{T,Int}(), x)
+countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
 
 
