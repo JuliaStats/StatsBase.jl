@@ -207,6 +207,30 @@ self_avoid_sample!(a::AbstractArray, x::AbstractArray) =
     self_avoid_sample!(Base.GLOBAL_RNG, a, x)
 
 """
+    shrinking_array_sample!([rng], a::AbstractArray, x::AbstractArray)
+
+Shrinking-array sampling: samples from an array by replacing each selected
+element with the last element in the array and decrementing the array length
+counter by 1 each time - hence shrinking-array.
+"""
+function shrinking_array_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    n = length(a)
+    k = length(x)
+    k <= n || error("length(x) should not exceed length(a)")
+
+    ca = copy(a)
+    for (i, m) in zip(1:k, n:-1:n-k+1)
+        rgen = RangeGenerator(1:m)
+        idx = rand(rng, rgen)
+        x[i], ca[idx] = ca[idx], ca[m]
+    end
+
+    return x
+end
+shrinking_array_sample!(a::AbstractArray, x::AbstractArray) =
+    shrinking_array_sample!(Base.GLOBAL_RNG, a, x)
+
+"""
     seqsample_a!([rng], a::AbstractArray, x::AbstractArray)
 
 Random subsequence sampling using algorithm A described in the following paper (page 714):
@@ -346,7 +370,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
             elseif n < k * 24
                 fisher_yates_sample!(rng, a, x)
             else
-                self_avoid_sample!(rng, a, x)
+                shrinking_array_sample!(rng, a, x)
             end
         end
     end
