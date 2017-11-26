@@ -10,8 +10,9 @@ aic
 aicc
 bic
 coef
-coeftable
 confint
+coefnames
+coeftable
 deviance
 dof
 fit
@@ -28,6 +29,7 @@ vcov
 ```@docs
 dof_residual
 fitted
+modelmatrix
 model_response
 predict
 predict!

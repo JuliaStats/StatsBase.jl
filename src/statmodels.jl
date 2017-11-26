@@ -224,6 +224,11 @@ model_response(obj::RegressionModel) = error("model_response is not defined for 
     modelmatrix(obj::RegressionModel)
 
 Return the model matrix (a.k.a. the design matrix).
+
+The model matrix may be used for diagnostic tests and variance covariance estimation.
+Instrumental variable models should return the model matrix used in the estimation of
+the coefficients.
+
 """
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
 
