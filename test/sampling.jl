@@ -130,7 +130,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
 end
 
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
-import StatsBase: seqsample_a!, seqsample_c!
+import StatsBase: seqsample_a!, seqsample_c!, shrinking_array_sample!
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
@@ -155,6 +155,14 @@ end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
 
 test_rng_use(self_avoid_sample!, 1:10, zeros(Int, 6))
+
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    shrinking_array_sample!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=false)
+
+test_rng_use(shrinking_array_sample!, 1:10, zeros(Int, 6))
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)

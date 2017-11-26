@@ -218,10 +218,13 @@ function shrinking_array_sample!(rng::AbstractRNG, a::AbstractArray, x::Abstract
     k = length(x)
     k <= n || throw(DimensionMismatch("length(x) should not exceed length(a)"))
 
+    # need to use an index instead as in the case where a = 1:j then a[jj] = val
+    # is not defined
+    aindex = collect(1:n)
     for (i, m) in zip(1:k, n:-1:n-k+1)
         rgen = RangeGenerator(1:m)
         idx = rand(rng, rgen)
-        @inbounds x[i], a[idx] = a[idx], a[m]
+        @inbounds x[i], aindex[idx] = a[aindex[idx]], aindex[m]
     end
 
     return x
@@ -369,7 +372,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
             elseif n < k * 24
                 fisher_yates_sample!(rng, a, x)
             else
-                shrinking_array_sample!(rng, copy(a), x)
+                shrinking_array_sample!(rng, a, x)
             end
         end
     end
