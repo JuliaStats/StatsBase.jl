@@ -221,7 +221,7 @@ function shrinking_array_sample!(rng::AbstractRNG, a::AbstractArray, x::Abstract
     for (i, m) in zip(1:k, n:-1:n-k+1)
         rgen = RangeGenerator(1:m)
         idx = rand(rng, rgen)
-        x[i], a[idx] = a[idx], a[m]
+        @inbounds x[i], a[idx] = a[idx], a[m]
     end
 
     return x
