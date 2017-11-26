@@ -216,13 +216,12 @@ counter by 1 each time - hence shrinking-array.
 function shrinking_array_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
-    k <= n || error("length(x) should not exceed length(a)")
+    k <= n || error(DimensionMismatch("length(x) should not exceed length(a)"))
 
-    ca = copy(a)
     for (i, m) in zip(1:k, n:-1:n-k+1)
         rgen = RangeGenerator(1:m)
         idx = rand(rng, rgen)
-        x[i], ca[idx] = ca[idx], ca[m]
+        x[i], a[idx] = a[idx], a[m]
     end
 
     return x
@@ -370,7 +369,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
             elseif n < k * 24
                 fisher_yates_sample!(rng, a, x)
             else
-                shrinking_array_sample!(rng, a, x)
+                shrinking_array_sample!(rng, copy(a), x)
             end
         end
     end
