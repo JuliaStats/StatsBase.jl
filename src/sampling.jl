@@ -216,7 +216,7 @@ counter by 1 each time - hence shrinking-array.
 function shrinking_array_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n = length(a)
     k = length(x)
-    k <= n || error(DimensionMismatch("length(x) should not exceed length(a)"))
+    k <= n || throw(DimensionMismatch("length(x) should not exceed length(a)"))
 
     for (i, m) in zip(1:k, n:-1:n-k+1)
         rgen = RangeGenerator(1:m)
