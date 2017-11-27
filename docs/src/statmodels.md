@@ -10,9 +10,9 @@ aic
 aicc
 bic
 coef
-confint
 coefnames
 coeftable
+confint
 deviance
 dof
 fit
