@@ -1177,6 +1177,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "statmodels.html#StatsBase.coefnames",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.coefnames",
+    "category": "Function",
+    "text": "coefnames(obj::StatisticalModel)\n\nReturn the names of the coefficients.\n\n\n\n"
+},
+
+{
     "location": "statmodels.html#StatsBase.coeftable",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.coeftable",
@@ -1289,6 +1297,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "statmodels.html#StatsBase.modelmatrix",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.modelmatrix",
+    "category": "Function",
+    "text": "modelmatrix(obj::RegressionModel)\n\nReturn the model matrix (a.k.a. the design matrix).\n\n\n\n"
+},
+
+{
     "location": "statmodels.html#StatsBase.model_response",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.model_response",
@@ -1325,7 +1341,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "Abstraction for Statistical Models",
     "category": "section",
-    "text": "This package defines an abstract type StatisticalModel, and an abstract subtype RegressionModel.Particularly, instances of StatisticalModel implement the following methods.adjr2\naic\naicc\nbic\ncoef\ncoeftable\nconfint\ndeviance\ndof\nfit\nfit!\nloglikelihood\nnobs\nnulldeviance\nr2\nstderr\nvcovRegressionModel extends StatisticalModel by implementing the following additional methods.dof_residual\nfitted\nmodel_response\npredict\npredict!\nresiduals"
+    "text": "This package defines an abstract type StatisticalModel, and an abstract subtype RegressionModel.Particularly, instances of StatisticalModel implement the following methods.adjr2\naic\naicc\nbic\ncoef\ncoefnames\ncoeftable\nconfint\ndeviance\ndof\nfit\nfit!\nloglikelihood\nnobs\nnulldeviance\nr2\nstderr\nvcovRegressionModel extends StatisticalModel by implementing the following additional methods.dof_residual\nfitted\nmodelmatrix\nmodel_response\npredict\npredict!\nresiduals"
 },
 
 ]}
