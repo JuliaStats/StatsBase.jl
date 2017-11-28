@@ -224,7 +224,6 @@ model_response(obj::RegressionModel) = error("model_response is not defined for 
     modelmatrix(obj::RegressionModel)
 
 Return the model matrix (a.k.a. the design matrix).
-
 """
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
 
