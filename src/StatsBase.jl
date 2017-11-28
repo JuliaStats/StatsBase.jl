@@ -127,7 +127,7 @@ module StatsBase
     hist,
     # histrange,
     midpoints,
-    
+
     ## robust
     trim,           # trimmed set
     trim!,          # trimmed set
@@ -154,6 +154,7 @@ module StatsBase
     aicc,
     bic,
     coef,
+    coefnames,
     coeftable,
     confint,
     deviance,
@@ -163,6 +164,7 @@ module StatsBase
     fit!,
     fitted,
     loglikelihood,
+    modelmatrix,
     nobs,
     nulldeviance,
     nullloglikelihood,
