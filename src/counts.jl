@@ -237,20 +237,25 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 
-alg can be one of
-    :auto       -   default; uses :radixsort if safe to do so
-    :radixsort  -   if radixsort_safe(eltype(x)) == true then use radixsort to
-                    sort the input array in order to achieve faster performance
-                    by using more RAM. One should choose :dict if the
-                    amount of available RAM is a limitation.
-    :dict       -   Uses Dict-based method which is generally slower but uses
-                    less RAM and is safe for any data type.
+`alg` can be one of
+- `:auto`:      default; uses `:radixsort` if safe to do so
+
+- `:radixsort`: if `radixsort_safe(eltype(x)) == true` then use `:radixsort`
+                to sort the input array in order to achieve higher performance
+                by using more RAM. Choose `:dict` if the amount of available RAM
+                is a limitation.
+
+- `:dict`:      Uses Dict-based method which is generally slower but uses less
+                RAM and is safe for any data type.
 """
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
-    if radixsort_safe(T) & (alg == :auto | alg == :radixsort)
+    if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
         addcounts_radixsort!(cm, x)
+    else if alg == :radixsort
+        warn("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; using `alg = :dict` instead")
+        addcounts_dict!(cm,x)
     else
         addcounts_dict!(cm,x)
     end
