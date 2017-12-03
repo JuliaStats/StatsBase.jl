@@ -238,14 +238,16 @@ If a weighting vector `wv` is specified, the sum of the weights is used rather t
 raw counts.
 
 `alg` can be one of
-- `:auto`:      default; uses `:radixsort` if safe to do so
+- `:auto`:      default; if `radixsort_safe(eltype(x)) == true` then use
+                `:radixsort`, otherwise use `:dict`
 
-- `:radixsort`: if `radixsort_safe(eltype(x)) == true` then use `:radixsort`
-                to sort the input array in order to achieve higher performance
-                by using more RAM. Choose `:dict` if the amount of available RAM
-                is a limitation.
+- `:radixsort`: if `radixsort_safe(eltype(x)) == true` then use the [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+                algorithm to sort the input vector which will generally lead to
+                shorter running time. However the radix sort algorithm creates a
+                copy of the input vector and hence uses more RAM. Choose `:dict`
+                if the amount of available RAM is a limitation.
 
-- `:dict`:      Uses Dict-based method which is generally slower but uses less
+- `:dict`:      uses `Dict`-based method which is generally slower but uses less
                 RAM and is safe for any data type.
 """
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
@@ -254,8 +256,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
         addcounts_radixsort!(cm, x)
     else if alg == :radixsort
-        warn("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; using `alg = :dict` instead")
-        addcounts_dict!(cm,x)
+        throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
     else
         addcounts_dict!(cm,x)
     end
@@ -330,14 +331,18 @@ end
 Return a dictionary mapping each unique value in `x` to its number
 of occurrences.
 
-alg can be one of
-    :auto       -   default; uses :radixsort if implemented and safe to do so
-    :radixsort  -   if radixsort_safe(eltype(x)) == true then use radixsort to
-                    sort the input array in order to achieve faster performance
-                    by using more RAM. One should choose :dict if the
-                    amount of available RAM is a limitation.
-    :dict       -   Uses Dict-based method which is generally slower but uses
-                    less RAM and is safe for any data type.
+`alg` can be one of
+- `:auto`:      default; if `radixsort_safe(eltype(x)) == true` then use
+                `:radixsort`, otherwise use `:dict`
+
+- `:radixsort`: if `radixsort_safe(eltype(x)) == true` then use the [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+                algorithm to sort the input vector which will generally lead to
+                shorter running time. However the radix sort algorithm creates a
+                copy of the input vector and hence uses more RAM. Choose `:dict`
+                if the amount of available RAM is a limitation.
+
+- `:dict`:      uses `Dict`-based method which is generally slower but uses less
+                RAM and is safe for any data type.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
