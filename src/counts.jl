@@ -237,18 +237,19 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 
-`alg` can be one of
-- `:auto`:      default; if `radixsort_safe(eltype(x)) == true` then use
-                `:radixsort`, otherwise use `:dict`
+`alg` can be one of:
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
+                     `:radixsort`, otherwise use `:dict`.
 
-- `:radixsort`: if `radixsort_safe(eltype(x)) == true` then use the [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
-                algorithm to sort the input vector which will generally lead to
-                shorter running time. However the radix sort algorithm creates a
-                copy of the input vector and hence uses more RAM. Choose `:dict`
-                if the amount of available RAM is a limitation.
+- `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
+                     [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+                     algorithm to sort the input vector which will generally lead to
+                     shorter running time. However the radix sort algorithm creates a
+                     copy of the input vector and hence uses more RAM. Choose `:dict`
+                     if the amount of available RAM is a limitation.
 
-- `:dict`:      uses `Dict`-based method which is generally slower but uses less
-                RAM and is safe for any data type.
+- `:dict`:           use `Dict`-based method which is generally slower but uses less
+                     RAM and is safe for any data type.
 """
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
@@ -331,18 +332,18 @@ end
 Return a dictionary mapping each unique value in `x` to its number
 of occurrences.
 
-`alg` can be one of
-- `:auto`:      default; if `radixsort_safe(eltype(x)) == true` then use
-                `:radixsort`, otherwise use `:dict`
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
+                     `:radixsort`, otherwise use `:dict`.
 
-- `:radixsort`: if `radixsort_safe(eltype(x)) == true` then use the [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
-                algorithm to sort the input vector which will generally lead to
-                shorter running time. However the radix sort algorithm creates a
-                copy of the input vector and hence uses more RAM. Choose `:dict`
-                if the amount of available RAM is a limitation.
+- `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
+                     [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+                     algorithm to sort the input vector which will generally lead to
+                     shorter running time. However the radix sort algorithm creates a
+                     copy of the input vector and hence uses more RAM. Choose `:dict`
+                     if the amount of available RAM is a limitation.
 
-- `:dict`:      uses `Dict`-based method which is generally slower but uses less
-                RAM and is safe for any data type.
+- `:dict`:           use `Dict`-based method which is generally slower but uses less
+                     RAM and is safe for any data type.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
