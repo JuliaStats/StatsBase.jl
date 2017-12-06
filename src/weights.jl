@@ -481,7 +481,7 @@ The weighted median ``x_k`` is the element of `x` that satisfies
 
 If a weight has value zero, then its associated data point is ignored.
 If none of the weights are positive, an error is thrown.
-`NaN` is returned if `x` contains any `NaN` values. 
+`NaN` is returned if `x` contains any `NaN` values.
 An error is raised if `w` contains any `NaN` values.
 """
 function Base.median(v::RealVector, w::AbstractWeights{<:Real})
