@@ -27,6 +27,12 @@ isempty(wv::AbstractWeights) = isempty(wv.values)
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
 
+function Base.isequal(w₁::W, w₂::W) where {W <: AbstractWeights}
+    isequal(sum(w₁), sum(w₂)) && isequal(values(w₁), values(w₂))
+end
+
+Base.isequal(w₁::AbstractWeights, w₂::AbstractWeights) = false
+
 """
     varcorrection(n::Integer, corrected=false)
 
