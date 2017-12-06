@@ -524,3 +524,15 @@ have the same binning, shape of weights and properties (`closed` and
 weights of the resulting histogram will have the same type as those of `h`.
 """
 Base.merge(h::Histogram, others::Histogram...) = merge!(zero(h), h, others...)
+
+"""
+    getfrequent(x::AbstractArray, n::Integer)
+    Get `n` elements from a vector in the order of frequency of occurance
+"""
+function getfrequent(x::Vector{T}, n::Integer = 1) where T <: Integer
+  sp = span(x)
+  if n > (sp.stop - sp.start + 1)
+    n = sp.stop - sp.start + 1
+  end
+  (sp.start - 1) .+ selectperm(counts(x, sp), 1:n, rev=true)
+end
