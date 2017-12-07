@@ -39,17 +39,16 @@ end
 # isequal
 
 @testset "isequal" begin
-
     x = FrequencyWeights([1; 2; 3], 6)
 
     y = FrequencyWeights([1; 2; 3], 6) # same values, type and parameters
-    @test isequal(x, y) == true
+    @test isequal(x, y)
 
     y = FrequencyWeights([1; 2; 3], 6.0) # same values and type, different parameters
-    @test isequal(x, y) == false
+    @test !isequal(x, y)
 
     y = ProbabilityWeights([1; 2; 3], 6) # same values and parameters, different type
-    @test isequal(x, y) == false
+    @test !isequal(x, y)
 end
 
 ## wsum
