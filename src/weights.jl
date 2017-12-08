@@ -27,12 +27,6 @@ isempty(wv::AbstractWeights) = isempty(wv.values)
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
 
-function Base.isequal(w₁::W, w₂::W) where {W <: AbstractWeights}
-    isequal(sum(w₁), sum(w₂)) && isequal(values(w₁), values(w₂))
-end
-
-Base.isequal(w₁::AbstractWeights, w₂::AbstractWeights) = false
-
 """
     varcorrection(n::Integer, corrected=false)
 
@@ -199,6 +193,18 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
         1 / s
     end
 end
+
+##### Equality tests #####
+
+for w in [AnalyticWeights; FrequencyWeights; ProbabilityWeights; Weights]
+    eval(quote
+        Base.isequal(x::$w, y::$w) = isequal(x.sum, y.sum) && isequal(x.values, y.values)
+        Base.:(==)(x::$w, y::$w)   = (x.sum == y.sum) && (x.values == y.values)
+    end)
+end
+
+Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
+Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
 ##### Weighted sum #####
 

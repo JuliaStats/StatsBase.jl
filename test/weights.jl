@@ -36,19 +36,32 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test sum(sa, wv) === 7.0
 end
 
-# isequal
+# isequal and ==
 
 @testset "isequal" begin
     x = FrequencyWeights([1; 2; 3], 6)
 
     y = FrequencyWeights([1; 2; 3], 6) # same values, type and parameters
     @test isequal(x, y)
+    @test x == y
 
     y = FrequencyWeights([1; 2; 3], 6.0) # same values and type, different parameters
-    @test !isequal(x, y)
+    @test isequal(x, y)
+    @test x == y
 
-    y = ProbabilityWeights([1; 2; 3], 6) # same values and parameters, different type
+    y = ProbabilityWeights([1; 2; 3], 6) # same values and parameters, different types
     @test !isequal(x, y)
+    @test !(x == y)
+
+    x = FrequencyWeights([1; 2; 3], NaN) # isequal and == treat NaN differently
+    y = FrequencyWeights([1; 2; 3], NaN)
+    @test isequal(x, y)
+    @test !(x == y)
+
+    x = FrequencyWeights([1.0; 2.0; 0.0], 3.0) # isequal and == treat ±0.0 differently
+    y = FrequencyWeights([1.0; 2.0; -0.0], 3.0)
+    @test !isequal(x, y)
+    @test (x == y)
 end
 
 ## wsum
