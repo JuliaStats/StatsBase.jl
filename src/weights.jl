@@ -196,11 +196,11 @@ end
 
 ##### Equality tests #####
 
-for w in [AnalyticWeights; FrequencyWeights; ProbabilityWeights; Weights]
-    eval(quote
+for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+    @eval begin
         Base.isequal(x::$w, y::$w) = isequal(x.sum, y.sum) && isequal(x.values, y.values)
         Base.:(==)(x::$w, y::$w)   = (x.sum == y.sum) && (x.values == y.values)
-    end)
+    end
 end
 
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
