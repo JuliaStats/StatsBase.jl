@@ -36,32 +36,32 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test sum(sa, wv) === 7.0
 end
 
-# isequal and ==
+@testset "$f, isequal and ==" for f in weight_funcs
+    x = f([1, 2, 3])
 
-@testset "isequal" begin
-    x = FrequencyWeights([1; 2; 3], 6)
-
-    y = FrequencyWeights([1; 2; 3], 6) # same values, type and parameters
+    y = f([1, 2, 3]) # same values, type and parameters
     @test isequal(x, y)
     @test x == y
 
-    y = FrequencyWeights([1; 2; 3], 6.0) # same values and type, different parameters
+    y = f([1.0, 2.0, 3.0]) # same values and type, different parameters
     @test isequal(x, y)
     @test x == y
 
-    y = ProbabilityWeights([1; 2; 3], 6) # same values and parameters, different types
-    @test !isequal(x, y)
-    @test !(x == y)
+    if f != fweights # same values and parameters, different types
+        y = fweights([1, 2, 3])
+        @test !isequal(x, y)
+        @test x != y
+    end
 
-    x = FrequencyWeights([1; 2; 3], NaN) # isequal and == treat NaN differently
-    y = FrequencyWeights([1; 2; 3], NaN)
+    x = f([1, 2, NaN]) # isequal and == treat NaN differently
+    y = f([1, 2, NaN])
     @test isequal(x, y)
-    @test !(x == y)
+    @test x != y
 
-    x = FrequencyWeights([1.0; 2.0; 0.0], 3.0) # isequal and == treat ±0.0 differently
-    y = FrequencyWeights([1.0; 2.0; -0.0], 3.0)
+    x = f([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
+    y = f([1.0, 2.0, -0.0])
     @test !isequal(x, y)
-    @test (x == y)
+    @test x == y
 end
 
 ## wsum
