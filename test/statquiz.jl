@@ -5,6 +5,10 @@ using DataFrames
 using StatsBase
 using GLM
 
+if VERSION >= v"0.7.0-DEV.3052"
+    using Printf
+end
+
 testeps = sqrt(eps())
 
 nasty = DataFrame(    label = ["One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],

@@ -11,6 +11,10 @@ module StatsBase
 
     using Compat, SortingAlgorithms
 
+    if VERSION >= v"0.7.0-DEV.3052"
+        using Printf
+    end
+
     ## tackle compatibility issues
 
     export
