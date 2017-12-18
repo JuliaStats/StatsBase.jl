@@ -85,6 +85,23 @@ pm = proportionmap(x)
 @test pm["b"] ≈ (1/3)
 @test pm["c"] ≈ (1/6)
 
+
+# testing the radixsort branch of countmap
+xx = repeat([6, 1, 3, 1], outer=100_000)
+cm = countmap(xx)
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+
+# testing the radixsort-based addcounts
+xx = repeat([6, 1, 3, 1], outer=100_000)
+cm = Dict{Int, Int}()
+StatsBase.addcounts_radixsort!(cm,xx)
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+
+# testing the Dict-based addcounts
+cm = Dict{Int, Int}()
+StatsBase.addcounts_dict!(cm,xx)
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+
 cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
 @test cm["b"] == 4.5

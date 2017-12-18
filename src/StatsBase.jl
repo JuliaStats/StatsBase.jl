@@ -9,7 +9,7 @@ module StatsBase
 
     import SpecialFunctions: erfcinv
 
-    using Compat
+    using Compat, SortingAlgorithms
 
     ## tackle compatibility issues
 
