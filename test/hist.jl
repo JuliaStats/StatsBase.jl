@@ -1,7 +1,12 @@
 # See src/hist.jl for meaning of "FIXME: closed" comments.
 
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
+
+if !isdefined(Base, :axes)
+    const axes = Base.indices
+end
 
 @testset "StatsBase.Histogram" begin
 
@@ -16,8 +21,8 @@ using Base.Test
     @test @inferred StatsBase.binindex(h1, -0.5) == 4
     @test @inferred StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
 
-    @test [StatsBase.binvolume(h1, i) for i in indices(h1.weights, 1)] ≈ diff(edg1)
-    @test [StatsBase.binvolume(h2, (i,j)) for i in indices(h2.weights, 1), j in indices(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
+    @test [StatsBase.binvolume(h1, i) for i in axes(h1.weights, 1)] ≈ diff(edg1)
+    @test [StatsBase.binvolume(h2, (i,j)) for i in axes(h2.weights, 1), j in axes(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
 
     @test typeof(@inferred(StatsBase.binvolume(h2, (1,1)))) == Float64
     @test typeof(@inferred(StatsBase.binvolume(h3, (1,1)))) == Float32

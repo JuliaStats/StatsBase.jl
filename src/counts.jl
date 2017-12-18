@@ -9,7 +9,7 @@
 const IntUnitRange{T<:Integer} = UnitRange{T}
 
 if isdefined(Base, :ht_keyindex2)
-    const ht_keyindex2! = ht_keyindex2
+    const ht_keyindex2! = Base.ht_keyindex2
 else
     using Base: ht_keyindex2!
 end

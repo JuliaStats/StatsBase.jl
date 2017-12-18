@@ -1,6 +1,7 @@
 # Test taken from http://www.stanford.edu/~clint/bench/wilk.txt
 
-using Base.Test
+using Compat
+using Compat.Test
 using DataFrames
 using StatsBase
 using GLM

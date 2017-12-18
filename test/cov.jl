@@ -1,5 +1,6 @@
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 
 @testset "StatsBase.Covariance" begin
 weight_funcs = (weights, aweights, fweights, pweights)
