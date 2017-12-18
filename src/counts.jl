@@ -8,6 +8,12 @@
 
 const IntUnitRange{T<:Integer} = UnitRange{T}
 
+if isdefined(Base, :ht_keyindex2)
+    const ht_keyindex2! = ht_keyindex2
+else
+    using Base: ht_keyindex2!
+end
+
 #### functions for counting a single list of integers (1D)
 """
     addcounts!(r, x, levels::UnitRange{<:Int}, [wv::AbstractWeights])
@@ -267,7 +273,7 @@ end
 """Dict-based addcounts method"""
 function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     for v in x
-        index = Base.ht_keyindex2(cm, v)
+        index = ht_keyindex2!(cm, v)
         if index > 0
             @inbounds cm.vals[index] += 1
         else
