@@ -1,5 +1,6 @@
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 
 # rle & inverse_rle
 

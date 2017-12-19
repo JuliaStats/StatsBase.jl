@@ -1,5 +1,6 @@
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 
 fnecdf = ecdf(randn(10000000))
 @test isapprox(fnecdf([-1.96, -1.644854, -1.281552, -0.6744898, 0, 0.6744898, 1.281552, 1.644854, 1.96]),

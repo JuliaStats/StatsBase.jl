@@ -1,5 +1,6 @@
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 import Base: maxabs
 import StatsBase: norepeat
 

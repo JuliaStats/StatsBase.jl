@@ -39,7 +39,7 @@ Return the [ordinal ranking](https://en.wikipedia.org/wiki/Ranking#Ordinal_ranki
 All items in `x` are given distinct, successive ranks based on their
 position in `sort(x)`.
 """
-ordinalrank(x::RealArray) = ordinalrank!(Array{Int}(size(x)), x, sortperm(x))
+ordinalrank(x::RealArray) = ordinalrank!(Array{Int}(uninitialized, size(x)), x, sortperm(x))
 
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
@@ -77,7 +77,7 @@ Return the [standard competition ranking](http://en.wikipedia.org/wiki/Ranking#S
 array. Items that compare equal are given the same rank, then a gap is left
 in the rankings the size of the number of tied items - 1.
 """
-competerank(x::RealArray) = competerank!(Array{Int}(size(x)), x, sortperm(x))
+competerank(x::RealArray) = competerank!(Array{Int}(uninitialized, size(x)), x, sortperm(x))
 
 
 # Dense ranking ("1223" ranking) -- resolve tied ranks using min
@@ -115,7 +115,7 @@ Return the [dense ranking](http://en.wikipedia.org/wiki/Ranking#Dense_ranking_.2
 compare equal receive the same ranking, and the next subsequent rank is
 assigned with no gap.
 """
-denserank(x::RealArray) = denserank!(Array{Int}(size(x)), x, sortperm(x))
+denserank(x::RealArray) = denserank!(Array{Int}(uninitialized, size(x)), x, sortperm(x))
 
 
 # Tied ranking ("1 2.5 2.5 4" ranking) -- resolve tied ranks using average
@@ -161,5 +161,5 @@ also called fractional or "1 2.5 2.5 4" ranking,
 of a real-valued array. Items that compare equal receive the mean of the
 rankings they would have been assigned under ordinal ranking.
 """
-tiedrank(x::RealArray) = tiedrank!(Array{Float64}(size(x)), x, sortperm(x))
+tiedrank(x::RealArray) = tiedrank!(Array{Float64}(uninitialized, size(x)), x, sortperm(x))
 
