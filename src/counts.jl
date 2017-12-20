@@ -285,8 +285,7 @@ end
 
 const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
                                      UInt8, UInt16, UInt32, UInt64, UInt128,
-                                     Float16, Float32, Float64, Bool,
-                                     BigInt, BigFloat}
+                                     Float32, Float64}
 
 "Can the type be safely sorted by radixsort"
 radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
