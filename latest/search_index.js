@@ -645,7 +645,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Counting Functions",
     "title": "StatsBase.countmap",
     "category": "Function",
-    "text": "countmap(x)\n\nReturn a dictionary mapping each unique value in x to its number of occurrences.\n\n\n\n"
+    "text": "countmap(x; alg = :auto)\n\nReturn a dictionary mapping each unique value in x to its number of occurrences.\n\n:auto (default): if StatsBase.radixsort_safe(eltype(x)) == true then use                    :radixsort, otherwise use :dict.\n:radixsort:      if radixsort_safe(eltype(x)) == true then use the                    radix sort                    algorithm to sort the input vector which will generally lead to                    shorter running time. However the radix sort algorithm creates a                    copy of the input vector and hence uses more RAM. Choose :dict                    if the amount of available RAM is a limitation.\n:dict:           use Dict-based method which is generally slower but uses less                    RAM and is safe for any data type.\n\n\n\n"
 },
 
 {
@@ -661,7 +661,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Counting Functions",
     "title": "StatsBase.addcounts!",
     "category": "Method",
-    "text": "addcounts!(dict, x[, wv])\n\nAdd counts based on x to a count map. New entries will be added if new values come up. If a weighting vector wv is specified, the sum of the weights is used rather than the raw counts.\n\n\n\n"
+    "text": "addcounts!(dict, x[, wv]; alg = :auto)\n\nAdd counts based on x to a count map. New entries will be added if new values come up. If a weighting vector wv is specified, the sum of the weights is used rather than the raw counts.\n\nalg can be one of:\n\n:auto (default): if StatsBase.radixsort_safe(eltype(x)) == true then use                    :radixsort, otherwise use :dict.\n:radixsort:      if radixsort_safe(eltype(x)) == true then use the                    radix sort                    algorithm to sort the input vector which will generally lead to                    shorter running time. However the radix sort algorithm creates a                    copy of the input vector and hence uses more RAM. Choose :dict                    if the amount of available RAM is a limitation.\n:dict:           use Dict-based method which is generally slower but uses less                    RAM and is safe for any data type.\n\n\n\n"
 },
 
 {
