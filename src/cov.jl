@@ -1,5 +1,9 @@
 ## extended methods for computing covariance and scatter matrix
 
+if !isdefined(Base, :CartesianIndices)
+    const CartesianIndices = CartesianRange
+end
+
 # auxiliary functions
 
 function _symmetrize!(a::DenseMatrix)
@@ -153,7 +157,7 @@ standard deviations `s`.
 function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
-    for i in CartesianRange(size(C))
+    for i in CartesianIndices(size(C))
         @inbounds C[i] *= s[i[1]] * s[i[2]]
     end
     return C
