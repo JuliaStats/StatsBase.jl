@@ -27,7 +27,7 @@ fptype(::Type{T}) where {T<:Union{Float64,Int32,UInt32,Int64,UInt64,Int128,UInt1
 fptype(::Type{Complex{T}}) where {T<:Union{Float32,Float64}} = Complex{T}
 
 # A convenient typealias for deprecating default corrected Bool
-const DepBool = Union{Bool, Void}
+const DepBool = Union{Bool, Nothing}
 
 function depcheck(fname::Symbol, b::DepBool)
     if b == nothing
