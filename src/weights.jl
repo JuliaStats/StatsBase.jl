@@ -1,7 +1,3 @@
-if !isdefined(Base, :axes)
-    const axes = Base.indices
-end
-
 ###### Weight vector #####
 
 abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end

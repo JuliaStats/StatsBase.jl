@@ -4,10 +4,6 @@ using StatsBase
 using Compat
 using Compat.Test
 
-if !isdefined(Base, :axes)
-    const axes = Base.indices
-end
-
 @testset "StatsBase.Histogram" begin
 
 
