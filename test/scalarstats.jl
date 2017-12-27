@@ -116,7 +116,7 @@ dist /= sum(dist)
 
 # And is therefore not affected by the addition of non-zeros
 zdist = dist
-zdist = append!(dist, zeros(rand(50)))
+zdist = append!(dist, zeros(50))
 @test renyientropy(dist, 0) ≈ renyientropy(zdist, 0)
 
 # Indeed no Renyi entropy should be
