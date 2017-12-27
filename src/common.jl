@@ -24,8 +24,7 @@ const RealFP = Union{Float32, Float64}
 
 fptype(::Type{T}) where {T<:Union{Float32,Bool,Int8,UInt8,Int16,UInt16}} = Float32
 fptype(::Type{T}) where {T<:Union{Float64,Int32,UInt32,Int64,UInt64,Int128,UInt128}} = Float64
-fptype(::Type{Complex64}) = Complex64
-fptype(::Type{Complex128}) = Complex128
+fptype(::Type{Complex{T}}) where {T<:Union{Float32,Float64}} = Complex{T}
 
 # A convenient typealias for deprecating default corrected Bool
 const DepBool = Union{Bool, Void}
