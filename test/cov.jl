@@ -28,11 +28,11 @@ weight_funcs = (weights, aweights, fweights, pweights)
     Sz1 = X'X
     Sz2 = X * X'
 
-    S1w = Z1w' * diagm(w1) * Z1w
-    S2w = Z2w * diagm(w2) * Z2w'
+    S1w = Z1w' * diagm(0=>w1) * Z1w
+    S2w = Z2w * diagm(0=>w2) * Z2w'
 
-    Sz1w = X' * diagm(w1) * X
-    Sz2w = X * diagm(w2) * X'
+    Sz1w = X' * diagm(0=>w1) * X
+    Sz2w = X * diagm(0=>w2) * X'
 
     @testset "Scattermat" begin
         @test scattermat(X)    ≈ S1

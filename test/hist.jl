@@ -54,8 +54,8 @@ end
     @test fit(Histogram,0:99,nbins=5,closed=:left).weights == [20,20,20,20,20]
 
     # FIXME: closed (all lines in this block):
-    @test fit(Histogram,(0:99,0:99),nbins=5, closed=:left).weights == diagm([20,20,20,20,20])
-    @test fit(Histogram,(0:99,0:99),nbins=(5,5), closed=:left).weights == diagm([20,20,20,20,20])
+    @test fit(Histogram,(0:99,0:99),nbins=5, closed=:left).weights == diagm(0=>[20,20,20,20,20])
+    @test fit(Histogram,(0:99,0:99),nbins=(5,5), closed=:left).weights == diagm(0=>[20,20,20,20,20])
 
     # FIXME: closed (all lines in this block):
     @test fit(Histogram,0:99,weights(ones(100)),nbins=5, closed=:left).weights == [20,20,20,20,20]
