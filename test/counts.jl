@@ -107,6 +107,9 @@ cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
 @test cm["b"] == 4.5
 @test cm["c"] == 3.5
+
+@test cm == countmap(x, w)
+
 pm = proportionmap(x, weights(w))
 @test pm["a"] ≈ (5.5 / 13.5)
 @test pm["b"] ≈ (4.5 / 13.5)

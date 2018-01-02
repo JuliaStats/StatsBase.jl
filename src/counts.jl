@@ -317,7 +317,7 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W}
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
     w = values(wv)
@@ -352,7 +352,7 @@ of occurrences.
                      RAM and is safe for any data type.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
-countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
+countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
 """
