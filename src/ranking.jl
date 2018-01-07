@@ -178,16 +178,15 @@ tiedrank(x::AbstractArray; lt = isless, rev::Bool = false) =
 
 for (f, f!, S) in zip([:ordinalrank, :competerank, :denserank, :tiedrank],
                       [:ordinalrank!, :competerank!, :denserank!, :tiedrank!],
-                      [Int64, Int64, Int64, Float64])
+                      [Int, Int, Int, Float64])
     @eval begin
-        function $f(x::AbstractArray{Union{T, Missing}}; lt = isless, rev::Bool = false) where {T}
-            xv = collect(skipmissing(x))
+        function $f(x::AbstractArray{>: Missing}; lt = isless, rev::Bool = false)
+            mask = .!ismissing.(x)
+            xv = disallowmissing(view(x, mask))
             sp = sortperm(xv; lt = lt, rev = rev)
             rks = missings($S, length(x))
-            $(f!)(view(rks, .!ismissing.(x)), xv, sp)
+            $(f!)(view(rks, mask), xv, sp)
             rks
         end
-
-        $f(x::AbstractArray{Missing}; lt = isless, rev::Bool = false) = missings($S, length(x))
     end
 end

@@ -10,8 +10,7 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 
 @test ordinalrank(a) == [1, 2, 3, 4, 5, 6, 7, 8]
 @test ordinalrank(x) == [4, 1, 2, 5, 6, 3, 8, 7]
-@test collect(skipmissing(ordinalrank(xm))) == [4, 1, 2, 5, 6, 3, 8, 7]
-@test ismissing(ordinalrank(xm)[end])
+@test isequal(ordinalrank(xm), [4, 1, 2, 5, 6, 3, 8, 7, missing])
 @test all(ismissing, ordinalrank([missing, missing]))
 @test ordinalrank(s) == ordinalrank(x)
 @test ordinalrank(x, rev = true) == ordinalrank(-x)
@@ -19,8 +18,7 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 
 @test competerank(a) == [1, 2, 2, 4, 5, 5, 5, 8]
 @test competerank(x) == [4, 1, 2, 5, 5, 2, 8, 5]
-@test collect(skipmissing(competerank(xm))) == [4, 1, 2, 5, 5, 2, 8, 5]
-@test ismissing(competerank(xm)[end])
+@test isequal(competerank(xm), [4, 1, 2, 5, 5, 2, 8, 5, missing])
 @test all(ismissing, competerank([missing, missing]))
 @test competerank(s) == competerank(x)
 @test competerank(x, rev = true) == competerank(-x)
@@ -28,7 +26,7 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 
 @test denserank(a) == [1, 2, 2, 3, 4, 4, 4, 5]
 @test denserank(x) == [3, 1, 2, 4, 4, 2, 5, 4]
-@test collect(skipmissing(denserank(xm))) == [3, 1, 2, 4, 4, 2, 5, 4]
+@test isequal(denserank(xm), [3, 1, 2, 4, 4, 2, 5, 4, missing])
 @test ismissing(denserank(xm)[end])
 @test all(ismissing, denserank([missing, missing]))
 @test denserank(s) == denserank(x)
@@ -37,8 +35,7 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 
 @test tiedrank(a) == [1.0, 2.5, 2.5, 4.0, 6.0, 6.0, 6.0, 8.0]
 @test tiedrank(x) == [4.0, 1.0, 2.5, 6.0, 6.0, 2.5, 8.0, 6.0]
-@test collect(skipmissing(tiedrank(xm))) == [4.0, 1.0, 2.5, 6.0, 6.0, 2.5, 8.0, 6.0]
-@test ismissing(tiedrank(xm)[end])
+@test isequal(tiedrank(xm), [4.0, 1.0, 2.5, 6.0, 6.0, 2.5, 8.0, 6.0, missing])
 @test all(ismissing, tiedrank([missing, missing]))
 @test tiedrank(s) == tiedrank(x)
 @test tiedrank(x, rev = true) == tiedrank(-x)
