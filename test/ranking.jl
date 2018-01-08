@@ -27,7 +27,6 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 @test denserank(a) == [1, 2, 2, 3, 4, 4, 4, 5]
 @test denserank(x) == [3, 1, 2, 4, 4, 2, 5, 4]
 @test isequal(denserank(xm), [3, 1, 2, 4, 4, 2, 5, 4, missing])
-@test ismissing(denserank(xm)[end])
 @test isequal(denserank([missing, missing]), [missing, missing])
 @test denserank(s) == denserank(x)
 @test denserank(x, rev = true) == denserank(-x)
