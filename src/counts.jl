@@ -283,6 +283,40 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
+"""Specialist addcounts methods for small bits types"""
+function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool})
+    sumx = sum(x)
+    cm[true] = sumx
+    cm[false] =length(x) = sumx
+    cm
+end
+
+"""toindex functions to convert an integer to an array index between 1 to typemax{T}"""
+function toindex(x::Int16)
+  Int(x) + 32769
+end
+
+function toindex(x::Int8)
+  Int(x) + 129
+end
+
+function toindex(x::T) where T <: Union{UInt8, UInt16}
+  Int(x) + 1
+end
+
+function addcounts!(cm::Dict{T}, x::Vector{T}) where T <: Union{UInt8, UInt16, Int8, Int16}
+  arr = zeros(Int, 2^(sizeof(T)*8))
+
+  for xi in x
+    @inbounds arr[toindex(xi)] += 1
+  end
+
+  for (i,arr1) in zip(typemin(T):typemax(T),arr)
+    arr1 == 0 || @inbounds cm[i] = arr1
+  end
+  cm
+end
+
 const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
                                      UInt8, UInt16, UInt32, UInt64, UInt128,
                                      Float32, Float64}
@@ -351,6 +385,9 @@ of occurrences.
                      RAM and is safe for any data type.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
+# specialist function for Bool
+countmap(x::AbstractArray{T}) where T<:Union{Bool, UInt8, UInt16, Int8, Int16} = addcounts!(Dict{T,Int}(), x) 
+    
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 

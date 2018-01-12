@@ -114,3 +114,19 @@ pm = proportionmap(x, weights(w))
 @test pm["a"] ≈ (5.5 / 13.5)
 @test pm["b"] ≈ (4.5 / 13.5)
 @test pm["c"] ≈ (3.5 / 13.5)
+
+# testing small bits type
+bx = [true, false, true, true, false]
+@test countmap(bx) == Dict(true => 3, false => 2)
+
+uint8x = UInt8[0, 10, 255, 34, 10]
+@test countmap(uint8x) == Dict(0 => 1, 10 => 2, 255 => 1, 34 => 1)
+
+uint16x = UInt16[0, 10, 255, 34, 10]
+@test countmap(uint16x) == Dict(0 => 1, 10 => 2, 255 => 1, 34 => 1)
+
+int8x = Int8[0, 10, -127, 34, 10]
+@test countmap(int8x) == Dict(0 => 1, 10 => 2, -127 => 1, 34 => 1)
+
+int16x = Int16[0, 10, -127, 34, 10]
+@test countmap(int16x) == Dict(0 => 1, 10 => 2, -127 => 1, 34 => 1)
