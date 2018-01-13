@@ -284,7 +284,7 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
 end
 
 """Specialist addcounts methods for small bits types"""
-function addcounts!(cm::Dict{Bool,Int}, x::AbstractArray{Bool})
+function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool})
     sumx = sum(x)
     cm[true] = sumx
     cm[false] = length(x) - sumx
