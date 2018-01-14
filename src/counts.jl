@@ -264,7 +264,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
 
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
-   if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
+    if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
         addcounts_radixsort!(cm, x)
     elseif alg == :radixsort
         throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
