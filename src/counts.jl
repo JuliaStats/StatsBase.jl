@@ -258,9 +258,13 @@ raw counts.
                      RAM and is safe for any data type.
 """
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
+    # If T <: Union{UInt8, UInt16, Int8, Int16, Bool} then another `addcounts!` function is called.
+    # If the bits type is of small size i.e. it can have up to 65536 distinct values then it is
+    # always better to apply a counting-sort like reduce algorithm for faster results and less memory usage
+
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
-    if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
+   if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
         addcounts_radixsort!(cm, x)
     elseif alg == :radixsort
         throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
@@ -283,36 +287,25 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
-"""Specialist addcounts methods for small bits types"""
-function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool})
+# the two methods below accepts the `alg` argument but is ignored
+# as it is always better to use these algorithms to perform `addcounts!` for 
+# small bits types
+function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
-    cm[true] = sumx
-    cm[false] = length(x) - sumx
+    cm[true] = get(cm, true, 0) + sumx
+    cm[false] = get(cm, false, 0) + length(x) - sumx
     cm
 end
 
-"""toindex functions to convert an integer to an array index between 1 to typemax{T}"""
-function toindex(x::Int16)
-  Int(x) + 32769
-end
-
-function toindex(x::Int8)
-  Int(x) + 129
-end
-
-function toindex(x::T) where T <: Union{UInt8, UInt16}
-  Int(x) + 1
-end
-
-function addcounts!(cm::Dict{T}, x::Vector{T}) where T <: Union{UInt8, UInt16, Int8, Int16}
-  arr = zeros(Int, 2^(sizeof(T)*8))
+function addcounts!(cm::Dict{T}, x::Vector{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+  counts = zeros(Int, 2^(8sizeof(T)))
 
   for xi in x
-    @inbounds arr[toindex(xi)] += 1
+    @inbounds counts[Int(xi) - typemin(T) + 1] += 1
   end
 
-  for (i,arr1) in zip(typemin(T):typemax(T),arr)
-    arr1 == 0 || @inbounds cm[i] = arr1
+  for (i, c) in zip(typemin(T):typemax(T), counts)
+    c == 0 || @inbounds cm[i] = get(cm, i, 0) + c
   end
   cm
 end
@@ -384,10 +377,7 @@ of occurrences.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
-# specialist function for Bool
-countmap(x::AbstractArray{T}) where T<:Union{Bool, UInt8, UInt16, Int8, Int16} = addcounts!(Dict{T,Int}(), x) 
-    
+countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)    
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
