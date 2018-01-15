@@ -258,10 +258,6 @@ raw counts.
                      RAM and is safe for any data type.
 """
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
-    # If T <: Union{UInt8, UInt16, Int8, Int16, Bool} then another `addcounts!` function is called.
-    # If the bits type is of small size i.e. it can have up to 65536 distinct values then it is
-    # always better to apply a counting-sort like reduce algorithm for faster results and less memory usage
-
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
@@ -287,9 +283,11 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
-# the two methods below accepts the `alg` argument but is ignored
-# as it is always better to use these algorithms to perform `addcounts!` for 
-# small bits types
+# If the bits type is of small size i.e. it can have up to 65536 distinct values
+# then it is always better to apply a counting-sort like reduce algorithm for 
+# faster results and less memory usage. However we still wish to enable others
+# to write generic algorithms, therefore the two methods below still accept the 
+# `alg` argument but it is ignored.
 function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
@@ -298,16 +296,16 @@ function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
 end
 
 function addcounts!(cm::Dict{T}, x::Vector{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
-  counts = zeros(Int, 2^(8sizeof(T)))
+    counts = zeros(Int, 2^(8sizeof(T)))
 
-  for xi in x
-    @inbounds counts[Int(xi) - typemin(T) + 1] += 1
-  end
+    for xi in x
+        @inbounds counts[Int(xi) - typemin(T) + 1] += 1
+    end
 
-  for (i, c) in zip(typemin(T):typemax(T), counts)
-    c == 0 || @inbounds cm[i] = get(cm, i, 0) + c
-  end
-  cm
+    for (i, c) in zip(typemin(T):typemax(T), counts)
+        c == 0 || @inbounds cm[i] = get(cm, i, 0) + c
+    end
+    cm
 end
 
 const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
@@ -377,7 +375,7 @@ of occurrences.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)    
+countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
