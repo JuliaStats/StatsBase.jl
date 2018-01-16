@@ -286,7 +286,7 @@ end
 # If the bits type is of small size i.e. it can have up to 65536 distinct values
 # then it is always better to apply a counting-sort like reduce algorithm for 
 # faster results and less memory usage. However we still wish to enable others
-# to write generic algorithms, therefore the two methods below still accept the 
+# to write generic algorithms, therefore the methods below still accept the 
 # `alg` argument but it is ignored.
 function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
@@ -295,15 +295,22 @@ function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     cm
 end
 
-function addcounts!(cm::Dict{T}, x::Vector{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
 
-    for xi in x
-        @inbounds counts[Int(xi) - typemin(T) + 1] += 1
+    @inbounds for xi in x
+        counts[Int(xi) - typemin(T) + 1] += 1
     end
 
     for (i, c) in zip(typemin(T):typemax(T), counts)
-        c == 0 || @inbounds cm[i] = get(cm, i, 0) + c
+        if c != 0
+            index = ht_keyindex2!(cm, i)
+            if index > 0
+                @inbounds cm.vals[index] += c
+            else
+                @inbounds Base._setindex!(cm, c, i, -index)
+            end
+        end
     end
     cm
 end
