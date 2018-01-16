@@ -119,14 +119,7 @@ pm = proportionmap(x, weights(w))
 bx = [true, false, true, true, false]
 @test countmap(bx) == Dict(true => 3, false => 2)
 
-tx = UInt8[0, 10, 255, 34, 10]
-@test countmap(tx) == Dict(0 => 1, 10 => 2, 255 => 1, 34 => 1)
-
-tx = UInt16[0, 8, 64000, 27, 8]
-@test countmap(tx) == Dict(0 => 1, 8 => 2, 64000 => 1, 27 => 1)
-
-tx = Int8[0, 10, -127, 34, 10]
-@test countmap(tx) == Dict(0 => 1, 10 => 2, -127 => 1, 34 => 1)
-
-tx = Int16[0, 9, -32000, 35, 9]
-@test countmap(tx) == Dict(0 => 1, 9 => 2, -32000 => 1, 35 => 1)
+for T in [UInt8, UInt16, Int8, Int16]
+    tx = T[typemin(T), 8, typemax(T), 19, 8]
+    @test countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
+end
