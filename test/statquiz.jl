@@ -1,14 +1,12 @@
 # Test taken from http://www.stanford.edu/~clint/bench/wilk.txt
 
 using Compat
-using Compat.Test
+using Compat.Test, Compat.Printf
 using DataFrames
 using StatsBase
 using GLM
 
-if VERSION >= v"0.7.0-DEV.3052"
-    using Printf
-end
+@testset "statquiz" begin
 
 testeps = sqrt(eps())
 
@@ -101,3 +99,5 @@ nasty[:x9] = nasty[:x].^9
 lm(x1~x2+x3+x4+x5+x6+x7+x8+x9, nasty)
 @test coef(lm(x~x, nasty)) ≈ [0,1]
 println("OK")
+
+end # testset

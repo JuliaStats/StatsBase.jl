@@ -80,15 +80,15 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=false)
             @test m == mean(X, 1)
-            @test C == cov(X, 1, false)
+            @test C == cov(X, 1, corrected=false)
 
             (m, C) = mean_and_cov(X, 1; corrected=false)
             @test m == mean(X, 1)
-            @test C == cov(X, 1, false)
+            @test C == cov(X, 1, corrected=false)
 
             (m, C) = mean_and_cov(X, 2; corrected=false)
             @test m == mean(X, 2)
-            @test C == cov(X, 2, false)
+            @test C == cov(X, 2, corrected=false)
 
             (m, C) = mean_and_cov(X, wv1; corrected=false)
             @test m == mean(X, wv1, 1)
@@ -151,15 +151,15 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=true)
             @test m == mean(X, 1)
-            @test C == cov(X, 1, true)
+            @test C == cov(X, 1, corrected=true)
 
             (m, C) = mean_and_cov(X, 1; corrected=true)
             @test m == mean(X, 1)
-            @test C == cov(X, 1, true)
+            @test C == cov(X, 1, corrected=true)
 
             (m, C) = mean_and_cov(X, 2; corrected=true)
             @test m == mean(X, 2)
-            @test C == cov(X, 2, true)
+            @test C == cov(X, 2, corrected=true)
 
             if isa(wv1, Weights)
                 @test_throws ArgumentError mean_and_cov(X, wv1; corrected=true)

@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "robust" begin
+
 ### Trimming outliers
 
 @test trim([1,2,3,4,5,6,7,8],   prop=0.1) == [1,2,3,4,5,6,7,8]
@@ -53,3 +55,5 @@ using Compat.Test
 
 @test mean(trim([-Inf,1,2,3,4], count=1)) == 2
 @test mean(winsor([-Inf,1,2,3,4], count=1)) == 2
+
+end # testset

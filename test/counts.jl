@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "counts" begin
+
 n = 5000
 
 # 1D integer counts
@@ -111,3 +113,5 @@ pm = proportionmap(x, weights(w))
 @test pm["a"] ≈ (5.5 / 13.5)
 @test pm["b"] ≈ (4.5 / 13.5)
 @test pm["c"] ≈ (3.5 / 13.5)
+
+end # testset

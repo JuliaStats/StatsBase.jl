@@ -415,7 +415,7 @@ end
 
 function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Number,W<:Real}
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
+    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim, true)
 end
 
 # extended sum! and wsum
@@ -466,7 +466,7 @@ wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 Base.mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
-    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
+    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim)
 
 
 ###### Weighted median #####

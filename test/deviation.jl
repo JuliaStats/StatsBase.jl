@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "deviation" begin
+
 a = [1, 2, 3, 4, 5, 6, 7]
 b = [1, 3, 3, 4, 6, 7, 8]
 
@@ -25,3 +27,4 @@ b = rand(5, 6)
 @test rmsd(a, b; normalize=true) ≈ rmsd(a, b) / (maximum(a) - minimum(a))
 @test psnr(a, b, 2)              ≈ 10 * log10(4 / msd(a, b))
 
+end # testset

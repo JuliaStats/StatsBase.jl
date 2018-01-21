@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "misc" begin
+
 # rle & inverse_rle
 
 z = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3]
@@ -58,3 +60,5 @@ describe(io, fill("s", 3))
                            Type:           String
                            Number Unique:  1
                            """
+
+end # testset

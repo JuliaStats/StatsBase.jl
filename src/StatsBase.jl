@@ -2,18 +2,15 @@ __precompile__()
 
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
-    import Base: rand, rand!
-    import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @nloops, @nref, @nextract
     import DataStructures: heapify!, heappop!, percolate_down!
 
     import SpecialFunctions: erfcinv
 
-    using Compat, SortingAlgorithms
-
-    if VERSION >= v"0.7.0-DEV.3052"
-        using Printf
-    end
+    using Compat, Compat.Printf, Compat.Random, Compat.LinearAlgebra, Compat.SparseArrays
+    using SortingAlgorithms
+    import Compat.LinearAlgebra: BlasReal, BlasFloat
+    import Compat.Random: rand, rand!
 
     ## tackle compatibility issues
 

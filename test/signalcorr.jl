@@ -8,6 +8,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "signalcorr" begin
+
 # random data for testing
 
 x = [-2.133252557240862    -.7445937365828654;
@@ -121,3 +123,4 @@ rpacfy = [-0.221173011668873,
 
 @test pacf(x[:,1], 1:4, method=:yulewalker) ≈ rpacfy
 
+end # testset

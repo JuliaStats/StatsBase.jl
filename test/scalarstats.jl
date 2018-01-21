@@ -1,6 +1,7 @@
 using StatsBase
-using Compat
-using Compat.Test
+using Compat, Compat.Test, Compat.LinearAlgebra
+
+@testset "scalarstats" begin
 
 ##### Location
 
@@ -157,3 +158,5 @@ s = summarystats(1:5)
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
+
+end # testset

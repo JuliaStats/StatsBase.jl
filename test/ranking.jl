@@ -2,6 +2,7 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "ranking" begin
 a = [1.0, 2.0, 2.0, 3.0, 4.0, 4.0, 4.0, 5.0]
 x = [3.0, 1.0, 2.0, 4.0, 4.0, 2.0, 5.0, 4.0]  # x is a permutated version of a
 
@@ -16,3 +17,5 @@ x = [3.0, 1.0, 2.0, 4.0, 4.0, 2.0, 5.0, 4.0]  # x is a permutated version of a
 
 @test tiedrank(a) == [1.0, 2.5, 2.5, 4.0, 6.0, 6.0, 6.0, 8.0]
 @test tiedrank(x) == [4.0, 1.0, 2.5, 6.0, 6.0, 2.5, 8.0, 6.0]
+
+end # testset

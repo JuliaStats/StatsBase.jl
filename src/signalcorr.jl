@@ -281,7 +281,7 @@ function crosscov!(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatri
     check_lags(lx, lags)
 
     # cached (centered) columns of x
-    zxs = Vector{Vector{T}}(0)
+    zxs = Vector{Vector{T}}(uninitialized, 0)
     sizehint!(zxs, nx)
     for j = 1 : nx
         xj = x[:,j]
@@ -425,7 +425,7 @@ function crosscor!(r::AbstractArray{T,3}, x::AbstractMatrix{T}, y::AbstractMatri
     check_lags(lx, lags)
 
     # cached (centered) columns of x
-    zxs = Vector{Vector{T}}(0)
+    zxs = Vector{Vector{T}}(uninitialized, 0)
     sizehint!(zxs, nx)
     xxs = Vector{T}(uninitialized, nx)
 

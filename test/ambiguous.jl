@@ -1,4 +1,4 @@
-using StatsBase, Base.Test
+using StatsBase, Compat.Test 
 
 @testset "Ambiguities" begin
     # Ambiguities with Base and Core introduced by this package

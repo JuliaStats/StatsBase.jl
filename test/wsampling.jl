@@ -1,7 +1,6 @@
 using StatsBase
 using Compat
 using Compat.Test
-import Base: maxabs
 import StatsBase: norepeat
 
 srand(1234)
@@ -33,25 +32,6 @@ function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::R
     end
 end
 
-import StatsBase: direct_sample!, alias_sample!
-
-n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6])
-
-a = direct_sample!(4:7, wv, zeros(Int, n, 3))
-check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(direct_sample!, 4:7, wv, zeros(Int, 100))
-
-a = alias_sample!(4:7, wv, zeros(Int, n, 3))
-check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
-
-a = sample(4:7, wv, n; ordered=false)
-check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
-
-a = sample(4:7, wv, n; ordered=true)
-check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
-
-
 #### weighted sampling without replacement
 
 function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
@@ -78,6 +58,26 @@ end
 
 import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
                   efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!
+import StatsBase: direct_sample!, alias_sample!
+
+@testset "wsampling" begin
+
+n = 10^5
+wv = weights([0.2, 0.8, 0.4, 0.6])
+
+a = direct_sample!(4:7, wv, zeros(Int, n, 3))
+check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+test_rng_use(direct_sample!, 4:7, wv, zeros(Int, 100))
+
+a = alias_sample!(4:7, wv, zeros(Int, n, 3))
+check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = sample(4:7, wv, n; ordered=false)
+check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = sample(4:7, wv, n; ordered=true)
+check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
+
 
 n = 10^5
 wv = weights([0.2, 0.8, 0.4, 0.6])
@@ -115,3 +115,5 @@ check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
 
 a = sample(4:7, wv, 3; replace=false, ordered=true)
 check_wsample_norep(a, (4, 7), wv, -1; ordered=true)
+
+end # testset
