@@ -114,3 +114,12 @@ pm = proportionmap(x, weights(w))
 @test pm["a"] ≈ (5.5 / 13.5)
 @test pm["b"] ≈ (4.5 / 13.5)
 @test pm["c"] ≈ (3.5 / 13.5)
+
+# testing small bits type
+bx = [true, false, true, true, false]
+@test countmap(bx) == Dict(true => 3, false => 2)
+
+for T in [UInt8, UInt16, Int8, Int16]
+    tx = T[typemin(T), 8, typemax(T), 19, 8]
+    @test countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
+end
