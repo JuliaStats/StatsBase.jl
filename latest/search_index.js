@@ -685,7 +685,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.ordinalrank",
     "category": "Function",
-    "text": "ordinalrank(x)\n\nReturn the ordinal ranking (\"1234\" ranking) of a real-valued array. All items in x are given distinct, successive ranks based on their position in sort(x).\n\n\n\n"
+    "text": "ordinalrank(x; lt = isless, rev::Bool = false)\n\nReturn the ordinal ranking (\"1234\" ranking) of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. All items in x are given distinct, successive ranks based on their position in sort(x; lt = lt, rev = rev). Missing values are assigned rank missing.\n\n\n\n"
 },
 
 {
@@ -693,7 +693,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.competerank",
     "category": "Function",
-    "text": "competerank(x)\n\nReturn the standard competition ranking (\"1224\" ranking) of a real-valued array. Items that compare equal are given the same rank, then a gap is left in the rankings the size of the number of tied items - 1.\n\n\n\n"
+    "text": "competerank(x; lt = isless, rev::Bool = false)\n\nReturn the standard competition ranking (\"1224\" ranking) of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. Items that compare equal are given the same rank, then a gap is left in the rankings the size of the number of tied items - 1. Missing values are assigned rank missing.\n\n\n\n"
 },
 
 {
@@ -701,7 +701,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.denserank",
     "category": "Function",
-    "text": "denserank(x)\n\nReturn the dense ranking (\"1223\" ranking) of a real-valued array. Items that compare equal receive the same ranking, and the next subsequent rank is assigned with no gap.\n\n\n\n"
+    "text": "denserank(x)\n\nReturn the dense ranking (\"1223\" ranking) of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. Items that compare equal receive the same ranking, and the next subsequent rank is assigned with no gap. Missing values are assigned rank missing.\n\n\n\n"
 },
 
 {
@@ -709,7 +709,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.tiedrank",
     "category": "Function",
-    "text": "tiedrank(x)\n\nReturn the tied ranking, also called fractional or \"1 2.5 2.5 4\" ranking, of a real-valued array. Items that compare equal receive the mean of the rankings they would have been assigned under ordinal ranking.\n\n\n\n"
+    "text": "tiedrank(x)\n\nReturn the tied ranking, also called fractional or \"1 2.5 2.5 4\" ranking, of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. Items that compare equal receive the mean of the rankings they would have been assigned under ordinal ranking. Missing values are assigned rank missing.\n\n\n\n"
 },
 
 {
