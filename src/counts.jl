@@ -283,10 +283,41 @@ function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
+# If the bits type is of small size i.e. it can have up to 65536 distinct values
+# then it is always better to apply a counting-sort like reduce algorithm for 
+# faster results and less memory usage. However we still wish to enable others
+# to write generic algorithms, therefore the methods below still accept the 
+# `alg` argument but it is ignored.
+function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
+    sumx = sum(x)
+    cm[true] = get(cm, true, 0) + sumx
+    cm[false] = get(cm, false, 0) + length(x) - sumx
+    cm
+end
+
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+    counts = zeros(Int, 2^(8sizeof(T)))
+
+    @inbounds for xi in x
+        counts[Int(xi) - typemin(T) + 1] += 1
+    end
+
+    for (i, c) in zip(typemin(T):typemax(T), counts)
+        if c != 0
+            index = ht_keyindex2!(cm, i)
+            if index > 0
+                @inbounds cm.vals[index] += c
+            else
+                @inbounds Base._setindex!(cm, c, i, -index)
+            end
+        end
+    end
+    cm
+end
+
 const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
                                      UInt8, UInt16, UInt32, UInt64, UInt128,
-                                     Float16, Float32, Float64, Bool,
-                                     BigInt, BigFloat}
+                                     Float32, Float64}
 
 "Can the type be safely sorted by radixsort"
 radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
@@ -317,7 +348,7 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     return cm
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W}
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
     w = values(wv)
@@ -352,7 +383,7 @@ of occurrences.
                      RAM and is safe for any data type.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
-countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
+countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
 """

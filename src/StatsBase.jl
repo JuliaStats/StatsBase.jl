@@ -8,7 +8,7 @@ module StatsBase
     import SpecialFunctions: erfcinv
 
     using Compat, Compat.Printf, Compat.Random, Compat.LinearAlgebra, Compat.SparseArrays
-    using SortingAlgorithms
+    using SortingAlgorithms, Missings
     import Compat.LinearAlgebra: BlasReal, BlasFloat
     import Compat.Random: rand, rand!
 
