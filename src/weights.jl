@@ -541,18 +541,19 @@ wmedian(v::RealVector, w::AbstractWeights{<:Real}) = median(v, w)
 """
     quantile(v, w::AbstractWeights, p)
 
-Compute the weighted quantiles of a vector ``x`` at a specified set of probability
-values ``p``, using weights given by a weight vector ``w`` (of type `AbstractWeights`).
+Compute the weighted quantiles of a vector `v` at a specified set of probability
+values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
 
-With [FrequencyWeights](@ref FrequencyWeights), the function returns the same result as 
+With [`FrequencyWeights`](@ref), the function returns the same result as 
 `quantile` for a vector with repeated values.
-With non FrequencyWeights,  denote N the length of the vector, w the vector of weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the probability `p` and 
- ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for to each observation,
-  define ``x_{k+1}`` the smallest element of ``x`` such that ``S_{k+1}`` is strictly 
-  superior to ``h``. The function returns``x_k + \\gamma (x_{k+1} -x_k)`` 
-  with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when ``w`` is a vector
-   of one, the function returns the same result as `quantile`.
+With non FrequencyWeights,  denote ``N`` the length of the vector, ``w`` the vector of weights, 
+``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the 
+probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each 
+observation, define ``v_{k+1}`` the smallest element of ``v`` such that ``S_{k+1}`` 
+is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -v_k)`` 
+with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when ``w`` is a vector
+of ones, the function returns the same result as `quantile`.
 """
 function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
     # checks
@@ -567,10 +568,10 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     end
 
 
-    #remove zeros weights and sort
-    wsum = sum(w.value)
-    nz = .!iszero.(w.values)
-    vw = sort!(collect(zip(view(v, nz), view(wvalues, nz))))
+    # remove zeros weights and sort
+    wsum = sum(w)
+    nz = .!iszero.(w)
+    vw = sort!(collect(zip(view(v, nz), view(w, nz))))
     N = length(vw)
 
     # prepare percentiles
@@ -584,7 +585,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
 
     # start looping on quantiles
     Sk, Skold = zero(W), zero(W)
-    vk, vkold= zero(V), zero(V)
+    vk, vkold = zero(V), zero(V)
     k = 0
     
     for i in 1:length(p)

@@ -286,25 +286,25 @@ end
         [-10, 1, 1, -10, -10],
     )
     wt = (
-        Int[3, 1, 1, 1, 3],
-        Int[1, 1, 1, 1, 1],
-        Int[3, 1, 1, 1, 3, 3],
-        Int[1, 1, 1, 3, 3, 3],
-        Int[30, 191, 9, 0],
-        Int[10, 1, 1, 1, 9],
-        Int[10, 1, 1, 1, 900],
-        Int[1, 3, 5, 4, 2],
-        Int[2, 2, 5, 0, 2, 2, 1, 6],
-        Int[1, 1, 8],
-        Int[5, 5, 4, 1],
-        Int[30, 56, 144, 24, 55, 43, 67],
-        Int[1, 2, 3, 4, 5, 6],
-        Int[12],
-        Int[7, 1, 1, 1, 6],
-        Int[1, 0, 0, 0, 2],
-        Int[1, 2, 3, 4, 5],
-        Int[1, 2, 3, 2, 1],
-        Int[0, 1, 1, 1, 1],
+        [3, 1, 1, 1, 3],
+        [1, 1, 1, 1, 1],
+        [3, 1, 1, 1, 3, 3],
+        [1, 1, 1, 3, 3, 3],
+        [30, 191, 9, 0],
+        [10, 1, 1, 1, 9],
+        [10, 1, 1, 1, 900],
+        [1, 3, 5, 4, 2],
+        [2, 2, 5, 0, 2, 2, 1, 6],
+        [1, 1, 8],
+        [5, 5, 4, 1],
+        [30, 56, 144, 24, 55, 43, 67],
+        [1, 2, 3, 4, 5, 6],
+        [12],
+        [7, 1, 1, 1, 6],
+        [1, 0, 0, 0, 2],
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 2, 1],
+        [0, 1, 1, 1, 1],
     )
     p = [0.0, 0.25, 0.5, 0.75, 1.0]
     function _rep(x::AbstractVector, lengths::AbstractVector{Int})
@@ -380,61 +380,61 @@ end
     quantile_answers = (
         [1.0, 4.0, 6.0, 8.0, 10.0],
         [1.0, 2.0, 4.0, 7.0, 10.0],
-        [1.0, 4.75, 7.5, 10.4167, 15.0],
-        [1.0, 4.75, 7.5, 10.4167, 15.0],
-        [0.0, 2.6178, 5.2356, 7.8534, 20.0],
-        [1.0, 4.0, 4.33333, 4.66667, 5.0],
-        [1.0, 4.2475, 4.49833, 4.74917, 5.0],
+        [1.0, 4.75, 7.5, 10.4166667, 15.0],
+        [1.0, 4.75, 7.5, 10.4166667, 15.0],
+        [0.0, 2.6178010, 5.2356021, 7.8534031, 20.0],
+        [1.0, 4.0, 4.3333333, 4.6666667, 5.0],
+        [1.0, 4.2475, 4.4983333, 4.7491667, 5.0],
         [30.0, 37.5, 44.0, 51.25, 60.0],
         [0.3, 0.7, 1.3, 1.7, 2.0],
         [1.0, 2.0, 2.0, 2.0, 2.0],
         [2.8, 3.15, 3.4, 3.56, 3.7],
-        [45.0, 62.1493, 102.875, 117.41, 125.0],
+        [45.0, 62.149253, 102.875, 117.4097222, 125.0],
         [2.0, 2.0, 2.0, 2.0, 2.0],
         [2.3, 2.3, 2.3, 2.3, 2.3],
-        [-10.0, -2.78571, -2.42857, -2.07143, 2.0],
+        [-10.0, -2.7857143, -2.4285714, -2.0714286, 2.0],
         [1.0, 2.0, 3.0, 4.0, 5.0],
-        [1.0, 1.625, 2.33333, 3.25, 5.0],
-        [-2.0, -1.33333, 0.5, 2.5, 6.0],
+        [1.0, 1.625, 2.3333333, 3.25, 5.0],
+        [-2.0, -1.3333333, 0.5, 2.5, 6.0],
         [-10.0, -10.0, -10.0, 1.0, 1.0]
     )
     p = [0.0, 0.25, 0.5, 0.75, 1.0]
 
     srand(10)
     for i = 1:length(data)
-        @test quantile(data[i], aweights(wt[i]), p) ≈ quantile_answers[i] atol = 1e-3
+        @test quantile(data[i], aweights(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
             # order of p does not matter
             reorder = sortperm(rand(length(p)))
-            @test quantile(data[i], aweights(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-3
+            @test quantile(data[i], aweights(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-5
         end
         for j = 1:10
             # order of w does not matter
             reorder = sortperm(rand(length(data[i])))
-            @test quantile(data[i][reorder], aweights(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-3
+            @test quantile(data[i][reorder], aweights(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
         end
     end
     # w = 1 corresponds to base quantile
     for i = 1:length(data)
-        @test quantile(data[i], aweights(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p) atol = 1e-3
+        @test quantile(data[i], aweights(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p) atol = 1e-5
         for j = 1:10
             prandom = rand(4)
-            @test quantile(data[i], aweights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-3
+            @test quantile(data[i], aweights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-5
         end
     end
     # test zeros are removed
     for i = 1:length(data)
-        @test quantile(vcat(1.0, data[i]), aweights(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-3
+        @test quantile(vcat(1.0, data[i]), aweights(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-5
     end
     # Syntax
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
-    @test quantile(data[1], aweights(w), 0.5)    ≈  answer atol = 1e-3
-    @test wquantile(data[1], aweights(w), [0.5]) ≈ [answer] atol = 1e-3
-    @test wquantile(data[1], aweights(w), 0.5)   ≈  answer atol = 1e-3
-    @test wquantile(data[1], w, [0.5])          ≈ [answer] atol = 1e-3
-    @test wquantile(data[1], w, 0.5)            ≈  answer atol = 1e-3
+    @test quantile(data[1], aweights(w), 0.5)    ≈  answer atol = 1e-5
+    @test wquantile(data[1], aweights(w), [0.5]) ≈ [answer] atol = 1e-5
+    @test wquantile(data[1], aweights(w), 0.5)   ≈  answer atol = 1e-5
+    @test wquantile(data[1], w, [0.5])          ≈ [answer] atol = 1e-5
+    @test wquantile(data[1], w, 0.5)            ≈  answer atol = 1e-5
 end
 
 end # @testset StatsBase.Weights
