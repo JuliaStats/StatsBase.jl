@@ -580,7 +580,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     p = bound_quantiles(p)
 
     # prepare out vector
-    out = Vector{typeof(zero(V)/1)}(length(p))
+    out = Vector{typeof(zero(V)/1)}(uninitialized, length(p))
     fill!(out, vw[end][1])
 
     # start looping on quantiles
