@@ -334,7 +334,7 @@ end
     @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
 end
   
-@testset "Quantile aweights" begin
+@testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -402,39 +402,39 @@ end
 
     srand(10)
     for i = 1:length(data)
-        @test quantile(data[i], aweights(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
+        @test quantile(data[i], f(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
             # order of p does not matter
             reorder = sortperm(rand(length(p)))
-            @test quantile(data[i], aweights(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-5
+            @test quantile(data[i], f(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-5
         end
         for j = 1:10
             # order of w does not matter
             reorder = sortperm(rand(length(data[i])))
-            @test quantile(data[i][reorder], aweights(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
+            @test quantile(data[i][reorder], f(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
         end
     end
     # w = 1 corresponds to base quantile
     for i = 1:length(data)
-        @test quantile(data[i], aweights(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p) atol = 1e-5
+        @test quantile(data[i], f(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p) atol = 1e-5
         for j = 1:10
             prandom = rand(4)
-            @test quantile(data[i], aweights(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-5
+            @test quantile(data[i], f(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-5
         end
     end
     # test zeros are removed
     for i = 1:length(data)
-        @test quantile(vcat(1.0, data[i]), aweights(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-5
+        @test quantile(vcat(1.0, data[i]), f(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-5
     end
     # Syntax
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
-    @test quantile(data[1], aweights(w), 0.5)    ≈  answer atol = 1e-5
-    @test wquantile(data[1], aweights(w), [0.5]) ≈ [answer] atol = 1e-5
-    @test wquantile(data[1], aweights(w), 0.5)   ≈  answer atol = 1e-5
-    @test wquantile(data[1], w, [0.5])          ≈ [answer] atol = 1e-5
-    @test wquantile(data[1], w, 0.5)            ≈  answer atol = 1e-5
+    @test quantile(data[1], f(w), 0.5)    ≈  answer atol = 1e-5
+    @test wquantile(data[1], f(w), [0.5]) ≈ [answer] atol = 1e-5
+    @test wquantile(data[1], f(w), 0.5)   ≈  answer atol = 1e-5
+    @test wquantile(data[1], w, [0.5])    ≈ [answer] atol = 1e-5
+    @test wquantile(data[1], w, 0.5)      ≈  answer atol = 1e-5
 end
 
 end # @testset StatsBase.Weights
