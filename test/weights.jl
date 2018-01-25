@@ -358,7 +358,7 @@ end
     end
  
     # Issue #313
-    @test quantile(x, fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
+    @test quantile([1, 2, 3, 4, 5], fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
     @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
     @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
 end
