@@ -9,7 +9,11 @@ module StatsBase
 
     import SpecialFunctions: erfcinv
 
-    using Compat
+    using Compat, SortingAlgorithms, Missings
+
+    if VERSION >= v"0.7.0-DEV.3052"
+        using Printf
+    end
 
     ## tackle compatibility issues
 
@@ -127,7 +131,7 @@ module StatsBase
     hist,
     # histrange,
     midpoints,
-    
+
     ## robust
     trim,           # trimmed set
     trim!,          # trimmed set
@@ -154,6 +158,7 @@ module StatsBase
     aicc,
     bic,
     coef,
+    coefnames,
     coeftable,
     confint,
     deviance,
@@ -163,6 +168,7 @@ module StatsBase
     fit!,
     fitted,
     loglikelihood,
+    modelmatrix,
     nobs,
     nulldeviance,
     nullloglikelihood,

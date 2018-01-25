@@ -1,5 +1,6 @@
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
@@ -34,6 +35,34 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test sum(ba, wv) === 4.0
     @test sum(sa, wv) === 7.0
+end
+
+@testset "$f, isequal and ==" for f in weight_funcs
+    x = f([1, 2, 3])
+
+    y = f([1, 2, 3]) # same values, type and parameters
+    @test isequal(x, y)
+    @test x == y
+
+    y = f([1.0, 2.0, 3.0]) # same values and type, different parameters
+    @test isequal(x, y)
+    @test x == y
+
+    if f != fweights # same values and parameters, different types
+        y = fweights([1, 2, 3])
+        @test !isequal(x, y)
+        @test x != y
+    end
+
+    x = f([1, 2, NaN]) # isequal and == treat NaN differently
+    y = f([1, 2, NaN])
+    @test isequal(x, y)
+    @test x != y
+
+    x = f([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
+    y = f([1.0, 2.0, -0.0])
+    @test !isequal(x, y)
+    @test x == y
 end
 
 ## wsum

@@ -1,9 +1,14 @@
 # Test taken from http://www.stanford.edu/~clint/bench/wilk.txt
 
-using Base.Test
+using Compat
+using Compat.Test
 using DataFrames
 using StatsBase
 using GLM
+
+if VERSION >= v"0.7.0-DEV.3052"
+    using Printf
+end
 
 testeps = sqrt(eps())
 

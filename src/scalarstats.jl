@@ -373,13 +373,13 @@ In particular, when `μ` and `σ` are arrays, they should have the same size, an
 """
 function zscore(X::AbstractArray{T}, μ::Real, σ::Real) where T<:Real
     ZT = typeof((zero(T) - zero(μ)) / one(σ))
-    _zscore!(Array{ZT}(size(X)), X, μ, σ)
+    _zscore!(Array{ZT}(uninitialized, size(X)), X, μ, σ)
 end
 
 function zscore(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) where {T<:Real,U<:Real,S<:Real}
     _zscore_chksize(X, μ, σ)
     ZT = typeof((zero(T) - zero(U)) / one(S))
-    _zscore!(Array{ZT}(size(X)), X, μ, σ)
+    _zscore!(Array{ZT}(uninitialized, size(X)), X, μ, σ)
 end
 
 zscore(X::AbstractArray{<:Real}) = ((μ, σ) = mean_and_std(X); zscore(X, μ, σ))

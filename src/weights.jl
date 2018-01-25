@@ -1,3 +1,6 @@
+if !isdefined(Base, :axes)
+    const axes = Base.indices
+end
 
 ###### Weight vector #####
 
@@ -193,6 +196,18 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
         1 / s
     end
 end
+
+##### Equality tests #####
+
+for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+    @eval begin
+        Base.isequal(x::$w, y::$w) = isequal(x.sum, y.sum) && isequal(x.values, y.values)
+        Base.:(==)(x::$w, y::$w)   = (x.sum == y.sum) && (x.values == y.values)
+    end
+end
+
+Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
+Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
 ##### Weighted sum #####
 
@@ -404,7 +419,7 @@ end
 
 function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Number,W<:Real}
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(indices(A), dim)), A, w, dim, true)
+    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
 end
 
 # extended sum! and wsum
@@ -455,7 +470,7 @@ wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 Base.mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
-    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(indices(A), dim)), A, w, dim)
+    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
 
 
 ###### Weighted median #####
@@ -475,7 +490,7 @@ The weighted median ``x_k`` is the element of `x` that satisfies
 
 If a weight has value zero, then its associated data point is ignored.
 If none of the weights are positive, an error is thrown.
-`NaN` is returned if `x` contains any `NaN` values. 
+`NaN` is returned if `x` contains any `NaN` values.
 An error is raised if `w` contains any `NaN` values.
 """
 function Base.median(v::RealVector, w::AbstractWeights{<:Real})

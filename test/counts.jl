@@ -1,5 +1,6 @@
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 
 n = 5000
 
@@ -85,11 +86,40 @@ pm = proportionmap(x)
 @test pm["b"] ≈ (1/3)
 @test pm["c"] ≈ (1/6)
 
+
+# testing the radixsort branch of countmap
+xx = repeat([6, 1, 3, 1], outer=100_000)
+cm = countmap(xx)
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+
+# testing the radixsort-based addcounts
+xx = repeat([6, 1, 3, 1], outer=100_000)
+cm = Dict{Int, Int}()
+StatsBase.addcounts_radixsort!(cm,xx)
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+
+# testing the Dict-based addcounts
+cm = Dict{Int, Int}()
+StatsBase.addcounts_dict!(cm,xx)
+@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+
 cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
 @test cm["b"] == 4.5
 @test cm["c"] == 3.5
+
+@test cm == countmap(x, w)
+
 pm = proportionmap(x, weights(w))
 @test pm["a"] ≈ (5.5 / 13.5)
 @test pm["b"] ≈ (4.5 / 13.5)
 @test pm["c"] ≈ (3.5 / 13.5)
+
+# testing small bits type
+bx = [true, false, true, true, false]
+@test countmap(bx) == Dict(true => 3, false => 2)
+
+for T in [UInt8, UInt16, Int8, Int16]
+    tx = T[typemin(T), 8, typemax(T), 19, 8]
+    @test countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
+end

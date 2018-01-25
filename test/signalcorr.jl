@@ -5,7 +5,8 @@
 #
 
 using StatsBase
-using Base.Test
+using Compat
+using Compat.Test
 
 # random data for testing
 

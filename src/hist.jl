@@ -32,7 +32,7 @@ end
 # Need a generated function to promote edge types, because a simple
 # promote_type(map(eltype, h.edges)...) isn't type stable (tested
 # with Julia v0.5).
-@generated function _promote_edge_types{N}(edges::NTuple{N,AbstractVector})
+@generated function _promote_edge_types(edges::NTuple{N,AbstractVector}) where N
     promote_type(map(eltype, edges.parameters)...)
 end
 

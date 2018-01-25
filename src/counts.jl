@@ -8,6 +8,12 @@
 
 const IntUnitRange{T<:Integer} = UnitRange{T}
 
+if isdefined(Base, :ht_keyindex2)
+    const ht_keyindex2! = Base.ht_keyindex2
+else
+    using Base: ht_keyindex2!
+end
+
 #### functions for counting a single list of integers (1D)
 """
     addcounts!(r, x, levels::UnitRange{<:Int}, [wv::AbstractWeights])
@@ -231,20 +237,118 @@ end
 
 
 """
-    addcounts!(dict, x[, wv])
+    addcounts!(dict, x[, wv]; alg = :auto)
 
 Add counts based on `x` to a count map. New entries will be added if new values come up.
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
+
+`alg` can be one of:
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
+                     `:radixsort`, otherwise use `:dict`.
+
+- `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
+                     [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+                     algorithm to sort the input vector which will generally lead to
+                     shorter running time. However the radix sort algorithm creates a
+                     copy of the input vector and hence uses more RAM. Choose `:dict`
+                     if the amount of available RAM is a limitation.
+
+- `:dict`:           use `Dict`-based method which is generally slower but uses less
+                     RAM and is safe for any data type.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}) where T
-    for v in x
-        cm[v] = get(cm, v, 0) + 1
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
+    # if it's safe to be sorted using radixsort then it should be faster
+    # albeit using more RAM
+    if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
+        addcounts_radixsort!(cm, x)
+    elseif alg == :radixsort
+        throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
+    else
+        addcounts_dict!(cm,x)
     end
     return cm
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W}
+"""Dict-based addcounts method"""
+function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
+    for v in x
+        index = ht_keyindex2!(cm, v)
+        if index > 0
+            @inbounds cm.vals[index] += 1
+        else
+            @inbounds Base._setindex!(cm, 1, v, -index)
+        end
+    end
+    return cm
+end
+
+# If the bits type is of small size i.e. it can have up to 65536 distinct values
+# then it is always better to apply a counting-sort like reduce algorithm for 
+# faster results and less memory usage. However we still wish to enable others
+# to write generic algorithms, therefore the methods below still accept the 
+# `alg` argument but it is ignored.
+function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
+    sumx = sum(x)
+    cm[true] = get(cm, true, 0) + sumx
+    cm[false] = get(cm, false, 0) + length(x) - sumx
+    cm
+end
+
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+    counts = zeros(Int, 2^(8sizeof(T)))
+
+    @inbounds for xi in x
+        counts[Int(xi) - typemin(T) + 1] += 1
+    end
+
+    for (i, c) in zip(typemin(T):typemax(T), counts)
+        if c != 0
+            index = ht_keyindex2!(cm, i)
+            if index > 0
+                @inbounds cm.vals[index] += c
+            else
+                @inbounds Base._setindex!(cm, c, i, -index)
+            end
+        end
+    end
+    cm
+end
+
+const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
+                                     UInt8, UInt16, UInt32, UInt64, UInt128,
+                                     Float32, Float64}
+
+"Can the type be safely sorted by radixsort"
+radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
+radixsort_safe(::Type) = false
+
+function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
+    # sort the x using radixsort
+    sx = sort(x, alg = RadixSort)::typeof(x)
+
+    tmpcount = 1
+    last_sx = sx[1]
+
+    # now the data is sorted: can just run through and accumulate values before
+    # adding into the Dict
+    for i in 2:length(sx)
+        sxi = sx[i]
+        if last_sx == sxi
+            tmpcount += 1
+        else
+            cm[last_sx] = tmpcount
+            last_sx = sxi
+            tmpcount = 1
+        end
+    end
+
+    cm[sx[end]] = tmpcount
+
+    return cm
+end
+
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
     w = values(wv)
@@ -260,13 +364,26 @@ end
 
 
 """
-    countmap(x)
+    countmap(x; alg = :auto)
 
 Return a dictionary mapping each unique value in `x` to its number
 of occurrences.
+
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
+                     `:radixsort`, otherwise use `:dict`.
+
+- `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
+                     [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
+                     algorithm to sort the input vector which will generally lead to
+                     shorter running time. However the radix sort algorithm creates a
+                     copy of the input vector and hence uses more RAM. Choose `:dict`
+                     if the amount of available RAM is a limitation.
+
+- `:dict`:           use `Dict`-based method which is generally slower but uses less
+                     RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}) where {T} = addcounts!(Dict{T,Int}(), x)
-countmap(x::AbstractArray{T}, wv::AbstractWeights{W}) where {T,W} = addcounts!(Dict{T,W}(), x, wv)
+countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
+countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
 """
