@@ -45,3 +45,38 @@ function ecdf(X::RealVector{T}) where T<:Real
 end
 
 
+"""
+    epdf(X)
+
+Return an empirical probability distribution function (EPDF) based on a vector of samples
+given in `X`.
+
+Note: this is a higher-level function that returns a function, which can then be applied
+to evaluate PDF values on other samples.
+"""
+function epdf(X::AbstractVector; nbins::Int = sturges(length(X)), closed::Symbol=:left)
+    # TODO: Support edges
+    hg = normalize(fit(Histogram, X; closed = closed, nbins = nbins); mode = :pdf)
+
+    ef = if hg.closed == :left
+        (x) -> begin
+            if (x < hg.edges[1][1]) || (x >= hg.edges[1][end])
+                return zero(eltype(hg.weights))
+            end
+
+            idx = searchsortedfirst(hg.edges[1], x; lt = <)
+            return hg.weights[idx-1]
+        end
+    else
+        (x) -> begin
+            if (x <= hg.edges[1][1]) || (x > hg.edges[1][end])
+                return zero(eltype(hg.weights))
+            end
+
+            idx = searchsortedfirst(hg.edges[1], x; lt = <=)
+            return hg.weights[idx-1]
+        end
+    end
+
+    return ef
+end
