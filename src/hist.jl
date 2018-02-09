@@ -525,16 +525,11 @@ weights of the resulting histogram will have the same type as those of `h`.
 """
 Base.merge(h::Histogram, others::Histogram...) = merge!(zero(h), h, others...)
 
-if VERSION ≥ v"0.7-"
-    # HACK, along with qualified function names, remove when v0.6 is phased out
-    function midpoints end
-end
-
 """
     midpoints(v)
 
 Calculate the midpoints (pairwise mean of consecutive elements).
 """
-StatsBase.midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
+midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
 
-StatsBase.midpoints(r::Range) = r[1:(end - 1)] + 0.5 * step(r)
+midpoints(r::Range) = r[1:(end - 1)] + 0.5 * step(r)

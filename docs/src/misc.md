@@ -6,5 +6,5 @@ inverse_rle
 levelsmap
 indexmap
 indicatormat
-StatsBase.midpoints
+midpoints
 ```

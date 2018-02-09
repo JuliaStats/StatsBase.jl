@@ -227,8 +227,8 @@ end
 end
 
 @testset "midpoints" begin
-    @test StatsBase.midpoints([1, 2, 4]) == [1.5, 3.0]
-    @test StatsBase.midpoints(linspace(0, 1, 5)) == 0.125:0.25:0.875
+    @test midpoints([1, 2, 4]) == [1.5, 3.0]
+    @test midpoints(linspace(0, 1, 5)) == 0.125:0.25:0.875
 end
 
 end # @testset "StatsBase.Histogram"

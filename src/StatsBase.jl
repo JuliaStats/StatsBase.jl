@@ -15,6 +15,10 @@ module StatsBase
         using Printf
     end
 
+    if VERSION < v"0.7-"
+        import Base: midpoints
+    end
+
     ## tackle compatibility issues
 
     export
@@ -130,7 +134,7 @@ module StatsBase
     Histogram,
     hist,
     # histrange,
-    # midpoints,    # TODO export when depending on Julia v0.7
+    midpoints,
 
     ## robust
     trim,           # trimmed set
