@@ -130,7 +130,7 @@ module StatsBase
     Histogram,
     hist,
     # histrange,
-    midpoints,
+    # midpoints,    # TODO export when depending on Julia v0.7
 
     ## robust
     trim,           # trimmed set
