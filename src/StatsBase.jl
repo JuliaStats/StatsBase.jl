@@ -15,7 +15,7 @@ module StatsBase
         using Printf
     end
 
-    if VERSION < v"0.7-"
+    if VERSION < v"0.7.0-DEV.3335"
         import Base: midpoints
     end
 
