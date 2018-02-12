@@ -524,3 +524,12 @@ have the same binning, shape of weights and properties (`closed` and
 weights of the resulting histogram will have the same type as those of `h`.
 """
 Base.merge(h::Histogram, others::Histogram...) = merge!(zero(h), h, others...)
+
+"""
+    midpoints(v)
+
+Calculate the midpoints (pairwise mean of consecutive elements).
+"""
+midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
+
+midpoints(r::Range) = r[1:(end - 1)] + step(r) / 2

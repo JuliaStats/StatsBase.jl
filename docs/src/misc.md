@@ -6,4 +6,5 @@ inverse_rle
 levelsmap
 indexmap
 indicatormat
+midpoints
 ```

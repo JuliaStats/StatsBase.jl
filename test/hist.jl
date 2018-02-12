@@ -226,5 +226,9 @@ end
     @test (@inferred merge(histograms...)) == h
 end
 
+@testset "midpoints" begin
+    @test midpoints([1, 2, 4]) == [1.5, 3.0]
+    @test midpoints(linspace(0, 1, 5)) == 0.125:0.25:0.875
+end
 
 end # @testset "StatsBase.Histogram"
