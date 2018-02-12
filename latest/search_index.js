@@ -1121,11 +1121,19 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "misc.html#Base.midpoints",
+    "page": "Miscellaneous Functions",
+    "title": "Base.midpoints",
+    "category": "Function",
+    "text": "midpoints(v)\n\nCalculate the midpoints (pairwise mean of consecutive elements).\n\n\n\n"
+},
+
+{
     "location": "misc.html#Miscellaneous-Functions-1",
     "page": "Miscellaneous Functions",
     "title": "Miscellaneous Functions",
     "category": "section",
-    "text": "rle\ninverse_rle\nlevelsmap\nindexmap\nindicatormat"
+    "text": "rle\ninverse_rle\nlevelsmap\nindexmap\nindicatormat\nmidpoints"
 },
 
 {
