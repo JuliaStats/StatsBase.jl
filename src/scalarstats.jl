@@ -1,5 +1,5 @@
 # Descriptive Statistics
-
+using Compat.LinearAlgebra
 
 #############################
 #
@@ -247,7 +247,7 @@ function mad(v::AbstractArray{T}) where T<:Real
 
     S = promote_type(T, typeof(middle(first(v))))
 
-    mad!(LinAlg.copy_oftype(v, S))
+    mad!(Compat.LinearAlgebra.copy_oftype(v, S))
 end
 
 

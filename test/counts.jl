@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "counts" begin
+
 n = 5000
 
 # 1D integer counts
@@ -123,3 +125,5 @@ for T in [UInt8, UInt16, Int8, Int16]
     tx = T[typemin(T), 8, typemax(T), 19, 8]
     @test countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
 end
+
+end # testset

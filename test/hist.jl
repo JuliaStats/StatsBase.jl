@@ -4,10 +4,6 @@ using StatsBase
 using Compat
 using Compat.Test
 
-if !isdefined(Base, :axes)
-    const axes = Base.indices
-end
-
 @testset "StatsBase.Histogram" begin
 
 
@@ -21,8 +17,8 @@ end
     @test @inferred StatsBase.binindex(h1, -0.5) == 4
     @test @inferred StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
 
-    @test [StatsBase.binvolume(h1, i) for i in axes(h1.weights, 1)] ≈ diff(edg1)
-    @test [StatsBase.binvolume(h2, (i,j)) for i in axes(h2.weights, 1), j in axes(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
+    @test [StatsBase.binvolume(h1, i) for i in Compat.axes(h1.weights, 1)] ≈ diff(edg1)
+    @test [StatsBase.binvolume(h2, (i,j)) for i in Compat.axes(h2.weights, 1), j in Compat.axes(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
 
     @test typeof(@inferred(StatsBase.binvolume(h2, (1,1)))) == Float64
     @test typeof(@inferred(StatsBase.binvolume(h3, (1,1)))) == Float32
@@ -58,8 +54,8 @@ end
     @test fit(Histogram,0:99,nbins=5,closed=:left).weights == [20,20,20,20,20]
 
     # FIXME: closed (all lines in this block):
-    @test fit(Histogram,(0:99,0:99),nbins=5, closed=:left).weights == diagm([20,20,20,20,20])
-    @test fit(Histogram,(0:99,0:99),nbins=(5,5), closed=:left).weights == diagm([20,20,20,20,20])
+    @test fit(Histogram,(0:99,0:99),nbins=5, closed=:left).weights == diagm(0=>[20,20,20,20,20])
+    @test fit(Histogram,(0:99,0:99),nbins=(5,5), closed=:left).weights == diagm(0=>[20,20,20,20,20])
 
     # FIXME: closed (all lines in this block):
     @test fit(Histogram,0:99,weights(ones(100)),nbins=5, closed=:left).weights == [20,20,20,20,20]
@@ -163,9 +159,9 @@ end
     @test h_pdf.weights ≈ h.weights ./ bin_vols ./ weight_sum
     @test h_pdf.isdensity == true
     @test @inferred(norm(h_pdf)) ≈ 1
-    @test @inferred(normalize(h_pdf, mode = :pdf)) == h_pdf
-    @test @inferred(normalize(h_pdf, mode = :density)) == h_pdf
-    @test @inferred(normalize(h_pdf, mode = :probability)) == h_pdf
+    @test @inferred(normalize(h_pdf, mode = :pdf)) ≈ h_pdf
+    @test @inferred(normalize(h_pdf, mode = :density)) ≈ h_pdf
+    @test @inferred(normalize(h_pdf, mode = :probability)) ≈ h_pdf
 
     h_density = normalize(h, mode = :density)
     @test h_density.weights ≈ h.weights ./ bin_vols

@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "statmodels" begin
+
 srand(10)
 v1 = rand(3)
 v2 = ["Good", "Great", "Bad"]
@@ -39,3 +41,5 @@ x3   0.453058  0.72525 0.999172 0.5567
 
 err = @test_throws ArgumentError ConvergenceException(10,.1,.2)
 @test err.value.msg == "Change must be greater than tol."
+
+end # testset

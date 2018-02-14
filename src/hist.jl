@@ -1,6 +1,7 @@
 using Base.Cartesian
 
-import Base: show, ==, push!, append!, float, norm, normalize, normalize!
+import Base: show, ==, ≈, push!, append!, float
+import Compat.LinearAlgebra: norm, normalize, normalize!
 
 # Mechanism for temporary deprecation of default for "closed" (because default
 # value has changed). After deprecation is lifed, remove "_check_closed_arg"
@@ -169,7 +170,7 @@ function show(io::IO, h::AbstractHistogram)
 end
 
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
-
+(≈)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (≈)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
 
 binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]
 
@@ -221,13 +222,13 @@ push!(h::AbstractHistogram{T,1}, x::Real) where {T} = push!(h,x,one(T))
 append!(h::AbstractHistogram{T,1}, v::AbstractVector) where {T} = append!(h, (v,))
 append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) where {T} = append!(h, (v,), wv)
 
-fit(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:default_left) where {T} =
+fit(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), (edg,), closed=closed)
 fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:default_left, nbins=sturges(length(v))) where {T} =
     fit(Histogram{T},(v,); closed=closed, nbins=nbins)
-fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:default_left) where {T} =
+fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), wv, (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:default_left, nbins=sturges(length(v))) where {T} =
+fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
     fit(Histogram{T}, (v,), wv; closed=closed, nbins=nbins)
 
 fit(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) where {W} = fit(Histogram{W}, v, wv, args...; kwargs...)

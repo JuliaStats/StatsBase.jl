@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "misc" begin
+
 # rle & inverse_rle
 
 z = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3]
@@ -31,11 +33,11 @@ I = [false true  false false false;
 
 x = [2, 1, 3, 3, 2]
 @test indicatormat(x, 3) == I
-@test full(indicatormat(x, 3; sparse=true)) == I
+@test Matrix(indicatormat(x, 3; sparse=true)) == I
 
 x = ["b", "a", "c", "c", "b"]
 @test indicatormat(x) == I
-@test full(indicatormat(x; sparse=true)) == I
+@test Matrix(indicatormat(x; sparse=true)) == I
 
 io = IOBuffer()
 describe(io, collect(1:10))
@@ -58,3 +60,5 @@ describe(io, fill("s", 3))
                            Type:           String
                            Number Unique:  1
                            """
+
+end # testset

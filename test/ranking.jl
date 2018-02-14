@@ -3,6 +3,7 @@ using Missings
 using Compat
 using Compat.Test
 
+@testset "ranking" begin
 a = [1.0, 2.0, 2.0, 3.0, 4.0, 4.0, 4.0, 5.0]
 x = [3.0, 1.0, 2.0, 4.0, 4.0, 2.0, 5.0, 4.0]  # x is a permutated version of a
 xm = [3.0, 1.0, 2.0, 4.0, 4.0, 2.0, 5.0, 4.0, missing]
@@ -34,8 +35,11 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 
 @test tiedrank(a) == [1.0, 2.5, 2.5, 4.0, 6.0, 6.0, 6.0, 8.0]
 @test tiedrank(x) == [4.0, 1.0, 2.5, 6.0, 6.0, 2.5, 8.0, 6.0]
+
 @test isequal(tiedrank(xm), [4.0, 1.0, 2.5, 6.0, 6.0, 2.5, 8.0, 6.0, missing])
 @test isequal(tiedrank([missing, missing]), [missing, missing])
 @test tiedrank(s) == tiedrank(x)
 @test tiedrank(x, rev = true) == tiedrank(-x)
 @test tiedrank(x, lt = (x, y) -> isless(y, x)) == tiedrank(-x)
+
+end # testset

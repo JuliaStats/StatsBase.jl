@@ -2,6 +2,8 @@ using StatsBase
 using Compat
 using Compat.Test
 
+@testset "rankcorr" begin
+
 X = Float64[1 0; 2 1; 3 0; 4 1; 5 10]
 
 x1 = X[:,1]
@@ -41,3 +43,5 @@ c22 = corkendall(x2, x2)
 @test c22 ≈ 1.0
 @test corkendall(X, X) ≈ [c11 c12; c12 c22]
 @test corkendall(X)    ≈ [c11 c12; c12 c22]
+
+end # testset

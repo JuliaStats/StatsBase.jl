@@ -1,10 +1,8 @@
 using StatsBase
-using Compat
-using Compat.Test
-import Base: maxabs
+using Compat, Compat.Test, Compat.Random
 import StatsBase: norepeat
 
-srand(1234)
+Random.srand(1234)
 
 # test that rng specification is working correctly
 # a) if the same rng is passed to a sample function twice,
@@ -22,7 +20,7 @@ function test_rng_use(func, non_rng_args...)
     srand(47)
     x = func(deepcopy(non_rng_args)...)
     srand(47)
-    y = func(Base.GLOBAL_RNG, deepcopy(non_rng_args)...)
+    y = func(Random.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
 end
 
@@ -53,8 +51,43 @@ function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fal
     end
 end
 
+function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+    # each column of a for one run
+
+    vmin, vmax = vrgn
+    (amin, amax) = extrema(a)
+    @test vmin <= amin <= amax <= vmax
+    n = vmax - vmin + 1
+
+    for j = 1:size(a,2)
+        aj = view(a,:,j)
+        @assert norepeat(aj)
+        if ordered
+            @assert issorted(aj)
+        end
+    end
+
+    if ptol > 0
+        p0 = fill(1/n, n)
+        if ordered
+            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
+        else
+            b = transpose(a)
+            for j = 1:size(b,2)
+                bj = view(b,:,j)
+                @test isapprox(proportions(bj, vmin:vmax), p0, atol=ptol)
+            end
+        end
+    end
+end
+
+import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
+import StatsBase: seqsample_a!, seqsample_c!
 import StatsBase: direct_sample!
 
+@testset "sampling" begin
+
+n = 100000
 a = direct_sample!(1:10, zeros(Int, n, 3))
 check_sample_wrep(a, (1, 10), 5.0e-3; ordered=false)
 
@@ -99,39 +132,6 @@ end
 test_rng_use(samplepair, 1000)
 
 #### sample without replacement
-
-function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
-    # each column of a for one run
-
-    vmin, vmax = vrgn
-    (amin, amax) = extrema(a)
-    @test vmin <= amin <= amax <= vmax
-    n = vmax - vmin + 1
-
-    for j = 1:size(a,2)
-        aj = view(a,:,j)
-        @assert norepeat(aj)
-        if ordered
-            @assert issorted(aj)
-        end
-    end
-
-    if ptol > 0
-        p0 = fill(1/n, n)
-        if ordered
-            @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
-        else
-            b = transpose(a)
-            for j = 1:size(b,2)
-                bj = view(b,:,j)
-                @test isapprox(proportions(bj, vmin:vmax), p0, atol=ptol)
-            end
-        end
-    end
-end
-
-import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
-import StatsBase: seqsample_a!, seqsample_c!
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
@@ -209,3 +209,5 @@ srand(1);
 @test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
 @test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]
+
+end # testset

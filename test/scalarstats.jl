@@ -1,6 +1,7 @@
 using StatsBase
-using Compat
-using Compat.Test
+using Compat, Compat.Test, Compat.LinearAlgebra
+
+@testset "scalarstats" begin
 
 ##### Location
 
@@ -116,7 +117,7 @@ dist /= sum(dist)
 
 # And is therefore not affected by the addition of non-zeros
 zdist = dist
-zdist = append!(dist, zeros(rand(50)))
+zdist = append!(dist, zeros(50))
 @test renyientropy(dist, 0) ≈ renyientropy(zdist, 0)
 
 # Indeed no Renyi entropy should be
@@ -157,3 +158,5 @@ s = summarystats(1:5)
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
+
+end # testset
