@@ -15,10 +15,6 @@ module StatsBase
         using Printf
     end
 
-    if VERSION < v"0.7.0-DEV.3335"
-        import Base: midpoints
-    end
-
     ## tackle compatibility issues
 
     export
@@ -134,7 +130,6 @@ module StatsBase
     Histogram,
     hist,
     # histrange,
-    midpoints,
 
     ## robust
     trim,           # trimmed set
@@ -186,6 +181,10 @@ module StatsBase
     model_response,
 
     ConvergenceException
+
+@static if !isdefined(Base, :midpoints)
+    export midpoints
+end
 
     # source files
 
