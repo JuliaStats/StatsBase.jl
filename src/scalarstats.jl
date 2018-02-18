@@ -238,29 +238,40 @@ sem(a::AbstractArray{<:Real}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v)
+    mad(v; center=median(v), constant=1/quantile(Normal(), 3/4))
 
-Compute the median absolute deviation of `v`.
+Compute the median absolute deviation (MAD) of `v` around `center`
+(by default, around the median).
+
+Using the MAD as a consistent estimator of the standard deviation requires
+a scaling factor that depends on the underlying distribution.
+By default, `constant` is set to `1 / quantile(Normal(), 3/4) ≈ 1.4826`,
+which is appropriate for normally distributed data.
 """
-function mad(v::AbstractArray{T}) where T<:Real
+function mad(v::AbstractArray{T};
+             center=median(v),
+             constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))) where T<:Real
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
     S = promote_type(T, typeof(middle(first(v))))
 
-    mad!(LinAlg.copy_oftype(v, S))
+    mad!(LinAlg.copy_oftype(v, S), center=center, constant=constant)
 end
 
 
 """
-    StatsBase.mad!(v, center=median!(v); constant=k)
+    StatsBase.mad!(v; center=median!(v), constant=1/quantile(Normal(), 3/4))
 
-Compute the median absolute deviation (MAD) of `v` about a precomputed center
-`center`, overwriting `v` in the process. Using the MAD as a consistent estimator
-of the standard deviation requires a scaling factor that depends on the underlying
-distribution. For normally distributed data, `k` is chosen as
-`1 / quantile(Normal(), 3/4) ≈ 1.4826`, which is used as the default here.
+Compute the median absolute deviation (MAD) of `v` around `center`
+(by default, around the median), overwriting `v` in the process.
+
+Using the MAD as a consistent estimator of the standard deviation requires
+a scaling factor that depends on the underlying distribution.
+By default, `constant` is set to `1 / quantile(Normal(), 3/4) ≈ 1.4826`,
+which is appropriate for normally distributed data.
 """
-function mad!(v::AbstractArray{T}, center::Real=median!(v);
+function mad!(v::AbstractArray{T};
+              center::Real=median!(v),
               constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))) where T<:Real
     for i in 1:length(v)
         @inbounds v[i] = abs(v[i]-center)

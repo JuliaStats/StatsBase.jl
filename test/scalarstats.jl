@@ -81,10 +81,13 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 @test sem([1:5;]) ≈ 0.707106781186548
 
-@test StatsBase.mad!([1:5;], 3) ≈ 1.4826022185056018
+@test StatsBase.mad(1:5; center=3) ≈ 1.4826022185056018
+@test StatsBase.mad!([1:5;]; center=3) ≈ 1.4826022185056018
 @test mad(1:5) ≈ 1.4826022185056018
+@test StatsBase.mad(1:5, constant=1.0) ≈ 1.0
 @test StatsBase.mad!([1:5;], constant=1.0) ≈ 1.0
-@test StatsBase.mad!([1:5;], 3, constant=1.0) ≈ 1.0
+@test StatsBase.mad(1:5, center=3, constant=1.0) ≈ 1.0
+@test StatsBase.mad!([1:5;], center=3, constant=1.0) ≈ 1.0
 @test_throws ArgumentError mad(Int[])
 
 # Issue 197
