@@ -81,17 +81,17 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 @test sem([1:5;]) ≈ 0.707106781186548
 
-@test StatsBase.mad(1:5; center=3) ≈ 1.4826022185056018
-@test StatsBase.mad!([1:5;]; center=3) ≈ 1.4826022185056018
-@test mad(1:5) ≈ 1.4826022185056018
-@test StatsBase.mad(1:5, constant=1.0) ≈ 1.0
-@test StatsBase.mad!([1:5;], constant=1.0) ≈ 1.0
-@test StatsBase.mad(1:5, center=3, constant=1.0) ≈ 1.0
-@test StatsBase.mad!([1:5;], center=3, constant=1.0) ≈ 1.0
+@test StatsBase.mad(1:5; center=3, normalize=true) ≈ 1.4826022185056018
+@test StatsBase.mad!([1:5;]; center=3, normalize=true) ≈ 1.4826022185056018
+@test mad(1:5, normalize=true) ≈ 1.4826022185056018
+@test StatsBase.mad(1:5, normalize=false) ≈ 1.0
+@test StatsBase.mad!([1:5;], normalize=false) ≈ 1.0
+@test StatsBase.mad(1:5, center=3, normalize=false) ≈ 1.0
+@test StatsBase.mad!([1:5;], center=3, normalize=false) ≈ 1.0
 @test_throws ArgumentError mad(Int[])
 
 # Issue 197
-@test mad(1:2) ≈ 0.7413011092528009
+@test mad(1:2, normalize=true) ≈ 0.7413011092528009
 
 @test iqr(1:5) ≈ 2.0
 

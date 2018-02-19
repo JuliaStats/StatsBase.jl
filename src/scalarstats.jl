@@ -238,45 +238,62 @@ sem(a::AbstractArray{<:Real}) = sqrt(var(a) / length(a))
 
 # Median absolute deviation
 """
-    mad(v; center=median(v), constant=1/quantile(Normal(), 3/4))
+    mad(v; center=median(v), normalize=true)
 
 Compute the median absolute deviation (MAD) of `v` around `center`
 (by default, around the median).
 
-Using the MAD as a consistent estimator of the standard deviation requires
-a scaling factor that depends on the underlying distribution.
-By default, `constant` is set to `1 / quantile(Normal(), 3/4) ≈ 1.4826`,
-which is appropriate for normally distributed data.
+If `normalize` is set to `true`, the MAD is multiplied by
+`1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
+of the standard deviation under the assumption that the data is normally distributed.
 """
 function mad(v::AbstractArray{T};
-             center=median(v),
-             constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))) where T<:Real
+             center::Union{Real,Nothing}=nothing,
+             normalize::Union{Bool, Nothing}=nothing) where T<:Real
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
     S = promote_type(T, typeof(middle(first(v))))
+    v2 = LinAlg.copy_oftype(v, S)
 
-    mad!(LinAlg.copy_oftype(v, S), center=center, constant=constant)
+    if normalize === nothing
+        Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
+        normalize = true
+    end
+
+    mad!(v2, center=center === nothing ? median!(v2) : center, normalize=normalize)
 end
 
 
 """
-    StatsBase.mad!(v; center=median!(v), constant=1/quantile(Normal(), 3/4))
+    StatsBase.mad!(v; center=median!(v), normalize=true)
 
 Compute the median absolute deviation (MAD) of `v` around `center`
 (by default, around the median), overwriting `v` in the process.
 
-Using the MAD as a consistent estimator of the standard deviation requires
-a scaling factor that depends on the underlying distribution.
-By default, `constant` is set to `1 / quantile(Normal(), 3/4) ≈ 1.4826`,
-which is appropriate for normally distributed data.
+If `normalize` is set to `true`, the MAD is multiplied by
+`1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
+of the standard deviation under the assumption that the data is normally distributed.
 """
 function mad!(v::AbstractArray{T};
               center::Real=median!(v),
-              constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))) where T<:Real
+              normalize::Union{Bool,Nothing}=true,
+              constant=nothing) where T<:Real
     for i in 1:length(v)
         @inbounds v[i] = abs(v[i]-center)
     end
-    constant * median!(v)
+    k = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))
+    if normalize === nothing
+        Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
+        normalize = true
+    end
+    if constant !== nothing
+        Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
+        constant * median!(v)
+    elseif normalize
+        k * median!(v)
+    else
+        one(k) * median!(v)
+    end
 end
 
 # Interquartile range
