@@ -82,3 +82,6 @@ rand(s::RandIntSampler) = rand(Base.GLOBAL_RNG, s)
 @deprecate randi(rng::AbstractRNG, a::Int, b::Int) rand(rng, a:b)
 @deprecate randi(a::Int, b::Int) rand(a:b)
 
+@deprecate(mad!(v::AbstractArray{T}, center;
+                constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))) where T<:Real,
+           mad!(v, center=center, constant=constant))
