@@ -29,7 +29,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Weight Vectors",
     "title": "Weight Vectors",
     "category": "section",
-    "text": "In statistical applications, it is not uncommon to assign weights to samples. To facilitate the use of weight vectors, we introduce the abstract type AbstractWeights for the purpose of representing weight vectors, which has two advantages:A different type AbstractWeights distinguishes the role of the weight vector from other data vectors in the input arguments.\nStatistical functions that utilize weights often need the sum of weights for various purposes. The weight vector maintains the sum of weights, so that it needn't be computed repeatedly each time the sum of weights is needed.note: Note\nThe weight vector is a light-weight wrapper of the input vector. The input vector is NOT copied during construction.\nThe weight vector maintains the sum of weights, which is computed upon construction. If the value of the sum is pre-computed, one can supply it as the second argument to the constructor and save the time of computing the sum again."
+    "text": "In statistical applications, it is not uncommon to assign weights to samples. To facilitate the use of weight vectors, we introduce the abstract type AbstractWeights for the purpose of representing weight vectors, which has two advantages:A different type AbstractWeights distinguishes the role of the weight vector from other data vectors in the input arguments.\nStatistical functions that utilize weights often need the sum of weights for various purposes. The weight vector maintains the sum of weights, so that it needn\'t be computed repeatedly each time the sum of weights is needed.note: Note\nThe weight vector is a light-weight wrapper of the input vector. The input vector is NOT copied during construction.\nThe weight vector maintains the sum of weights, which is computed upon construction. If the value of the sum is pre-computed, one can supply it as the second argument to the constructor and save the time of computing the sum again."
 },
 
 {
@@ -245,7 +245,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Scalar Statistics",
     "title": "StatsBase.mad",
     "category": "Function",
-    "text": "mad(v)\n\nCompute the median absolute deviation of v.\n\n\n\n"
+    "text": "mad(v; center=median(v), normalize=true)\n\nCompute the median absolute deviation (MAD) of v around center (by default, around the median).\n\nIf normalize is set to true, the MAD is multiplied by 1 / quantile(Normal(), 3/4) ≈ 1.4826, in order to obtain a consistent estimator of the standard deviation under the assumption that the data is normally distributed.\n\n\n\n"
 },
 
 {
@@ -541,7 +541,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Scatter Matrix and Covariance",
     "title": "StatsBase.scattermat",
     "category": "Function",
-    "text": "scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)\n\nCompute the scatter matrix, which is an unnormalized covariance matrix. A weighting vector wv can be specified to weight the estimate.\n\nArguments\n\nmean=nothing: a known mean value. nothing indicates that the mean is unknown, and the function will compute the mean. Specifying mean=0 indicates that the data are centered and hence there's no need to subtract the mean.\nvardim=1: the dimension along which the variables are organized. When vardim = 1, the variables are considered columns with observations in rows; when vardim = 2, variables are in rows with observations in columns.\n\n\n\n"
+    "text": "scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)\n\nCompute the scatter matrix, which is an unnormalized covariance matrix. A weighting vector wv can be specified to weight the estimate.\n\nArguments\n\nmean=nothing: a known mean value. nothing indicates that the mean is unknown, and the function will compute the mean. Specifying mean=0 indicates that the data are centered and hence there\'s no need to subtract the mean.\nvardim=1: the dimension along which the variables are organized. When vardim = 1, the variables are considered columns with observations in rows; when vardim = 2, variables are in rows with observations in columns.\n\n\n\n"
 },
 
 {
@@ -717,7 +717,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.corspearman",
     "category": "Function",
-    "text": "corspearman(x, y=x)\n\nCompute Spearman's rank correlation coefficient. If x and y are vectors, the output is a float, otherwise it's a matrix corresponding to the pairwise correlations of the columns of x and y.\n\n\n\n"
+    "text": "corspearman(x, y=x)\n\nCompute Spearman\'s rank correlation coefficient. If x and y are vectors, the output is a float, otherwise it\'s a matrix corresponding to the pairwise correlations of the columns of x and y.\n\n\n\n"
 },
 
 {
@@ -725,7 +725,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.corkendall",
     "category": "Function",
-    "text": "corkendall(x, y=x)\n\nCompute Kendall's rank correlation coefficient, τ. x and y must both be either matrices or vectors.\n\n\n\n"
+    "text": "corkendall(x, y=x)\n\nCompute Kendall\'s rank correlation coefficient, τ. x and y must both be either matrices or vectors.\n\n\n\n"
 },
 
 {
@@ -813,7 +813,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Sampling from Population",
     "title": "StatsBase.knuths_sample!",
     "category": "Function",
-    "text": "knuths_sample!([rng], a, x)\n\nKnuth's Algorithm S for random sampling without replacement.\n\nReference: D. Knuth. The Art of Computer Programming. Vol 2, 3.4.2, p.142.\n\nThis algorithm consumes length(a) random numbers. It requires no additional memory space. Suitable for the case where memory is tight.\n\n\n\n"
+    "text": "knuths_sample!([rng], a, x)\n\nKnuth\'s Algorithm S for random sampling without replacement.\n\nReference: D. Knuth. The Art of Computer Programming. Vol 2, 3.4.2, p.142.\n\nThis algorithm consumes length(a) random numbers. It requires no additional memory space. Suitable for the case where memory is tight.\n\n\n\n"
 },
 
 {
@@ -821,7 +821,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Sampling from Population",
     "title": "StatsBase.fisher_yates_sample!",
     "category": "Function",
-    "text": "fisher_yates_sample!([rng], a::AbstractArray, x::AbstractArray)\n\nFisher-Yates shuffling (with early termination).\n\nPseudo-code:\n\nn = length(a)\nk = length(x)\n\n# Create an array of the indices\ninds = collect(1:n)\n\nfor i = 1:k\n    # swap element `i` with another random element in inds[i:n]\n    # set element `i` in `x`\nend\n\nThis algorithm consumes k=length(x) random numbers. It uses an integer array of length n=length(a) internally to maintain the shuffled indices. It is considerably faster than Knuth's algorithm especially when n is greater than k. It is O(n) for initialization, plus O(k) for random shuffling\n\n\n\n"
+    "text": "fisher_yates_sample!([rng], a::AbstractArray, x::AbstractArray)\n\nFisher-Yates shuffling (with early termination).\n\nPseudo-code:\n\nn = length(a)\nk = length(x)\n\n# Create an array of the indices\ninds = collect(1:n)\n\nfor i = 1:k\n    # swap element `i` with another random element in inds[i:n]\n    # set element `i` in `x`\nend\n\nThis algorithm consumes k=length(x) random numbers. It uses an integer array of length n=length(a) internally to maintain the shuffled indices. It is considerably faster than Knuth\'s algorithm especially when n is greater than k. It is O(n) for initialization, plus O(k) for random shuffling\n\n\n\n"
 },
 
 {
@@ -1157,7 +1157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.aic",
     "category": "Function",
-    "text": "aic(obj::StatisticalModel)\n\nAkaike's Information Criterion, defined as -2 log L + 2k, with L the likelihood of the model, and k its number of consumed degrees of freedom (as returned by dof).\n\n\n\n"
+    "text": "aic(obj::StatisticalModel)\n\nAkaike\'s Information Criterion, defined as -2 log L + 2k, with L the likelihood of the model, and k its number of consumed degrees of freedom (as returned by dof).\n\n\n\n"
 },
 
 {
@@ -1165,7 +1165,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.aicc",
     "category": "Function",
-    "text": "aicc(obj::StatisticalModel)\n\nCorrected Akaike's Information Criterion for small sample sizes (Hurvich and Tsai 1989), defined as -2 log L + 2k + 2k(k-1)(n-k-1), with L the likelihood of the model, k its number of consumed degrees of freedom (as returned by dof), and n the number of observations (as returned by nobs).\n\n\n\n"
+    "text": "aicc(obj::StatisticalModel)\n\nCorrected Akaike\'s Information Criterion for small sample sizes (Hurvich and Tsai 1989), defined as -2 log L + 2k + 2k(k-1)(n-k-1), with L the likelihood of the model, k its number of consumed degrees of freedom (as returned by dof), and n the number of observations (as returned by nobs).\n\n\n\n"
 },
 
 {
@@ -1221,7 +1221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.dof",
     "category": "Function",
-    "text": "dof(obj::StatisticalModel)\n\nReturn the number of degrees of freedom consumed in the model, including when applicable the intercept and the distribution's dispersion parameter.\n\n\n\n"
+    "text": "dof(obj::StatisticalModel)\n\nReturn the number of degrees of freedom consumed in the model, including when applicable the intercept and the distribution\'s dispersion parameter.\n\n\n\n"
 },
 
 {
