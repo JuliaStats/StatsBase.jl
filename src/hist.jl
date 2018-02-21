@@ -526,7 +526,7 @@ weights of the resulting histogram will have the same type as those of `h`.
 Base.merge(h::Histogram, others::Histogram...) = merge!(zero(h), h, others...)
 
 """
-    midpoints(v)
+    StatsBase.midpoints(v)
 
 Calculate the midpoints (pairwise mean of consecutive elements).
 """
