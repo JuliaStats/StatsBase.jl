@@ -650,3 +650,24 @@ wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector) = quantile(v
 wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
 wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
 wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
+
+
+"""
+    wiqr(v, w)
+
+Compute the interquartile range (IQR) of an array with weights `w`, given as either a vector
+or an `AbstractWeights` vector.
+"""
+wiqr{W <: Real}(v::RealVector,w::AbstractWeights{W}) = (q = quantile(v, w, [.25, .75]); q[2] - q[1])
+wiqr(v::RealVector,w::RealVector) = (q = quantile(v, weights(w), [.25, .75]); q[2] - q[1])
+
+
+"""
+    iqr(v, w)
+
+Compute the interquartile range (IQR) of an array with weights `w`, given as either a vector
+or an `AbstractWeights` vector.
+"""
+iqr{W <: Real}(v::RealVector,w::AbstractWeights{W}) = (q = quantile(v, w, [.25, .75]); q[2] - q[1])
+iqr(v::RealVector,w::RealVector) = (q = quantile(v, weights(w), [.25, .75]); q[2] - q[1])
+

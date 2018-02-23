@@ -35,6 +35,7 @@ module StatsBase
     wmean!,             # weighted mean across dimensions with provided storage
     wmedian,            # weighted median
     wquantile,          # weighted quantile
+	wiqr,				# weighted IQR
 
     ## moments
     skewness,       # (standardized) skewness
