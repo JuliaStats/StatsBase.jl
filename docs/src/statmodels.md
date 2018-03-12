@@ -15,13 +15,19 @@ coeftable
 confint
 deviance
 dof
+ess
 fit
 fit!
+isfitted
+leverage
+linear
 loglikelihood
 nobs
 nulldeviance
 r2
+rss
 stderr
+tss
 vcov
 ```
 
@@ -29,8 +35,10 @@ vcov
 ```@docs
 dof_residual
 fitted
+meanresponse
 modelmatrix
-model_response
+response
+modelweights
 predict
 predict!
 residuals

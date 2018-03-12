@@ -24,6 +24,7 @@ import Base.varm, Base.stdm
 @deprecate R²(obj::StatisticalModel, variant::Symbol) r²(obj, variant)
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
 @deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
+@deprecate model_response(obj::StatisticalModel) response(obj)
 
 function findat!(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T}) where T
     Base.depwarn("findat! is deprecated, use indexin instead", :findat!)

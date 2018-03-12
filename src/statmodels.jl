@@ -40,6 +40,20 @@ the likelihood of the model.
 deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(obj)).")
 
 """
+    leverage(obj::StatisticalModel)
+
+Returns the diagonal of the projection matrix.
+"""
+leverage(obj::StatisticalModel) = error("leverage is not defined for $(typeof(obj)).")
+
+"""
+    linear(obj::StatisticalModel)
+
+Return Boolean indicator whether model is linear.
+"""
+linear(obj::StatisticalModel) = error("linear is not defined for $(typeof(obj)).")
+
+"""
     nulldeviance(obj::StatisticalModel)
 
 Return the deviance of the null model, that is the one including only the intercept.
@@ -80,6 +94,20 @@ when applicable the intercept and the distribution's dispersion parameter.
 dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
 
 """
+    ess(obj::StatisticalModel)
+
+Return the the explained sum of squares.
+"""
+ess(obj::StatisticalModel) = sum(abs2, fitted(obj) - meanresponse(obj))
+
+"""
+    rss(obj::StatisticalModel)
+
+Return the the residual sum of squares.
+"""
+rss(obj::StatisticalModel) = sum(abs2, (model_response(obj) - fitted(obj)))
+
+"""
     stderr(obj::StatisticalModel)
 
 Return the standard errors for the coefficients of the model.
@@ -87,11 +115,24 @@ Return the standard errors for the coefficients of the model.
 stderr(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
 
 """
+    tss(obj::StatisticalModel)
+
+Return the standard errors for the coefficients of the model.
+"""
+tss(obj::StatisticalModel) = error("tss is not defined for $(typeof(obj)).")
+
+"""
     vcov(obj::StatisticalModel)
 
 Return the variance-covariance matrix for the coefficients of the model.
 """
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
+
+"""
+    isfitted(obj::StatisticalModel)
+
+Return Boolean indicator of whether the model has been fitted.
+"""
 
 """
 Fit a statistical model.
@@ -137,13 +178,15 @@ the likelihood of the model,  ``k`` its number of consumed degrees of freedom
 bic(obj::StatisticalModel) = -2loglikelihood(obj) + dof(obj)*log(nobs(obj))
 
 """
+    r2(obj::StatisticalModel)
+    r²(obj::StatisticalModel)
     r2(obj::StatisticalModel, variant::Symbol)
     r²(obj::StatisticalModel, variant::Symbol)
 
 Coefficient of determination (R-squared).
 
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
-and ``TSS`` the total sum of squares, and `variant` can be omitted.
+and ``TSS`` the total sum of squares.
 
 For other models, one of several pseudo R² definitions must be chosen via `variant`.
 Supported variants are:
@@ -156,6 +199,9 @@ In the above formulas, ``L`` is the likelihood of the model, ``L0`` that of the 
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models.
 """
+function r2(obj::StatisticalModel)
+    ess(obj) / tss(obj)
+end
 function r2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
@@ -174,6 +220,8 @@ end
 const r² = r2
 
 """
+    adjr2(obj::StatisticalModel)
+    adjr²(obj::StatisticalModel)
     adjr2(obj::StatisticalModel, variant::Symbol)
     adjr²(obj::StatisticalModel, variant::Symbol)
 
@@ -190,6 +238,10 @@ In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null m
 `deviance` of the corresponding models. ``k`` is the number of consumed degrees of freedom
 of the model (as returned by [`dof`](@ref)).
 """
+function adjr2(obj::StatisticalModel)
+    n, p = nobs(obj), length(coef(obj))
+    1 - (1 - (1-r2(obj))(n-1)/(n-p))
+end
 function adjr2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
@@ -214,11 +266,18 @@ Return the fitted values of the model.
 fitted(obj::RegressionModel) = error("fitted is not defined for $(typeof(obj)).")
 
 """
-    model_response(obj::RegressionModel)
+    response(obj::RegressionModel)
 
 Return the model response (a.k.a. the dependent variable).
 """
-model_response(obj::RegressionModel) = error("model_response is not defined for $(typeof(obj)).")
+response(obj::RegressionModel) = error("response is not defined for $(typeof(obj)).")
+
+"""
+    meanresponse(obj::RegressionModel)
+
+Return the mean of the response.
+"""
+meanresponse(obj::RegressionModel) = error("meanresponse is not defined for $(typeof(obj)).")
 
 """
     modelmatrix(obj::RegressionModel)
@@ -226,6 +285,13 @@ model_response(obj::RegressionModel) = error("model_response is not defined for 
 Return the model matrix (a.k.a. the design matrix).
 """
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
+
+"""
+    modelweights(obj::RegressionModel)
+
+Return the weights used in the model.
+"""
+modelweights(obj::RegressionModel) = error("modelweights is not defined for $(typeof(obj)).")
 
 """
     residuals(obj::RegressionModel)
