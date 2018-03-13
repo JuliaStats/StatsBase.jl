@@ -132,7 +132,7 @@ stderr(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
 """
     tss(obj::StatisticalModel)
 
-Return the standard errors for the coefficients of the model.
+Return the total sum of squares.
 """
 tss(obj::StatisticalModel) = error("tss is not defined for $(typeof(obj)).")
 
