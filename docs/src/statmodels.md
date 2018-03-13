@@ -15,22 +15,23 @@ coeftable
 confint
 deviance
 dof
-ess
+eim
 fit
 fit!
-hessian
 isfitted
+islinear
 leverage
-linear
 loglikelihood
+mss
 nobs
 nulldeviance
+oim
 r2
 rss
 score
 stderr
-tss
 vcov
+weights(::StatisticalModel)
 ```
 
 `RegressionModel` extends `StatisticalModel` by implementing the following additional methods.
@@ -40,7 +41,6 @@ fitted
 meanresponse
 modelmatrix
 response
-modelweights
 predict
 predict!
 residuals

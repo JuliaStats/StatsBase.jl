@@ -40,21 +40,6 @@ the likelihood of the model.
 deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(obj)).")
 
 """
-    hessian(obj::StatisticalModel)
-
-Return the Hessian of the statistical model.
-"""
-hessian(obj::StatisticalModel) = error("hessian is not defined for $(typeof(obj)).")
-
-"""
-    score(obj::StatisticalModel)
-
-Return the score of the statistical model. The score is the gradient of the
-log-likelihood with respect to the coefficients.
-"""
-score(obj::StatisticalModel) = error("score is not defined for $(typeof(obj)).")
-
-"""
     leverage(obj::StatisticalModel)
 
 Returns the diagonal of the projection matrix.
@@ -62,11 +47,11 @@ Returns the diagonal of the projection matrix.
 leverage(obj::StatisticalModel) = error("leverage is not defined for $(typeof(obj)).")
 
 """
-    linear(obj::StatisticalModel)
+    islinear(obj::StatisticalModel)
 
 Return Boolean indicator whether model is linear.
 """
-linear(obj::StatisticalModel) = error("linear is not defined for $(typeof(obj)).")
+islinear(obj::StatisticalModel) = error("islinear is not defined for $(typeof(obj)).")
 
 """
     nulldeviance(obj::StatisticalModel)
@@ -91,6 +76,14 @@ This is usually the model containing only the intercept.
 nullloglikelihood(obj::StatisticalModel) = error("nullloglikelihood is not defined for $(typeof(obj)).")
 
 """
+    score(obj::StatisticalModel)
+
+Return the score of the statistical model. The score is the gradient of the
+log-likelihood with respect to the coefficients.
+"""
+score(obj::StatisticalModel) = error("score is not defined for $(typeof(obj)).")
+
+"""
     nobs(obj::StatisticalModel)
 
 Return the number of independent observations on which the model was fitted. Be careful
@@ -109,11 +102,14 @@ when applicable the intercept and the distribution's dispersion parameter.
 dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
 
 """
-    ess(obj::StatisticalModel)
+    mss(obj::StatisticalModel)
 
-Return the the explained sum of squares.
+Return the model sum of squares.
 """
-ess(obj::StatisticalModel) = sum(abs2, fitted(obj) - meanresponse(obj))
+function mss(obj::StatisticalModel)
+    μ = meanresponse(obj)
+    sum(abs2(x - m) for x ∈ fitted(obj))
+end
 
 """
     rss(obj::StatisticalModel)
@@ -123,6 +119,20 @@ Return the the residual sum of squares.
 rss(obj::StatisticalModel) = sum(abs2, (model_response(obj) - fitted(obj)))
 
 """
+    eim(obj::StatisticalModel)
+
+Return expected information matrix.
+"""
+eim(obj::StatisticalModel) = error("eim is not defined for $(typeof(obj)).")
+
+"""
+    oim(obj::StatisticalModel)
+
+Return observed information matrix.
+"""
+oim(obj::StatisticalModel) = error("oim is not defined for $(typeof(obj)).")
+
+"""
     stderr(obj::StatisticalModel)
 
 Return the standard errors for the coefficients of the model.
@@ -130,18 +140,18 @@ Return the standard errors for the coefficients of the model.
 stderr(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
 
 """
-    tss(obj::StatisticalModel)
-
-Return the total sum of squares.
-"""
-tss(obj::StatisticalModel) = error("tss is not defined for $(typeof(obj)).")
-
-"""
     vcov(obj::StatisticalModel)
 
 Return the variance-covariance matrix for the coefficients of the model.
 """
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
+
+"""
+    weights(obj::StatisticalModel)
+
+Return the weights used in the model.
+"""
+weights(obj::StatisticalModel) = error("weights is not defined for $(typeof(obj)).")
 
 """
     isfitted(obj::StatisticalModel)
@@ -196,15 +206,23 @@ bic(obj::StatisticalModel) = -2loglikelihood(obj) + dof(obj)*log(nobs(obj))
 """
     r2(obj::StatisticalModel)
     r²(obj::StatisticalModel)
-    r2(obj::StatisticalModel, variant::Symbol)
-    r²(obj::StatisticalModel, variant::Symbol)
 
 Coefficient of determination (R-squared).
 
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
 and ``TSS`` the total sum of squares.
+"""
+function r2(obj::StatisticalModel)
+    mss(obj) / deviance(obj)
+end
 
-For other models, one of several pseudo R² definitions must be chosen via `variant`.
+"""
+    r2(obj::StatisticalModel, variant::Symbol)
+    r²(obj::StatisticalModel, variant::Symbol)
+
+Coefficient of determination (R-squared).
+
+For nonlinear models, one of several pseudo R² definitions must be chosen via `variant`.
 Supported variants are:
 - `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log L/\\log L0``.
 - `:CoxSnell`, defined as ``1 - (L0/L)^{2/n}``
@@ -215,9 +233,6 @@ In the above formulas, ``L`` is the likelihood of the model, ``L0`` that of the 
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models.
 """
-function r2(obj::StatisticalModel)
-    ess(obj) / tss(obj)
-end
 function r2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
@@ -238,26 +253,31 @@ const r² = r2
 """
     adjr2(obj::StatisticalModel)
     adjr²(obj::StatisticalModel)
-    adjr2(obj::StatisticalModel, variant::Symbol)
-    adjr²(obj::StatisticalModel, variant::Symbol)
 
 Adjusted coefficient of determination (adjusted R-squared).
 
 For linear models, the adjusted R² is defined as ``1 - (1 - (1-R^2)(n-1)/(n-p))``, with ``R^2``
 the coefficient of determination, ``n`` the number of observations, and ``p`` the number of
 coefficients (including the intercept). This definition is generally known as the Wherry Formula I.
+"""
+function adjr2(obj::StatisticalModel)
+    n, p = nobs(obj), length(coef(obj))
+    1 - (1 - (1-r2(obj))(n-1)/(n-p))
+end
 
-For other models, one of the several pseudo R² definitions must be chosen via `variant`.
+"""
+    adjr2(obj::StatisticalModel, variant::Symbol)
+    adjr²(obj::StatisticalModel, variant::Symbol)
+
+Adjusted coefficient of determination (adjusted R-squared).
+
+For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log L - k)/\\log L0``.
 In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models. ``k`` is the number of consumed degrees of freedom
 of the model (as returned by [`dof`](@ref)).
 """
-function adjr2(obj::StatisticalModel)
-    n, p = nobs(obj), length(coef(obj))
-    1 - (1 - (1-r2(obj))(n-1)/(n-p))
-end
 function adjr2(obj::StatisticalModel, variant::Symbol)
     ll = -deviance(obj)/2
     ll0 = -nulldeviance(obj)/2
@@ -301,13 +321,6 @@ meanresponse(obj::RegressionModel) = error("meanresponse is not defined for $(ty
 Return the model matrix (a.k.a. the design matrix).
 """
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
-
-"""
-    modelweights(obj::RegressionModel)
-
-Return the weights used in the model.
-"""
-modelweights(obj::RegressionModel) = error("modelweights is not defined for $(typeof(obj)).")
 
 """
     residuals(obj::RegressionModel)
