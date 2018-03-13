@@ -18,6 +18,7 @@ dof
 ess
 fit
 fit!
+hessian
 isfitted
 leverage
 linear
@@ -26,6 +27,7 @@ nobs
 nulldeviance
 r2
 rss
+score
 stderr
 tss
 vcov

@@ -40,6 +40,21 @@ the likelihood of the model.
 deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(obj)).")
 
 """
+    hessian(obj::StatisticalModel)
+
+Return the Hessian of the statistical model.
+"""
+hessian(obj::StatisticalModel) = error("hessian is not defined for $(typeof(obj)).")
+
+"""
+    score(obj::StatisticalModel)
+
+Return the score of the statistical model. The score is the gradient of the
+log-likelihood with respect to the coefficients.
+"""
+score(obj::StatisticalModel) = error("score is not defined for $(typeof(obj)).")
+
+"""
     leverage(obj::StatisticalModel)
 
 Returns the diagonal of the projection matrix.
@@ -133,6 +148,7 @@ vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 
 Return Boolean indicator of whether the model has been fitted.
 """
+isfitted(obj::StatisticalModel) = error("isfitted is not defined for $(typeof(obj)).")
 
 """
 Fit a statistical model.
