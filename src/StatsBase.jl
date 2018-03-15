@@ -188,7 +188,6 @@ module StatsBase
     residuals,
     r2,
     r²,
-    # weights is also used in statsmodels with a different method implemented
 
     ConvergenceException
 

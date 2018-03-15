@@ -20,7 +20,6 @@ fit
 fit!
 isfitted
 islinear
-leverage
 loglikelihood
 mss
 nobs
@@ -38,6 +37,7 @@ weights(::StatisticalModel)
 ```@docs
 dof_residual
 fitted
+leverage
 meanresponse
 modelmatrix
 response

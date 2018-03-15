@@ -40,13 +40,6 @@ the likelihood of the model.
 deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(obj)).")
 
 """
-    leverage(obj::StatisticalModel)
-
-Returns the diagonal of the projection matrix.
-"""
-leverage(obj::StatisticalModel) = error("leverage is not defined for $(typeof(obj)).")
-
-"""
     islinear(obj::StatisticalModel)
 
 Return Boolean indicator whether model is linear.
@@ -107,6 +100,7 @@ dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
 Return the model sum of squares.
 """
 mss(obj::StatisticalModel) = error("mss is not defined for $(typeof(obj)).")
+
 """
     rss(obj::StatisticalModel)
 
@@ -254,10 +248,7 @@ For linear models, the adjusted R² is defined as ``1 - (1 - (1-R^2)(n-1)/(n-p))
 the coefficient of determination, ``n`` the number of observations, and ``p`` the number of
 coefficients (including the intercept). This definition is generally known as the Wherry Formula I.
 """
-function adjr2(obj::StatisticalModel)
-    n, p = nobs(obj), length(coef(obj)) # Default behavior (p could potentially be incorrect)
-    1 - (1 - (1-r2(obj))(n-1)/(n-p))
-end
+adjr2(obj::StatisticalModel) = error("adjr2 is not defined for $(typeof(obj)).")
 
 """
     adjr2(obj::StatisticalModel, variant::Symbol)
@@ -315,6 +306,13 @@ meanresponse(obj::RegressionModel) = error("meanresponse is not defined for $(ty
 Return the model matrix (a.k.a. the design matrix).
 """
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
+
+"""
+    leverage(obj::RegressionModel)
+
+Returns the diagonal of the projection matrix.
+"""
+leverage(obj::RegressionModel) = error("leverage is not defined for $(typeof(obj)).")
 
 """
     residuals(obj::RegressionModel)
