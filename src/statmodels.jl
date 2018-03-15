@@ -106,17 +106,13 @@ dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
 
 Return the model sum of squares.
 """
-function mss(obj::StatisticalModel)
-    μ = meanresponse(obj)
-    sum(abs2(x - m) for x ∈ fitted(obj))
-end
-
+mss(obj::StatisticalModel) = error("mss is not defined for $(typeof(obj)).")
 """
     rss(obj::StatisticalModel)
 
-Return the the residual sum of squares.
+Return the residual sum of squares.
 """
-rss(obj::StatisticalModel) = sum(abs2, (model_response(obj) - fitted(obj)))
+rss(obj::StatisticalModel) = error("rss is not defined for $(typeof(obj)).")
 
 """
     eim(obj::StatisticalModel)
@@ -156,7 +152,7 @@ weights(obj::StatisticalModel) = error("weights is not defined for $(typeof(obj)
 """
     isfitted(obj::StatisticalModel)
 
-Return Boolean indicator of whether the model has been fitted.
+Indicate whether the model has been fitted.
 """
 isfitted(obj::StatisticalModel) = error("isfitted is not defined for $(typeof(obj)).")
 
@@ -212,15 +208,13 @@ Coefficient of determination (R-squared).
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
 and ``TSS`` the total sum of squares.
 """
-function r2(obj::StatisticalModel)
-    mss(obj) / deviance(obj)
-end
+r2(obj::StatisticalModel) = mss(obj) / deviance(obj)
 
 """
     r2(obj::StatisticalModel, variant::Symbol)
     r²(obj::StatisticalModel, variant::Symbol)
 
-Coefficient of determination (R-squared).
+Pseudo-coefficient of determination (pseudo R-squared).
 
 For nonlinear models, one of several pseudo R² definitions must be chosen via `variant`.
 Supported variants are:
@@ -261,7 +255,7 @@ the coefficient of determination, ``n`` the number of observations, and ``p`` th
 coefficients (including the intercept). This definition is generally known as the Wherry Formula I.
 """
 function adjr2(obj::StatisticalModel)
-    n, p = nobs(obj), length(coef(obj))
+    n, p = nobs(obj), length(coef(obj)) # Default behavior (p could potentially be incorrect)
     1 - (1 - (1-r2(obj))(n-1)/(n-p))
 end
 
@@ -269,7 +263,7 @@ end
     adjr2(obj::StatisticalModel, variant::Symbol)
     adjr²(obj::StatisticalModel, variant::Symbol)
 
-Adjusted coefficient of determination (adjusted R-squared).
+Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log L - k)/\\log L0``.
