@@ -109,12 +109,12 @@ Return the residual sum of squares.
 rss(obj::StatisticalModel) = error("rss is not defined for $(typeof(obj)).")
 
 """
-    informationmatrix(model::StatisticalModel; fisher::Bool = true)
+    informationmatrix(model::StatisticalModel; expected::Bool = true)
 
-Return information matrix. The default returns the expected information
-matrix while the observed information matrix can be requested with `fisher = false`.
+Return information matrix. The default returns the Fisher information matrix
+while the observed information matrix can be requested with `expected = false`.
 """
-informationmatrix(model::StatisticalModel; fisher::Bool = true) =
+informationmatrix(model::StatisticalModel; expected::Bool = true) =
                   error("informationmatrix is not defined for $(typeof(obj)).")
 
 """
