@@ -15,16 +15,15 @@ coeftable
 confint
 deviance
 dof
-fisherinf
 fit
 fit!
+informationmatrix
 isfitted
 islinear
 loglikelihood
 mss
 nobs
 nulldeviance
-observedinf
 r2
 rss
 score
