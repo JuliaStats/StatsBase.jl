@@ -42,7 +42,7 @@ deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(ob
 """
     islinear(obj::StatisticalModel)
 
-Return Boolean indicator whether model is linear.
+Indicate whether the model is linear.
 """
 islinear(obj::StatisticalModel) = error("islinear is not defined for $(typeof(obj)).")
 
@@ -111,11 +111,11 @@ rss(obj::StatisticalModel) = error("rss is not defined for $(typeof(obj)).")
 """
     informationmatrix(model::StatisticalModel; expected::Bool = true)
 
-Return information matrix. The default returns the Fisher information matrix
+Return the information matrix. By default the Fisher information matrix is returned,
 while the observed information matrix can be requested with `expected = false`.
 """
 informationmatrix(model::StatisticalModel; expected::Bool = true) =
-                  error("informationmatrix is not defined for $(typeof(obj)).")
+    error("informationmatrix is not defined for $(typeof(obj)).")
 
 """
     stderr(obj::StatisticalModel)
