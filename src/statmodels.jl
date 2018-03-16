@@ -109,18 +109,18 @@ Return the residual sum of squares.
 rss(obj::StatisticalModel) = error("rss is not defined for $(typeof(obj)).")
 
 """
-    eim(obj::StatisticalModel)
+    fisherinf(obj::StatisticalModel)
 
 Return expected information matrix.
 """
-eim(obj::StatisticalModel) = error("eim is not defined for $(typeof(obj)).")
+fisherinf(obj::StatisticalModel) = error("fisherinf is not defined for $(typeof(obj)).")
 
 """
-    oim(obj::StatisticalModel)
+    observedinf(obj::StatisticalModel)
 
 Return observed information matrix.
 """
-oim(obj::StatisticalModel) = error("oim is not defined for $(typeof(obj)).")
+observedinf(obj::StatisticalModel) = error("observedinf is not defined for $(typeof(obj)).")
 
 """
     stderr(obj::StatisticalModel)

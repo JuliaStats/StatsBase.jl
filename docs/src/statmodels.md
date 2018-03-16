@@ -15,7 +15,7 @@ coeftable
 confint
 deviance
 dof
-eim
+fisherinf
 fit
 fit!
 isfitted
@@ -24,7 +24,7 @@ loglikelihood
 mss
 nobs
 nulldeviance
-oim
+observedinf
 r2
 rss
 score
