@@ -305,7 +305,7 @@ modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(type
 """
     leverage(obj::RegressionModel)
 
-Returns the diagonal of the projection matrix.
+Return the diagonal of the projection matrix.
 """
 leverage(obj::RegressionModel) = error("leverage is not defined for $(typeof(obj)).")
 
