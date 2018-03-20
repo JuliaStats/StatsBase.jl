@@ -2,5 +2,5 @@ julia 0.6
 DataStructures 0.5.0
 SpecialFunctions 0.1.0
 SortingAlgorithms
-Compat 0.39.0
+Compat 0.61.0
 Missings
