@@ -72,7 +72,7 @@ function inverse_rle(vals::AbstractVector{T}, lens::IntegerVector) where T
     m = length(vals)
     length(lens) == m || raise_dimerror()
 
-    r = Vector{T}(uninitialized, sum(lens))
+    r = Vector{T}(undef, sum(lens))
     p = 0
     @inbounds for i = 1 : m
         j = lens[i]
@@ -192,7 +192,7 @@ function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
     m = length(c)
     n = length(x)
 
-    rinds = Vector{Int}(uninitialized, n)
+    rinds = Vector{Int}(undef, n)
     @inbounds for i = 1 : n
         rinds[i] = d[x[i]]
     end

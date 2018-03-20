@@ -253,7 +253,7 @@ function mad(v::AbstractArray{T};
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
     S = promote_type(T, typeof(middle(first(v))))
-    v2 = LinAlg.copy_oftype(v, S)
+    v2 = Compat.LinearAlgebra.copy_oftype(v, S)
 
     if normalize === nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
@@ -401,13 +401,13 @@ In particular, when `μ` and `σ` are arrays, they should have the same size, an
 """
 function zscore(X::AbstractArray{T}, μ::Real, σ::Real) where T<:Real
     ZT = typeof((zero(T) - zero(μ)) / one(σ))
-    _zscore!(Array{ZT}(uninitialized, size(X)), X, μ, σ)
+    _zscore!(Array{ZT}(undef, size(X)), X, μ, σ)
 end
 
 function zscore(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) where {T<:Real,U<:Real,S<:Real}
     _zscore_chksize(X, μ, σ)
     ZT = typeof((zero(T) - zero(U)) / one(S))
-    _zscore!(Array{ZT}(uninitialized, size(X)), X, μ, σ)
+    _zscore!(Array{ZT}(undef, size(X)), X, μ, σ)
 end
 
 zscore(X::AbstractArray{<:Real}) = ((μ, σ) = mean_and_std(X); zscore(X, μ, σ))

@@ -42,7 +42,7 @@ position in `sort(x; lt = lt, rev = rev)`.
 Missing values are assigned rank `missing`.
 """
 ordinalrank(x::AbstractArray; lt = isless, rev::Bool = false) =
-    ordinalrank!(Array{Int}(uninitialized, size(x)), x, sortperm(x; lt = lt, rev = rev))
+    ordinalrank!(Array{Int}(undef, size(x)), x, sortperm(x; lt = lt, rev = rev))
 
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
@@ -83,7 +83,7 @@ in the rankings the size of the number of tied items - 1.
 Missing values are assigned rank `missing`.
 """
 competerank(x::AbstractArray; lt = isless, rev::Bool = false) =
-    competerank!(Array{Int}(uninitialized, size(x)), x, sortperm(x; lt = lt, rev = rev))
+    competerank!(Array{Int}(undef, size(x)), x, sortperm(x; lt = lt, rev = rev))
 
 
 # Dense ranking ("1223" ranking) -- resolve tied ranks using min
@@ -124,7 +124,7 @@ assigned with no gap.
 Missing values are assigned rank `missing`.
 """
 denserank(x::AbstractArray; lt = isless, rev::Bool = false) =
-    denserank!(Array{Int}(uninitialized, size(x)), x, sortperm(x; lt = lt, rev = rev))
+    denserank!(Array{Int}(undef, size(x)), x, sortperm(x; lt = lt, rev = rev))
 
 
 # Tied ranking ("1 2.5 2.5 4" ranking) -- resolve tied ranks using average
@@ -174,7 +174,7 @@ rankings they would have been assigned under ordinal ranking.
 Missing values are assigned rank `missing`.
 """
 tiedrank(x::AbstractArray; lt = isless, rev::Bool = false) =
-    tiedrank!(Array{Float64}(uninitialized, size(x)), x, sortperm(x; lt = lt, rev = rev))
+    tiedrank!(Array{Float64}(undef, size(x)), x, sortperm(x; lt = lt, rev = rev))
 
 for (f, f!, S) in zip([:ordinalrank, :competerank, :denserank, :tiedrank],
                       [:ordinalrank!, :competerank!, :denserank!, :tiedrank!],

@@ -42,7 +42,7 @@ end
 For each element in `b`, find its first index in `a`. If the value does
 not occur in `a`, the corresponding index is 0.
 """
-findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(uninitialized, size(b)), a, b)
+findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(undef, size(b)), a, b)
 
 @deprecate df(obj::StatisticalModel) dof(obj)
 @deprecate df_residual(obj::StatisticalModel) dof_residual(obj)

@@ -147,7 +147,7 @@ function fisher_yates_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArr
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
 
-    inds = Vector{Int}(uninitialized, n)
+    inds = Vector{Int}(undef, n)
     for i = 1:n
         @inbounds inds[i] = i
     end
@@ -370,7 +370,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample(rng::AbstractRNG, a::AbstractArray{T}, n::Integer;
                 replace::Bool=true, ordered::Bool=false) where T
-    sample!(rng, a, Vector{T}(uninitialized, n); replace=replace, ordered=ordered)
+    sample!(rng, a, Vector{T}(undef, n); replace=replace, ordered=ordered)
 end
 sample(a::AbstractArray, n::Integer; replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, n; replace=replace, ordered=ordered)
@@ -390,7 +390,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample(rng::AbstractRNG, a::AbstractArray{T}, dims::Dims;
                 replace::Bool=true, ordered::Bool=false) where T
-    sample!(rng, a, Array{T}(uninitialized, dims), rng; replace=replace, ordered=ordered)
+    sample!(rng, a, Array{T}(undef, dims), rng; replace=replace, ordered=ordered)
 end
 sample(a::AbstractArray, dims::Dims; replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, dims; replace=replace, ordered=ordered)
@@ -477,8 +477,8 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
         @inbounds a[i] = w[i] * ac
     end
 
-    larges = Vector{Int}(uninitialized, n)
-    smalls = Vector{Int}(uninitialized, n)
+    larges = Vector{Int}(undef, n)
+    smalls = Vector{Int}(undef, n)
     kl = 0  # actual number of larges
     ks = 0  # actual number of smalls
 
@@ -528,8 +528,8 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
-    ap = Vector{Float64}(uninitialized, n)
-    alias = Vector{Int}(uninitialized, n)
+    ap = Vector{Float64}(undef, n)
+    alias = Vector{Int}(undef, n)
     make_alias_table!(values(wv), sum(wv), ap, alias)
 
     # sampling
@@ -560,7 +560,7 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
 
-    w = Vector{Float64}(uninitialized, n)
+    w = Vector{Float64}(undef, n)
     copy!(w, values(wv))
     wsum = sum(wv)
 
@@ -784,14 +784,14 @@ sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
 
 sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, n::Integer;
        replace::Bool=true, ordered::Bool=false) where {T} =
-    sample!(rng, a, wv, Vector{T}(uninitialized, n); replace=replace, ordered=ordered)
+    sample!(rng, a, wv, Vector{T}(undef, n); replace=replace, ordered=ordered)
 sample(a::AbstractArray, wv::AbstractWeights, n::Integer;
        replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, wv, n; replace=replace, ordered=ordered)
 
 sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, dims::Dims;
        replace::Bool=true, ordered::Bool=false) where {T} =
-    sample!(rng, a, wv, Array{T}(uninitialized, dims); replace=replace, ordered=ordered)
+    sample!(rng, a, wv, Array{T}(undef, dims); replace=replace, ordered=ordered)
 sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
        replace::Bool=true, ordered::Bool=false) =
     sample(Base.GLOBAL_RNG, a, wv, dims; replace=replace, ordered=ordered)
@@ -845,7 +845,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 wsample(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
         replace::Bool=true, ordered::Bool=false) where {T} =
-    wsample!(rng, a, w, Vector{T}(uninitialized, n); replace=replace, ordered=ordered)
+    wsample!(rng, a, w, Vector{T}(undef, n); replace=replace, ordered=ordered)
 wsample(a::AbstractArray, w::RealVector, n::Integer;
         replace::Bool=true, ordered::Bool=false) =
     wsample(Base.GLOBAL_RNG, a, w, n; replace=replace, ordered=ordered)
@@ -862,7 +862,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 wsample(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
         replace::Bool=true, ordered::Bool=false) where {T} =
-    wsample!(rng, a, w, Array{T}(uninitialized, dims); replace=replace, ordered=ordered)
+    wsample!(rng, a, w, Array{T}(undef, dims); replace=replace, ordered=ordered)
 wsample(a::AbstractArray, w::RealVector, dims::Dims;
         replace::Bool=true, ordered::Bool=false) =
     wsample(Base.GLOBAL_RNG, a, w, dims; replace=replace, ordered=ordered)
