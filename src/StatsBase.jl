@@ -10,10 +10,9 @@ module StatsBase
     import SpecialFunctions: erfcinv
 
     using Compat, SortingAlgorithms, Missings
-
-    if VERSION >= v"0.7.0-DEV.3052"
-        using Printf
-    end
+    using Compat.LinearAlgebra
+    using Compat.Random
+    using Compat.Printf
 
     ## tackle compatibility issues
 
