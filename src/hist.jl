@@ -1,6 +1,7 @@
 using Base.Cartesian
 
-import Base: show, ==, push!, append!, float, norm, normalize, normalize!
+import Base: show, ==, push!, append!, float
+import Compat.LinearAlgebra: norm, normalize, normalize!
 
 # Mechanism for temporary deprecation of default for "closed" (because default
 # value has changed). After deprecation is lifed, remove "_check_closed_arg"

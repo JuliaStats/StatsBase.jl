@@ -8,8 +8,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
 @testset "$f" for f in weight_funcs
     X = randn(3, 8)
 
-    Z1 = X .- mean(X, 1)
-    Z2 = X .- mean(X, 2)
+    Z1 = X .- Compat.mean(X, dims = 1)
+    Z2 = X .- Compat.mean(X, dims = 2)
 
     w1 = rand(3)
     w2 = rand(8)
@@ -28,11 +28,11 @@ weight_funcs = (weights, aweights, fweights, pweights)
     Sz1 = X'X
     Sz2 = X * X'
 
-    S1w = Z1w' * diagm(w1) * Z1w
-    S2w = Z2w * diagm(w2) * Z2w'
+    S1w = Z1w' * Matrix(Diagonal(w1)) * Z1w
+    S2w = Z2w * Matrix(Diagonal(w2)) * Z2w'
 
-    Sz1w = X' * diagm(w1) * X
-    Sz2w = X * diagm(w2) * X'
+    Sz1w = X' * Matrix(Diagonal(w1)) * X
+    Sz2w = X * Matrix(Diagonal(w2)) * X'
 
     @testset "Scattermat" begin
         @test scattermat(X)    ≈ S1
@@ -79,28 +79,28 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=false)
-            @test m == mean(X, 1)
-            @test C == cov(X, 1, false)
+            @test m == Compat.mean(X, dims = 1)
+            @test C == Compat.cov(X, dims = 1, corrected=false)
 
             (m, C) = mean_and_cov(X, 1; corrected=false)
-            @test m == mean(X, 1)
-            @test C == cov(X, 1, false)
+            @test m == Compat.mean(X, dims = 1)
+            @test C == Compat.cov(X, dims = 1, corrected = false)
 
             (m, C) = mean_and_cov(X, 2; corrected=false)
-            @test m == mean(X, 2)
-            @test C == cov(X, 2, false)
+            @test m == Compat.mean(X, dims = 2)
+            @test C == Compat.cov(X, dims = 2, corrected = false)
 
             (m, C) = mean_and_cov(X, wv1; corrected=false)
-            @test m == mean(X, wv1, 1)
-            @test C == cov(X, wv1, 1; corrected=false)
+            @test m == Compat.mean(X, wv1, dims = 1)
+            @test C == Compat.cov(X, wv1, dims = 1, corrected=false)
 
             (m, C) = mean_and_cov(X, wv1, 1; corrected=false)
-            @test m == mean(X, wv1, 1)
-            @test C == cov(X, wv1, 1; corrected=false)
+            @test m == Compat.mean(X, wv1, dims = 1)
+            @test C == Compat.cov(X, wv1, dims = 1, corrected=false)
 
             (m, C) = mean_and_cov(X, wv2, 2; corrected=false)
-            @test m == mean(X, wv2, 2)
-            @test C == cov(X, wv2, 2; corrected=false)
+            @test m == Compat.mean(X, wv2, dims = 2)
+            @test C == Compat.cov(X, wv2, dims = 2, corrected=false)
         end
         @testset "Conversions" begin
             std1 = std(X, wv1, 1; corrected=false)

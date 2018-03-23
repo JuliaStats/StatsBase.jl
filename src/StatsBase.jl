@@ -2,8 +2,6 @@ __precompile__()
 
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
-    import Base: rand, rand!
-    import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @nloops, @nref, @nextract
     import DataStructures: heapify!, heappop!, percolate_down!
 
@@ -13,6 +11,8 @@ module StatsBase
     using Compat.LinearAlgebra
     using Compat.Random
     using Compat.Printf
+    import Compat.Random: rand, rand!
+    import Compat.LinearAlgebra: BlasReal, BlasFloat
 
     ## tackle compatibility issues
 

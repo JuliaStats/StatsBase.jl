@@ -5,7 +5,7 @@
 #
 ###########################################################
 
-using Base.Random: RangeGenerator
+using Compat.Random: RangeGenerator
 
 ### Algorithms for sampling with replacement
 
