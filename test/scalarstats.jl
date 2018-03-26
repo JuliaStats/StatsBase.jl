@@ -6,8 +6,8 @@ using Compat.Test
 
 ## geomean
 
-@test geomean([1, 2, 3])    ≈ (6.0)^(1/3)
-@test geomean(1:3)          ≈ (6.0)^(1/3)
+@test geomean([1, 2, 3])    ≈ cbrt(6.0)
+@test geomean(1:3)          ≈ cbrt(6.0)
 @test geomean([2, 8])       ≈ 4.0
 @test geomean([4, 1, 1/32]) ≈ 0.5
 @test geomean([1, 0, 2]) == 0.0
@@ -59,8 +59,8 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test zscore!(zeros(size(a)), a, [1 3 2 4], [0.25 0.5 1.0 2.0]) ≈ z2
 
 @test zscore(a)    ≈ zscore(a, mean(a), std(a))
-@test zscore(a, 1) ≈ zscore(a, mean(a,1), std(a,1))
-@test zscore(a, 2) ≈ zscore(a, mean(a,2), std(a,2))
+@test zscore(a, 1) ≈ zscore(a, Compat.mean(a, dims=1), Compat.std(a, dims=1))
+@test zscore(a, 2) ≈ zscore(a, Compat.mean(a, dims=2), Compat.std(a, dims=2))
 
 
 ###### quantile & friends
@@ -119,7 +119,7 @@ dist /= sum(dist)
 
 # And is therefore not affected by the addition of non-zeros
 zdist = dist
-zdist = append!(dist, zeros(rand(50)))
+zdist = append!(dist, zeros(50))
 @test renyientropy(dist, 0) ≈ renyientropy(zdist, 0)
 
 # Indeed no Renyi entropy should be
