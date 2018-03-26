@@ -1,10 +1,11 @@
-# Miscelleneous stuff
+# Miscellaneous stuff
 
 # test whether a contains no repeated elements
+# Does this really need `sort(a)`?  Seems expensive.  Why not use a Set?
 function norepeat(a::AbstractArray)
     sa = sort(a)
     for i = 2:length(a)
-        if a[i] == a[i-1]
+        if sa[i] == sa[i-1]
             return false
         end
     end
