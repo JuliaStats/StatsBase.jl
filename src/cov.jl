@@ -82,7 +82,7 @@ scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1) =
     scattermat_zm(x .- mean, wv, vardim)
 
 scattermat(x::DenseMatrix, vardim::Int=1) =
-    scattermatm(x, Base.mean(x, vardim), vardim)
+    scattermatm(x, Compat.mean(x, dims = vardim), vardim)
 
 scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
     scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
@@ -113,7 +113,7 @@ Base.cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
 
 if VERSION >= v"0.7.0-DEV.755"
     function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-        m = mean(x, vardim)
+        m = Compat.mean(x, dims = vardim)
         return m, Base.covm(x, m, vardim, corrected=corrected)
     end
 else
