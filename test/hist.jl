@@ -121,10 +121,10 @@ end
 @testset "Histogram show" begin
     # hist show
     show_h = sprint(show, fit(Histogram,[0,1,2], closed=:left))  # FIXME: closed
-    @test Compat.occursin("edges:\n  0.0:1.0:3.0", show_h)
-    @test Compat.occursin("weights: $([1,1,1])", show_h)
-    @test Compat.occursin("closed: left", show_h)
-    @test Compat.occursin("isdensity: false", show_h)
+    @test occursin("edges:\n  0.0:1.0:3.0", show_h)
+    @test occursin("weights: $([1,1,1])", show_h)
+    @test occursin("closed: left", show_h)
+    @test occursin("isdensity: false", show_h)
 end
 
 

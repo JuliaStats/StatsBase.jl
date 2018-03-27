@@ -219,7 +219,7 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
 # Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
 Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, values(w))
-Base.sum(v::Compat.SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
+Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
 
 ## wsum along dimension
