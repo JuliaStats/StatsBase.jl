@@ -192,12 +192,12 @@ end
 
 
 function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(A, dim)
+    m = Compat.mean(A, dims = dim)
     v = varm(A, m, dim; corrected=corrected)
     m, v
 end
 function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(A, dim)
+    m = Compat.mean(A, dims = dim)
     s = stdm(A, m, dim; corrected=corrected)
     m, s
 end
