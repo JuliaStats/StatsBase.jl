@@ -28,7 +28,7 @@ function demean_col!(z::AbstractVector{T}, x::AbstractMatrix{T}, j::Int, demean:
             z[i] = x[b + i] - mv
         end
     else
-        copy!(z, 1, x, b+1, m)
+        copyto!(z, 1, x, b+1, m)
     end
     z
 end
