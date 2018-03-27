@@ -223,7 +223,7 @@ end
 
 @testset "midpoints" begin
     @test StatsBase.midpoints([1, 2, 4]) == [1.5, 3.0]
-    @test StatsBase.midpoints(Compat.range(0, stop = 1, length = 5)) == collect(0.125:0.25:0.875)
+    @test StatsBase.midpoints(Compat.range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
 end
 
 end # @testset "StatsBase.Histogram"
