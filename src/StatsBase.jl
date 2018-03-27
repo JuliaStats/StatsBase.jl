@@ -11,6 +11,7 @@ module StatsBase
     using Compat.LinearAlgebra
     using Compat.Random
     using Compat.Printf
+    using Compat.SparseArrays
     import Compat.Random: rand, rand!
     import Compat.LinearAlgebra: BlasReal, BlasFloat
 
