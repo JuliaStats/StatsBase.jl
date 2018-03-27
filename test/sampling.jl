@@ -1,13 +1,12 @@
 using Compat, StatsBase
 using Compat.Test, Compat.Random
-import Base: maxabs
 
 srand(1234)
 
 # test that rng specification is working correctly
 # a) if the same rng is passed to a sample function twice,
 #    the results should be the same (repeatability)
-# b) not specifying a rng should be the same as specifying Base.GLOBAL_RNG
+# b) not specifying a rng should be the same as specifying Random.GLOBAL_RNG
 function test_rng_use(func, non_rng_args...)
     # some sampling methods mutate a passed array and return it
     # so that the tests don't pass trivially, we need to copy those
@@ -16,11 +15,11 @@ function test_rng_use(func, non_rng_args...)
     # repeatability
     @test func(MersenneTwister(1), deepcopy(non_rng_args)...) ==
           func(MersenneTwister(1), deepcopy(non_rng_args)...)
-    # default RNG is Base.GLOBAL_RNG
+    # default RNG is Random.GLOBAL_RNG
     srand(47)
     x = func(deepcopy(non_rng_args)...)
     srand(47)
-    y = func(Base.GLOBAL_RNG, deepcopy(non_rng_args)...)
+    y = func(Random.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
 end
 

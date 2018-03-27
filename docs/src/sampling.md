@@ -30,7 +30,7 @@ Here are a list of algorithms implemented in the package. The functions below ar
 - `wv`: the weight vector (of type `AbstractWeights`), for weighted sampling
 - `n`: the length of `a`
 - `k`: the length of `x`. For sampling without replacement, `k` must not exceed `n`.
-- `rng`: optional random number generator (defaults to `Base.GLOBAL_RNG`)
+- `rng`: optional random number generator (defaults to `Random.GLOBAL_RNG`)
 
 All following functions write results to `x` (pre-allocated) and return `x`.
 

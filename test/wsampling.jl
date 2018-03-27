@@ -1,6 +1,5 @@
 using Compat, StatsBase
 using Compat.Random, Compat.Test
-import Base: maxabs
 
 srand(1234)
 
