@@ -77,7 +77,7 @@ function rand(rng::AbstractRNG, s::RandIntSampler)
     end
     s.a + Int(rem(x, s.Ku))
 end
-rand(s::RandIntSampler) = rand(Base.GLOBAL_RNG, s)
+rand(s::RandIntSampler) = rand(Compat.Random.GLOBAL_RNG, s)
 
 @deprecate randi(rng::AbstractRNG, K::Int) rand(rng, 1:K)
 @deprecate randi(K::Int) rand(1:K)
