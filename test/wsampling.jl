@@ -1,7 +1,6 @@
 using Compat, StatsBase
 using Compat.Random, Compat.Test
 import Base: maxabs
-import StatsBase: norepeat
 
 srand(1234)
 
@@ -63,7 +62,7 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::
 
     for j = 1:size(a,2)
         aj = view(a,:,j)
-        @assert norepeat(aj)
+        @assert allunique(aj)
         if ordered
             @assert issorted(aj)
         end

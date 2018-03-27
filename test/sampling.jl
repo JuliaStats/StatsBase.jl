@@ -1,7 +1,6 @@
 using Compat, StatsBase
 using Compat.Test, Compat.Random
 import Base: maxabs
-import StatsBase: norepeat
 
 srand(1234)
 
@@ -109,7 +108,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
 
     for j = 1:size(a,2)
         aj = view(a,:,j)
-        @assert norepeat(aj)
+        @assert allunique(aj)
         if ordered
             @assert issorted(aj)
         end

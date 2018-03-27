@@ -1,14 +1,5 @@
 # Miscellaneous stuff
 
-# test whether a contains no repeated elements
-function norepeat(a::AbstractArray)
-    s = Set{eltype(a)}()
-    for x in a
-        x ∈ s && return false
-        push!(s, x)
-    end
-    true
-end
 # run-length encoding
 """
     rle(v) -> (vals, lens)
