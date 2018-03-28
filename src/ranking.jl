@@ -182,6 +182,7 @@ for (f, f!, S) in zip([:ordinalrank, :competerank, :denserank, :tiedrank],
     @eval begin
         function $f(x::AbstractArray{>: Missing}; lt = isless, rev::Bool = false)
             inds = findall(!ismissing, x)
+            isempty(inds) && return missings($S, size(x))
             xv = disallowmissing(view(x, inds))
             sp = sortperm(xv; lt = lt, rev = rev)
             rks = missings($S, length(x))
