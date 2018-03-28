@@ -533,4 +533,8 @@ Calculate the midpoints (pairwise mean of consecutive elements).
 """
 midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
 
-midpoints(r::AbstractRange) = broadcast(+, r[1:(end - 1)], step(r) / 2)
+if VERSION < v"0.7.0-DEV.4713"
+    midpoints(r::AbstractRange) = r[1:(end - 1)] + step(r) / 2
+else
+    midpoints(r::AbstractRange) = broadcast(+, r[1:(end - 1)], step(r) / 2)
+end
