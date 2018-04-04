@@ -54,8 +54,8 @@ end
 function Base.varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealArray,
                     dim::Int; corrected::DepBool=nothing)
     corrected = depcheck(:varm!, corrected)
-    scale!(_wsum_centralize!(R, abs2, A, values(w), M, dim, true),
-           varcorrection(w, corrected))
+    myscale!(_wsum_centralize!(R, abs2, A, values(w), M, dim, true),
+             varcorrection(w, corrected))
 end
 
 function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dim::Int;
@@ -85,14 +85,14 @@ end
 function Base.varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
                    corrected::DepBool=nothing)
     corrected = depcheck(:varm, corrected)
-    Base.varm!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, w, M,
+    Base.varm!(similar(A, Float64, Base.reduced_indices(Compat.axes(A), dim)), A, w, M,
                dim; corrected=corrected)
 end
 
 function Base.var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
-    var!(similar(A, Float64, Base.reduced_indices(indices(A), dim)), A, w, dim;
+    var!(similar(A, Float64, Base.reduced_indices(Compat.axes(A), dim)), A, w, dim;
          mean=mean, corrected=corrected)
 end
 
@@ -139,7 +139,7 @@ Base.std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=noth
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
 
 Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    Base.sqrt!(varm(v, m, dim; corrected=depcheck(:stdm, corrected)))
+    Base.sqrt!(Compat.varm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
 
 Base.stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
           corrected::DepBool=nothing) =
@@ -192,12 +192,12 @@ end
 
 
 function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(A, dim)
-    v = varm(A, m, dim; corrected=corrected)
+    m = Compat.mean(A, dims = dim)
+    v = Compat.varm(A, m, dims = dim, corrected=corrected)
     m, v
 end
 function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(A, dim)
+    m = Compat.mean(A, dims = dim)
     s = stdm(A, m, dim; corrected=corrected)
     m, s
 end

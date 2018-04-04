@@ -25,6 +25,8 @@ import Base.varm, Base.stdm
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
 @deprecate adjR²(obj::StatisticalModel, variant::Symbol) adjr²(obj, variant)
 
+@deprecate norepeats(a::AbstractArray) allunique(a)
+
 function findat!(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T}) where T
     Base.depwarn("findat! is deprecated, use indexin instead", :findat!)
     length(r) == length(b) || raise_dimerror()
@@ -42,7 +44,7 @@ end
 For each element in `b`, find its first index in `a`. If the value does
 not occur in `a`, the corresponding index is 0.
 """
-findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(uninitialized, size(b)), a, b)
+findat(a::AbstractArray, b::AbstractArray) = findat!(Array{Int}(undef, size(b)), a, b)
 
 @deprecate df(obj::StatisticalModel) dof(obj)
 @deprecate df_residual(obj::StatisticalModel) dof_residual(obj)
@@ -75,7 +77,7 @@ function rand(rng::AbstractRNG, s::RandIntSampler)
     end
     s.a + Int(rem(x, s.Ku))
 end
-rand(s::RandIntSampler) = rand(Base.GLOBAL_RNG, s)
+rand(s::RandIntSampler) = rand(Compat.Random.GLOBAL_RNG, s)
 
 @deprecate randi(rng::AbstractRNG, K::Int) rand(rng, 1:K)
 @deprecate randi(K::Int) rand(1:K)

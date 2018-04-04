@@ -20,7 +20,7 @@ function ecdf(X::RealVector{T}) where T<:Real
     function ef(v::RealVector)
         ord = sortperm(v)
         m = length(v)
-        r = Vector{T}(uninitialized, m)
+        r = Vector{T}(undef, m)
         r0 = 0
 
         i = 1

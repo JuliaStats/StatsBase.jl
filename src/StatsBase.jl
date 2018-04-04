@@ -2,18 +2,18 @@ __precompile__()
 
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
-    import Base: rand, rand!
-    import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @nloops, @nref, @nextract
     import DataStructures: heapify!, heappop!, percolate_down!
 
     import SpecialFunctions: erfcinv
 
     using Compat, SortingAlgorithms, Missings
-
-    if VERSION >= v"0.7.0-DEV.3052"
-        using Printf
-    end
+    using Compat.LinearAlgebra
+    using Compat.Random
+    using Compat.Printf
+    using Compat.SparseArrays
+    import Compat.Random: rand, rand!
+    import Compat.LinearAlgebra: BlasReal, BlasFloat
 
     ## tackle compatibility issues
 
@@ -186,6 +186,11 @@ module StatsBase
     export midpoints
 end
 
+if VERSION < v"0.7.0-DEV.3665"
+    myscale!(A::AbstractArray, b::Number) = scale!(A, b)
+else
+    myscale!(A::AbstractArray, b::Number) = rmul!(A, b)
+end
     # source files
 
     include("common.jl")

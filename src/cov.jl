@@ -82,7 +82,7 @@ scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1) =
     scattermat_zm(x .- mean, wv, vardim)
 
 scattermat(x::DenseMatrix, vardim::Int=1) =
-    scattermatm(x, Base.mean(x, vardim), vardim)
+    scattermatm(x, Compat.mean(x, dims = vardim), vardim)
 
 scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
     scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
@@ -90,7 +90,7 @@ scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
 ## weighted cov
 Base.covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
           corrected::DepBool=nothing) =
-    scale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
+    myscale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
 
 
 Base.cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
@@ -113,7 +113,7 @@ Base.cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
 
 if VERSION >= v"0.7.0-DEV.755"
     function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-        m = mean(x, vardim)
+        m = Compat.mean(x, dims = vardim)
         return m, Base.covm(x, m, vardim, corrected=corrected)
     end
 else
@@ -153,7 +153,7 @@ standard deviations `s`.
 function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
-    for i in CartesianRange(size(C))
+    for i in CartesianIndices(size(C))
         @inbounds C[i] *= s[i[1]] * s[i[2]]
     end
     return C

@@ -1,6 +1,7 @@
 using Base.Cartesian
 
-import Base: show, ==, push!, append!, float, norm, normalize, normalize!
+import Base: show, ==, push!, append!, float
+import Compat.LinearAlgebra: norm, normalize, normalize!
 
 # Mechanism for temporary deprecation of default for "closed" (because default
 # value has changed). After deprecation is lifed, remove "_check_closed_arg"
@@ -532,4 +533,8 @@ Calculate the midpoints (pairwise mean of consecutive elements).
 """
 midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
 
-midpoints(r::Range) = r[1:(end - 1)] + step(r) / 2
+if VERSION < v"0.7.0-DEV.4713"
+    midpoints(r::AbstractRange) = r[1:(end - 1)] + step(r) / 2
+else
+    midpoints(r::AbstractRange) = r[1:(end - 1)] .+ (step(r) / 2)
+end

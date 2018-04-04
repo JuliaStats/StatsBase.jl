@@ -1,9 +1,4 @@
-if !isdefined(Base, :axes)
-    const axes = Base.indices
-end
-
 ###### Weight vector #####
-
 abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
 
 """
@@ -223,7 +218,7 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
 # Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
 Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, values(w))
-Base.sum(v::SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
+Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
 
 ## wsum along dimension
@@ -419,7 +414,7 @@ end
 
 function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Number,W<:Real}
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
+    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim, true)
 end
 
 # extended sum! and wsum
@@ -464,13 +459,13 @@ Compute the weighted mean of array `A` with weight vector `w`
 (of type `AbstractWeights`) along dimension `dim`, and write results to `R`.
 """
 Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
-    scale!(Base.sum!(R, A, w, dim), inv(sum(w)))
+    myscale!(Base.sum!(R, A, w, dim), inv(sum(w)))
 
 wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 Base.mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
-    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
+    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim)
 
 
 ###### Weighted median #####
@@ -595,7 +590,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     p = bound_quantiles(p)
 
     # prepare out vector
-    out = Vector{typeof(zero(V)/1)}(uninitialized, length(p))
+    out = Vector{typeof(zero(V)/1)}(undef, length(p))
     fill!(out, vw[end][1])
 
     # start looping on quantiles
