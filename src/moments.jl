@@ -55,7 +55,7 @@ function Base.varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealA
                     dim::Int; corrected::DepBool=nothing)
     corrected = depcheck(:varm!, corrected)
     myscale!(_wsum_centralize!(R, abs2, A, values(w), M, dim, true),
-           varcorrection(w, corrected))
+             varcorrection(w, corrected))
 end
 
 function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dim::Int;
