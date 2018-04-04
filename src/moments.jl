@@ -139,7 +139,7 @@ Base.std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=noth
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
 
 Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    Base.sqrt!(varm(v, m, dim; corrected=depcheck(:stdm, corrected)))
+    Base.sqrt!(Compat.varm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
 
 Base.stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
           corrected::DepBool=nothing) =
@@ -193,7 +193,7 @@ end
 
 function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
     m = Compat.mean(A, dims = dim)
-    v = varm(A, m, dim; corrected=corrected)
+    v = Compat.varm(A, m, dims = dim, corrected=corrected)
     m, v
 end
 function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)
