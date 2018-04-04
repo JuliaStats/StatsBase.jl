@@ -186,6 +186,11 @@ module StatsBase
     export midpoints
 end
 
+if VERSION < v"0.7.0-DEV.3665"
+    myscale!(A::AbstractArray, b::Number) = scale!(A, b)
+else
+    myscale!(A::AbstractArray, b::Number) = rmul!(A, b)
+end
     # source files
 
     include("common.jl")

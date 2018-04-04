@@ -90,7 +90,7 @@ scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
 ## weighted cov
 Base.covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
           corrected::DepBool=nothing) =
-    scale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
+    myscale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
 
 
 Base.cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =

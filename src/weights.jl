@@ -459,7 +459,7 @@ Compute the weighted mean of array `A` with weight vector `w`
 (of type `AbstractWeights`) along dimension `dim`, and write results to `R`.
 """
 Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
-    scale!(Base.sum!(R, A, w, dim), inv(sum(w)))
+    myscale!(Base.sum!(R, A, w, dim), inv(sum(w)))
 
 wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
