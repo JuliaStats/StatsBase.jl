@@ -13,6 +13,12 @@ weight_funcs = (weights, aweights, fweights, pweights)
     w1 = rand(3)
     w2 = rand(8)
 
+    # varcorrection is negative if sum of weights is smaller than 1
+    if f === fweights
+        w1[1] += 1
+        w2[1] += 1
+    end
+
     wv1 = f(w1)
     wv2 = f(w2)
 
