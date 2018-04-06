@@ -92,7 +92,7 @@ var documenterSearchIndex = {"docs": [
     "location": "means.html#StatsBase.geomean",
     "page": "Mean Functions",
     "title": "StatsBase.geomean",
-    "category": "Function",
+    "category": "function",
     "text": "geomean(a)\n\nReturn the geometric mean of a real-valued array.\n\n\n\n"
 },
 
@@ -100,7 +100,7 @@ var documenterSearchIndex = {"docs": [
     "location": "means.html#StatsBase.harmmean",
     "page": "Mean Functions",
     "title": "StatsBase.harmmean",
-    "category": "Function",
+    "category": "function",
     "text": "harmmean(a)\n\nReturn the harmonic mean of a real-valued array.\n\n\n\n"
 },
 
@@ -108,7 +108,7 @@ var documenterSearchIndex = {"docs": [
     "location": "means.html#StatsBase.genmean",
     "page": "Mean Functions",
     "title": "StatsBase.genmean",
-    "category": "Function",
+    "category": "function",
     "text": "genmean(a, p)\n\nReturn the generalized/power mean with exponent p of a real-valued array, i.e. left( frac1n sum_i=1^n a_i^p right)^frac1p, where n = length(a). It is taken to be the geometric mean when p == 0.\n\n\n\n"
 },
 
@@ -116,7 +116,7 @@ var documenterSearchIndex = {"docs": [
     "location": "means.html#Base.mean-Tuple{AbstractArray,StatsBase.AbstractWeights}",
     "page": "Mean Functions",
     "title": "Base.mean",
-    "category": "Method",
+    "category": "method",
     "text": "mean(A::AbstractArray, w::AbstractWeights[, dim::Int])\n\nCompute the weighted mean of array A with weight vector w (of type AbstractWeights). If dim is provided, compute the weighted mean along dimension dim.\n\nExamples\n\nw = rand(n)\nmean(x, weights(w))\n\n\n\n"
 },
 
@@ -124,7 +124,7 @@ var documenterSearchIndex = {"docs": [
     "location": "means.html#Base.mean!-Tuple{AbstractArray,AbstractArray,StatsBase.AbstractWeights,Int64}",
     "page": "Mean Functions",
     "title": "Base.mean!",
-    "category": "Method",
+    "category": "method",
     "text": "mean(R::AbstractArray, , A::AbstractArray, w::AbstractWeights[, dim::Int])\n\nCompute the weighted mean of array A with weight vector w (of type AbstractWeights) along dimension dim, and write results to R.\n\n\n\n"
 },
 
@@ -156,7 +156,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#Base.var-Tuple{AbstractArray{T,N} where N where T<:Real,StatsBase.AbstractWeights}",
     "page": "Scalar Statistics",
     "title": "Base.var",
-    "category": "Method",
+    "category": "method",
     "text": "var(x, w::AbstractWeights, [dim]; mean=nothing, corrected=false)\n\nCompute the variance of a real-valued array x, optionally over a dimension dim. Observations in x are weighted using weight vector w. The uncorrected (when corrected=false) sample variance is defined as:\n\nfrac1sumw sum_i=1^n w_ileft(x_i - right)^2 \n\nwhere n is the length of the input and  is the mean. The unbiased estimate (when corrected=true) of the population variance is computed by replacing frac1sumw with a factor dependent on the type of weights used:\n\nAnalyticWeights: frac1sum w - sum w^2  sum w\nFrequencyWeights: frac1sumw - 1\nProbabilityWeights: fracn(n - 1) sum w where n equals count(!iszero, w)\nWeights: ArgumentError (bias correction not supported)\n\n\n\n"
 },
 
@@ -164,7 +164,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#Base.std-Tuple{AbstractArray{T,N} where N where T<:Real,StatsBase.AbstractWeights}",
     "page": "Scalar Statistics",
     "title": "Base.std",
-    "category": "Method",
+    "category": "method",
     "text": "std(v, w::AbstractWeights, [dim]; mean=nothing, corrected=false)\n\nCompute the standard deviation of a real-valued array x, optionally over a dimension dim. Observations in x are weighted using weight vector w. The uncorrected (when corrected=false) sample standard deviation is defined as:\n\nsqrtfrac1sumw sum_i=1^n w_ileft(x_i - right)^2 \n\nwhere n is the length of the input and  is the mean. The unbiased estimate (when corrected=true) of the population standard deviation is computed by replacing frac1sumw with a factor dependent on the type of weights used:\n\nAnalyticWeights: frac1sum w - sum w^2  sum w\nFrequencyWeights: frac1sumw - 1\nProbabilityWeights: fracn(n - 1) sum w where n equals count(!iszero, w)\nWeights: ArgumentError (bias correction not supported)\n\n\n\n"
 },
 
@@ -172,7 +172,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.mean_and_var",
     "page": "Scalar Statistics",
     "title": "StatsBase.mean_and_var",
-    "category": "Function",
+    "category": "function",
     "text": "mean_and_var(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, var)\n\nReturn the mean and variance of a real-valued array x, optionally over a dimension dim, as a tuple. Observations in x can be weighted using weight vector w. Finally, bias correction is be applied to the variance calculation if corrected=true. See var documentation for more details.\n\n\n\n"
 },
 
@@ -180,7 +180,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.mean_and_std",
     "page": "Scalar Statistics",
     "title": "StatsBase.mean_and_std",
-    "category": "Function",
+    "category": "function",
     "text": "mean_and_std(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, std)\n\nReturn the mean and standard deviation of a real-valued array x, optionally over a dimension dim, as a tuple. A weighting vector w can be specified to weight the estimates. Finally, bias correction is applied to the standard deviation calculation if corrected=true. See std documentation for more details.\n\n\n\n"
 },
 
@@ -188,7 +188,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.skewness",
     "page": "Scalar Statistics",
     "title": "StatsBase.skewness",
-    "category": "Function",
+    "category": "function",
     "text": "skewness(v, [wv::AbstractWeights], m=mean(v))\n\nCompute the standardized skewness of a real-valued array v, optionally specifying a weighting vector wv and a center m.\n\n\n\n"
 },
 
@@ -196,7 +196,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.kurtosis",
     "page": "Scalar Statistics",
     "title": "StatsBase.kurtosis",
-    "category": "Function",
+    "category": "function",
     "text": "kurtosis(v, [wv::AbstractWeights], m=mean(v))\n\nCompute the excess kurtosis of a real-valued array v, optionally specifying a weighting vector wv and a center m.\n\n\n\n"
 },
 
@@ -204,7 +204,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.moment",
     "page": "Scalar Statistics",
     "title": "StatsBase.moment",
-    "category": "Function",
+    "category": "function",
     "text": "moment(v, k, [wv::AbstractWeights], m=mean(v))\n\nReturn the kth order central moment of a real-valued array v, optionally specifying a weighting vector wv and a center m.\n\n\n\n"
 },
 
@@ -220,7 +220,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.span",
     "page": "Scalar Statistics",
     "title": "StatsBase.span",
-    "category": "Function",
+    "category": "function",
     "text": "span(x)\n\nReturn the span of an integer array, i.e. the range minimum(x):maximum(x). The minimum and maximum of x are computed in one-pass using extrema.\n\n\n\n"
 },
 
@@ -228,7 +228,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.variation",
     "page": "Scalar Statistics",
     "title": "StatsBase.variation",
-    "category": "Function",
+    "category": "function",
     "text": "variation(x, m=mean(x))\n\nReturn the coefficient of variation of an array x, optionally specifying a precomputed mean m. The coefficient of variation is the ratio of the standard deviation to the mean.\n\n\n\n"
 },
 
@@ -236,7 +236,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.sem",
     "page": "Scalar Statistics",
     "title": "StatsBase.sem",
-    "category": "Function",
+    "category": "function",
     "text": "sem(a)\n\nReturn the standard error of the mean of a, i.e. sqrt(var(a) / length(a)).\n\n\n\n"
 },
 
@@ -244,7 +244,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.mad",
     "page": "Scalar Statistics",
     "title": "StatsBase.mad",
-    "category": "Function",
+    "category": "function",
     "text": "mad(v; center=median(v), normalize=true)\n\nCompute the median absolute deviation (MAD) of v around center (by default, around the median).\n\nIf normalize is set to true, the MAD is multiplied by 1 / quantile(Normal(), 3/4) ≈ 1.4826, in order to obtain a consistent estimator of the standard deviation under the assumption that the data is normally distributed.\n\n\n\n"
 },
 
@@ -260,7 +260,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.zscore",
     "page": "Scalar Statistics",
     "title": "StatsBase.zscore",
-    "category": "Function",
+    "category": "function",
     "text": "zscore(X, [μ, σ])\n\nCompute the z-scores of X, optionally specifying a precomputed mean μ and standard deviation σ. z-scores are the signed number of standard deviations above the mean that an observation lies, i.e. (x - )  .\n\nμ and σ should be both scalars or both arrays. The computation is broadcasting. In particular, when μ and σ are arrays, they should have the same size, and size(μ, i) == 1  || size(μ, i) == size(X, i) for each dimension.\n\n\n\n"
 },
 
@@ -268,7 +268,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.zscore!",
     "page": "Scalar Statistics",
     "title": "StatsBase.zscore!",
-    "category": "Function",
+    "category": "function",
     "text": "zscore!([Z], X, μ, σ)\n\nCompute the z-scores of an array X with mean μ and standard deviation σ. z-scores are the signed number of standard deviations above the mean that an observation lies, i.e. (x - )  .\n\nIf a destination array Z is provided, the scores are stored in Z and it must have the same shape as X. Otherwise X is overwritten.\n\n\n\n"
 },
 
@@ -284,7 +284,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.entropy",
     "page": "Scalar Statistics",
     "title": "StatsBase.entropy",
-    "category": "Function",
+    "category": "function",
     "text": "entropy(p, [b])\n\nCompute the entropy of an array p, optionally specifying a real number b such that the entropy is scaled by 1/log(b).\n\n\n\n"
 },
 
@@ -292,7 +292,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.renyientropy",
     "page": "Scalar Statistics",
     "title": "StatsBase.renyientropy",
-    "category": "Function",
+    "category": "function",
     "text": "renyientropy(p, α)\n\nCompute the Rényi (generalized) entropy of order α of an array p.\n\n\n\n"
 },
 
@@ -300,7 +300,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.crossentropy",
     "page": "Scalar Statistics",
     "title": "StatsBase.crossentropy",
-    "category": "Function",
+    "category": "function",
     "text": "crossentropy(p, q, [b])\n\nCompute the cross entropy between p and q, optionally specifying a real number b such that the result is scaled by 1/log(b).\n\n\n\n"
 },
 
@@ -308,7 +308,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.kldivergence",
     "page": "Scalar Statistics",
     "title": "StatsBase.kldivergence",
-    "category": "Function",
+    "category": "function",
     "text": "kldivergence(p, q, [b])\n\nCompute the Kullback-Leibler divergence of q from p, optionally specifying a real number b such that the divergence is scaled by 1/log(b).\n\n\n\n"
 },
 
@@ -332,7 +332,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.mode",
     "page": "Scalar Statistics",
     "title": "StatsBase.mode",
-    "category": "Function",
+    "category": "function",
     "text": "mode(a, [r])\n\nReturn the mode (most common number) of an array, optionally over a specified range r. If several modes exist, the first one (in order of appearance) is returned.\n\n\n\n"
 },
 
@@ -340,7 +340,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.modes",
     "page": "Scalar Statistics",
     "title": "StatsBase.modes",
-    "category": "Function",
+    "category": "function",
     "text": "modes(a, [r])::Vector\n\nReturn all modes (most common numbers) of an array, optionally over a specified range r.\n\n\n\n"
 },
 
@@ -356,7 +356,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.summarystats",
     "page": "Scalar Statistics",
     "title": "StatsBase.summarystats",
-    "category": "Function",
+    "category": "function",
     "text": "summarystats(a)\n\nCompute summary statistics for a real-valued array a. Returns a SummaryStats object containing the mean, minimum, 25th percentile, median, 75th percentile, and maxmimum.\n\n\n\n"
 },
 
@@ -364,7 +364,7 @@ var documenterSearchIndex = {"docs": [
     "location": "scalarstats.html#StatsBase.describe",
     "page": "Scalar Statistics",
     "title": "StatsBase.describe",
-    "category": "Function",
+    "category": "function",
     "text": "describe(a)\n\nPretty-print the summary statistics provided by summarystats: the mean, minimum, 25th percentile, median, 75th percentile, and maximum.\n\n\n\n"
 },
 
@@ -388,7 +388,7 @@ var documenterSearchIndex = {"docs": [
     "location": "robust.html#StatsBase.trim",
     "page": "Robust Statistics",
     "title": "StatsBase.trim",
-    "category": "Function",
+    "category": "function",
     "text": "trim(x; prop=0.0, count=0)\n\nReturn a copy of x with either count or proportion prop of the highest and lowest elements removed.  To compute the trimmed mean of x use mean(trim(x)); to compute the variance use trimvar(x) (see trimvar).\n\nExample\n\njulia> trim([1,2,3,4,5], prop=0.2)\n3-element Array{Int64,1}:\n 2\n 3\n 4\n\n\n\n"
 },
 
@@ -396,7 +396,7 @@ var documenterSearchIndex = {"docs": [
     "location": "robust.html#StatsBase.winsor",
     "page": "Robust Statistics",
     "title": "StatsBase.winsor",
-    "category": "Function",
+    "category": "function",
     "text": "winsor(x; prop=0.0, count=0)\n\nReturn a copy of x with either count or proportion prop of the lowest elements of x replaced with the next-lowest, and an equal number of the highest elements replaced with the previous-highest.  To compute the Winsorized mean of x use mean(winsor(x)).\n\nExample\n\njulia> winsor([1,2,3,4,5], prop=0.2)\n5-element Array{Int64,1}:\n 2\n 2\n 3\n 4\n 4\n\n\n\n"
 },
 
@@ -404,7 +404,7 @@ var documenterSearchIndex = {"docs": [
     "location": "robust.html#StatsBase.trimvar",
     "page": "Robust Statistics",
     "title": "StatsBase.trimvar",
-    "category": "Function",
+    "category": "function",
     "text": "trimvar(x; prop=0.0, count=0)\n\nCompute the variance of the trimmed mean of x. This function uses the Winsorized variance, as described in Wilcox (2010).\n\n\n\n"
 },
 
@@ -428,7 +428,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.counteq",
     "page": "Computing Deviations",
     "title": "StatsBase.counteq",
-    "category": "Function",
+    "category": "function",
     "text": "counteq(a, b)\n\nCount the number of indices at which the elements of the arrays a and b are equal.\n\n\n\n"
 },
 
@@ -436,7 +436,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.countne",
     "page": "Computing Deviations",
     "title": "StatsBase.countne",
-    "category": "Function",
+    "category": "function",
     "text": "countne(a, b)\n\nCount the number of indices at which the elements of the arrays a and b are not equal.\n\n\n\n"
 },
 
@@ -444,7 +444,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.sqL2dist",
     "page": "Computing Deviations",
     "title": "StatsBase.sqL2dist",
-    "category": "Function",
+    "category": "function",
     "text": "sqL2dist(a, b)\n\nCompute the squared L2 distance between two arrays: sum_i=1^n a_i - b_i^2. Efficient equivalent of sumabs2(a - b).\n\n\n\n"
 },
 
@@ -452,7 +452,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.L2dist",
     "page": "Computing Deviations",
     "title": "StatsBase.L2dist",
-    "category": "Function",
+    "category": "function",
     "text": "L2dist(a, b)\n\nCompute the L2 distance between two arrays: sqrtsum_i=1^n a_i - b_i^2. Efficient equivalent of sqrt(sumabs2(a - b)).\n\n\n\n"
 },
 
@@ -460,7 +460,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.L1dist",
     "page": "Computing Deviations",
     "title": "StatsBase.L1dist",
-    "category": "Function",
+    "category": "function",
     "text": "L1dist(a, b)\n\nCompute the L1 distance between two arrays: sum_i=1^n a_i - b_i. Efficient equivalent of sum(abs, a - b).\n\n\n\n"
 },
 
@@ -468,7 +468,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.Linfdist",
     "page": "Computing Deviations",
     "title": "StatsBase.Linfdist",
-    "category": "Function",
+    "category": "function",
     "text": "Linfdist(a, b)\n\nCompute the L∞ distance, also called the Chebyshev distance, between two arrays: max_iin1n a_i - b_i. Efficient equivalent of maxabs(a - b).\n\n\n\n"
 },
 
@@ -476,7 +476,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.gkldiv",
     "page": "Computing Deviations",
     "title": "StatsBase.gkldiv",
-    "category": "Function",
+    "category": "function",
     "text": "gkldiv(a, b)\n\nCompute the generalized Kullback-Leibler divergence between two arrays: sum_i=1^n (a_i log(a_ib_i) - a_i + b_i). Efficient equivalent of sum(a*log(a/b)-a+b).\n\n\n\n"
 },
 
@@ -484,7 +484,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.meanad",
     "page": "Computing Deviations",
     "title": "StatsBase.meanad",
-    "category": "Function",
+    "category": "function",
     "text": "meanad(a, b)\n\nReturn the mean absolute deviation between two arrays: mean(abs(a - b)).\n\n\n\n"
 },
 
@@ -492,7 +492,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.maxad",
     "page": "Computing Deviations",
     "title": "StatsBase.maxad",
-    "category": "Function",
+    "category": "function",
     "text": "maxad(a, b)\n\nReturn the maximum absolute deviation between two arrays: maxabs(a - b).\n\n\n\n"
 },
 
@@ -500,7 +500,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.msd",
     "page": "Computing Deviations",
     "title": "StatsBase.msd",
-    "category": "Function",
+    "category": "function",
     "text": "msd(a, b)\n\nReturn the mean squared deviation between two arrays: mean(abs2(a - b)).\n\n\n\n"
 },
 
@@ -508,7 +508,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.rmsd",
     "page": "Computing Deviations",
     "title": "StatsBase.rmsd",
-    "category": "Function",
+    "category": "function",
     "text": "rmsd(a, b; normalize=false)\n\nReturn the root mean squared deviation between two optionally normalized arrays. The root mean squared deviation is computed as sqrt(msd(a, b)).\n\n\n\n"
 },
 
@@ -516,7 +516,7 @@ var documenterSearchIndex = {"docs": [
     "location": "deviation.html#StatsBase.psnr",
     "page": "Computing Deviations",
     "title": "StatsBase.psnr",
-    "category": "Function",
+    "category": "function",
     "text": "psnr(a, b, maxv)\n\nCompute the peak signal-to-noise ratio between two arrays a and b. maxv is the maximum possible value either array can take. The PSNR is computed as 10 * log10(maxv^2 / msd(a, b)).\n\n\n\n"
 },
 
@@ -540,7 +540,7 @@ var documenterSearchIndex = {"docs": [
     "location": "cov.html#StatsBase.scattermat",
     "page": "Scatter Matrix and Covariance",
     "title": "StatsBase.scattermat",
-    "category": "Function",
+    "category": "function",
     "text": "scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)\n\nCompute the scatter matrix, which is an unnormalized covariance matrix. A weighting vector wv can be specified to weight the estimate.\n\nArguments\n\nmean=nothing: a known mean value. nothing indicates that the mean is unknown, and the function will compute the mean. Specifying mean=0 indicates that the data are centered and hence there\'s no need to subtract the mean.\nvardim=1: the dimension along which the variables are organized. When vardim = 1, the variables are considered columns with observations in rows; when vardim = 2, variables are in rows with observations in columns.\n\n\n\n"
 },
 
@@ -548,7 +548,7 @@ var documenterSearchIndex = {"docs": [
     "location": "cov.html#Base.cov",
     "page": "Scatter Matrix and Covariance",
     "title": "Base.cov",
-    "category": "Function",
+    "category": "function",
     "text": "cov(X, w::AbstractWeights; mean=nothing, vardim=1, corrected=false)\n\nCompute the weighted covariance matrix. Similar to var and std the biased covariance matrix (corrected=false) is computed by multiplying scattermat(X, w) by frac1sumw to normalize. However, the unbiased covariance matrix (corrected=true) is dependent on the type of weights used:\n\nAnalyticWeights: frac1sum w - sum w^2  sum w\nFrequencyWeights: frac1sumw - 1\nProbabilityWeights: fracn(n - 1) sum w where n equals count(!iszero, w)\nWeights: ArgumentError (bias correction not supported)\n\n\n\n"
 },
 
@@ -556,7 +556,7 @@ var documenterSearchIndex = {"docs": [
     "location": "cov.html#Base.cor",
     "page": "Scatter Matrix and Covariance",
     "title": "Base.cor",
-    "category": "Function",
+    "category": "function",
     "text": "cor(X, w::AbstractWeights, vardim=1)\n\nCompute the Pearson correlation matrix of X along the dimension vardim with a weighting w .\n\n\n\n"
 },
 
@@ -564,7 +564,7 @@ var documenterSearchIndex = {"docs": [
     "location": "cov.html#StatsBase.mean_and_cov",
     "page": "Scatter Matrix and Covariance",
     "title": "StatsBase.mean_and_cov",
-    "category": "Function",
+    "category": "function",
     "text": "mean_and_cov(x, [wv::AbstractWeights]; vardim=1, corrected=false) -> (mean, cov)\n\nReturn the mean and covariance matrix as a tuple. A weighting vector wv can be specified. vardim that designates whether the variables are columns in the matrix (1) or rows (2). Finally, bias correction is applied to the covariance calculation if corrected=true. See cov documentation for more details.\n\n\n\n"
 },
 
@@ -572,7 +572,7 @@ var documenterSearchIndex = {"docs": [
     "location": "cov.html#StatsBase.cov2cor",
     "page": "Scatter Matrix and Covariance",
     "title": "StatsBase.cov2cor",
-    "category": "Function",
+    "category": "function",
     "text": "cov2cor(C, s)\n\nCompute the correlation matrix from the covariance matrix C and a vector of standard deviations s. Use Base.cov2cor! for an in-place version.\n\n\n\n"
 },
 
@@ -580,7 +580,7 @@ var documenterSearchIndex = {"docs": [
     "location": "cov.html#StatsBase.cor2cov",
     "page": "Scatter Matrix and Covariance",
     "title": "StatsBase.cor2cov",
-    "category": "Function",
+    "category": "function",
     "text": "cor2cov(C, s)\n\nCompute the covariance matrix from the correlation matrix C and a vector of standard deviations s. Use StatsBase.cor2cov! for an in-place version.\n\n\n\n"
 },
 
@@ -612,7 +612,7 @@ var documenterSearchIndex = {"docs": [
     "location": "counts.html#StatsBase.counts",
     "page": "Counting Functions",
     "title": "StatsBase.counts",
-    "category": "Function",
+    "category": "function",
     "text": "counts(x, [wv::AbstractWeights])\ncounts(x, levels::UnitRange{<:Integer}, [wv::AbstractWeights])\ncounts(x, k::Integer, [wv::AbstractWeights])\n\nCount the number of times each value in x occurs. If levels is provided, only values falling in that range will be considered (the others will be ignored without raising an error or a warning). If an integer k is provided, only values in the range 1:k will be considered.\n\nIf a weighting vector wv is specified, the sum of the weights is used rather than the raw counts.\n\nThe output is a vector of length length(levels).\n\n\n\n"
 },
 
@@ -620,7 +620,7 @@ var documenterSearchIndex = {"docs": [
     "location": "counts.html#StatsBase.proportions",
     "page": "Counting Functions",
     "title": "StatsBase.proportions",
-    "category": "Function",
+    "category": "function",
     "text": "proportions(x, levels=span(x), [wv::AbstractWeights])\n\nReturn the proportion of values in the range levels that occur in x. Equivalent to counts(x, levels) / length(x). If a weighting vector wv is specified, the sum of the weights is used rather than the raw counts.\n\n\n\nproportions(x, k::Integer, [wv::AbstractWeights])\n\nReturn the proportion of integers in 1 to k that occur in x.\n\n\n\n"
 },
 
@@ -628,7 +628,7 @@ var documenterSearchIndex = {"docs": [
     "location": "counts.html#StatsBase.addcounts!-Tuple{AbstractArray,AbstractArray{T,N} where N where T<:Integer,UnitRange{T} where T<:Integer}",
     "page": "Counting Functions",
     "title": "StatsBase.addcounts!",
-    "category": "Method",
+    "category": "method",
     "text": "addcounts!(r, x, levels::UnitRange{<:Int}, [wv::AbstractWeights])\n\nAdd the number of occurrences in x of each value in levels to an existing array r. If a weighting vector wv is specified, the sum of weights is used rather than the raw counts.\n\n\n\n"
 },
 
@@ -644,7 +644,7 @@ var documenterSearchIndex = {"docs": [
     "location": "counts.html#StatsBase.countmap",
     "page": "Counting Functions",
     "title": "StatsBase.countmap",
-    "category": "Function",
+    "category": "function",
     "text": "countmap(x; alg = :auto)\n\nReturn a dictionary mapping each unique value in x to its number of occurrences.\n\n:auto (default): if StatsBase.radixsort_safe(eltype(x)) == true then use                    :radixsort, otherwise use :dict.\n:radixsort:      if radixsort_safe(eltype(x)) == true then use the                    radix sort                    algorithm to sort the input vector which will generally lead to                    shorter running time. However the radix sort algorithm creates a                    copy of the input vector and hence uses more RAM. Choose :dict                    if the amount of available RAM is a limitation.\n:dict:           use Dict-based method which is generally slower but uses less                    RAM and is safe for any data type.\n\n\n\n"
 },
 
@@ -652,7 +652,7 @@ var documenterSearchIndex = {"docs": [
     "location": "counts.html#StatsBase.proportionmap",
     "page": "Counting Functions",
     "title": "StatsBase.proportionmap",
-    "category": "Function",
+    "category": "function",
     "text": "proportionmap(x)\n\nReturn a dictionary mapping each unique value in x to its proportion in x.\n\n\n\n"
 },
 
@@ -660,7 +660,7 @@ var documenterSearchIndex = {"docs": [
     "location": "counts.html#StatsBase.addcounts!-Union{Tuple{Dict{T,V} where V,AbstractArray{T,N} where N}, Tuple{T}} where T",
     "page": "Counting Functions",
     "title": "StatsBase.addcounts!",
-    "category": "Method",
+    "category": "method",
     "text": "addcounts!(dict, x[, wv]; alg = :auto)\n\nAdd counts based on x to a count map. New entries will be added if new values come up. If a weighting vector wv is specified, the sum of the weights is used rather than the raw counts.\n\nalg can be one of:\n\n:auto (default): if StatsBase.radixsort_safe(eltype(x)) == true then use                    :radixsort, otherwise use :dict.\n:radixsort:      if radixsort_safe(eltype(x)) == true then use the                    radix sort                    algorithm to sort the input vector which will generally lead to                    shorter running time. However the radix sort algorithm creates a                    copy of the input vector and hence uses more RAM. Choose :dict                    if the amount of available RAM is a limitation.\n:dict:           use Dict-based method which is generally slower but uses less                    RAM and is safe for any data type.\n\n\n\n"
 },
 
@@ -684,7 +684,7 @@ var documenterSearchIndex = {"docs": [
     "location": "ranking.html#StatsBase.ordinalrank",
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.ordinalrank",
-    "category": "Function",
+    "category": "function",
     "text": "ordinalrank(x; lt = isless, rev::Bool = false)\n\nReturn the ordinal ranking (\"1234\" ranking) of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. All items in x are given distinct, successive ranks based on their position in sort(x; lt = lt, rev = rev). Missing values are assigned rank missing.\n\n\n\n"
 },
 
@@ -692,7 +692,7 @@ var documenterSearchIndex = {"docs": [
     "location": "ranking.html#StatsBase.competerank",
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.competerank",
-    "category": "Function",
+    "category": "function",
     "text": "competerank(x; lt = isless, rev::Bool = false)\n\nReturn the standard competition ranking (\"1224\" ranking) of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. Items that compare equal are given the same rank, then a gap is left in the rankings the size of the number of tied items - 1. Missing values are assigned rank missing.\n\n\n\n"
 },
 
@@ -700,7 +700,7 @@ var documenterSearchIndex = {"docs": [
     "location": "ranking.html#StatsBase.denserank",
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.denserank",
-    "category": "Function",
+    "category": "function",
     "text": "denserank(x)\n\nReturn the dense ranking (\"1223\" ranking) of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. Items that compare equal receive the same ranking, and the next subsequent rank is assigned with no gap. Missing values are assigned rank missing.\n\n\n\n"
 },
 
@@ -708,7 +708,7 @@ var documenterSearchIndex = {"docs": [
     "location": "ranking.html#StatsBase.tiedrank",
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.tiedrank",
-    "category": "Function",
+    "category": "function",
     "text": "tiedrank(x)\n\nReturn the tied ranking, also called fractional or \"1 2.5 2.5 4\" ranking, of an array. The lt keyword allows providing a custom \"less than\" function; use rev=true to reverse the sorting order. Items that compare equal receive the mean of the rankings they would have been assigned under ordinal ranking. Missing values are assigned rank missing.\n\n\n\n"
 },
 
@@ -716,7 +716,7 @@ var documenterSearchIndex = {"docs": [
     "location": "ranking.html#StatsBase.corspearman",
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.corspearman",
-    "category": "Function",
+    "category": "function",
     "text": "corspearman(x, y=x)\n\nCompute Spearman\'s rank correlation coefficient. If x and y are vectors, the output is a float, otherwise it\'s a matrix corresponding to the pairwise correlations of the columns of x and y.\n\n\n\n"
 },
 
@@ -724,7 +724,7 @@ var documenterSearchIndex = {"docs": [
     "location": "ranking.html#StatsBase.corkendall",
     "page": "Rankings and Rank Correlations",
     "title": "StatsBase.corkendall",
-    "category": "Function",
+    "category": "function",
     "text": "corkendall(x, y=x)\n\nCompute Kendall\'s rank correlation coefficient, τ. x and y must both be either matrices or vectors.\n\n\n\n"
 },
 
@@ -756,16 +756,16 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.sample",
     "page": "Sampling from Population",
     "title": "StatsBase.sample",
-    "category": "Function",
-    "text": "sample([rng], a, [wv::AbstractWeights])\n\nSelect a single random element of a. Sampling probabilities are proportional to the weights given in wv, if provided.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\nsample([rng], a, [wv::AbstractWeights], n::Integer; replace=true, ordered=false)\n\nSelect a random, optionally weighted sample of size n from an array a using a polyalgorithm. Sampling probabilities are proportional to the weights given in wv, if provided. replace dictates whether sampling is performed with replacement and order dictates whether an ordered sample, also called a sequential sample, should be taken.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\nsample([rng], a, [wv::AbstractWeights], dims::Dims; replace=true, ordered=false)\n\nSelect a random, optionally weighted sample from an array a specifying the dimensions dims of the output array. Sampling probabilities are proportional to the weights given in wv, if provided. replace dictates whether sampling is performed with replacement and order dictates whether an ordered sample, also called a sequential sample, should be taken.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\nsample([rng], wv::AbstractWeights)\n\nSelect a single random integer in 1:length(wv) with probabilities proportional to the weights given in wv.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\n"
+    "category": "function",
+    "text": "sample([rng], a, [wv::AbstractWeights])\n\nSelect a single random element of a. Sampling probabilities are proportional to the weights given in wv, if provided.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\nsample([rng], a, [wv::AbstractWeights], n::Integer; replace=true, ordered=false)\n\nSelect a random, optionally weighted sample of size n from an array a using a polyalgorithm. Sampling probabilities are proportional to the weights given in wv, if provided. replace dictates whether sampling is performed with replacement and order dictates whether an ordered sample, also called a sequential sample, should be taken.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\nsample([rng], a, [wv::AbstractWeights], dims::Dims; replace=true, ordered=false)\n\nSelect a random, optionally weighted sample from an array a specifying the dimensions dims of the output array. Sampling probabilities are proportional to the weights given in wv, if provided. replace dictates whether sampling is performed with replacement and order dictates whether an ordered sample, also called a sequential sample, should be taken.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\nsample([rng], wv::AbstractWeights)\n\nSelect a single random integer in 1:length(wv) with probabilities proportional to the weights given in wv.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\n"
 },
 
 {
     "location": "sampling.html#StatsBase.sample!",
     "page": "Sampling from Population",
     "title": "StatsBase.sample!",
-    "category": "Function",
-    "text": "sample!([rng], a, [wv::AbstractWeights], x; replace=true, ordered=false)\n\nDraw a random sample of length(x) elements from an array a and store the result in x. A polyalgorithm is used for sampling. Sampling probabilities are proportional to the weights given in wv, if provided. replace dictates whether sampling is performed with replacement and order dictates whether an ordered sample, also called a sequential sample, should be taken.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\n"
+    "category": "function",
+    "text": "sample!([rng], a, [wv::AbstractWeights], x; replace=true, ordered=false)\n\nDraw a random sample of length(x) elements from an array a and store the result in x. A polyalgorithm is used for sampling. Sampling probabilities are proportional to the weights given in wv, if provided. replace dictates whether sampling is performed with replacement and order dictates whether an ordered sample, also called a sequential sample, should be taken.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\n"
 },
 
 {
@@ -789,14 +789,14 @@ var documenterSearchIndex = {"docs": [
     "page": "Sampling from Population",
     "title": "Notations",
     "category": "section",
-    "text": "a: source array representing the population\nx: the destination array\nwv: the weight vector (of type AbstractWeights), for weighted sampling\nn: the length of a\nk: the length of x. For sampling without replacement, k must not exceed n.\nrng: optional random number generator (defaults to Base.GLOBAL_RNG)All following functions write results to x (pre-allocated) and return x."
+    "text": "a: source array representing the population\nx: the destination array\nwv: the weight vector (of type AbstractWeights), for weighted sampling\nn: the length of a\nk: the length of x. For sampling without replacement, k must not exceed n.\nrng: optional random number generator (defaults to Random.GLOBAL_RNG)All following functions write results to x (pre-allocated) and return x."
 },
 
 {
     "location": "sampling.html#StatsBase.direct_sample!-Tuple{AbstractRNG,AbstractArray,AbstractArray}",
     "page": "Sampling from Population",
     "title": "StatsBase.direct_sample!",
-    "category": "Method",
+    "category": "method",
     "text": "direct_sample!([rng], a::AbstractArray, x::AbstractArray)\n\nDirect sampling: for each j in 1:k, randomly pick i from 1:n, and set x[j] = a[i], with n=length(a) and k=length(x).\n\nThis algorithm consumes k random numbers.\n\n\n\n"
 },
 
@@ -804,15 +804,15 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.samplepair",
     "page": "Sampling from Population",
     "title": "StatsBase.samplepair",
-    "category": "Function",
-    "text": "samplepair([rng], n)\n\nDraw a pair of distinct integers between 1 and n without replacement.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\nsamplepair([rng], a)\n\nDraw a pair of distinct elements from the array a without replacement.\n\nOptionally specify a random number generator rng as the first argument (defaults to Base.GLOBAL_RNG).\n\n\n\n"
+    "category": "function",
+    "text": "samplepair([rng], n)\n\nDraw a pair of distinct integers between 1 and n without replacement.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\nsamplepair([rng], a)\n\nDraw a pair of distinct elements from the array a without replacement.\n\nOptionally specify a random number generator rng as the first argument (defaults to Random.GLOBAL_RNG).\n\n\n\n"
 },
 
 {
     "location": "sampling.html#StatsBase.knuths_sample!",
     "page": "Sampling from Population",
     "title": "StatsBase.knuths_sample!",
-    "category": "Function",
+    "category": "function",
     "text": "knuths_sample!([rng], a, x)\n\nKnuth\'s Algorithm S for random sampling without replacement.\n\nReference: D. Knuth. The Art of Computer Programming. Vol 2, 3.4.2, p.142.\n\nThis algorithm consumes length(a) random numbers. It requires no additional memory space. Suitable for the case where memory is tight.\n\n\n\n"
 },
 
@@ -820,7 +820,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.fisher_yates_sample!",
     "page": "Sampling from Population",
     "title": "StatsBase.fisher_yates_sample!",
-    "category": "Function",
+    "category": "function",
     "text": "fisher_yates_sample!([rng], a::AbstractArray, x::AbstractArray)\n\nFisher-Yates shuffling (with early termination).\n\nPseudo-code:\n\nn = length(a)\nk = length(x)\n\n# Create an array of the indices\ninds = collect(1:n)\n\nfor i = 1:k\n    # swap element `i` with another random element in inds[i:n]\n    # set element `i` in `x`\nend\n\nThis algorithm consumes k=length(x) random numbers. It uses an integer array of length n=length(a) internally to maintain the shuffled indices. It is considerably faster than Knuth\'s algorithm especially when n is greater than k. It is O(n) for initialization, plus O(k) for random shuffling\n\n\n\n"
 },
 
@@ -828,7 +828,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.self_avoid_sample!",
     "page": "Sampling from Population",
     "title": "StatsBase.self_avoid_sample!",
-    "category": "Function",
+    "category": "function",
     "text": "self_avoid_sample!([rng], a::AbstractArray, x::AbstractArray)\n\nSelf-avoid sampling: use a set to maintain the index that has been sampled. Each time draw a new index, if the index has already been sampled, redraw until it draws an unsampled one.\n\nThis algorithm consumes about (or slightly more than) k=length(x) random numbers, and requires O(k) memory to store the set of sampled indices. Very fast when n  k, with n=length(a).\n\nHowever, if k is large and approaches n, the rejection rate would increase drastically, resulting in poorer performance.\n\n\n\n"
 },
 
@@ -836,7 +836,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.seqsample_a!",
     "page": "Sampling from Population",
     "title": "StatsBase.seqsample_a!",
-    "category": "Function",
+    "category": "function",
     "text": "seqsample_a!([rng], a::AbstractArray, x::AbstractArray)\n\nRandom subsequence sampling using algorithm A described in the following paper (page 714): Jeffrey Scott Vitter. \"Faster Methods for Random Sampling\". Communications of the ACM, 27 (7), July 1984.\n\nThis algorithm consumes O(n) random numbers, with n=length(a). The outputs are ordered.\n\n\n\n"
 },
 
@@ -844,7 +844,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.seqsample_c!",
     "page": "Sampling from Population",
     "title": "StatsBase.seqsample_c!",
-    "category": "Function",
+    "category": "function",
     "text": "seqsample_c!([rng], a::AbstractArray, x::AbstractArray)\n\nRandom subsequence sampling using algorithm C described in the following paper (page 715): Jeffrey Scott Vitter. \"Faster Methods for Random Sampling\". Communications of the ACM, 27 (7), July 1984.\n\nThis algorithm consumes O(k^2) random numbers, with k=length(x). The outputs are ordered.\n\n\n\n"
 },
 
@@ -860,7 +860,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.direct_sample!-Tuple{AbstractRNG,AbstractArray,StatsBase.AbstractWeights,AbstractArray}",
     "page": "Sampling from Population",
     "title": "StatsBase.direct_sample!",
-    "category": "Method",
+    "category": "method",
     "text": "direct_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)\n\nDirect sampling.\n\nDraw each sample by scanning the weight vector.\n\nNoting k=length(x) and n=length(a), this algorithm:\n\nconsumes k random numbers\nhas time complexity O(n k), as scanning the weight vector each time takes O(n)\nrequires no additional memory space.\n\n\n\n"
 },
 
@@ -868,7 +868,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.alias_sample!",
     "page": "Sampling from Population",
     "title": "StatsBase.alias_sample!",
-    "category": "Function",
+    "category": "function",
     "text": "alias_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)\n\nAlias method.\n\nBuild an alias table, and sample therefrom.\n\nReference: Walker, A. J. \"An Efficient Method for Generating Discrete Random Variables with General Distributions.\" ACM Transactions on Mathematical Software 3 (3): 253, 1977.\n\nNoting k=length(x) and n=length(a), this algorithm takes O(n log n) time for building the alias table, and then O(1) to draw each sample. It consumes 2 k random numbers.\n\n\n\n"
 },
 
@@ -876,7 +876,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.naive_wsample_norep!",
     "page": "Sampling from Population",
     "title": "StatsBase.naive_wsample_norep!",
-    "category": "Function",
+    "category": "function",
     "text": "naive_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)\n\nNaive implementation of weighted sampling without replacement.\n\nIt makes a copy of the weight vector at initialization, and sets the weight to zero when the corresponding sample is picked.\n\nNoting k=length(x) and n=length(a), this algorithm consumes O(k) random numbers, and has overall time complexity O(n k).\n\n\n\n"
 },
 
@@ -884,7 +884,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.efraimidis_a_wsample_norep!",
     "page": "Sampling from Population",
     "title": "StatsBase.efraimidis_a_wsample_norep!",
-    "category": "Function",
+    "category": "function",
     "text": "efraimidis_a_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)\n\nWeighted sampling without replacement using Efraimidis-Spirakis A algorithm.\n\nReference: Efraimidis, P. S., Spirakis, P. G. \"Weighted random sampling with a reservoir.\" Information Processing Letters, 97 (5), 181-185, 2006. doi:10.1016/j.ipl.2005.11.003.\n\nNoting k=length(x) and n=length(a), this algorithm takes O(n + k log k) processing time to draw k elements. It consumes n random numbers.\n\n\n\n"
 },
 
@@ -892,7 +892,7 @@ var documenterSearchIndex = {"docs": [
     "location": "sampling.html#StatsBase.efraimidis_ares_wsample_norep!",
     "page": "Sampling from Population",
     "title": "StatsBase.efraimidis_ares_wsample_norep!",
-    "category": "Function",
+    "category": "function",
     "text": "efraimidis_ares_wsample_norep!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)\n\nImplementation of weighted sampling without replacement using Efraimidis-Spirakis A-Res algorithm.\n\nReference: Efraimidis, P. S., Spirakis, P. G. \"Weighted random sampling with a reservoir.\" Information Processing Letters, 97 (5), 181-185, 2006. doi:10.1016/j.ipl.2005.11.003.\n\nNoting k=length(x) and n=length(a), this algorithm takes O(k log(k) log(n  k)) processing time to draw k elements. It consumes n random numbers.\n\n\n\n"
 },
 
@@ -924,7 +924,7 @@ var documenterSearchIndex = {"docs": [
     "location": "empirical.html#StatsBase.fit-Tuple{Type{StatsBase.Histogram},Vararg{Any,N} where N}",
     "page": "Empirical Estimation",
     "title": "StatsBase.fit",
-    "category": "Method",
+    "category": "method",
     "text": "fit(Histogram, data[, weight][, edges]; closed=:right, nbins)\n\nFit a histogram to data.\n\nArguments\n\ndata: either a vector (for a 1-dimensional histogram), or a tuple of vectors of equal length (for an n-dimensional histogram).\nweight: an optional AbstractWeights (of the same length as the data vectors), denoting the weight each observation contributes to the bin. If no weight vector is supplied, each observation has weight 1.\nedges: a vector (typically an AbstractRange object), or tuple of vectors, that gives the edges of the bins along each dimension. If no edges are provided, these are determined from the data.\n\nKeyword arguments\n\nclosed=:right: if :left, the bin intervals are left-closed [a,b); if :right (the default), intervals are right-closed (a,b].\nnbins: if no edges argument is supplied, the approximate number of bins to use along each dimension (can be either a single integer, or a tuple of integers).\n\nExamples\n\n# Univariate\nh = fit(Histogram, rand(100))\nh = fit(Histogram, rand(100), 0:0.1:1.0)\nh = fit(Histogram, rand(100), nbins=10)\nh = fit(Histogram, rand(100), weights(rand(100)), 0:0.1:1.0)\nh = fit(Histogram, [20], 0:20:100)\nh = fit(Histogram, [20], 0:20:100, closed=:left)\n\n# Multivariate\nh = fit(Histogram, (rand(100),rand(100)))\nh = fit(Histogram, (rand(100),rand(100)),nbins=10)\n\n\n\n"
 },
 
@@ -940,7 +940,7 @@ var documenterSearchIndex = {"docs": [
     "location": "empirical.html#StatsBase.ecdf",
     "page": "Empirical Estimation",
     "title": "StatsBase.ecdf",
-    "category": "Function",
+    "category": "function",
     "text": "ecdf(X)\n\nReturn an empirical cumulative distribution function (ECDF) based on a vector of samples given in X.\n\nNote: this is a higher-level function that returns a function, which can then be applied to evaluate CDF values on other samples.\n\n\n\n"
 },
 
@@ -972,7 +972,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.autocov",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocov",
-    "category": "Function",
+    "category": "function",
     "text": "autocov(x, [lags]; demean=true)\n\nCompute the autocovariance of a vector or matrix x, optionally specifying the lags at which to compute the autocovariance. demean denotes whether the mean of x should be subtracted from x before computing the autocovariance.\n\nIf x is a vector, return a vector of the same length as x. If x is a matrix, return a matrix of size (length(lags), size(x,2)), where each column in the result corresponds to a column in x.\n\nWhen left unspecified, the lags used are the integers from 0 to min(size(x,1)-1, 10*log10(size(x,1))).\n\nThe output is not normalized. See autocor for a function with normalization.\n\n\n\n"
 },
 
@@ -980,7 +980,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.autocov!",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocov!",
-    "category": "Function",
+    "category": "function",
     "text": "autocov!(r, x, lags; demean=true)\n\nCompute the autocovariance of a vector or matrix x at lags and store the result in r. demean denotes whether the mean of x should be subtracted from x before computing the autocovariance.\n\nIf x is a vector, r must be a vector of the same length as x. If x is a matrix, r must be a matrix of size (length(lags), size(x,2)), and where each column in the result will correspond to a column in x.\n\nThe output is not normalized. See autocor! for a method with normalization.\n\n\n\n"
 },
 
@@ -988,7 +988,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.autocor",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocor",
-    "category": "Function",
+    "category": "function",
     "text": "autocor(x, [lags]; demean=true)\n\nCompute the autocorrelation function (ACF) of a vector or matrix x, optionally specifying the lags. demean denotes whether the mean of x should be subtracted from x before computing the ACF.\n\nIf x is a vector, return a vector of the same length as x. If x is a matrix, return a matrix of size (length(lags), size(x,2)), where each column in the result corresponds to a column in x.\n\nWhen left unspecified, the lags used are the integers from 0 to min(size(x,1)-1, 10*log10(size(x,1))).\n\nThe output is normalized by the variance of x, i.e. so that the lag 0 autocorrelation is 1. See autocov for the unnormalized form.\n\n\n\n"
 },
 
@@ -996,7 +996,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.autocor!",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.autocor!",
-    "category": "Function",
+    "category": "function",
     "text": "autocor!(r, x, lags; demean=true)\n\nCompute the autocorrelation function (ACF) of a vector or matrix x at lags and store the result in r. demean denotes whether the mean of x should be subtracted from x before computing the ACF.\n\nIf x is a vector, r must be a vector of the same length as x. If x is a matrix, r must be a matrix of size (length(lags), size(x,2)), and where each column in the result will correspond to a column in x.\n\nThe output is normalized by the variance of x, i.e. so that the lag 0 autocorrelation is 1. See autocov! for the unnormalized form.\n\n\n\n"
 },
 
@@ -1012,7 +1012,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.crosscov",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscov",
-    "category": "Function",
+    "category": "function",
     "text": "crosscov(x, y, [lags]; demean=true)\n\nCompute the cross covariance function (CCF) between real-valued vectors or matrices x and y, optionally specifying the lags. demean specifies whether the respective means of x and y should be subtracted from them before computing their CCF.\n\nIf both x and y are vectors, return a vector of the same length as lags. Otherwise, compute cross covariances between each pairs of columns in x and y.\n\nWhen left unspecified, the lags used are the integers from -min(size(x,1)-1, 10*log10(size(x,1))) to min(size(x,1), 10*log10(size(x,1))).\n\nThe output is not normalized. See crosscor for a function with normalization.\n\n\n\n"
 },
 
@@ -1020,7 +1020,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.crosscov!",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscov!",
-    "category": "Function",
+    "category": "function",
     "text": "crosscov!(r, x, y, lags; demean=true)\n\nCompute the cross covariance function (CCF) between real-valued vectors or matrices x and y at lags and store the result in r. demean specifies whether the respective means of x and y should be subtracted from them before computing their CCF.\n\nIf both x and y are vectors, r must be a vector of the same length as lags. If either x is a matrix and y is a vector, r must be a matrix of size (length(lags), size(x, 2)); if x is a vector and y is a matrix, r must be a matrix of size (length(lags), size(y, 2)). If both x and y are matrices, r must be a three-dimensional array of size (length(lags), size(x, 2), size(y, 2)).\n\nThe output is not normalized. See crosscor! for a function with normalization.\n\n\n\n"
 },
 
@@ -1028,7 +1028,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.crosscor",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscor",
-    "category": "Function",
+    "category": "function",
     "text": "crosscor(x, y, [lags]; demean=true)\n\nCompute the cross correlation between real-valued vectors or matrices x and y, optionally specifying the lags. demean specifies whether the respective means of x and y should be subtracted from them before computing their cross correlation.\n\nIf both x and y are vectors, return a vector of the same length as lags. Otherwise, compute cross covariances between each pairs of columns in x and y.\n\nWhen left unspecified, the lags used are the integers from -min(size(x,1)-1, 10*log10(size(x,1))) to min(size(x,1), 10*log10(size(x,1))).\n\nThe output is normalized by sqrt(var(x)*var(y)). See crosscov for the unnormalized form.\n\n\n\n"
 },
 
@@ -1036,7 +1036,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.crosscor!",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.crosscor!",
-    "category": "Function",
+    "category": "function",
     "text": "crosscor!(r, x, y, lags; demean=true)\n\nCompute the cross correlation between real-valued vectors or matrices x and y at lags and store the result in r. demean specifies whether the respective means of x and y should be subtracted from them before computing their cross correlation.\n\nIf both x and y are vectors, r must be a vector of the same length as lags. If either x is a matrix and y is a vector, r must be a matrix of size (length(lags), size(x, 2)); if x is a vector and y is a matrix, r must be a matrix of size (length(lags), size(y, 2)). If both x and y are matrices, r must be a three-dimensional array of size (length(lags), size(x, 2), size(y, 2)).\n\nThe output is normalized by sqrt(var(x)*var(y)). See crosscov! for the unnormalized form.\n\n\n\n"
 },
 
@@ -1052,7 +1052,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.pacf",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.pacf",
-    "category": "Function",
+    "category": "function",
     "text": "pacf(X, lags; method=:regression)\n\nCompute the partial autocorrelation function (PACF) of a real-valued vector or matrix X at lags. method designates the estimation method. Recognized values are :regression, which computes the partial autocorrelations via successive regression models, and :yulewalker, which computes the partial autocorrelations using the Yule-Walker equations.\n\nIf x is a vector, return a vector of the same length as lags. If x is a matrix, return a matrix of size (length(lags), size(x, 2)), where each column in the result corresponds to a column in x.\n\n\n\n"
 },
 
@@ -1060,7 +1060,7 @@ var documenterSearchIndex = {"docs": [
     "location": "signalcorr.html#StatsBase.pacf!",
     "page": "Correlation Analysis of Signals",
     "title": "StatsBase.pacf!",
-    "category": "Function",
+    "category": "function",
     "text": "pacf!(r, X, lags; method=:regression)\n\nCompute the partial autocorrelation function (PACF) of a matrix X at lags and store the result in r. method designates the estimation method. Recognized values are :regression, which computes the partial autocorrelations via successive regression models, and :yulewalker, which computes the partial autocorrelations using the Yule-Walker equations.\n\nr must be a matrix of size (length(lags), size(x, 2)).\n\n\n\n"
 },
 
@@ -1084,7 +1084,7 @@ var documenterSearchIndex = {"docs": [
     "location": "misc.html#StatsBase.rle",
     "page": "Miscellaneous Functions",
     "title": "StatsBase.rle",
-    "category": "Function",
+    "category": "function",
     "text": "rle(v) -> (vals, lens)\n\nReturn the run-length encoding of a vector as a tuple. The first element of the tuple is a vector of values of the input and the second is the number of consecutive occurrences of each element.\n\nExamples\n\njulia> using StatsBase\n\njulia> rle([1,1,1,2,2,3,3,3,3,2,2,2])\n([1, 2, 3, 2], [3, 2, 4, 3])\n\n\n\n"
 },
 
@@ -1092,7 +1092,7 @@ var documenterSearchIndex = {"docs": [
     "location": "misc.html#StatsBase.inverse_rle",
     "page": "Miscellaneous Functions",
     "title": "StatsBase.inverse_rle",
-    "category": "Function",
+    "category": "function",
     "text": "inverse_rle(vals, lens)\n\nReconstruct a vector from its run-length encoding (see rle). vals is a vector of the values and lens is a vector of the corresponding run lengths.\n\n\n\n"
 },
 
@@ -1100,7 +1100,7 @@ var documenterSearchIndex = {"docs": [
     "location": "misc.html#StatsBase.levelsmap",
     "page": "Miscellaneous Functions",
     "title": "StatsBase.levelsmap",
-    "category": "Function",
+    "category": "function",
     "text": "levelsmap(a)\n\nConstruct a dictionary that maps each of the n unique values in a to a number between 1 and n.\n\n\n\n"
 },
 
@@ -1108,7 +1108,7 @@ var documenterSearchIndex = {"docs": [
     "location": "misc.html#StatsBase.indexmap",
     "page": "Miscellaneous Functions",
     "title": "StatsBase.indexmap",
-    "category": "Function",
+    "category": "function",
     "text": "indexmap(a)\n\nConstruct a dictionary that maps each unique value in a to the index of its first occurrence in a.\n\n\n\n"
 },
 
@@ -1116,7 +1116,7 @@ var documenterSearchIndex = {"docs": [
     "location": "misc.html#StatsBase.indicatormat",
     "page": "Miscellaneous Functions",
     "title": "StatsBase.indicatormat",
-    "category": "Function",
+    "category": "function",
     "text": "indicatormat(x, k::Integer; sparse=false)\n\nConstruct a boolean matrix I of size (k, length(x)) such that I[x[i], i] = true and all other elements are set to false. If sparse is true, the output will be a sparse matrix, otherwise it will be dense (default).\n\nExamples\n\njulia> using StatsBase\n\njulia> indicatormat([1 2 2], 2)\n2×3 Array{Bool,2}:\n  true  false  false\n false   true   true\n\n\n\nindicatormat(x, c=sort(unique(x)); sparse=false)\n\nConstruct a boolean matrix I of size (length(c), length(x)). Let ci be the index of x[i] in c. Then I[ci, i] = true and all other elements are false.\n\n\n\n"
 },
 
@@ -1124,7 +1124,7 @@ var documenterSearchIndex = {"docs": [
     "location": "misc.html#StatsBase.midpoints",
     "page": "Miscellaneous Functions",
     "title": "StatsBase.midpoints",
-    "category": "Function",
+    "category": "function",
     "text": "StatsBase.midpoints(v)\n\nCalculate the midpoints (pairwise mean of consecutive elements).\n\n\n\n"
 },
 
@@ -1148,7 +1148,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.adjr2",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.adjr2",
-    "category": "Function",
+    "category": "function",
     "text": "adjr2(obj::StatisticalModel, variant::Symbol)\nadjr²(obj::StatisticalModel, variant::Symbol)\n\nAdjusted coefficient of determination (adjusted R-squared).\n\nFor linear models, the adjusted R² is defined as 1 - (1 - (1-R^2)(n-1)(n-p)), with R^2 the coefficient of determination, n the number of observations, and p the number of coefficients (including the intercept). This definition is generally known as the Wherry Formula I.\n\nFor other models, one of the several pseudo R² definitions must be chosen via variant. The only currently supported variant is :MacFadden, defined as 1 - (log L - k)log L0. In this formula, L is the likelihood of the model, L0 that of the null model (the model including only the intercept). These two quantities are taken to be minus half deviance of the corresponding models. k is the number of consumed degrees of freedom of the model (as returned by dof).\n\n\n\n"
 },
 
@@ -1156,7 +1156,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.aic",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.aic",
-    "category": "Function",
+    "category": "function",
     "text": "aic(obj::StatisticalModel)\n\nAkaike\'s Information Criterion, defined as -2 log L + 2k, with L the likelihood of the model, and k its number of consumed degrees of freedom (as returned by dof).\n\n\n\n"
 },
 
@@ -1164,7 +1164,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.aicc",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.aicc",
-    "category": "Function",
+    "category": "function",
     "text": "aicc(obj::StatisticalModel)\n\nCorrected Akaike\'s Information Criterion for small sample sizes (Hurvich and Tsai 1989), defined as -2 log L + 2k + 2k(k-1)(n-k-1), with L the likelihood of the model, k its number of consumed degrees of freedom (as returned by dof), and n the number of observations (as returned by nobs).\n\n\n\n"
 },
 
@@ -1172,7 +1172,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.bic",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.bic",
-    "category": "Function",
+    "category": "function",
     "text": "bic(obj::StatisticalModel)\n\nBayesian Information Criterion, defined as -2 log L + k log n, with L the likelihood of the model,  k its number of consumed degrees of freedom (as returned by dof), and n the number of observations (as returned by nobs).\n\n\n\n"
 },
 
@@ -1180,7 +1180,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.coef",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.coef",
-    "category": "Function",
+    "category": "function",
     "text": "coef(obj::StatisticalModel)\n\nReturn the coefficients of the model.\n\n\n\n"
 },
 
@@ -1188,7 +1188,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.coefnames",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.coefnames",
-    "category": "Function",
+    "category": "function",
     "text": "coefnames(obj::StatisticalModel)\n\nReturn the names of the coefficients.\n\n\n\n"
 },
 
@@ -1196,7 +1196,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.coeftable",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.coeftable",
-    "category": "Function",
+    "category": "function",
     "text": "coeftable(obj::StatisticalModel)\n\nReturn a table of class CoefTable with coefficients and related statistics.\n\n\n\n"
 },
 
@@ -1204,7 +1204,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.confint",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.confint",
-    "category": "Function",
+    "category": "function",
     "text": "confint(obj::StatisticalModel)\n\nCompute confidence intervals for coefficients.\n\n\n\n"
 },
 
@@ -1212,7 +1212,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.deviance",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.deviance",
-    "category": "Function",
+    "category": "function",
     "text": "deviance(obj::StatisticalModel)\n\nReturn the deviance of the model relative to a reference, which is usually when applicable the saturated model. It is equal, up to a constant, to -2 log L, with L the likelihood of the model.\n\n\n\n"
 },
 
@@ -1220,7 +1220,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.dof",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.dof",
-    "category": "Function",
+    "category": "function",
     "text": "dof(obj::StatisticalModel)\n\nReturn the number of degrees of freedom consumed in the model, including when applicable the intercept and the distribution\'s dispersion parameter.\n\n\n\n"
 },
 
@@ -1228,7 +1228,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.fit",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.fit",
-    "category": "Function",
+    "category": "function",
     "text": "fit(Histogram, data[, weight][, edges]; closed=:right, nbins)\n\nFit a histogram to data.\n\nArguments\n\ndata: either a vector (for a 1-dimensional histogram), or a tuple of vectors of equal length (for an n-dimensional histogram).\nweight: an optional AbstractWeights (of the same length as the data vectors), denoting the weight each observation contributes to the bin. If no weight vector is supplied, each observation has weight 1.\nedges: a vector (typically an AbstractRange object), or tuple of vectors, that gives the edges of the bins along each dimension. If no edges are provided, these are determined from the data.\n\nKeyword arguments\n\nclosed=:right: if :left, the bin intervals are left-closed [a,b); if :right (the default), intervals are right-closed (a,b].\nnbins: if no edges argument is supplied, the approximate number of bins to use along each dimension (can be either a single integer, or a tuple of integers).\n\nExamples\n\n# Univariate\nh = fit(Histogram, rand(100))\nh = fit(Histogram, rand(100), 0:0.1:1.0)\nh = fit(Histogram, rand(100), nbins=10)\nh = fit(Histogram, rand(100), weights(rand(100)), 0:0.1:1.0)\nh = fit(Histogram, [20], 0:20:100)\nh = fit(Histogram, [20], 0:20:100, closed=:left)\n\n# Multivariate\nh = fit(Histogram, (rand(100),rand(100)))\nh = fit(Histogram, (rand(100),rand(100)),nbins=10)\n\n\n\nFit a statistical model.\n\n\n\n"
 },
 
@@ -1236,7 +1236,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.fit!",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.fit!",
-    "category": "Function",
+    "category": "function",
     "text": "Fit a statistical model in-place.\n\n\n\n"
 },
 
@@ -1244,7 +1244,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.loglikelihood",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.loglikelihood",
-    "category": "Function",
+    "category": "function",
     "text": "loglikelihood(obj::StatisticalModel)\n\nReturn the log-likelihood of the model.\n\n\n\n"
 },
 
@@ -1252,7 +1252,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.nobs",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.nobs",
-    "category": "Function",
+    "category": "function",
     "text": "nobs(obj::StatisticalModel)\n\nReturn the number of independent observations on which the model was fitted. Be careful when using this information, as the definition of an independent observation may vary depending on the model, on the format used to pass the data, on the sampling plan (if specified), etc.\n\n\n\n"
 },
 
@@ -1260,7 +1260,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.nulldeviance",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.nulldeviance",
-    "category": "Function",
+    "category": "function",
     "text": "nulldeviance(obj::StatisticalModel)\n\nReturn the deviance of the null model, that is the one including only the intercept.\n\n\n\n"
 },
 
@@ -1268,7 +1268,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.r2",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.r2",
-    "category": "Function",
+    "category": "function",
     "text": "r2(obj::StatisticalModel, variant::Symbol)\nr²(obj::StatisticalModel, variant::Symbol)\n\nCoefficient of determination (R-squared).\n\nFor a linear model, the R² is defined as ESSTSS, with ESS the explained sum of squares and TSS the total sum of squares, and variant can be omitted.\n\nFor other models, one of several pseudo R² definitions must be chosen via variant. Supported variants are:\n\n:MacFadden (a.k.a. likelihood ratio index), defined as 1 - log Llog L0.\n:CoxSnell, defined as 1 - (L0L)^2n\n:Nagelkerke, defined as (1 - (L0L)^2n)(1 - L0^2n), with n the number\n\nof observations (as returned by nobs).\n\nIn the above formulas, L is the likelihood of the model, L0 that of the null model (the model including only the intercept). These two quantities are taken to be minus half deviance of the corresponding models.\n\n\n\n"
 },
 
@@ -1276,7 +1276,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.stderr",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.stderr",
-    "category": "Function",
+    "category": "function",
     "text": "stderr(obj::StatisticalModel)\n\nReturn the standard errors for the coefficients of the model.\n\n\n\n"
 },
 
@@ -1284,7 +1284,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.vcov",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.vcov",
-    "category": "Function",
+    "category": "function",
     "text": "vcov(obj::StatisticalModel)\n\nReturn the variance-covariance matrix for the coefficients of the model.\n\n\n\n"
 },
 
@@ -1292,7 +1292,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.dof_residual",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.dof_residual",
-    "category": "Function",
+    "category": "function",
     "text": "dof_residual(obj::RegressionModel)\n\nReturn the residual degrees of freedom of the model.\n\n\n\n"
 },
 
@@ -1300,7 +1300,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.fitted",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.fitted",
-    "category": "Function",
+    "category": "function",
     "text": "fitted(obj::RegressionModel)\n\nReturn the fitted values of the model.\n\n\n\n"
 },
 
@@ -1308,7 +1308,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.modelmatrix",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.modelmatrix",
-    "category": "Function",
+    "category": "function",
     "text": "modelmatrix(obj::RegressionModel)\n\nReturn the model matrix (a.k.a. the design matrix).\n\n\n\n"
 },
 
@@ -1316,7 +1316,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.model_response",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.model_response",
-    "category": "Function",
+    "category": "function",
     "text": "model_response(obj::RegressionModel)\n\nReturn the model response (a.k.a. the dependent variable).\n\n\n\n"
 },
 
@@ -1324,7 +1324,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.predict",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.predict",
-    "category": "Function",
+    "category": "function",
     "text": "predict(obj::RegressionModel, [newX])\n\nForm the predicted response of model obj. An object with new covariate values newX can be supplied, which should have the same type and structure as that used to fit obj; e.g. for a GLM it would generally be a DataFrame with the same variable names as the original predictors.\n\n\n\n"
 },
 
@@ -1332,7 +1332,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.predict!",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.predict!",
-    "category": "Function",
+    "category": "function",
     "text": "predict!\n\nIn-place version of predict.\n\n\n\n"
 },
 
@@ -1340,7 +1340,7 @@ var documenterSearchIndex = {"docs": [
     "location": "statmodels.html#StatsBase.residuals",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.residuals",
-    "category": "Function",
+    "category": "function",
     "text": "residuals(obj::RegressionModel)\n\nReturn the residuals of the model.\n\n\n\n"
 },
 
