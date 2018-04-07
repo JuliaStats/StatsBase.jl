@@ -85,5 +85,5 @@ rand(s::RandIntSampler) = rand(Compat.Random.GLOBAL_RNG, s)
 @deprecate randi(a::Int, b::Int) rand(a:b)
 
 @deprecate(mad!(v::AbstractArray{T}, center;
-                constant::Real = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))) where T<:Real,
+                constant::Real = k) where T<:Real,
            mad!(v, center=center, constant=constant))

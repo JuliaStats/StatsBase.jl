@@ -249,7 +249,7 @@ of the standard deviation under the assumption that the data is normally distrib
 """
 function mad(v::AbstractArray{T};
              center::Union{Real,Nothing}=nothing,
-             normalize::Union{Bool, Nothing}=nothing) where T<:Real
+             normalize::Union{Bool, Nothing}=nothing) where T<:Union{AbstractFloat,Integer}
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
     S = promote_type(T, typeof(middle(first(v))))
@@ -277,22 +277,23 @@ of the standard deviation under the assumption that the data is normally distrib
 function mad!(v::AbstractArray{T};
               center::Real=median!(v),
               normalize::Union{Bool,Nothing}=true,
-              constant=nothing) where T<:Real
-    for i in 1:length(v)
+              constant=nothing) where T<:Union{AbstractFloat,Integer}
+    isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
+    for i ∈ eachindex(v)
         @inbounds v[i] = abs(v[i]-center)
     end
-    k = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))
-    if normalize === nothing
+    m = median!(v)
+    if normalize isa Nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
         normalize = true
     end
-    if constant !== nothing
+    if !isa(constant, Nothing)
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
-        constant * median!(v)
+        m *= constant
     elseif normalize
-        k * median!(v)
+        m *= oftype(m, k)
     else
-        one(k) * median!(v)
+        m
     end
 end
 
