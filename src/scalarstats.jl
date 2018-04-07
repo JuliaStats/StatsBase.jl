@@ -289,9 +289,9 @@ function mad!(v::AbstractArray{T};
     end
     if !isa(constant, Nothing)
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
-        m *= constant
+        m * constant
     elseif normalize
-        m *= oftype(m, k)
+        m * oftype(m, k)
     else
         m
     end
