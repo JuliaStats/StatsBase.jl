@@ -279,8 +279,7 @@ function mad!(v::AbstractArray{T};
               normalize::Union{Bool,Nothing}=true,
               constant=nothing) where T<:Union{AbstractFloat,Integer}
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
-    for i ∈ eachindex(v)
-        @inbounds v[i] = abs(v[i]-center)
+    v[i] .= abs.(v .- center)
     end
     m = median!(v)
     if normalize isa Nothing
@@ -289,9 +288,10 @@ function mad!(v::AbstractArray{T};
     end
     if !isa(constant, Nothing)
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
-        m *= constant
+        m * constant
     elseif normalize
-        m *= oftype(m, k)
+        ## inv(sqrt(2) * erfinv(.5)) From https://www.wolframalpha.com/input/?i=1+%2F+(sqrt(2)+*+erfinv(.5))
+        m * oftype(m, BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701"))
     else
         m
     end

@@ -85,5 +85,6 @@ rand(s::RandIntSampler) = rand(Compat.Random.GLOBAL_RNG, s)
 @deprecate randi(a::Int, b::Int) rand(a:b)
 
 @deprecate(mad!(v::AbstractArray{T}, center;
-                constant::Real = k) where T<:Real,
+                constant::Real = BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701"))
+                where T<:Real,
            mad!(v, center=center, constant=constant))
