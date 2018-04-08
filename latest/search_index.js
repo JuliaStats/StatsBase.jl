@@ -1149,7 +1149,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.adjr2",
     "category": "function",
-    "text": "adjr2(obj::StatisticalModel, variant::Symbol)\nadjr²(obj::StatisticalModel, variant::Symbol)\n\nAdjusted coefficient of determination (adjusted R-squared).\n\nFor linear models, the adjusted R² is defined as 1 - (1 - (1-R^2)(n-1)(n-p)), with R^2 the coefficient of determination, n the number of observations, and p the number of coefficients (including the intercept). This definition is generally known as the Wherry Formula I.\n\nFor other models, one of the several pseudo R² definitions must be chosen via variant. The only currently supported variant is :MacFadden, defined as 1 - (log L - k)log L0. In this formula, L is the likelihood of the model, L0 that of the null model (the model including only the intercept). These two quantities are taken to be minus half deviance of the corresponding models. k is the number of consumed degrees of freedom of the model (as returned by dof).\n\n\n\n"
+    "text": "adjr2(obj::StatisticalModel)\nadjr²(obj::StatisticalModel)\n\nAdjusted coefficient of determination (adjusted R-squared).\n\nFor linear models, the adjusted R² is defined as 1 - (1 - (1-R^2)(n-1)(n-p)), with R^2 the coefficient of determination, n the number of observations, and p the number of coefficients (including the intercept). This definition is generally known as the Wherry Formula I.\n\n\n\nadjr2(obj::StatisticalModel, variant::Symbol)\nadjr²(obj::StatisticalModel, variant::Symbol)\n\nAdjusted pseudo-coefficient of determination (adjusted pseudo R-squared).\n\nFor nonlinear models, one of the several pseudo R² definitions must be chosen via variant. The only currently supported variant is :MacFadden, defined as 1 - (log L - k)log L0. In this formula, L is the likelihood of the model, L0 that of the null model (the model including only the intercept). These two quantities are taken to be minus half deviance of the corresponding models. k is the number of consumed degrees of freedom of the model (as returned by dof).\n\n\n\n"
 },
 
 {
@@ -1241,11 +1241,43 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "statmodels.html#StatsBase.informationmatrix",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.informationmatrix",
+    "category": "function",
+    "text": "informationmatrix(model::StatisticalModel; expected::Bool = true)\n\nReturn the information matrix. By default the Fisher information matrix is returned, while the observed information matrix can be requested with expected = false.\n\n\n\n"
+},
+
+{
+    "location": "statmodels.html#StatsBase.isfitted",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.isfitted",
+    "category": "function",
+    "text": "isfitted(obj::StatisticalModel)\n\nIndicate whether the model has been fitted.\n\n\n\n"
+},
+
+{
+    "location": "statmodels.html#StatsBase.islinear",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.islinear",
+    "category": "function",
+    "text": "islinear(obj::StatisticalModel)\n\nIndicate whether the model is linear.\n\n\n\n"
+},
+
+{
     "location": "statmodels.html#StatsBase.loglikelihood",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.loglikelihood",
     "category": "function",
     "text": "loglikelihood(obj::StatisticalModel)\n\nReturn the log-likelihood of the model.\n\n\n\n"
+},
+
+{
+    "location": "statmodels.html#StatsBase.mss",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.mss",
+    "category": "function",
+    "text": "mss(obj::StatisticalModel)\n\nReturn the model sum of squares.\n\n\n\n"
 },
 
 {
@@ -1269,7 +1301,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.r2",
     "category": "function",
-    "text": "r2(obj::StatisticalModel, variant::Symbol)\nr²(obj::StatisticalModel, variant::Symbol)\n\nCoefficient of determination (R-squared).\n\nFor a linear model, the R² is defined as ESSTSS, with ESS the explained sum of squares and TSS the total sum of squares, and variant can be omitted.\n\nFor other models, one of several pseudo R² definitions must be chosen via variant. Supported variants are:\n\n:MacFadden (a.k.a. likelihood ratio index), defined as 1 - log Llog L0.\n:CoxSnell, defined as 1 - (L0L)^2n\n:Nagelkerke, defined as (1 - (L0L)^2n)(1 - L0^2n), with n the number\n\nof observations (as returned by nobs).\n\nIn the above formulas, L is the likelihood of the model, L0 that of the null model (the model including only the intercept). These two quantities are taken to be minus half deviance of the corresponding models.\n\n\n\n"
+    "text": "r2(obj::StatisticalModel)\nr²(obj::StatisticalModel)\n\nCoefficient of determination (R-squared).\n\nFor a linear model, the R² is defined as ESSTSS, with ESS the explained sum of squares and TSS the total sum of squares.\n\n\n\nr2(obj::StatisticalModel, variant::Symbol)\nr²(obj::StatisticalModel, variant::Symbol)\n\nPseudo-coefficient of determination (pseudo R-squared).\n\nFor nonlinear models, one of several pseudo R² definitions must be chosen via variant. Supported variants are:\n\n:MacFadden (a.k.a. likelihood ratio index), defined as 1 - log Llog L0.\n:CoxSnell, defined as 1 - (L0L)^2n\n:Nagelkerke, defined as (1 - (L0L)^2n)(1 - L0^2n), with n the number\n\nof observations (as returned by nobs).\n\nIn the above formulas, L is the likelihood of the model, L0 that of the null model (the model including only the intercept). These two quantities are taken to be minus half deviance of the corresponding models.\n\n\n\n"
+},
+
+{
+    "location": "statmodels.html#StatsBase.rss",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.rss",
+    "category": "function",
+    "text": "rss(obj::StatisticalModel)\n\nReturn the residual sum of squares.\n\n\n\n"
+},
+
+{
+    "location": "statmodels.html#StatsBase.score",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.score",
+    "category": "function",
+    "text": "score(obj::StatisticalModel)\n\nReturn the score of the statistical model. The score is the gradient of the log-likelihood with respect to the coefficients.\n\n\n\n"
 },
 
 {
@@ -1289,6 +1337,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "statmodels.html#StatsBase.weights-Tuple{StatsBase.StatisticalModel}",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.weights",
+    "category": "method",
+    "text": "weights(obj::StatisticalModel)\n\nReturn the weights used in the model.\n\n\n\n"
+},
+
+{
     "location": "statmodels.html#StatsBase.dof_residual",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.dof_residual",
@@ -1305,6 +1361,22 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "statmodels.html#StatsBase.leverage",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.leverage",
+    "category": "function",
+    "text": "leverage(obj::RegressionModel)\n\nReturn the diagonal of the projection matrix.\n\n\n\n"
+},
+
+{
+    "location": "statmodels.html#StatsBase.meanresponse",
+    "page": "Abstraction for Statistical Models",
+    "title": "StatsBase.meanresponse",
+    "category": "function",
+    "text": "meanresponse(obj::RegressionModel)\n\nReturn the mean of the response.\n\n\n\n"
+},
+
+{
     "location": "statmodels.html#StatsBase.modelmatrix",
     "page": "Abstraction for Statistical Models",
     "title": "StatsBase.modelmatrix",
@@ -1313,11 +1385,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "statmodels.html#StatsBase.model_response",
+    "location": "statmodels.html#StatsBase.response",
     "page": "Abstraction for Statistical Models",
-    "title": "StatsBase.model_response",
+    "title": "StatsBase.response",
     "category": "function",
-    "text": "model_response(obj::RegressionModel)\n\nReturn the model response (a.k.a. the dependent variable).\n\n\n\n"
+    "text": "response(obj::RegressionModel)\n\nReturn the model response (a.k.a. the dependent variable).\n\n\n\n"
 },
 
 {
@@ -1349,7 +1421,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "Abstraction for Statistical Models",
     "category": "section",
-    "text": "This package defines an abstract type StatisticalModel, and an abstract subtype RegressionModel.Particularly, instances of StatisticalModel implement the following methods.adjr2\naic\naicc\nbic\ncoef\ncoefnames\ncoeftable\nconfint\ndeviance\ndof\nfit\nfit!\nloglikelihood\nnobs\nnulldeviance\nr2\nstderr\nvcovRegressionModel extends StatisticalModel by implementing the following additional methods.dof_residual\nfitted\nmodelmatrix\nmodel_response\npredict\npredict!\nresiduals"
+    "text": "This package defines an abstract type StatisticalModel, and an abstract subtype RegressionModel.Particularly, instances of StatisticalModel implement the following methods.adjr2\naic\naicc\nbic\ncoef\ncoefnames\ncoeftable\nconfint\ndeviance\ndof\nfit\nfit!\ninformationmatrix\nisfitted\nislinear\nloglikelihood\nmss\nnobs\nnulldeviance\nr2\nrss\nscore\nstderr\nvcov\nweights(::StatisticalModel)RegressionModel extends StatisticalModel by implementing the following additional methods.dof_residual\nfitted\nleverage\nmeanresponse\nmodelmatrix\nresponse\npredict\npredict!\nresiduals"
 },
 
 ]}
