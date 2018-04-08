@@ -13,10 +13,6 @@ module StatsBase
     import Compat.Random: rand, rand!
     import Compat.LinearAlgebra: BlasReal, BlasFloat
 
-    ## Constants
-    ## inv(sqrt(2) * erfinv(.5)) From https://www.wolframalpha.com/input/?i=1+%2F+(sqrt(2)+*+erfinv(.5))
-    const k = parse(BigFloat,"1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
-
     ## tackle compatibility issues
 
     export
