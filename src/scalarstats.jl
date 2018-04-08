@@ -279,8 +279,7 @@ function mad!(v::AbstractArray{T};
               normalize::Union{Bool,Nothing}=true,
               constant=nothing) where T<:Union{AbstractFloat,Integer}
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
-    v[i] .= abs.(v .- center)
-    end
+    v .= abs.(v .- center)
     m = median!(v)
     if normalize isa Nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
