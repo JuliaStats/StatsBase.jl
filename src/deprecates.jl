@@ -20,6 +20,15 @@ import Base.varm, Base.stdm
 @deprecate AICc(obj::StatisticalModel) aicc(obj)
 @deprecate BIC(obj::StatisticalModel) bic(obj)
 
+if !isdefined(Base, :stderr)
+    @deprecate stderr(obj::StatisticalModel) stderror(obj)
+else
+    function (io::IO)(obj::StatisticalModel)
+        Base.depwarn("stderr(obj::StatisticalModel) is deprecated, use stderror(obj) instead", :stderr)
+            io === stderr ? stderror(obj) : throw(MethodErrror(io, (obj,)))
+    end
+end
+
 @deprecate R2(obj::StatisticalModel, variant::Symbol) r2(obj, variant)
 @deprecate R²(obj::StatisticalModel, variant::Symbol) r²(obj, variant)
 @deprecate adjR2(obj::StatisticalModel, variant::Symbol) adjr2(obj, variant)
@@ -37,7 +46,6 @@ function findat!(r::IntegerArray, a::AbstractArray{T}, b::AbstractArray{T}) wher
     end
     return r
 end
-
 
 """
     findat(a, b)

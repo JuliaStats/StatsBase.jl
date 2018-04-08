@@ -181,6 +181,7 @@ module StatsBase
     rss,
     score,
     stderr,
+    stderror,
     vcov,
     predict,
     predict!,
