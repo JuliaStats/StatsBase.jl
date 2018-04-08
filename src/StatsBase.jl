@@ -168,11 +168,20 @@ module StatsBase
     fit,
     fit!,
     fitted,
+    informationmatrix,
+    isfitted,
+    islinear,
+    leverage,
     loglikelihood,
+    meanresponse,
     modelmatrix,
+    mss,
+    response,
     nobs,
     nulldeviance,
     nullloglikelihood,
+    rss,
+    score,
     stderr,
     vcov,
     predict,
@@ -180,7 +189,6 @@ module StatsBase
     residuals,
     r2,
     r²,
-    model_response,
 
     ConvergenceException
 

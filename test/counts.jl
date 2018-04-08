@@ -123,3 +123,8 @@ for T in [UInt8, UInt16, Int8, Int16]
     tx = T[typemin(T), 8, typemax(T), 19, 8]
     @test countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
 end
+
+@testset "views" begin
+    X = view([1,1,1,2,2], 1:5)
+    @test countmap(X) == countmap(copy(X))
+end

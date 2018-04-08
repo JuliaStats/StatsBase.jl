@@ -323,16 +323,13 @@ const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
 radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
 radixsort_safe(::Type) = false
 
-function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
-    # sort the x using radixsort
-    sx = sort(x, alg = RadixSort)::typeof(x)
-
+function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     tmpcount = 1
     last_sx = sx[1]
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
-    for i in 2:length(sx)
+    @inbounds for i in 2:length(sx)
         sxi = sx[i]
         if last_sx == sxi
             tmpcount += 1
@@ -346,6 +343,16 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     cm[sx[end]] = tmpcount
 
     return cm
+end
+
+function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
+    # sort the x using radixsort
+    sx = sort(x, alg = RadixSort)
+
+    # Delegate the loop to a separate function since sort might not
+    # be inferred in Julia 0.6 after SortingAlgorithms is loaded.
+    # It seems that sort is inferred in Julia 0.7.
+    return _addcounts_radix_sort_loop!(cm, sx)
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
