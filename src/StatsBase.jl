@@ -3,6 +3,7 @@ __precompile__()
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base.Cartesian: @nloops, @nref, @nextract
+    using Base: @irrational
     import DataStructures: heapify!, heappop!, percolate_down!
 
     using Compat, SortingAlgorithms, Missings
@@ -13,9 +14,6 @@ module StatsBase
     import Compat.Random: rand, rand!
     import Compat.LinearAlgebra: BlasReal, BlasFloat
 
-    ## Constants
-    ## inv(sqrt(2) * erfinv(.5)) From https://www.wolframalpha.com/input/?i=1+%2F+(sqrt(2)+*+erfinv(.5))
-    const k = parse(BigFloat,"1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
 
     ## tackle compatibility issues
 

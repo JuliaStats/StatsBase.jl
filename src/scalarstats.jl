@@ -263,7 +263,7 @@ function mad(v::AbstractArray{T};
     mad!(v2, center=center === nothing ? median!(v2) : center, normalize=normalize)
 end
 
-
+@irrational k 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
 """
     StatsBase.mad!(v; center=median!(v), normalize=true)
 
@@ -275,11 +275,13 @@ If `normalize` is set to `true`, the MAD is multiplied by
 of the standard deviation under the assumption that the data is normally distributed.
 """
 function mad!(v::AbstractArray{T};
-              center::Real=median!(v),
+              center::Real= !isempty(v) ? median!(v) : ArgumentError("The median can't be computed."),
               normalize::Union{Bool,Nothing}=true,
-              constant=nothing) where T<:Union{AbstractFloat,Integer}
+              constant=nothing) where T<:Real
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
-    v[i] .= abs.(v .- center)
+    (length(v) == 1 | T <: Irrational) && return 0
+    for i ∈ eachindex(v)
+        @inbounds v[i] = abs(v[i] - center)
     end
     m = median!(v)
     if normalize isa Nothing
@@ -290,8 +292,12 @@ function mad!(v::AbstractArray{T};
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
         m * constant
     elseif normalize
-        ## inv(sqrt(2) * erfinv(.5)) From https://www.wolframalpha.com/input/?i=1+%2F+(sqrt(2)+*+erfinv(.5))
-        m * oftype(m, BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701"))
+        if T <: Rational
+            warn("Loss of precision occurs with the Rational type and normalize=true")
+            m * k
+        else
+            m * k
+        end
     else
         m
     end
