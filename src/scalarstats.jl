@@ -289,12 +289,7 @@ function mad!(v::AbstractArray{<:Real};
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
         m * constant
     elseif normalize
-        if T <: Rational
-            warn("Loss of precision occurs with the Rational type and normalize=true")
-            m * k
-        else
-            m * k
-        end
+        m * k
     else
         m
     end
