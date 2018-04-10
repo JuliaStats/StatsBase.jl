@@ -263,7 +263,7 @@ function mad(v::AbstractArray{T};
     mad!(v2, center=center === nothing ? median!(v2) : center, normalize=normalize)
 end
 
-@irrational k 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
+@irrational mad_constant 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
 """
     StatsBase.mad!(v; center=median!(v), normalize=true)
 
@@ -289,7 +289,7 @@ function mad!(v::AbstractArray{<:Real};
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
         m * constant
     elseif normalize
-        m * k
+        m * mad_constant
     else
         m
     end
