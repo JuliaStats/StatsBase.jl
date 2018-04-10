@@ -249,7 +249,7 @@ of the standard deviation under the assumption that the data is normally distrib
 """
 function mad(v::AbstractArray{T};
              center::Union{Real,Nothing}=nothing,
-             normalize::Union{Bool, Nothing}=nothing) where T<:Union{AbstractFloat,Integer}
+             normalize::Union{Bool, Nothing}=nothing) where T<:Real
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
     S = promote_type(T, typeof(middle(first(v))))
@@ -274,15 +274,12 @@ If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad!(v::AbstractArray{T};
-              center::Real= !isempty(v) ? median!(v) : ArgumentError("The median can't be computed."),
+function mad!(v::AbstractArray{<:Real};
+              center::Real=median!(v),
               normalize::Union{Bool,Nothing}=true,
-              constant=nothing) where T<:Real
+              constant=nothing)
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
-    (length(v) == 1 | T <: Irrational) && return 0
-    for i ∈ eachindex(v)
-        @inbounds v[i] = abs(v[i] - center)
-    end
+    v .= abs.(v .- center)
     m = median!(v)
     if normalize isa Nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
