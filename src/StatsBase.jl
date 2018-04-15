@@ -3,9 +3,8 @@ __precompile__()
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base.Cartesian: @nloops, @nref, @nextract
+    using Base: @irrational
     import DataStructures: heapify!, heappop!, percolate_down!
-
-    import SpecialFunctions: erfcinv
 
     using Compat, SortingAlgorithms, Missings
     using Compat.LinearAlgebra

@@ -263,7 +263,7 @@ function mad(v::AbstractArray{T};
     mad!(v2, center=center === nothing ? median!(v2) : center, normalize=normalize)
 end
 
-
+@irrational mad_constant 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
 """
     StatsBase.mad!(v; center=median!(v), normalize=true)
 
@@ -274,25 +274,24 @@ If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad!(v::AbstractArray{T};
+function mad!(v::AbstractArray{<:Real};
               center::Real=median!(v),
               normalize::Union{Bool,Nothing}=true,
-              constant=nothing) where T<:Real
-    for i in 1:length(v)
-        @inbounds v[i] = abs(v[i]-center)
-    end
-    k = 1 / (-sqrt(2 * one(T)) * erfcinv(3 * one(T) / 2))
-    if normalize === nothing
+              constant=nothing)
+    isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
+    v .= abs.(v .- center)
+    m = median!(v)
+    if normalize isa Nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
         normalize = true
     end
-    if constant !== nothing
+    if !isa(constant, Nothing)
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
-        constant * median!(v)
+        m * constant
     elseif normalize
-        k * median!(v)
+        m * mad_constant
     else
-        one(k) * median!(v)
+        m
     end
 end
 
