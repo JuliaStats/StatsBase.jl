@@ -180,7 +180,6 @@ module StatsBase
     nullloglikelihood,
     rss,
     score,
-    stderr,
     stderror,
     vcov,
     predict,
