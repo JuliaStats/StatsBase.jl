@@ -23,9 +23,9 @@ import Base.varm, Base.stdm
 if !isdefined(Base, :stderr)
     @deprecate stderr(obj::StatisticalModel) stderror(obj)
 else
-    function (io::IO)(obj::StatisticalModel)
+    function (io::typeof(stderr))(obj::StatisticalModel)
         Base.depwarn("stderr(obj::StatisticalModel) is deprecated, use stderror(obj) instead", :stderr)
-            io === stderr ? stderror(obj) : throw(MethodErrror(io, (obj,)))
+        io === stderr ? stderror(obj) : throw(MethodErrror(io, (obj,)))
     end
 end
 
