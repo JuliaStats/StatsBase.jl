@@ -27,7 +27,7 @@ values(wv::AbstractWeights) = wv.values
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 
-Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
+Base.getindex(wv::AbstractWeights, i) = Weights(getindex(wv.values, i))
 Base.size(wv::AbstractWeights) = size(wv.values)
 
 """

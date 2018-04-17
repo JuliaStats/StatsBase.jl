@@ -11,6 +11,10 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
     @test isa(f([1 2 3; 4 5 6]), AbstractWeights{Int})
 
+    @test isa(f([1, 2, 3])[1], AbstractWeights{Int})
+    @test isa(f([1., 2., 3.])[2], AbstractWeights{Float64})
+    @test isa(f([1 2 3; 4 5 6])[:,1], AbstractWeights{Int})
+
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
 
@@ -21,6 +25,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test values(wv) === w
     @test sum(wv) === 6.0
     @test !isempty(wv)
+
 
     b  = trues(3)
     bv = f(b)
