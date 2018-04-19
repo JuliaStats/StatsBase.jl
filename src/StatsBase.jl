@@ -1,7 +1,7 @@
 __precompile__()
 
 module StatsBase
-    import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
+    import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile, getindex
     import Base: rand, rand!
     import Base.LinAlg: BlasReal, BlasFloat
     import Base.Cartesian: @nloops, @nref, @nextract

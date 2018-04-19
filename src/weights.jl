@@ -27,7 +27,18 @@ values(wv::AbstractWeights) = wv.values
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 
-Base.getindex(wv::AbstractWeights, i) = Weights(getindex(wv.values, i))
+function getindex(A::AbstractWeights{T}, i...) where {T}
+    # @boundscheck checkbounds(A, I...)
+    # Let Array indexing code handle everything
+    @inbounds r = A.values[i...]
+
+    if isa(r, Array)
+        return Weights(r)
+    else
+        return r
+    end
+end
+
 Base.size(wv::AbstractWeights) = size(wv.values)
 
 """
