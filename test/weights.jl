@@ -11,6 +11,12 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
     @test isa(f([1 2 3; 4 5 6]), AbstractWeights{Int})
 
+    # 371
+    @test isa(f([1, 2, 3])[1:2], AbstractWeights{Int})
+    @test isa(f([1., 2., 3.])[2:3], AbstractWeights{Float64})
+    @test isa(f([1 2 3; 4 5 6])[:,1], AbstractWeights{Int})
+
+    @test isa(f([1, 2, 3])[1], Int)
 
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
@@ -65,15 +71,6 @@ end
     y = f([1.0, 2.0, -0.0])
     @test !isequal(x, y)
     @test x == y
-end
-
-# getindex
-@testset "getindex returns weight" begin
-    x1 = Weights(rand(4))
-    x2 = Weights(ones(Int,5))
-    @test isa(x1[2],AbstractWeights{Float64})
-    @test isa(x1[2:3],AbstractWeights{Float64})
-    @test isa(x2[4:5],AbstractWeights{Int})
 end
 
 ## wsum
