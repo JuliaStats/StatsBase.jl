@@ -3,7 +3,7 @@ __precompile__()
 module StatsBase
     import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
     import Base.Cartesian: @nloops, @nref, @nextract
-    using Base: @irrational
+    using Base: @irrational, @propagate_inbounds
     import DataStructures: heapify!, heappop!, percolate_down!
 
     using Compat, SortingAlgorithms, Missings

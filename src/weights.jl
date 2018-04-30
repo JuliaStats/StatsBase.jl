@@ -25,13 +25,11 @@ isempty(wv::AbstractWeights) = isempty(wv.values)
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
 
-function Base.setindex!(wv::AbstractWeights{S, T}, v::T, i::Int) where {S, T}
-    s = sum(wv)
-    s -= wv[i]
-    s += v
-
+@propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
+    s = v - wv[i]
     wv.values[i] = v
-    wv.sum = s
+    wv.sum += s
+    v
 end
 
 """

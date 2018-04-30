@@ -36,6 +36,38 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test sum(sa, wv) === 7.0
 end
 
+@testset "$f, setindex!" for f in weight_funcs
+    w = [1., 2., 3.]
+    wv = f(w)
+
+    # Check getindex & sum
+    @test wv[1] === 1.
+    @test sum(wv) === 6.
+    @test values(wv) == w
+
+    # Test setindex! success
+    @test (wv[1] = 4) === 4             # setindex! returns original val
+    @test wv[1] === 4.                  # value correctly converted and set
+    @test sum(wv) === 9.                # sum updated
+    @test values(wv) == [4., 2., 3.]    # Test state of all values
+
+    # Test mulivalue setindex!
+    wv[1:2] = [3., 5.]
+    @test wv[1] === 3.
+    @test wv[2] === 5.
+    @test sum(wv) === 11.
+    @test values(wv) == [3., 5., 3.]   # Test state of all values
+
+    # Test failed setindex! due to conversion error
+    w = [1, 2, 3]
+    wv = f(w)
+
+    @test_throws InexactError wv[1] = 1.5   # Returns original value
+    @test wv[1] === 1                       # value not updated
+    @test sum(wv) === 6                     # sum not corrupted
+    @test values(wv) == [1, 2, 3]           # Test state of all values
+end
+
 @testset "$f, isequal and ==" for f in weight_funcs
     x = f([1, 2, 3])
 
@@ -355,13 +387,13 @@ end
     for i = 1:length(data)
         @test quantile(data[i], fweights(fill!(similar(wt[i]), 1)), p) ≈ quantile(data[i], p)
     end
- 
+
     # Issue #313
     @test quantile([1, 2, 3, 4, 5], fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
     @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
     @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
 end
-  
+
 @testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
     data = (
         [7, 1, 2, 4, 10],
