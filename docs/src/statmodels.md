@@ -27,7 +27,7 @@ nulldeviance
 r2
 rss
 score
-stderr
+stderror
 vcov
 weights(::StatisticalModel)
 ```

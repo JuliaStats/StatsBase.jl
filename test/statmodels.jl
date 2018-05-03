@@ -17,9 +17,9 @@ x2   0.368314    Great -90 <1e-4
 x3   0.344454      Bad -80 <1e-4
 """
 
-@test sprint(show, CoefTable(m, ["Estimate", "Stderr", "df", "p"],
+@test sprint(show, CoefTable(m, ["Estimate", "Stderror", "df", "p"],
     ["x1", "x2", "x3"], 4)) == """
-     Estimate   Stderr       df      p
+     Estimate Stderror       df      p
 x1   0.819778 0.844007 0.923676 0.1717
 x2   0.669931  0.67919 0.066098 0.4204
 x3   0.453058  0.72525 0.999172 0.5567

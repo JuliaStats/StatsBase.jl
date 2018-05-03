@@ -118,11 +118,11 @@ informationmatrix(model::StatisticalModel; expected::Bool = true) =
     error("informationmatrix is not defined for $(typeof(obj)).")
 
 """
-    stderr(obj::StatisticalModel)
+    stderror(obj::StatisticalModel)
 
 Return the standard errors for the coefficients of the model.
 """
-stderr(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
+stderror(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
 
 """
     vcov(obj::StatisticalModel)
