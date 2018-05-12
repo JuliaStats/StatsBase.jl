@@ -9,7 +9,7 @@ and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
 """
 macro weights(name)
     return quote
-        struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
+        mutable struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
             values::V
             sum::S
         end
@@ -24,6 +24,13 @@ isempty(wv::AbstractWeights) = isempty(wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 Base.size(wv::AbstractWeights) = size(wv.values)
+
+@propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
+    s = v - wv[i]
+    wv.values[i] = v
+    wv.sum += s
+    v
+end
 
 """
     varcorrection(n::Integer, corrected=false)
@@ -555,13 +562,13 @@ Compute the weighted quantiles of a vector `v` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
 
-With [`FrequencyWeights`](@ref), the function returns the same result as 
+With [`FrequencyWeights`](@ref), the function returns the same result as
 `quantile` for a vector with repeated values.
-With non `FrequencyWeights`,  denote ``N`` the length of the vector, ``w`` the vector of weights, 
-``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the 
-probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each 
-observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}`` 
-is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -v_k)`` 
+With non `FrequencyWeights`,  denote ``N`` the length of the vector, ``w`` the vector of weights,
+``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the
+probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each
+observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
+is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -v_k)``
 with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when `w` is a vector
 of ones, the function returns the same result as `quantile`.
 """
@@ -597,7 +604,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     Sk, Skold = zero(W), zero(W)
     vk, vkold = zero(V), zero(V)
     k = 0
-    
+
     for i in 1:length(p)
         if isa(w, FrequencyWeights)
             h = p[i] * (wsum - 1) + 1
