@@ -97,6 +97,9 @@ xx = repeat([6, 1, 3, 1], outer=100_000)
 cm = Dict{Int, Int}()
 StatsBase.addcounts_radixsort!(cm,xx)
 @test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+xx2 = repeat([7, 1, 3, 1], outer=100_000)
+StatsBase.addcounts_radixsort!(cm,xx2)
+@test cm == Dict(1 => 400_000, 3 => 200_000, 6 => 100_000, 7 => 100_000)
 
 # testing the Dict-based addcounts
 cm = Dict{Int, Int}()
