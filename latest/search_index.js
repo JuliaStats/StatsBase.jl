@@ -1321,11 +1321,11 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "statmodels.html#StatsBase.stderr",
+    "location": "statmodels.html#StatsBase.stderror",
     "page": "Abstraction for Statistical Models",
-    "title": "StatsBase.stderr",
+    "title": "StatsBase.stderror",
     "category": "function",
-    "text": "stderr(obj::StatisticalModel)\n\nReturn the standard errors for the coefficients of the model.\n\n\n\n"
+    "text": "stderror(obj::StatisticalModel)\n\nReturn the standard errors for the coefficients of the model.\n\n\n\n"
 },
 
 {
@@ -1421,7 +1421,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Abstraction for Statistical Models",
     "title": "Abstraction for Statistical Models",
     "category": "section",
-    "text": "This package defines an abstract type StatisticalModel, and an abstract subtype RegressionModel.Particularly, instances of StatisticalModel implement the following methods.adjr2\naic\naicc\nbic\ncoef\ncoefnames\ncoeftable\nconfint\ndeviance\ndof\nfit\nfit!\ninformationmatrix\nisfitted\nislinear\nloglikelihood\nmss\nnobs\nnulldeviance\nr2\nrss\nscore\nstderr\nvcov\nweights(::StatisticalModel)RegressionModel extends StatisticalModel by implementing the following additional methods.dof_residual\nfitted\nleverage\nmeanresponse\nmodelmatrix\nresponse\npredict\npredict!\nresiduals"
+    "text": "This package defines an abstract type StatisticalModel, and an abstract subtype RegressionModel.Particularly, instances of StatisticalModel implement the following methods.adjr2\naic\naicc\nbic\ncoef\ncoefnames\ncoeftable\nconfint\ndeviance\ndof\nfit\nfit!\ninformationmatrix\nisfitted\nislinear\nloglikelihood\nmss\nnobs\nnulldeviance\nr2\nrss\nscore\nstderror\nvcov\nweights(::StatisticalModel)RegressionModel extends StatisticalModel by implementing the following additional methods.dof_residual\nfitted\nleverage\nmeanresponse\nmodelmatrix\nresponse\npredict\npredict!\nresiduals"
 },
 
 ]}
