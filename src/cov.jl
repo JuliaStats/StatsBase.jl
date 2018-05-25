@@ -24,11 +24,11 @@ end
 ## scatter matrix
 
 
-scattermat_zm(x::DenseMatrix, vardim::Int) = Base.unscaled_covzm(x, vardim)
+scattermat_zm(x::DenseMatrix, vardim::Int) = unscaled_covzm(x, vardim)
 
 
 scattermat_zm(x::DenseMatrix, wv::AbstractWeights, vardim::Int) =
-    _symmetrize!(Base.unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
 
 """
     scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)
@@ -88,18 +88,18 @@ scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
     scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
 
 ## weighted cov
-Base.covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
-          corrected::DepBool=nothing) =
+covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
+     corrected::DepBool=nothing) =
     myscale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
 
 
-Base.cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
-    Base.covm(x, Base.mean(x, w, vardim), w, vardim; corrected=depcheck(:cov, corrected))
+cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
+    covm(x, Base.mean(x, w, vardim), w, vardim; corrected=depcheck(:cov, corrected))
 
-function Base.corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
-    c = Base.covm(x, mean, w, vardim; corrected=false)
-    s = Base.stdm(x, w, mean, vardim; corrected=false)
-    Base.cov2cor!(c, s)
+function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
+    c = covm(x, mean, w, vardim; corrected=false)
+    s = stdm(x, w, mean, vardim; corrected=false)
+    cov2cor!(c, s)
 end
 
 """
@@ -108,33 +108,33 @@ end
 Compute the Pearson correlation matrix of `X` along the dimension
 `vardim` with a weighting `w` .
 """
-Base.cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
-    Base.corm(x, Base.mean(x, w, vardim), w, vardim)
+cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
+    corm(x, Base.mean(x, w, vardim), w, vardim)
 
 if VERSION >= v"0.7.0-DEV.755"
     function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
         m = Compat.mean(x, dims = vardim)
-        return m, Base.covm(x, m, vardim, corrected=corrected)
+        return m, covm(x, m, vardim, corrected=corrected)
     end
 else
     function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
         m = mean(x, vardim)
-        return m, Base.covm(x, m, vardim, corrected)
+        return m, covm(x, m, vardim, corrected)
     end
 end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1;
                       corrected::DepBool=nothing)
     m = mean(x, wv, vardim)
-    return m, Base.cov(x, wv, vardim; corrected=depcheck(:mean_and_cov, corrected))
+    return m, cov(x, wv, vardim; corrected=depcheck(:mean_and_cov, corrected))
 end
 
 """
     cov2cor(C, s)
 
 Compute the correlation matrix from the covariance matrix `C` and a vector of standard
-deviations `s`. Use `Base.cov2cor!` for an in-place version.
+deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
 """
-cov2cor(C::AbstractMatrix, s::AbstractArray) = Base.cov2cor!(copy(C), s)
+cov2cor(C::AbstractMatrix, s::AbstractArray) = cov2cor!(copy(C), s)
 
 """
     cor2cov(C, s)

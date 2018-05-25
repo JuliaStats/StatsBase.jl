@@ -193,11 +193,24 @@ module StatsBase
     export midpoints
 end
 
+const BASESTATS_IN_STATSBASE = VERSION >= v"0.7.0-DEV.5238"
+
 if VERSION < v"0.7.0-DEV.3665"
     myscale!(A::AbstractArray, b::Number) = scale!(A, b)
 else
     myscale!(A::AbstractArray, b::Number) = rmul!(A, b)
 end
+
+@static if BASESTATS_IN_STATSBASE
+    export cor, cov, std, stdm, var, varm, linreg
+    include("base.jl")
+    const Compatvarm = varm
+else
+    import Base: cov, var, varm, std, stdm, sqrt!,
+        unscaled_covzm, cor, varm!, covm, corm, cov2cor!
+    const Compatvarm = Compat.varm
+end
+
     # source files
 
     include("common.jl")

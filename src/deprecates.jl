@@ -2,7 +2,6 @@ import Base.@deprecate
 import Base.depwarn
 import Base.@deprecate_binding
 
-import Base.varm, Base.stdm
 @deprecate varm(v::RealArray, m::Real, wv::AbstractWeights) varm(v, wv, m)
 @deprecate varm(A::RealArray, M::RealArray, wv::AbstractWeights, dim::Int) varm(v, wv, m, dim)
 @deprecate stdm(v::RealArray, m::Real, wv::AbstractWeights) stdm(v, wv, m)
