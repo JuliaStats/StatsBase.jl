@@ -60,3 +60,15 @@ isempty
 values
 sum
 ```
+
+The following constructors are provided:
+```@docs
+AnalyticWeights
+FrequencyWeights
+ProbabilityWeights
+Weights
+aweights
+fweights
+pweights
+weights
+```
