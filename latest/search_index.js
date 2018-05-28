@@ -73,11 +73,75 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "weights.html#StatsBase.AnalyticWeights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.AnalyticWeights",
+    "category": "type",
+    "text": "AnalyticWeights(vs, wsum=sum(vs))\n\nConstruct an AnalyticWeights vector with weight values vs. A precomputed sum may be provided as wsum.\n\nAnalytic weights describe a non-random relative importance (usually between 0 and 1) for each observation. These weights may also be referred to as reliability weights, precision weights or inverse variance weights. These are typically used when the observations being weighted are aggregate values (e.g., averages) with differing variances.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.FrequencyWeights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.FrequencyWeights",
+    "category": "type",
+    "text": "FrequencyWeights(vs, wsum=sum(vs))\n\nConstruct a FrequencyWeights vector with weight values vs. A precomputed sum may be provided as wsum.\n\nFrequency weights describe the number of times (or frequency) each observation was observed. These weights may also be referred to as case weights or repeat weights.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.ProbabilityWeights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.ProbabilityWeights",
+    "category": "type",
+    "text": "ProbabilityWeights(vs, wsum=sum(vs))\n\nConstruct a ProbabilityWeights vector with weight values vs. A precomputed sum may be provided as wsum.\n\nProbability weights represent the inverse of the sampling probability for each observation, providing a correction mechanism for under- or over-sampling certain population groups. These weights may also be referred to as sampling weights.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.Weights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.Weights",
+    "category": "type",
+    "text": "Weights(vs, wsum=sum(vs))\n\nConstruct a Weights vector with weight values vs. A precomputed sum may be provided as wsum.\n\nThe Weights type describes a generic weights vector which does not support all operations possible for FrequencyWeights, AnalyticWeights and ProbabilityWeights.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.aweights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.aweights",
+    "category": "function",
+    "text": "aweights(vs)\n\nConstruct an AnalyticWeights vector from array vs. See the documentation for AnalyticWeights for more details.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.fweights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.fweights",
+    "category": "function",
+    "text": "fweights(vs)\n\nConstruct a FrequencyWeights vector from a given array. See the documentation for FrequencyWeights for more details.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.pweights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.pweights",
+    "category": "function",
+    "text": "pweights(vs)\n\nConstruct a ProbabilityWeights vector from a given array. See the documentation for ProbabilityWeights for more details.\n\n\n\n"
+},
+
+{
+    "location": "weights.html#StatsBase.weights",
+    "page": "Weight Vectors",
+    "title": "StatsBase.weights",
+    "category": "function",
+    "text": "weights(vs)\n\nConstruct a Weights vector from array vs. See the documentation for Weights for more details.\n\n\n\nweights(obj::StatisticalModel)\n\nReturn the weights used in the model.\n\n\n\n"
+},
+
+{
     "location": "weights.html#Methods-1",
     "page": "Weight Vectors",
     "title": "Methods",
     "category": "section",
-    "text": "AbstractWeights implements the following methods:eltype\nlength\nisempty\nvalues\nsum"
+    "text": "AbstractWeights implements the following methods:eltype\nlength\nisempty\nvalues\nsumThe following constructors are provided:AnalyticWeights\nFrequencyWeights\nProbabilityWeights\nWeights\naweights\nfweights\npweights\nweights"
 },
 
 {
@@ -321,11 +385,51 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "scalarstats.html#StatsBase.percentile",
+    "page": "Scalar Statistics",
+    "title": "StatsBase.percentile",
+    "category": "function",
+    "text": "percentile(v, p)\n\nReturn the pth percentile of a real-valued array v, i.e. quantile(x, p / 100).\n\n\n\n"
+},
+
+{
+    "location": "scalarstats.html#StatsBase.iqr",
+    "page": "Scalar Statistics",
+    "title": "StatsBase.iqr",
+    "category": "function",
+    "text": "iqr(v)\n\nCompute the interquartile range (IQR) of an array, i.e. the 75th percentile minus the 25th percentile.\n\n\n\n"
+},
+
+{
+    "location": "scalarstats.html#StatsBase.nquantile",
+    "page": "Scalar Statistics",
+    "title": "StatsBase.nquantile",
+    "category": "function",
+    "text": "nquantile(v, n)\n\nReturn the n-quantiles of a real-valued array, i.e. the values which partition v into n subsets of nearly equal size.\n\nEquivalent to quantile(v, [0:n]/n). For example, nquantiles(x, 5) returns a vector of quantiles, respectively at [0.0, 0.2, 0.4, 0.6, 0.8, 1.0].\n\n\n\n"
+},
+
+{
+    "location": "scalarstats.html#Base.quantile",
+    "page": "Scalar Statistics",
+    "title": "Base.quantile",
+    "category": "function",
+    "text": "quantile(v, w::AbstractWeights, p)\n\nCompute the weighted quantiles of a vector v at a specified set of probability values p, using weights given by a weight vector w (of type AbstractWeights). Weights must not be negative. The weights and data vectors must have the same length.\n\nWith FrequencyWeights, the function returns the same result as quantile for a vector with repeated values. With non FrequencyWeights,  denote N the length of the vector, w the vector of weights, h = p (sum_i= Nw_i - w_1) + w_1 the cumulative weight corresponding to the probability p and S_k = sum_i=kw_i the cumulative weight for each observation, define v_k+1 the smallest element of v such that S_k+1 is strictly superior to h. The weighted p quantile is given by v_k + gamma (v_k+1 -v_k) with  gamma = (h - S_k)(S_k+1-S_k). In particular, when w is a vector of ones, the function returns the same result as quantile.\n\n\n\n"
+},
+
+{
+    "location": "scalarstats.html#Base.median-Tuple{AbstractArray{T,1} where T<:Real,StatsBase.AbstractWeights{#s7,T,V} where V<:AbstractArray{T,1} where T<:Real where #s7<:Real}",
+    "page": "Scalar Statistics",
+    "title": "Base.median",
+    "category": "method",
+    "text": "median(v::RealVector, w::AbstractWeights)\n\nCompute the weighted median of x, using weights given by a weight vector w (of type AbstractWeights). The weight and data vectors must have the same length.\n\nThe weighted median x_k is the element of x that satisfies sum_x_i  x_k w_i le frac12 sum_j w_j and sum_x_i  x_k w_i le frac12 sum_j w_j.\n\nIf a weight has value zero, then its associated data point is ignored. If none of the weights are positive, an error is thrown. NaN is returned if x contains any NaN values. An error is raised if w contains any NaN values.\n\n\n\n"
+},
+
+{
     "location": "scalarstats.html#Quantile-and-Related-Functions-1",
     "page": "Scalar Statistics",
     "title": "Quantile and Related Functions",
     "category": "section",
-    "text": "percentile\niqr\nnquantile\nquantile\nBase.median{W<:Real}(v::StatsBase.RealVector, w::AbstractWeights{W})"
+    "text": "percentile\niqr\nnquantile\nquantile\nBase.median(v::StatsBase.RealVector, w::AbstractWeights{<:Real})"
 },
 
 {
