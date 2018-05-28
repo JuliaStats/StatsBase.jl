@@ -18,7 +18,7 @@ the population variance is computed by replacing
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 * `Weights`: `ArgumentError` (bias correction not supported)
 """
-Base.varm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
+varm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     _moment2(v, w, m; corrected=depcheck(:varm, corrected))
 
 """
@@ -38,7 +38,7 @@ replacing ``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 * `Weights`: `ArgumentError` (bias correction not supported)
 """
-function Base.var(v::RealArray, w::AbstractWeights; mean=nothing,
+function var(v::RealArray, w::AbstractWeights; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
 
@@ -51,7 +51,7 @@ end
 
 ## var along dim
 
-function Base.varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealArray,
+function varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealArray,
                     dim::Int; corrected::DepBool=nothing)
     corrected = depcheck(:varm!, corrected)
     myscale!(_wsum_centralize!(R, abs2, A, values(w), M, dim, true),
@@ -63,10 +63,10 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dim::Int;
     corrected = depcheck(:var!, corrected)
 
     if mean == 0
-        Base.varm!(R, A, w, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
+        varm!(R, A, w, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
                    corrected=corrected)
     elseif mean == nothing
-        Base.varm!(R, A, w, Base.mean(A, w, dim), dim; corrected=corrected)
+        varm!(R, A, w, Base.mean(A, w, dim), dim; corrected=corrected)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -78,18 +78,18 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dim::Int;
                 dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
             end
         end
-        Base.varm!(R, A, w, mean, dim; corrected=corrected)
+        varm!(R, A, w, mean, dim; corrected=corrected)
     end
 end
 
-function Base.varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
+function varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
                    corrected::DepBool=nothing)
     corrected = depcheck(:varm, corrected)
-    Base.varm!(similar(A, Float64, Base.reduced_indices(Compat.axes(A), dim)), A, w, M,
+    varm!(similar(A, Float64, Base.reduced_indices(Compat.axes(A), dim)), A, w, M,
                dim; corrected=corrected)
 end
 
-function Base.var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
+function var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
     var!(similar(A, Float64, Base.reduced_indices(Compat.axes(A), dim)), A, w, dim;
@@ -114,7 +114,7 @@ dependent on the type of weights used:
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 * `Weights`: `ArgumentError` (bias correction not supported)
 """
-Base.stdm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
+stdm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     sqrt(varm(v, w, m, corrected=depcheck(:stdm, corrected)))
 
 """
@@ -135,17 +135,17 @@ weights used:
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 * `Weights`: `ArgumentError` (bias correction not supported)
 """
-Base.std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
+std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
 
-Base.stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    Base.sqrt!(Compat.varm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
+stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
+    sqrt!(Compatvarm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
 
-Base.stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
+stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
           corrected::DepBool=nothing) =
     sqrt.(varm(v, w, m, dim; corrected=depcheck(:stdm, corrected)))
 
-Base.std(v::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
+std(v::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
          corrected::DepBool=nothing) =
     sqrt.(var(v, w, dim; mean=mean, corrected=depcheck(:std, corrected)))
 
@@ -193,7 +193,7 @@ end
 
 function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
     m = Compat.mean(A, dims = dim)
-    v = Compat.varm(A, m, dims = dim, corrected=corrected)
+    v = Compatvarm(A, m, dims = dim, corrected=corrected)
     m, v
 end
 function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)

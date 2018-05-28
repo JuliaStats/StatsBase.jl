@@ -1,6 +1,20 @@
 using Compat, StatsBase
-using Compat.LinearAlgebra
-using Compat.Random
+
+@static if StatsBase.BASESTATS_IN_STATSBASE
+    using Random
+    using LinearAlgebra
+    const Compatvar = var
+    const Compatstd = std
+    const Compatcov = cov
+    const Compatcor = cor
+else
+    using Compat.LinearAlgebra
+    using Compat.Random
+    const Compatvar = Compat.var
+    const Compatstd = Compat.std
+    const Compatcov = Compat.cov
+    const Compatcor = Compat.cor
+end
 
 
 tests = ["ambiguous",
@@ -21,6 +35,11 @@ tests = ["ambiguous",
          "wsampling",
          "statmodels"]#,
          #"statquiz"]
+
+if StatsBase.BASESTATS_IN_STATSBASE
+    push!(tests, "base")
+    include("dimensionful.jl")
+end
 
 println("Running tests:")
 

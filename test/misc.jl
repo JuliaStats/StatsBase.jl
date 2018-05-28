@@ -24,17 +24,17 @@ b = [true, false, false, true, false, true, true, false]
 
 # indicatormat
 
-I = [false true  false false false;
-     true  false false false true;
-     false false true  true  false]
+II = [false true  false false false;
+      true  false false false true;
+      false false true  true  false]
 
 x = [2, 1, 3, 3, 2]
-@test indicatormat(x, 3) == I
-@test Matrix(indicatormat(x, 3; sparse=true)) == I
+@test indicatormat(x, 3) == II
+@test Matrix(indicatormat(x, 3; sparse=true)) == II
 
 x = ["b", "a", "c", "c", "b"]
-@test indicatormat(x) == I
-@test Matrix(indicatormat(x; sparse=true)) == I
+@test indicatormat(x) == II
+@test Matrix(indicatormat(x; sparse=true)) == II
 
 io = IOBuffer()
 describe(io, collect(1:10))
