@@ -573,7 +573,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Scatter Matrix and Covariance",
     "title": "StatsBase.cov2cor",
     "category": "function",
-    "text": "cov2cor(C, s)\n\nCompute the correlation matrix from the covariance matrix C and a vector of standard deviations s. Use Base.cov2cor! for an in-place version.\n\n\n\n"
+    "text": "cov2cor(C, s)\n\nCompute the correlation matrix from the covariance matrix C and a vector of standard deviations s. Use StatsBase.cov2cor! for an in-place version.\n\n\n\n"
 },
 
 {
