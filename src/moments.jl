@@ -139,7 +139,7 @@ std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) 
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
 
 stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    sqrt!(Compatvarm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
+    sqrt!(StatsCompat.varm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
 
 stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
           corrected::DepBool=nothing) =
@@ -193,7 +193,7 @@ end
 
 function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
     m = Compat.mean(A, dims = dim)
-    v = Compatvarm(A, m, dims = dim, corrected=corrected)
+    v = StatsCompat.varm(A, m, dims = dim, corrected=corrected)
     m, v
 end
 function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)

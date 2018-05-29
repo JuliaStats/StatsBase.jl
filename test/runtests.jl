@@ -3,17 +3,9 @@ using Compat, StatsBase
 @static if StatsBase.BASESTATS_IN_STATSBASE
     using Random
     using LinearAlgebra
-    const Compatvar = var
-    const Compatstd = std
-    const Compatcov = cov
-    const Compatcor = cor
 else
     using Compat.LinearAlgebra
     using Compat.Random
-    const Compatvar = Compat.var
-    const Compatstd = Compat.std
-    const Compatcov = Compat.cov
-    const Compatcor = Compat.cor
 end
 
 
@@ -33,7 +25,8 @@ tests = ["ambiguous",
          "robust",
          "sampling",
          "wsampling",
-         "statmodels"]#,
+         "statmodels",
+         "statscompat"]#,
          #"statquiz"]
 
 if StatsBase.BASESTATS_IN_STATSBASE
