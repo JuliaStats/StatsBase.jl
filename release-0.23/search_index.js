@@ -417,7 +417,7 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
-    "location": "scalarstats.html#Base.median-Tuple{AbstractArray{T,1} where T<:Real,StatsBase.AbstractWeights{#s7,T,V} where V<:AbstractArray{T,1} where T<:Real where #s7<:Real}",
+    "location": "scalarstats.html#Base.median-Tuple{AbstractArray{T,1} where T<:Real,StatsBase.AbstractWeights{#s6,T,V} where V<:AbstractArray{T,1} where T<:Real where #s6<:Real}",
     "page": "Scalar Statistics",
     "title": "Base.median",
     "category": "method",
