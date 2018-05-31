@@ -1,5 +1,9 @@
 # This file contains code formerly part of Julia. License is MIT: https://julialang.org/license
 
+if VERSION < v"0.7.0-DEV.5278"
+    const something = Base.coalesce
+end
+
 # deprecations from base/deprecated.jl
 @deprecate varm(A::AbstractArray, m::AbstractArray, dims; kwargs...) varm(A, m; kwargs..., dims=dims)
 @deprecate var(A::AbstractArray, dims; kwargs...)                    var(A; kwargs..., dims=dims)
@@ -164,10 +168,10 @@ The mean `mean` over the region may be provided.
 var(A::AbstractArray; corrected::Bool=true, mean=nothing, dims=:) = _var(A, corrected, mean, dims)
 
 _var(A::AbstractArray, corrected::Bool, mean, dims) =
-    varm(A, coalesce(mean, Base.mean(A, dims=dims)); corrected=corrected, dims=dims)
+    varm(A, something(mean, Base.mean(A, dims=dims)); corrected=corrected, dims=dims)
 
 _var(A::AbstractArray, corrected::Bool, mean, ::Colon) =
-    real(varm(A, coalesce(mean, Base.mean(A)); corrected=corrected))
+    real(varm(A, something(mean, Base.mean(A)); corrected=corrected))
 
 varm(iterable, m; corrected::Bool=true) = _var(iterable, corrected, m)
 
