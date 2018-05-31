@@ -59,8 +59,8 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test zscore!(zeros(size(a)), a, [1 3 2 4], [0.25 0.5 1.0 2.0]) ≈ z2
 
 @test zscore(a)    ≈ zscore(a, mean(a), std(a))
-@test zscore(a, 1) ≈ zscore(a, Compat.mean(a, dims=1), Compatstd(a, dims=1))
-@test zscore(a, 2) ≈ zscore(a, Compat.mean(a, dims=2), Compatstd(a, dims=2))
+@test zscore(a, 1) ≈ zscore(a, Compat.mean(a, dims=1), StatsCompat.std(a, dims=1))
+@test zscore(a, 2) ≈ zscore(a, Compat.mean(a, dims=2), StatsCompat.std(a, dims=2))
 
 
 ###### quantile & friends
