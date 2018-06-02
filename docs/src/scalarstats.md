@@ -5,8 +5,8 @@ The package implements functions for computing various statistics over an array 
 ## Moments
 
 ```@docs
-Base.var(v::StatsBase.RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing)
-Base.std(v::StatsBase.RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing)
+var
+std
 mean_and_var
 mean_and_std
 skewness
