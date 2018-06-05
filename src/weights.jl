@@ -28,7 +28,7 @@ sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 
 function getindex(A::AbstractWeights{T}, i...) where {T}
-    # @boundscheck checkbounds(A, I...)
+    @boundscheck checkbounds(A, I...)
     # Let Array indexing code handle everything
     @inbounds r = A.values[i...]
 

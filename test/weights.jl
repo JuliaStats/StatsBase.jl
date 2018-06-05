@@ -23,7 +23,6 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test sum(wv) === 6.0
     @test !isempty(wv)
 
-
     b  = trues(3)
     bv = f(b)
     @test eltype(bv) === Bool
