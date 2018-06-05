@@ -11,6 +11,9 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
     @test isa(f([1 2 3; 4 5 6]), AbstractWeights{Int})
 
+    @test eltype(f([1, 2, 3])) == Int
+    @test eltype(f([1., 2., 3.])) == Float64
+    @test eltype(f([1 2 3; 4 5 6])) == Int
 
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
