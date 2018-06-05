@@ -1,4 +1,7 @@
-using StatsBase
+using Compat, StatsBase
+using Compat.LinearAlgebra
+using Compat.Random
+
 
 tests = ["ambiguous",
          "weights",

@@ -17,20 +17,29 @@ deviance
 dof
 fit
 fit!
+informationmatrix
+isfitted
+islinear
 loglikelihood
+mss
 nobs
 nulldeviance
 r2
+rss
+score
 stderr
 vcov
+weights(::StatisticalModel)
 ```
 
 `RegressionModel` extends `StatisticalModel` by implementing the following additional methods.
 ```@docs
 dof_residual
 fitted
+leverage
+meanresponse
 modelmatrix
-model_response
+response
 predict
 predict!
 residuals

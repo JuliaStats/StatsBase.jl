@@ -1,6 +1,5 @@
-using StatsBase
-using Compat
-using Compat.Test
+using Compat, StatsBase
+using Compat.LinearAlgebra, Compat.Random, Compat.SparseArrays, Compat.Test
 
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
@@ -69,15 +68,6 @@ end
     @test x == y
 end
 
-# getindex
-@testset "getindex returns weight" begin
-    x1 = Weights(rand(4))
-    x2 = Weights(ones(Int,5))
-    @test isa(x1[2],AbstractWeights{Float64})
-    @test isa(x1[2:3],AbstractWeights{Float64})
-    @test isa(x2[4:5],AbstractWeights{Int})
-end
-
 ## wsum
 x = [6., 8., 9.]
 w = [2., 3., 4.]
@@ -98,8 +88,8 @@ w2 = rand(8)
 @test size(wsum(x, w1, 1)) == (1, 8)
 @test size(wsum(x, w2, 2)) == (6, 1)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
+@test wsum(x, w1, 1) ≈ Compat.sum(x .* w1, dims = 1)
+@test wsum(x, w2, 2) ≈ Compat.sum(x .* w2', dims = 2)
 
 x = rand(6, 5, 4)
 w1 = rand(6)
@@ -110,23 +100,23 @@ w3 = rand(4)
 @test size(wsum(x, w2, 2)) == (6, 1, 4)
 @test size(wsum(x, w3, 3)) == (6, 5, 1)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
-@test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), 3)
+@test wsum(x, w1, 1) ≈ Compat.sum(x .* w1, dims = 1)
+@test wsum(x, w2, 2) ≈ Compat.sum(x .* w2', dims = 2)
+@test wsum(x, w3, 3) ≈ Compat.sum(x .* reshape(w3, 1, 1, 4), dims = 3)
 
 v = view(x, 2:4, :, :)
 
-@test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], 1)
-@test wsum(v, w2, 2)      ≈ sum(v .* w2', 2)
-@test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), 3)
+@test wsum(v, w1[1:3], 1) ≈ Compat.sum(v .* w1[1:3], dims = 1)
+@test wsum(v, w2, 2)      ≈ Compat.sum(v .* w2', dims = 2)
+@test wsum(v, w3, 3)      ≈ Compat.sum(v .* reshape(w3, 1, 1, 4), dims = 3)
 
 ## wsum for Arrays with non-BlasReal elements
 x = rand(1:100, 6, 8)
 w1 = rand(6)
 w2 = rand(8)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', 2)
+@test wsum(x, w1, 1) ≈ Compat.sum(x .* w1, dims = 1)
+@test wsum(x, w2, 2) ≈ Compat.sum(x .* w2', dims = 2)
 
 ## wsum!
 x = rand(6)
@@ -146,19 +136,19 @@ w2 = rand(8)
 
 r = ones(1, 8)
 @test wsum!(r, x, w1, 1; init=true) === r
-@test r ≈ sum(x .* w1, 1)
+@test r ≈ Compat.sum(x .* w1, dims = 1)
 
 r = ones(1, 8)
 @test wsum!(r, x, w1, 1; init=false) === r
-@test r ≈ sum(x .* w1, 1) .+ 1.0
+@test r ≈ Compat.sum(x .* w1, dims = 1) .+ 1.0
 
 r = ones(6)
 @test wsum!(r, x, w2, 2; init=true) === r
-@test r ≈ sum(x .* w2', 2)
+@test r ≈ Compat.sum(x .* w2', dims = 2)
 
 r = ones(6)
 @test wsum!(r, x, w2, 2; init=false) === r
-@test r ≈ sum(x .* w2', 2) .+ 1.0
+@test r ≈ Compat.sum(x .* w2', dims = 2) .+ 1.0
 
 x = rand(8, 6, 5)
 w1 = rand(8)
@@ -167,27 +157,27 @@ w3 = rand(5)
 
 r = ones(1, 6, 5)
 @test wsum!(r, x, w1, 1; init=true) === r
-@test r ≈ sum(x .* w1, 1)
+@test r ≈ Compat.sum(x .* w1, dims = 1)
 
 r = ones(1, 6, 5)
 @test wsum!(r, x, w1, 1; init=false) === r
-@test r ≈ sum(x .* w1, 1) .+ 1.0
+@test r ≈ Compat.sum(x .* w1, dims = 1) .+ 1.0
 
 r = ones(8, 1, 5)
 @test wsum!(r, x, w2, 2; init=true) === r
-@test r ≈ sum(x .* w2', 2)
+@test r ≈ Compat.sum(x .* w2', dims = 2)
 
 r = ones(8, 1, 5)
 @test wsum!(r, x, w2, 2; init=false) === r
-@test r ≈ sum(x .* w2', 2) .+ 1.0
+@test r ≈ Compat.sum(x .* w2', dims = 2) .+ 1.0
 
 r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=true) === r
-@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3)
+@test r ≈ Compat.sum(x .* reshape(w3, (1, 1, 5)), dims = 3)
 
 r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=false) === r
-@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), 3) .+ 1.0
+@test r ≈ Compat.sum(x .* reshape(w3, (1, 1, 5)), dims = 3) .+ 1.0
 
 ## the sum and mean syntax
 a = reshape(1.0:27.0, 3, 3, 3)
@@ -197,9 +187,9 @@ a = reshape(1.0:27.0, 3, 3, 3)
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test sum(a, f(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)
-        @test sum(a, f(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)
-        @test sum(a, f(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)
+        @test sum(a, f(wt), 1)  ≈ Compat.sum(a.*reshape(wt, length(wt), 1, 1), dims = 1)
+        @test sum(a, f(wt), 2)  ≈ Compat.sum(a.*reshape(wt, 1, length(wt), 1), dims = 2)
+        @test sum(a, f(wt), 3)  ≈ Compat.sum(a.*reshape(wt, 1, 1, length(wt)), dims = 3)
     end
 end
 
@@ -208,9 +198,9 @@ end
     @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test mean(a, f(wt), 1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), 1)/sum(wt)
-        @test mean(a, f(wt), 2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), 2)/sum(wt)
-        @test mean(a, f(wt), 3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), 3)/sum(wt)
+        @test mean(a, f(wt), 1) ≈ Compat.sum(a.*reshape(wt, length(wt), 1, 1), dims = 1)/sum(wt)
+        @test mean(a, f(wt), 2) ≈ Compat.sum(a.*reshape(wt, 1, length(wt), 1), dims = 2)/sum(wt)
+        @test mean(a, f(wt), 3) ≈ Compat.sum(a.*reshape(wt, 1, 1, length(wt)), dims = 3)/sum(wt)
         @test_throws ErrorException mean(a, f(wt), 4)
     end
 end
@@ -303,7 +293,9 @@ end
     @test_throws ErrorException median(data, f(wt))
 end
 
-@testset "Quantile $f" for f in weight_funcs
+
+# Quantile fweights
+@testset "Quantile fweights" begin
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -326,81 +318,155 @@ end
         [-10, 1, 1, -10, -10],
     )
     wt = (
-        f([1, 1/3, 1/3, 1/3, 1]),
-        f([1, 1, 1, 1, 1]),
-        f([1, 1/3, 1/3, 1/3, 1, 1]),
-        f([1/3, 1/3, 1/3, 1, 1, 1]),
-        f([30, 191, 9, 0]),
-        f([10, 1, 1, 1, 9]),
-        f([10, 1, 1, 1, 900]),
-        f([1, 3, 5, 4, 2]),
-        f([2, 2, 5, 1, 2, 2, 1, 6]),
-        f([0.1, 0.1, 0.8]),
-        f([5, 5, 4, 1]),
-        f([30, 56, 144, 24, 55, 43, 67]),
-        f([0.1, 0.2, 0.3, 0.4, 0.5, 0.6]),
-        f([12]),
-        f([7, 1, 1, 1, 6]),
-        f([1, 0, 0, 0, 2]),
-        f([1, 2, 3, 4, 5]),
-        f([0.1, 0.2, 0.3, 0.2, 0.1]),
-        f([1, 1, 1, 1, 1]),
+        [3, 1, 1, 1, 3],
+        [1, 1, 1, 1, 1],
+        [3, 1, 1, 1, 3, 3],
+        [1, 1, 1, 3, 3, 3],
+        [30, 191, 9, 0],
+        [10, 1, 1, 1, 9],
+        [10, 1, 1, 1, 900],
+        [1, 3, 5, 4, 2],
+        [2, 2, 5, 0, 2, 2, 1, 6],
+        [1, 1, 8],
+        [5, 5, 4, 1],
+        [30, 56, 144, 24, 55, 43, 67],
+        [1, 2, 3, 4, 5, 6],
+        [12],
+        [7, 1, 1, 1, 6],
+        [1, 0, 0, 0, 2],
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 2, 1],
+        [0, 1, 1, 1, 1],
+    )
+    p = [0.0, 0.25, 0.5, 0.75, 1.0]
+    function _rep(x::AbstractVector, lengths::AbstractVector{Int})
+        res = similar(x, sum(lengths))
+        i = 1
+        for idx in 1:length(x)
+            tmp = x[idx]
+            for kdx in 1:lengths[idx]
+                res[i] = tmp
+                i += 1
+            end
+        end
+        return res
+    end
+    # quantile with fweights is the same as repeated vectors
+    for i = 1:length(data)
+        @test quantile(data[i], fweights(wt[i]), p) ≈ quantile(_rep(data[i], wt[i]), p)
+    end
+    # quantile with fweights = 1  is the same as quantile
+    for i = 1:length(data)
+        @test quantile(data[i], fweights(fill!(similar(wt[i]), 1)), p) ≈ quantile(data[i], p)
+    end
+ 
+    # Issue #313
+    @test quantile([1, 2, 3, 4, 5], fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
+    @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
+    @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
+end
+  
+@testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
+    data = (
+        [7, 1, 2, 4, 10],
+        [7, 1, 2, 4, 10],
+        [7, 1, 2, 4, 10, 15],
+        [1, 2, 4, 7, 10, 15],
+        [0, 10, 20, 30],
+        [1, 2, 3, 4, 5],
+        [1, 2, 3, 4, 5],
+        [30, 40, 50, 60, 35],
+        [2, 0.6, 1.3, 0.3, 0.3, 1.7, 0.7, 1.7],
+        [1, 2, 2],
+        [3.7, 3.3, 3.5, 2.8],
+        [100, 125, 123, 60, 45, 56, 66],
+        [2, 2, 2, 2, 2, 2],
+        [2.3],
+        [-2, -3, 1, 2, -10],
+        [1, 2, 3, 4, 5],
+        [5, 4, 3, 2, 1],
+        [-2, 2, -1, 3, 6],
+        [-10, 1, 1, -10, -10],
+    )
+    wt = (
+        [1, 1/3, 1/3, 1/3, 1],
+        [1, 1, 1, 1, 1],
+        [1, 1/3, 1/3, 1/3, 1, 1],
+        [1/3, 1/3, 1/3, 1, 1, 1],
+        [30, 191, 9, 0],
+        [10, 1, 1, 1, 9],
+        [10, 1, 1, 1, 900],
+        [1, 3, 5, 4, 2],
+        [2, 2, 5, 1, 2, 2, 1, 6],
+        [0.1, 0.1, 0.8],
+        [5, 5, 4, 1],
+        [30, 56, 144, 24, 55, 43, 67],
+        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
+        [12],
+        [7, 1, 1, 1, 6],
+        [1, 0, 0, 0, 2],
+        [1, 2, 3, 4, 5],
+        [0.1, 0.2, 0.3, 0.2, 0.1],
+        [1, 1, 1, 1, 1],
     )
     quantile_answers = (
-        [1.0,3.6000000000000005,6.181818181818182,8.2,10.0],
-        [1.0,2.0,4.0,7.0,10.0],
-        [1.0,4.75,8.0,10.833333333333334,15.0],
-        [1.0,4.75,8.0,10.833333333333334,15.0],
-        [0.0,6.1387900355871885,11.600000000000001,15.912500000000001,30.0],
-        [1.0,1.5365853658536586,2.5999999999999996,4.405405405405405,5.0],
-        [1.0,4.239377950569287,4.492918633712858,4.746459316856429,5.0],
-        [30.0,38.75,45.714285714285715,52.85714285714286,60.0],
-        [0.3,0.6903846153846154,1.484,1.7,2.0],
-        [1.0,2.0,2.0,2.0,2.0],
-        [2.8,3.3361111111111112,3.4611111111111112,3.581578947368421,3.7],
-        [45.0,59.88593155893536,100.08846153846153,118.62115384615385,125.0],
-        [2.0,2.0,2.0,2.0,2.0],
-        [2.3,2.3,2.3,2.3,2.3],
-        [-10.0,-5.52,-2.5882352941176467,-0.9411764705882351,2.0],
-        [1.0,1.75,4.25,4.625,5.0],
-        [1.0,1.625,2.3333333333333335,3.25,5.0],
-        [-2.0,-0.5384615384615388,1.5384615384615383,2.6999999999999997,6.0],
-        [-10.0,-10.0,-10.0,1.0,1.0]
+        [1.0, 4.0, 6.0, 8.0, 10.0],
+        [1.0, 2.0, 4.0, 7.0, 10.0],
+        [1.0, 4.75, 7.5, 10.4166667, 15.0],
+        [1.0, 4.75, 7.5, 10.4166667, 15.0],
+        [0.0, 2.6178010, 5.2356021, 7.8534031, 20.0],
+        [1.0, 4.0, 4.3333333, 4.6666667, 5.0],
+        [1.0, 4.2475, 4.4983333, 4.7491667, 5.0],
+        [30.0, 37.5, 44.0, 51.25, 60.0],
+        [0.3, 0.7, 1.3, 1.7, 2.0],
+        [1.0, 2.0, 2.0, 2.0, 2.0],
+        [2.8, 3.15, 3.4, 3.56, 3.7],
+        [45.0, 62.149253, 102.875, 117.4097222, 125.0],
+        [2.0, 2.0, 2.0, 2.0, 2.0],
+        [2.3, 2.3, 2.3, 2.3, 2.3],
+        [-10.0, -2.7857143, -2.4285714, -2.0714286, 2.0],
+        [1.0, 2.0, 3.0, 4.0, 5.0],
+        [1.0, 1.625, 2.3333333, 3.25, 5.0],
+        [-2.0, -1.3333333, 0.5, 2.5, 6.0],
+        [-10.0, -10.0, -10.0, 1.0, 1.0]
     )
     p = [0.0, 0.25, 0.5, 0.75, 1.0]
 
     srand(10)
     for i = 1:length(data)
-        @test quantile(data[i], wt[i], p) ≈ quantile_answers[i]
+        @test quantile(data[i], f(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
             # order of p does not matter
             reorder = sortperm(rand(length(p)))
-            @test quantile(data[i], wt[i], p[reorder]) ≈ quantile_answers[i][reorder]
+            @test quantile(data[i], f(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-5
         end
         for j = 1:10
             # order of w does not matter
             reorder = sortperm(rand(length(data[i])))
-            @test quantile(data[i][reorder], f(wt[i][reorder]), p) ≈ quantile_answers[i]
+            @test quantile(data[i][reorder], f(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
         end
     end
     # w = 1 corresponds to base quantile
     for i = 1:length(data)
-        @test quantile(data[i], f(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p)
+        @test quantile(data[i], f(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p) atol = 1e-5
         for j = 1:10
             prandom = rand(4)
-            @test quantile(data[i], f(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom)
+            @test quantile(data[i], f(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-5
         end
     end
-
-    # other syntaxes
+    # test zeros are removed
+    for i = 1:length(data)
+        @test quantile(vcat(1.0, data[i]), f(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-5
+    end
+    # Syntax
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
-    answer = 6.181818181818182
-    @test quantile(data[1], f(w), 0.5)    ≈  answer
-    @test wquantile(data[1], f(w), [0.5]) ≈ [answer]
-    @test wquantile(data[1], f(w), 0.5)   ≈  answer
-    @test wquantile(data[1], w, [0.5])          ≈ [answer]
-    @test wquantile(data[1], w, 0.5)            ≈  answer
+    answer = 6.0
+    @test quantile(data[1], f(w), 0.5)    ≈  answer atol = 1e-5
+    @test wquantile(data[1], f(w), [0.5]) ≈ [answer] atol = 1e-5
+    @test wquantile(data[1], f(w), 0.5)   ≈  answer atol = 1e-5
+    @test wquantile(data[1], w, [0.5])    ≈ [answer] atol = 1e-5
+    @test wquantile(data[1], w, 0.5)      ≈  answer atol = 1e-5
 end
 
 end # @testset StatsBase.Weights

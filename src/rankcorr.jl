@@ -110,7 +110,7 @@ corkendall(X::RealMatrix, Y::RealMatrix) = Float64[corkendall!(float(X[:,i]), fl
 
 function corkendall(X::RealMatrix)
     n = size(X, 2)
-    C = eye(n)
+    C = Matrix{eltype(X)}(I, n, n)
     for j = 2:n
         for i = 1:j-1
             C[i,j] = corkendall!(X[:,i],X[:,j])

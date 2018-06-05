@@ -1,9 +1,4 @@
-if !isdefined(Base, :axes)
-    const axes = Base.indices
-end
-
 ###### Weight vector #####
-
 abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
 
 """
@@ -234,7 +229,7 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
 # Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
 Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, values(w))
-Base.sum(v::SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
+Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
 
 ## wsum along dimension
@@ -430,7 +425,7 @@ end
 
 function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Number,W<:Real}
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
+    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim, true)
 end
 
 # extended sum! and wsum
@@ -475,13 +470,13 @@ Compute the weighted mean of array `A` with weight vector `w`
 (of type `AbstractWeights`) along dimension `dim`, and write results to `R`.
 """
 Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
-    scale!(Base.sum!(R, A, w, dim), inv(sum(w)))
+    myscale!(Base.sum!(R, A, w, dim), inv(sum(w)))
 
 wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 Base.mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
-    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
+    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim)
 
 
 ###### Weighted median #####
@@ -563,25 +558,23 @@ wmedian(v::RealVector, w::AbstractWeights{<:Real}) = median(v, w)
 
 ###### Weighted quantile #####
 
-# http://stats.stackexchange.com/questions/13169/defining-quantiles-over-a-weighted-sample
-# In the non weighted version, we compute a vector of index h(N, p)
-# and take interpolation between floor and ceil of this index
-# Here there is a supplementary function from index to weighted index k -> Sk
 
 """
     quantile(v, w::AbstractWeights, p)
 
-Compute the weighted quantiles of a vector `x` at a specified set of probability
+Compute the weighted quantiles of a vector `v` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
 
-The quantile for `p` is defined as follows. Denoting
-``S_k = (k-1)w_k + (n-1) \\sum_{i<k}w_i``, define ``x_{k+1}`` the smallest element of `x`
-such that ``S_{k+1}/S_{n}`` is strictly superior to `p`. The function returns
-``(1-\\gamma) x_k + \\gamma x_{k+1}`` with  ``\\gamma = (pS_n- S_k)/(S_{k+1}-S_k)``.
-
-This corresponds to  R-7, Excel, SciPy-(1,1) and Maple-6 when `w` contains only ones
-(see [Wikipedia](https://en.wikipedia.org/wiki/Quantile)).
+With [`FrequencyWeights`](@ref), the function returns the same result as 
+`quantile` for a vector with repeated values.
+With non `FrequencyWeights`,  denote ``N`` the length of the vector, ``w`` the vector of weights, 
+``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the 
+probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each 
+observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}`` 
+is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -v_k)`` 
+with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when `w` is a vector
+of ones, the function returns the same result as `quantile`.
 """
 function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
     # checks
@@ -595,10 +588,12 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         x < 0 && error("weight vector cannot contain negative entries")
     end
 
-    # full sort
-    vw = sort!(collect(zip(v, w.values)))
 
-    wsum = w.sum
+    # remove zeros weights and sort
+    wsum = sum(w)
+    nz = .!iszero.(w)
+    vw = sort!(collect(zip(view(v, nz), view(w, nz))))
+    N = length(vw)
 
     # prepare percentiles
     ppermute = sortperm(p)
@@ -606,36 +601,34 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     p = bound_quantiles(p)
 
     # prepare out vector
-    N = length(vw)
-    out = Vector{typeof(zero(V)/1)}(uninitialized, length(p))
+    out = Vector{typeof(zero(V)/1)}(undef, length(p))
     fill!(out, vw[end][1])
 
     # start looping on quantiles
-    cumulative_weight, Sk, Skold =  zero(W), zero(W), zero(W)
+    Sk, Skold = zero(W), zero(W)
     vk, vkold = zero(V), zero(V)
-    k = 1
+    k = 0
+    
     for i in 1:length(p)
-        h = p[i] * (N - 1) * wsum
-        if h == 0
-            # happens when N or p or wsum equal zero
-            out[ppermute[i]] = vw[1][1]
+        if isa(w, FrequencyWeights)
+            h = p[i] * (wsum - 1) + 1
         else
-            while Sk <= h
-                # happens in particular when k == 1
-                vk, wk = vw[k]
-                cumulative_weight += wk
-                if k >= N
-                    # out was initialized with maximum v
-                    return out
-                end
-                k += 1
-                Skold, vkold = Sk, vk
-                vk, wk = vw[k]
-                Sk = (k - 1) * wk + (N - 1) * cumulative_weight
+            h = p[i] * (wsum - vw[1][2]) + vw[1][2]
+        end
+        while Sk <= h
+            k += 1
+            if k > N
+               # out was initialized with maximum v
+               return out
             end
-            # in particular, Sk is different from Skold
-            g = (h - Skold) / (Sk - Skold)
-            out[ppermute[i]] = vkold + g * (vk - vkold)
+            Skold, vkold = Sk, vk
+            vk, wk = vw[k]
+            Sk += wk
+        end
+        if isa(w, FrequencyWeights)
+            out[ppermute[i]] = vkold + min(h - Skold, 1) * (vk - vkold)
+        else
+            out[ppermute[i]] = vkold + (h - Skold) / (Sk - Skold) * (vk - vkold)
         end
     end
     return out
