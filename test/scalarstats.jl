@@ -1,5 +1,6 @@
 using StatsBase
 using Test
+using DelimitedFiles
 
 ##### Location
 
@@ -93,6 +94,22 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009
 
 @test iqr(1:5) ≈ 2.0
+
+nutrient = readdlm(joinpath(@__DIR__, "data", "nutrient.txt"))[:,2:end]
+@test @inferred(genvar(nutrient)) ≈ 2.8310418e19 rtol=1e-6
+@test @inferred(totalvar(nutrient)) ≈ 2.83266877e6 rtol=1e-6
+
+X = [1 2 5
+     4 1 6
+     4 0 4]
+@test @inferred(genvar(X)) ≈ 0.0
+@test @inferred(totalvar(X)) ≈ 5.0
+
+x = rand(Float32, 10)
+@test genvar(x) == totalvar(x) == var(x)
+
+it = (xᵢ for xᵢ in x)
+@test genvar(it) == totalvar(it) == var(it)
 
 
 ##### entropy

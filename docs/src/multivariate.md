@@ -7,3 +7,10 @@ This package provides a few methods for summarizing multivariate data.
 ```@docs
 partialcor
 ```
+
+## Generalizations of Variance
+
+```@docs
+genvar
+totalvar
+```
