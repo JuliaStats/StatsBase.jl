@@ -16,6 +16,7 @@ makedocs(
              "sampling.md",
              "empirical.md",
              "signalcorr.md",
+             "multivariate.md",
              "misc.md",
              "statmodels.md"]
 )
