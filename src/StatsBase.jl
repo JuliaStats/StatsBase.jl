@@ -68,6 +68,9 @@ module StatsBase
     mad,         # median absolute deviation
     iqr,         # interquatile range
 
+    genvar,      # generalized variance
+    totalvar,    # total variation
+
     entropy,        # the entropy of a probability vector
     renyientropy,   # the Rényi (generalised) entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors

@@ -1,6 +1,5 @@
 using StatsBase
-using Compat
-using Compat.Test
+using Test
 
 wechsler = Float32[
      7  5  9  8
