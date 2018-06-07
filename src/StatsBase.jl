@@ -113,6 +113,9 @@ module StatsBase
     corspearman,       # spearman's rank correlation
     corkendall,        # kendall's rank correlation
 
+    ## partialcor
+    partialcor,        # partial correlation
+
     ## signalcorr
     autocov!, autocov,      # auto covariance
     autocor!, autocor,      # auto correlation
@@ -210,6 +213,7 @@ module StatsBase
     include("toeplitzsolvers.jl")
     include("rankcorr.jl")
     include("signalcorr.jl")
+    include("partialcor.jl")
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
