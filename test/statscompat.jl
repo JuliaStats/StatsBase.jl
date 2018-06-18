@@ -1,4 +1,4 @@
-using StatsBase, Compat.Test
+using StatsBase, Test
 
 @testset "StatsCompat for replacing some Compat functions" begin
     @test StatsCompat.varm([1 2; 3 4], -1) == 18

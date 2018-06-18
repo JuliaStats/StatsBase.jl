@@ -126,7 +126,7 @@ histrange(vs::NTuple{N,AbstractVector},nbins::Integer,closed::Symbol) where {N} 
 ## histograms ##
 function sturges(n)  # Sturges' formula
     n==0 && return one(n)
-    ceil(Integer, log2(n))+1
+    ceil(Integer, digits=log2(n))+1
 end
 
 abstract type AbstractHistogram{T<:Real,N,E} end
@@ -533,8 +533,4 @@ Calculate the midpoints (pairwise mean of consecutive elements).
 """
 midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
 
-if VERSION < v"0.7.0-DEV.4713"
-    midpoints(r::AbstractRange) = r[1:(end - 1)] + step(r) / 2
-else
-    midpoints(r::AbstractRange) = r[1:(end - 1)] .+ (step(r) / 2)
-end
+midpoints(r::AbstractRange) = r[1:(end - 1)] .+ (step(r) / 2)

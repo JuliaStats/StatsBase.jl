@@ -1,6 +1,6 @@
 using StatsBase
 using Compat
-using Compat.Test
+using Test
 
 @testset "StatsBase.Moments" begin
 weight_funcs = (weights, aweights, fweights, pweights)

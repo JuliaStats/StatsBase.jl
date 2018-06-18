@@ -1,9 +1,5 @@
 # This file contains code formerly part of Julia. License is MIT: https://julialang.org/license
 
-if VERSION < v"0.7.0-DEV.5278"
-    const something = Base.coalesce
-end
-
 # deprecations from base/deprecated.jl
 @deprecate varm(A::AbstractArray, m::AbstractArray, dims; kwargs...) varm(A, m; kwargs..., dims=dims)
 @deprecate var(A::AbstractArray, dims; kwargs...)                    var(A; kwargs..., dims=dims)

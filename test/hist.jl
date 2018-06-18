@@ -1,7 +1,7 @@
 # See src/hist.jl for meaning of "FIXME: closed" comments.
 
 using Compat, StatsBase
-using Compat.LinearAlgebra, Compat.Random, Compat.Test
+using Compat.LinearAlgebra, Compat.Random, Test
 
 @testset "StatsBase.Histogram" begin
 

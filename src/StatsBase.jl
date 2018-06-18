@@ -9,7 +9,7 @@ module StatsBase
     using Compat, SortingAlgorithms, Missings
     using Compat.LinearAlgebra
     using Compat.Random
-    using Compat.Printf
+    using Printf
     using Compat.SparseArrays
     import Compat.Random: rand, rand!
     import Compat.LinearAlgebra: BlasReal, BlasFloat
@@ -195,11 +195,7 @@ end
 
 const BASESTATS_IN_STATSBASE = VERSION >= v"0.7.0-DEV.5238"
 
-if VERSION < v"0.7.0-DEV.3665"
-    myscale!(A::AbstractArray, b::Number) = scale!(A, b)
-else
-    myscale!(A::AbstractArray, b::Number) = rmul!(A, b)
-end
+myscale!(A::AbstractArray, b::Number) = rmul!(A, b)
 
 @static if BASESTATS_IN_STATSBASE
     export cor, cov, std, stdm, var, varm, linreg
@@ -210,31 +206,7 @@ else
 end
 
 module StatsCompat
-    if VERSION < v"0.7.0-DEV.4064"
-        var(a::AbstractArray; dims=nothing, kwargs...) =
-            dims===nothing ? Base.var(a; kwargs...) : Base.var(a, dims; kwargs...)
-        std(a::AbstractArray; dims=nothing, kwargs...) =
-            dims===nothing ? Base.std(a; kwargs...) : Base.std(a, dims; kwargs...)
-        varm(A::AbstractArray, m; dims=nothing, kwargs...) =
-            dims===nothing ? Base.varm(A, m; kwargs...) : Base.varm(A, m, dims; kwargs...)
-        if VERSION < v"0.7.0-DEV.755"
-            cov(a::AbstractMatrix; dims=1, corrected=true) = Base.cov(a, dims, corrected)
-            cov(a::AbstractVecOrMat, b::AbstractVecOrMat; dims=1, corrected=true) =
-                Base.cov(a, b, dims, corrected)
-        else
-            cov(a::AbstractMatrix; dims=nothing, kwargs...) =
-                dims===nothing ? Base.cov(a; kwargs...) : Base.cov(a, dims; kwargs...)
-            cov(a::AbstractVecOrMat, b::AbstractVecOrMat; dims=nothing, kwargs...) =
-                dims===nothing ? Base.cov(a, b; kwargs...) : Base.cov(a, b, dims; kwargs...)
-        end
-        cor(a::AbstractMatrix; dims=nothing) = dims===nothing ? Base.cor(a) : Base.cor(a, dims)
-        cor(a::AbstractVecOrMat, b::AbstractVecOrMat; dims=nothing) =
-            dims===nothing ? Base.cor(a, b) : Base.cor(a, b, dims)
-    elseif VERSION < v"0.7.0-DEV.5238"
-        import Base: var, std, varm, cov, cor
-    else
-        import ..StatsBase: var, std, varm, cov, cor
-    end
+    import ..StatsBase: var, std, varm, cov, cor
 end # module StatsCompat
 export StatsCompat
 

@@ -403,7 +403,7 @@ function show(io::IO, ct::CoefTable)
     nc = length(cols)
     nr = length(cols[1])
     if length(rownms) == 0
-        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
+        rownms = [lpad("[$i]",floor(Integer, digits=log10(nr))+3) for i in 1:nr]
     end
     rnwidth = max(4,maximum([length(nm) for nm in rownms]) + 1)
     rownms = [rpad(nm,rnwidth) for nm in rownms]

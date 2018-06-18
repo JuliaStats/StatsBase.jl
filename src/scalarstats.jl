@@ -583,7 +583,7 @@ Pretty-print the summary statistics provided by [`summarystats`](@ref):
 the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
-describe(a::AbstractArray) = describe(STDOUT, a)
+describe(a::AbstractArray) = describe(stdout, a)
 function describe(io::IO, a::AbstractArray{T}) where T<:Real
     show(io, summarystats(a))
     println(io, "Length:         $(length(a))")
