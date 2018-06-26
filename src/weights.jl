@@ -13,6 +13,11 @@ macro weights(name)
             values::V
             sum::S
         end
+        if VERSION < v"0.7.0-DEV.5260"
+            $(esc(name))(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} = $(esc(name)){S, eltype(vs), V}(vs, s)
+        else
+            $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
+        end
     end
 end
 
@@ -44,7 +49,7 @@ otherwise returns ``\\frac{1}{n}`` (i.e. no correction).
 
 @weights Weights
 
-"""
+@doc """
     Weights(vs, wsum=sum(vs))
 
 Construct a `Weights` vector with weight values `vs`.
@@ -53,8 +58,7 @@ A precomputed sum may be provided as `wsum`.
 The `Weights` type describes a generic weights vector which does not support
 all operations possible for [`FrequencyWeights`](@ref), [`AnalyticWeights`](@ref)
 and [`ProbabilityWeights`](@ref).
-"""
-Weights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} = Weights{S, eltype(vs), V}(vs, s)
+""" Weights
 
 """
     weights(vs)
@@ -79,7 +83,7 @@ end
 
 @weights AnalyticWeights
 
-"""
+@doc """
     AnalyticWeights(vs, wsum=sum(vs))
 
 Construct an `AnalyticWeights` vector with weight values `vs`.
@@ -89,9 +93,7 @@ Analytic weights describe a non-random relative importance (usually between 0 an
 for each observation. These weights may also be referred to as reliability weights,
 precision weights or inverse variance weights. These are typically used when the observations
 being weighted are aggregate values (e.g., averages) with differing variances.
-"""
-AnalyticWeights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} =
-    AnalyticWeights{S, eltype(vs), V}(vs, s)
+""" AnalyticWeights
 
 """
     aweights(vs)
@@ -121,7 +123,7 @@ end
 
 @weights FrequencyWeights
 
-"""
+@doc """
     FrequencyWeights(vs, wsum=sum(vs))
 
 Construct a `FrequencyWeights` vector with weight values `vs`.
@@ -129,9 +131,7 @@ A precomputed sum may be provided as `wsum`.
 
 Frequency weights describe the number of times (or frequency) each observation
 was observed. These weights may also be referred to as case weights or repeat weights.
-"""
-FrequencyWeights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} =
-    FrequencyWeights{S, eltype(vs), V}(vs, s)
+""" FrequencyWeights
 
 """
     fweights(vs)
@@ -160,7 +160,7 @@ end
 
 @weights ProbabilityWeights
 
-"""
+@doc """
     ProbabilityWeights(vs, wsum=sum(vs))
 
 Construct a `ProbabilityWeights` vector with weight values `vs`.
@@ -169,9 +169,7 @@ A precomputed sum may be provided as `wsum`.
 Probability weights represent the inverse of the sampling probability for each observation,
 providing a correction mechanism for under- or over-sampling certain population groups.
 These weights may also be referred to as sampling weights.
-"""
-ProbabilityWeights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} =
-    ProbabilityWeights{S, eltype(vs), V}(vs, s)
+""" ProbabilityWeights
 
 """
     pweights(vs)
