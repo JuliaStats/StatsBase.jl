@@ -13,6 +13,11 @@ macro weights(name)
             values::V
             sum::S
         end
+        if VERSION < v"0.7.0-DEV.5260"
+            $(esc(name))(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} = $(esc(name)){S, eltype(vs), V}(vs, s)
+        else
+            $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
+        end
     end
 end
 
@@ -55,12 +60,6 @@ all operations possible for [`FrequencyWeights`](@ref), [`AnalyticWeights`](@ref
 and [`ProbabilityWeights`](@ref).
 """ Weights
 
-if VERSION < v"0.7.0-DEV.5260"
-    Weights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} = Weights{S, eltype(vs), V}(vs, s)
-else
-    Weights(vs) = Weights(vs, sum(vs))
-end
-
 """
     weights(vs)
 
@@ -95,13 +94,6 @@ for each observation. These weights may also be referred to as reliability weigh
 precision weights or inverse variance weights. These are typically used when the observations
 being weighted are aggregate values (e.g., averages) with differing variances.
 """ AnalyticWeights
-
-if VERSION < v"0.7.0-DEV.5260"
-    AnalyticWeights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} =
-        AnalyticWeights{S, eltype(vs), V}(vs, s)
-else
-    AnalyticWeights(vs::RealVector) = AnalyticWeights(vs, sum(vs))
-end
 
 """
     aweights(vs)
@@ -141,13 +133,6 @@ Frequency weights describe the number of times (or frequency) each observation
 was observed. These weights may also be referred to as case weights or repeat weights.
 """ FrequencyWeights
 
-if VERSION < v"0.7.0-DEV.5260"
-    FrequencyWeights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} =
-        FrequencyWeights{S, eltype(vs), V}(vs, s)
-else
-    FrequencyWeights(vs::RealVector) = FrequencyWeights(vs, sum(vs))
-end
-
 """
     fweights(vs)
 
@@ -185,13 +170,6 @@ Probability weights represent the inverse of the sampling probability for each o
 providing a correction mechanism for under- or over-sampling certain population groups.
 These weights may also be referred to as sampling weights.
 """ ProbabilityWeights
-
-if VERSION < v"0.7.0-DEV.5260"
-    ProbabilityWeights(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} =
-        ProbabilityWeights{S, eltype(vs), V}(vs, s)
-else
-    ProbabilityWeights(vs::RealVector) = ProbabilityWeights(vs, sum(vs))
-end
 
 """
     pweights(vs)
