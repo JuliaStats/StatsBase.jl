@@ -1033,11 +1033,59 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "empirical.html#Base.merge!",
+    "page": "Empirical Estimation",
+    "title": "Base.merge!",
+    "category": "function",
+    "text": "merge!(target::Histogram, others::Histogram...)\n\nUpdate histogram target by merging it with the histograms others. See merge(histogram::Histogram, others::Histogram...) for details.\n\n\n\n"
+},
+
+{
+    "location": "empirical.html#Base.merge",
+    "page": "Empirical Estimation",
+    "title": "Base.merge",
+    "category": "function",
+    "text": "merge(h::Histogram, others::Histogram...)\n\nConstruct a new histogram by merging h with others. All histograms must have the same binning, shape of weights and properties (closed and isdensity). The weights of all histograms are summed up for each bin, the weights of the resulting histogram will have the same type as those of h.\n\n\n\n"
+},
+
+{
+    "location": "empirical.html#Base.LinAlg.norm",
+    "page": "Empirical Estimation",
+    "title": "Base.LinAlg.norm",
+    "category": "function",
+    "text": "norm(h::Histogram)\n\nCalculate the norm of histogram h as the absolute value of its integral.\n\n\n\n"
+},
+
+{
+    "location": "empirical.html#Base.LinAlg.normalize",
+    "page": "Empirical Estimation",
+    "title": "Base.LinAlg.normalize",
+    "category": "function",
+    "text": "normalize(h::Histogram{T,N}; mode::Symbol=:pdf) where {T,N}\n\nNormalize the histogram h.\n\nValid values for mode are:\n\n:pdf: Normalize by sum of weights and bin sizes. Resulting histogram  has norm 1 and represents a PDF.\n:density: Normalize by bin sizes only. Resulting histogram represents  count density of input and does not have norm 1. Will not modify the  histogram if it already represents a density (h.isdensity == 1).\n:probability: Normalize by sum of weights only. Resulting histogram  represents the fraction of probability mass for each bin and does not have  norm 1.\n:none: Leaves histogram unchanged. Useful to simplify code that has to  conditionally apply different modes of normalization.\n\nSuccessive application of both :probability and :density normalization (in any order) is equivalent to :pdf normalization.\n\n\n\nnormalize(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N}\n\nNormalize the histogram h and rescales one or more auxiliary weight arrays at the same time (aux_weights may, e.g., contain estimated statistical uncertainties). The values of the auxiliary arrays are scaled by the same factor as the corresponding histogram weight values. Returns a tuple of the normalized histogram and scaled auxiliary weights.\n\n\n\n"
+},
+
+{
+    "location": "empirical.html#Base.LinAlg.normalize!",
+    "page": "Empirical Estimation",
+    "title": "Base.LinAlg.normalize!",
+    "category": "function",
+    "text": "normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N}\n\nNormalize the histogram h and optionally scale one or more auxiliary weight arrays appropriately. See description of normalize for details. Returns h.\n\n\n\n"
+},
+
+{
+    "location": "empirical.html#Base.zero",
+    "page": "Empirical Estimation",
+    "title": "Base.zero",
+    "category": "function",
+    "text": "zero(h::Histogram)\n\nCreate a new histogram with the same binning, type and shape of weights and the same properties (closed and isdensity) as h, with all weights set to zero.\n\n\n\n"
+},
+
+{
     "location": "empirical.html#Histograms-1",
     "page": "Empirical Estimation",
     "title": "Histograms",
     "category": "section",
-    "text": "The Histogram type represents data that has been tabulated into intervals (known as bins) along the real line, or in higher dimensions, over the real plane.Histograms can be fitted to data using the fit method.fit(::Type{Histogram}, args...; kwargs...)"
+    "text": "The Histogram type represents data that has been tabulated into intervals (known as bins) along the real line, or in higher dimensions, over the real plane.Histograms can be fitted to data using the fit method.fit(::Type{Histogram}, args...; kwargs...)Additional methodsmerge!\nmerge\nnorm\nnormalize\nnormalize!\nzero"
 },
 
 {
