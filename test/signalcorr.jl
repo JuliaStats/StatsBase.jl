@@ -6,7 +6,7 @@
 
 using StatsBase
 using Compat
-using Compat.Test
+using Test
 
 # random data for testing
 

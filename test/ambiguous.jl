@@ -1,5 +1,5 @@
 using Compat, StatsBase
-using Compat.Test
+using Test
 
 @testset "Ambiguities" begin
     # Ambiguities with Base and Core introduced by this package

@@ -111,16 +111,9 @@ Compute the Pearson correlation matrix of `X` along the dimension
 cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
     corm(x, Base.mean(x, w, vardim), w, vardim)
 
-if VERSION >= v"0.7.0-DEV.755"
-    function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-        m = Compat.mean(x, dims = vardim)
-        return m, covm(x, m, vardim, corrected=corrected)
-    end
-else
-    function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-        m = mean(x, vardim)
-        return m, covm(x, m, vardim, corrected)
-    end
+function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
+    m = Compat.mean(x, dims = vardim)
+    return m, covm(x, m, vardim, corrected=corrected)
 end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1;
                       corrected::DepBool=nothing)

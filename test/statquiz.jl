@@ -1,14 +1,12 @@
 # Test taken from http://www.stanford.edu/~clint/bench/wilk.txt
 
 using Compat
-using Compat.Test
+using Test
 using DataFrames
 using StatsBase
 using GLM
 
-if VERSION >= v"0.7.0-DEV.3052"
-    using Printf
-end
+using Printf
 
 testeps = sqrt(eps())
 
@@ -28,9 +26,9 @@ print("Test rounding: ")
 @test [@sprintf("%1.0f", x) for x in nasty[:round]] == ["1","2","3","4","5","6","7","8","9"]
 println("OK")
 print("Test math: ")
-@test round(Int, 2.6*7 - 0.2) == 18
-@test 2 - round(Int, exp(log(sqrt(2)*sqrt(2)))) == 0
-@test round(Int, 3 - exp(log(sqrt(2)*sqrt(2)))) == 1
+@test round(Int, digits=2.6*7 - 0.2) == 18
+@test 2 - round(Int, digits=exp(log(sqrt(2)*sqrt(2)))) == 0
+@test round(Int, digits=3 - exp(log(sqrt(2)*sqrt(2)))) == 1
 println("OK")
 
 print("Test means: ")

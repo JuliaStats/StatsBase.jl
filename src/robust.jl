@@ -38,7 +38,7 @@ function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 
     if count == 0
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
-        count = floor(Int, n * prop)
+        count = floor(Int, digits=n * prop)
     else
         prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
@@ -86,7 +86,7 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 
     if count == 0
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
-        count = floor(Int, n * prop)
+        count = floor(Int, digits=n * prop)
     else
         prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
@@ -120,7 +120,7 @@ function trimvar(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 
     if count == 0
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
-        count = floor(Int, n * prop)
+        count = floor(Int, digits=n * prop)
     else
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
         prop = count/n

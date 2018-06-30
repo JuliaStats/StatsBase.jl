@@ -1,5 +1,5 @@
 using Compat, StatsBase
-using Compat.LinearAlgebra, Compat.Random, Compat.Test
+using Compat.LinearAlgebra, Compat.Random, Test
 
 @testset "StatsBase.Covariance" begin
 weight_funcs = (weights, aweights, fweights, pweights)

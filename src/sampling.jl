@@ -237,7 +237,7 @@ function seqsample_a!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     end
 
     if k > 0  # checking k > 0 is necessary: x can be empty
-        s = trunc(Int, n * rand(rng))
+        s = trunc(Int, digits=n * rand(rng))
         x[j+1] = a[i+(s+1)]
     end
     return x
@@ -272,14 +272,14 @@ function seqsample_c!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
             end
             u -= 1
         end
-        s = trunc(Int, minv) + 1
+        s = trunc(Int, digits=minv) + 1
         x[j+=1] = a[i+=s]
         n -= s
         k -= 1
     end
 
     if k > 0
-        s = trunc(Int, n * rand(rng))
+        s = trunc(Int, digits=n * rand(rng))
         x[j+1] = a[i+(s+1)]
     end
     return x

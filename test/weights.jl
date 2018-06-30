@@ -1,5 +1,5 @@
 using Compat, StatsBase
-using Compat.LinearAlgebra, Compat.Random, Compat.SparseArrays, Compat.Test
+using Compat.LinearAlgebra, Compat.Random, Compat.SparseArrays, Test
 
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
