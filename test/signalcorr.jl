@@ -5,8 +5,7 @@
 #
 
 using StatsBase
-using Compat
-using Compat.Test
+using Test
 
 # random data for testing
 
@@ -80,7 +79,7 @@ c22 = crosscov(x2, x2)
 
 @test crosscov(x,  x1) ≈ [c11 c21]
 @test crosscov(x1, x)  ≈ [c11 c12]
-@test crosscov(x,  x)  ≈ cat(3, [c11 c21], [c12 c22])
+@test crosscov(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
 rcor0 = [0.230940107675850,
         -0.230940107675850,
@@ -102,7 +101,7 @@ c22 = crosscor(x2, x2)
 
 @test crosscor(x,  x1) ≈ [c11 c21]
 @test crosscor(x1, x)  ≈ [c11 c12]
-@test crosscor(x,  x)  ≈ cat(3, [c11 c21], [c12 c22])
+@test crosscor(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
 
 ## pacf

@@ -1,9 +1,5 @@
 # This file contains code formerly part of Julia. License is MIT: https://julialang.org/license
 
-if VERSION < v"0.7.0-DEV.5278"
-    const something = Base.coalesce
-end
-
 # deprecations from base/deprecated.jl
 @deprecate varm(A::AbstractArray, m::AbstractArray, dims; kwargs...) varm(A, m; kwargs..., dims=dims)
 @deprecate var(A::AbstractArray, dims; kwargs...)                    var(A; kwargs..., dims=dims)
@@ -168,10 +164,10 @@ The mean `mean` over the region may be provided.
 var(A::AbstractArray; corrected::Bool=true, mean=nothing, dims=:) = _var(A, corrected, mean, dims)
 
 _var(A::AbstractArray, corrected::Bool, mean, dims) =
-    varm(A, something(mean, Base.mean(A, dims=dims)); corrected=corrected, dims=dims)
+    varm(A, something(mean, MEANHOME.mean(A, dims=dims)); corrected=corrected, dims=dims)
 
 _var(A::AbstractArray, corrected::Bool, mean, ::Colon) =
-    real(varm(A, something(mean, Base.mean(A)); corrected=corrected))
+    real(varm(A, something(mean, MEANHOME.mean(A)); corrected=corrected))
 
 varm(iterable, m; corrected::Bool=true) = _var(iterable, corrected, m)
 
@@ -336,7 +332,7 @@ covm(x::AbstractVecOrMat, xmean, y::AbstractVecOrMat, ymean, vardim::Int=1; corr
 Compute the variance of the vector `x`. If `corrected` is `true` (the default) then the sum
 is scaled with `n-1`, whereas the sum is scaled with `n` if `corrected` is `false` where `n = length(x)`.
 """
-cov(x::AbstractVector; corrected::Bool=true) = covm(x, Base.mean(x); corrected=corrected)
+cov(x::AbstractVector; corrected::Bool=true) = covm(x, mean(x); corrected=corrected)
 
 """
     cov(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
@@ -357,7 +353,7 @@ default), computes ``\\frac{1}{n-1}\\sum_{i=1}^n (x_i-\\bar x) (y_i-\\bar y)^*``
 `false`, computes ``\\frac{1}{n}\\sum_{i=1}^n (x_i-\\bar x) (y_i-\\bar y)^*``.
 """
 cov(x::AbstractVector, y::AbstractVector; corrected::Bool=true) =
-    covm(x, Base.mean(x), y, Base.mean(y); corrected=corrected)
+    covm(x, mean(x), y, mean(y); corrected=corrected)
 
 """
     cov(X::AbstractVecOrMat, Y::AbstractVecOrMat; dims::Int=1, corrected::Bool=true)
@@ -490,7 +486,7 @@ cor(X::AbstractMatrix; dims::Int=1) = corm(X, _vmean(X, dims), dims)
 
 Compute the Pearson correlation between the vectors `x` and `y`.
 """
-cor(x::AbstractVector, y::AbstractVector) = corm(x, Base.mean(x), y, Base.mean(y))
+cor(x::AbstractVector, y::AbstractVector) = corm(x, mean(x), y, mean(y))
 
 """
     cor(X::AbstractVecOrMat, Y::AbstractVecOrMat; dims=1)

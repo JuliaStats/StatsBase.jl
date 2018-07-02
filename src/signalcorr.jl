@@ -513,7 +513,7 @@ function pacf_regress!(r::RealMatrix, X::AbstractMatrix{T}, lags::IntegerVector,
         for i = 1 : length(lags)
             l = lags[i]
             sX = view(tmpX, 1+l:lx, 1:l+1)
-            r[i,j] = l == 0 ? 1 : (cholfact!(sX'sX)\(sX'view(X, 1+l:lx, j)))[end]
+            r[i,j] = l == 0 ? 1 : (cholesky!(sX'sX, Val(false)) \ (sX'view(X, 1+l:lx, j)))[end]
         end
     end
     r

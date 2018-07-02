@@ -1,5 +1,5 @@
-using Compat, StatsBase
-using Compat.SparseArrays, Compat.Test
+using StatsBase
+using SparseArrays, Test
 
 # rle & inverse_rle
 

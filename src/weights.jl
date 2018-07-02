@@ -13,11 +13,7 @@ macro weights(name)
             values::V
             sum::S
         end
-        if VERSION < v"0.7.0-DEV.5260"
-            $(esc(name))(vs::V, s::S=sum(vs)) where {S<:Real, V<:RealVector} = $(esc(name)){S, eltype(vs), V}(vs, s)
-        else
-            $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
-        end
+        $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
     end
 end
 
@@ -419,7 +415,7 @@ end
 
 function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Number,W<:Real}
     length(w) == size(A,dim) || throw(DimensionMismatch("Inconsistent array dimension."))
-    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim, true)
+    _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
 end
 
 # extended sum! and wsum
@@ -455,7 +451,7 @@ w = rand(n)
 mean(x, weights(w))
 ```
 """
-Base.mean(A::AbstractArray, w::AbstractWeights) = sum(A, w) / sum(w)
+mean(A::AbstractArray, w::AbstractWeights) = sum(A, w) / sum(w)
 
 """
     mean(R::AbstractArray, , A::AbstractArray, w::AbstractWeights[, dim::Int])
@@ -463,18 +459,18 @@ Base.mean(A::AbstractArray, w::AbstractWeights) = sum(A, w) / sum(w)
 Compute the weighted mean of array `A` with weight vector `w`
 (of type `AbstractWeights`) along dimension `dim`, and write results to `R`.
 """
-Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
-    myscale!(Base.sum!(R, A, w, dim), inv(sum(w)))
+mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
+    rmul!(Base.sum!(R, A, w, dim), inv(sum(w)))
 
 wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
-Base.mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
-    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(Compat.axes(A), dim)), A, w, dim)
+mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
+    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
 
 
 ###### Weighted median #####
-function Base.median(v::AbstractArray, w::AbstractWeights)
+function median(v::AbstractArray, w::AbstractWeights)
     throw(MethodError(median, (v, w)))
 end
 
@@ -493,7 +489,7 @@ If none of the weights are positive, an error is thrown.
 `NaN` is returned if `x` contains any `NaN` values.
 An error is raised if `w` contains any `NaN` values.
 """
-function Base.median(v::RealVector, w::AbstractWeights{<:Real})
+function median(v::RealVector, w::AbstractWeights{<:Real})
     isempty(v) && error("median of an empty array is undefined")
     if length(v) != length(w)
         error("data and weight vectors must be the same size")
