@@ -1,4 +1,4 @@
-julia 0.6
+julia 0.7-beta
 DataStructures 0.5.0
 SortingAlgorithms
 Compat 0.61.0
