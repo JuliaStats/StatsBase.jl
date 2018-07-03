@@ -1,6 +1,5 @@
 using StatsBase
-using Compat
-using Compat.Test
+using Test
 
 srand(10)
 v1 = rand(3)

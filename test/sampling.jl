@@ -1,5 +1,5 @@
-using Compat, StatsBase
-using Compat.Test, Compat.Random
+using StatsBase
+using Test, Random
 
 srand(1234)
 

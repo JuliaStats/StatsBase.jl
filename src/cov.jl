@@ -82,19 +82,19 @@ scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1) =
     scattermat_zm(x .- mean, wv, vardim)
 
 scattermat(x::DenseMatrix, vardim::Int=1) =
-    scattermatm(x, Compat.mean(x, dims = vardim), vardim)
+    scattermatm(x, mean(x, dims = vardim), vardim)
 
 scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
-    scattermatm(x, Base.mean(x, wv, vardim), wv, vardim)
+    scattermatm(x, MEANHOME.mean(x, wv, vardim), wv, vardim)
 
 ## weighted cov
 covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
      corrected::DepBool=nothing) =
-    myscale!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
+    rmul!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
 
 
 cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
-    covm(x, Base.mean(x, w, vardim), w, vardim; corrected=depcheck(:cov, corrected))
+    covm(x, mean(x, w, vardim), w, vardim; corrected=depcheck(:cov, corrected))
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
     c = covm(x, mean, w, vardim; corrected=false)
@@ -109,18 +109,11 @@ Compute the Pearson correlation matrix of `X` along the dimension
 `vardim` with a weighting `w` .
 """
 cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
-    corm(x, Base.mean(x, w, vardim), w, vardim)
+    corm(x, mean(x, w, vardim), w, vardim)
 
-if VERSION >= v"0.7.0-DEV.755"
-    function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-        m = Compat.mean(x, dims = vardim)
-        return m, covm(x, m, vardim, corrected=corrected)
-    end
-else
-    function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-        m = mean(x, vardim)
-        return m, covm(x, m, vardim, corrected)
-    end
+function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
+    m = mean(x, dims = vardim)
+    return m, covm(x, m, vardim, corrected=corrected)
 end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1;
                       corrected::DepBool=nothing)

@@ -1,5 +1,5 @@
-using Compat, StatsBase
-using Compat.LinearAlgebra, Compat.Random, Compat.Test
+using StatsBase
+using LinearAlgebra, Random, Test
 
 @testset "StatsBase.Covariance" begin
 weight_funcs = (weights, aweights, fweights, pweights)
@@ -7,8 +7,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
 @testset "$f" for f in weight_funcs
     X = randn(3, 8)
 
-    Z1 = X .- Compat.mean(X, dims = 1)
-    Z2 = X .- Compat.mean(X, dims = 2)
+    Z1 = X .- mean(X, dims = 1)
+    Z2 = X .- mean(X, dims = 2)
 
     w1 = rand(3)
     w2 = rand(8)
@@ -46,8 +46,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @test StatsBase.scattermatm(X, 0)    ≈ Sz1
         @test StatsBase.scattermatm(X, 0, 2) ≈ Sz2
 
-        @test StatsBase.scattermatm(X, Compat.mean(X, dims = 1))    ≈ S1
-        @test StatsBase.scattermatm(X, Compat.mean(X, dims = 2), 2) ≈ S2
+        @test StatsBase.scattermatm(X, mean(X, dims = 1))    ≈ S1
+        @test StatsBase.scattermatm(X, mean(X, dims = 2), 2) ≈ S2
 
         @test StatsBase.scattermatm(X, zeros(1,8))  ≈ Sz1
         @test StatsBase.scattermatm(X, zeros(3), 2) ≈ Sz2
@@ -84,15 +84,15 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=false)
-            @test m == Compat.mean(X, dims = 1)
+            @test m == mean(X, dims = 1)
             @test C == StatsCompat.cov(X, dims = 1, corrected=false)
 
             (m, C) = mean_and_cov(X, 1; corrected=false)
-            @test m == Compat.mean(X, dims = 1)
+            @test m == mean(X, dims = 1)
             @test C == StatsCompat.cov(X, dims = 1, corrected = false)
 
             (m, C) = mean_and_cov(X, 2; corrected=false)
-            @test m == Compat.mean(X, dims = 2)
+            @test m == mean(X, dims = 2)
             @test C == StatsCompat.cov(X, dims = 2, corrected = false)
 
             (m, C) = mean_and_cov(X, wv1; corrected=false)
@@ -155,15 +155,15 @@ weight_funcs = (weights, aweights, fweights, pweights)
         end
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=true)
-            @test m == Compat.mean(X, dims =1)
+            @test m == mean(X, dims =1)
             @test C == StatsCompat.cov(X, dims = 1, corrected = true)
 
             (m, C) = mean_and_cov(X, 1; corrected=true)
-            @test m == Compat.mean(X, dims = 1)
+            @test m == mean(X, dims = 1)
             @test C == StatsCompat.cov(X, dims = 1, corrected = true)
 
             (m, C) = mean_and_cov(X, 2; corrected=true)
-            @test m == Compat.mean(X, dims = 2)
+            @test m == mean(X, dims = 2)
             @test C == StatsCompat.cov(X, dims = 2, corrected = true)
 
             if isa(wv1, Weights)

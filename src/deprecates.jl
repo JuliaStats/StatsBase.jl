@@ -1,6 +1,4 @@
-import Base.@deprecate
-import Base.depwarn
-import Base.@deprecate_binding
+using Base: @deprecate, @deprecate_binding, depwarn
 
 @deprecate varm(v::RealArray, m::Real, wv::AbstractWeights) varm(v, wv, m)
 @deprecate varm(A::RealArray, M::RealArray, wv::AbstractWeights, dim::Int) varm(v, wv, m, dim)
@@ -85,7 +83,7 @@ function rand(rng::AbstractRNG, s::RandIntSampler)
     end
     s.a + Int(rem(x, s.Ku))
 end
-rand(s::RandIntSampler) = rand(Compat.Random.GLOBAL_RNG, s)
+rand(s::RandIntSampler) = rand(Random.GLOBAL_RNG, s)
 
 @deprecate randi(rng::AbstractRNG, K::Int) rand(rng, 1:K)
 @deprecate randi(K::Int) rand(1:K)

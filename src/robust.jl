@@ -94,8 +94,8 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
 
     partialsort!(x, (n-count+1):n)
     partialsort!(x, 1:count)
-    x[1:count] = x[count+1]
-    x[n-count+1:end] = x[n-count]
+    x[1:count] .= x[count+1]
+    x[n-count+1:end] .= x[n-count]
 
     return x
 end

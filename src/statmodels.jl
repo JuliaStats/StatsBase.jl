@@ -409,7 +409,7 @@ function show(io::IO, ct::CoefTable)
     rownms = [rpad(nm,rnwidth) for nm in rownms]
     widths = [length(cn)::Int for cn in colnms]
     str = String[isa(cols[j][i], AbstractString) ? cols[j][i] :
-        sprint(showcompact,cols[j][i]) for i in 1:nr, j in 1:nc]
+        sprint(show, cols[j][i], context=:compact=>true) for i in 1:nr, j in 1:nc]
     for j in 1:nc
         for i in 1:nr
             lij = length(str[i,j])

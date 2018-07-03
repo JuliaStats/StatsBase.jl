@@ -1,13 +1,9 @@
-using Compat, StatsBase
-
-@static if StatsBase.BASESTATS_IN_STATSBASE
-    using Random
-    using LinearAlgebra
-else
-    using Compat.LinearAlgebra
-    using Compat.Random
+using StatsBase
+using LinearAlgebra
+using Random
+if VERSION >= v"0.7.0-beta.85"
+    using Statistics
 end
-
 
 tests = ["ambiguous",
          "weights",

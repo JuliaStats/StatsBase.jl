@@ -1,5 +1,4 @@
-julia 0.6
+julia 0.7.0-alpha
 DataStructures 0.5.0
 SortingAlgorithms
-Compat 0.61.0
 Missings

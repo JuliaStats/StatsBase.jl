@@ -253,7 +253,7 @@ function mad(v::AbstractArray{T};
     isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
 
     S = promote_type(T, typeof(middle(first(v))))
-    v2 = Compat.LinearAlgebra.copy_oftype(v, S)
+    v2 = LinearAlgebra.copy_oftype(v, S)
 
     if normalize === nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
@@ -583,7 +583,7 @@ Pretty-print the summary statistics provided by [`summarystats`](@ref):
 the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
-describe(a::AbstractArray) = describe(STDOUT, a)
+describe(a::AbstractArray) = describe(stdout, a)
 function describe(io::IO, a::AbstractArray{T}) where T<:Real
     show(io, summarystats(a))
     println(io, "Length:         $(length(a))")

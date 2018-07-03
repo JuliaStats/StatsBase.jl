@@ -1,7 +1,7 @@
 # See src/hist.jl for meaning of "FIXME: closed" comments.
 
-using Compat, StatsBase
-using Compat.LinearAlgebra, Compat.Random, Compat.Test
+using StatsBase
+using LinearAlgebra, Random, Test
 
 @testset "StatsBase.Histogram" begin
 
@@ -16,8 +16,8 @@ using Compat.LinearAlgebra, Compat.Random, Compat.Test
     @test @inferred StatsBase.binindex(h1, -0.5) == 4
     @test @inferred StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
 
-    @test [StatsBase.binvolume(h1, i) for i in Compat.axes(h1.weights, 1)] ≈ diff(edg1)
-    @test [StatsBase.binvolume(h2, (i,j)) for i in Compat.axes(h2.weights, 1), j in Compat.axes(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
+    @test [StatsBase.binvolume(h1, i) for i in axes(h1.weights, 1)] ≈ diff(edg1)
+    @test [StatsBase.binvolume(h2, (i,j)) for i in axes(h2.weights, 1), j in axes(h2.weights, 2)] ≈ diff(edg1) * diff(edg2)'
 
     @test typeof(@inferred(StatsBase.binvolume(h2, (1,1)))) == Float64
     @test typeof(@inferred(StatsBase.binvolume(h3, (1,1)))) == Float32
@@ -223,7 +223,7 @@ end
 
 @testset "midpoints" begin
     @test StatsBase.midpoints([1, 2, 4]) == [1.5, 3.0]
-    @test StatsBase.midpoints(Compat.range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
+    @test StatsBase.midpoints(range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
 end
 
 end # @testset "StatsBase.Histogram"

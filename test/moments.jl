@@ -1,6 +1,5 @@
 using StatsBase
-using Compat
-using Compat.Test
+using Test
 
 @testset "StatsBase.Moments" begin
 weight_funcs = (weights, aweights, fweights, pweights)
@@ -114,8 +113,8 @@ w2 = rand(6)
     m1 = mean(x, wv1, 1)
     m2 = mean(x, wv2, 2)
 
-    expected_var1 = Compat.sum(abs2.(x .- m1) .* w1, dims = 1) ./ sum(wv1)
-    expected_var2 = Compat.sum(abs2.(x .- m2) .* w2', dims = 2) ./ sum(wv2)
+    expected_var1 = sum(abs2.(x .- m1) .* w1, dims = 1) ./ sum(wv1)
+    expected_var2 = sum(abs2.(x .- m2) .* w2', dims = 2) ./ sum(wv2)
     expected_std1 = sqrt.(expected_var1)
     expected_std2 = sqrt.(expected_var2)
 
@@ -136,7 +135,7 @@ w2 = rand(6)
     @testset "Mean and Variance" begin
         for d in 1:2
             (m, v) = mean_and_var(x, d; corrected=false)
-            @test m == Compat.mean(x, dims = d)
+            @test m == mean(x, dims = d)
             @test v == StatsCompat.var(x, dims = d, corrected=false)
         end
 
@@ -152,7 +151,7 @@ w2 = rand(6)
     @testset "Mean and Standard Deviation" begin
         for d in 1:2
             (m, s) = mean_and_std(x, d; corrected=false)
-            @test m == Compat.mean(x, dims = d)
+            @test m == mean(x, dims = d)
             @test s == StatsCompat.std(x, dims = d; corrected=false)
         end
 
@@ -173,8 +172,8 @@ end
     m2 = mean(x, wv2, 2)
 
     if !isa(wv1, Weights)
-        expected_var1 = Compat.sum(abs2.(x .- m1) .* w1, dims = 1) .* StatsBase.varcorrection(wv1, true)
-        expected_var2 = Compat.sum(abs2.(x .- m2) .* w2', dims = 2) .* StatsBase.varcorrection(wv2, true)
+        expected_var1 = sum(abs2.(x .- m1) .* w1, dims = 1) .* StatsBase.varcorrection(wv1, true)
+        expected_var2 = sum(abs2.(x .- m2) .* w2', dims = 2) .* StatsBase.varcorrection(wv2, true)
         expected_std1 = sqrt.(expected_var1)
         expected_std2 = sqrt.(expected_var2)
     end
@@ -204,7 +203,7 @@ end
     @testset "Mean and Variance" begin
         for d in 1:2
             (m, v) = mean_and_var(x, d; corrected=true)
-            @test m == Compat.mean(x, dims = d)
+            @test m == mean(x, dims = d)
             @test v == StatsCompat.var(x, dims = d, corrected=true)
         end
 
@@ -224,7 +223,7 @@ end
     @testset "Mean and Standard Deviation" begin
         for d in 1:2
             (m, s) = mean_and_std(x, d; corrected=true)
-            @test m == Compat.mean(x, dims = d)
+            @test m == mean(x, dims = d)
             @test s == StatsCompat.std(x, dims = d, corrected=true)
         end
 

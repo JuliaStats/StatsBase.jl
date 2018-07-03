@@ -1,18 +1,34 @@
 __precompile__()
 
 module StatsBase
-    import Base: length, isempty, eltype, values, sum, mean, mean!, show, quantile
+    import Base: length, isempty, eltype, values, sum, show
     import Base.Cartesian: @nloops, @nref, @nextract
     using Base: @irrational, @propagate_inbounds
     import DataStructures: heapify!, heappop!, percolate_down!
+    using SortingAlgorithms
+    using Missings
 
-    using Compat, SortingAlgorithms, Missings
-    using Compat.LinearAlgebra
-    using Compat.Random
-    using Compat.Printf
-    using Compat.SparseArrays
-    import Compat.Random: rand, rand!
-    import Compat.LinearAlgebra: BlasReal, BlasFloat
+    if VERSION >= v"0.7.0-beta.85"
+        using Statistics
+        import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
+                           cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
+                           median, middle
+    else
+        import Base: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
+                     cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
+                     median, middle
+    end
+
+    # Location of the `mean` function, used for calling the function inside of
+    # functions definitions that have `mean` as a keyword argument
+    const MEANHOME = (VERSION >= v"0.7.0-beta.85" ? Statistics : Base)::Module
+
+    using LinearAlgebra
+    using Random
+    using Printf
+    using SparseArrays
+    import Random: rand, rand!
+    import LinearAlgebra: BlasReal, BlasFloat
 
     ## tackle compatibility issues
 
@@ -128,6 +144,7 @@ module StatsBase
     AbstractHistogram,
     Histogram,
     hist,
+    midpoints,
     # histrange,
 
     ## robust
@@ -189,53 +206,16 @@ module StatsBase
 
     ConvergenceException
 
-@static if !isdefined(Base, :midpoints)
-    export midpoints
-end
-
-const BASESTATS_IN_STATSBASE = VERSION >= v"0.7.0-DEV.5238"
-
-if VERSION < v"0.7.0-DEV.3665"
-    myscale!(A::AbstractArray, b::Number) = scale!(A, b)
-else
-    myscale!(A::AbstractArray, b::Number) = rmul!(A, b)
-end
+const BASESTATS_IN_STATSBASE = v"0.7.0-DEV.5238" <= VERSION < v"0.7.0-beta.85"
 
 @static if BASESTATS_IN_STATSBASE
     export cor, cov, std, stdm, var, varm, linreg
     include("base.jl")
-else
-    import Base: cov, var, varm, std, stdm, sqrt!,
-        unscaled_covzm, cor, varm!, covm, corm, cov2cor!
 end
 
 module StatsCompat
-    if VERSION < v"0.7.0-DEV.4064"
-        var(a::AbstractArray; dims=nothing, kwargs...) =
-            dims===nothing ? Base.var(a; kwargs...) : Base.var(a, dims; kwargs...)
-        std(a::AbstractArray; dims=nothing, kwargs...) =
-            dims===nothing ? Base.std(a; kwargs...) : Base.std(a, dims; kwargs...)
-        varm(A::AbstractArray, m; dims=nothing, kwargs...) =
-            dims===nothing ? Base.varm(A, m; kwargs...) : Base.varm(A, m, dims; kwargs...)
-        if VERSION < v"0.7.0-DEV.755"
-            cov(a::AbstractMatrix; dims=1, corrected=true) = Base.cov(a, dims, corrected)
-            cov(a::AbstractVecOrMat, b::AbstractVecOrMat; dims=1, corrected=true) =
-                Base.cov(a, b, dims, corrected)
-        else
-            cov(a::AbstractMatrix; dims=nothing, kwargs...) =
-                dims===nothing ? Base.cov(a; kwargs...) : Base.cov(a, dims; kwargs...)
-            cov(a::AbstractVecOrMat, b::AbstractVecOrMat; dims=nothing, kwargs...) =
-                dims===nothing ? Base.cov(a, b; kwargs...) : Base.cov(a, b, dims; kwargs...)
-        end
-        cor(a::AbstractMatrix; dims=nothing) = dims===nothing ? Base.cor(a) : Base.cor(a, dims)
-        cor(a::AbstractVecOrMat, b::AbstractVecOrMat; dims=nothing) =
-            dims===nothing ? Base.cor(a, b) : Base.cor(a, b, dims)
-    elseif VERSION < v"0.7.0-DEV.5238"
-        import Base: var, std, varm, cov, cor
-    else
-        import ..StatsBase: var, std, varm, cov, cor
-    end
-end # module StatsCompat
+    import ..StatsBase: var, std, varm, cov, cor, MEANHOME
+end
 export StatsCompat
 
     # source files
