@@ -43,7 +43,7 @@ function var(v::RealArray, w::AbstractWeights; mean=nothing,
     corrected = depcheck(:var, corrected)
 
     if mean == nothing
-        varm(v, w, MEANHOME.mean(v, w); corrected=corrected)
+        varm(v, w, Statistics.mean(v, w); corrected=corrected)
     else
         varm(v, w, mean; corrected=corrected)
     end
@@ -66,7 +66,7 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dim::Int;
         varm!(R, A, w, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
                    corrected=corrected)
     elseif mean == nothing
-        varm!(R, A, w, MEANHOME.mean(A, w, dim), dim; corrected=corrected)
+        varm!(R, A, w, Statistics.mean(A, w, dim), dim; corrected=corrected)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -139,7 +139,7 @@ std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) 
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, corrected)))
 
 stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    sqrt!(StatsCompat.varm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
+    sqrt!(varm(v, m, dims=dim, corrected=depcheck(:stdm, corrected)))
 
 stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
           corrected::DepBool=nothing) =
@@ -193,7 +193,7 @@ end
 
 function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
     m = mean(A, dims = dim)
-    v = StatsCompat.varm(A, m, dims = dim, corrected=corrected)
+    v = varm(A, m, dims = dim, corrected=corrected)
     m, v
 end
 function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)

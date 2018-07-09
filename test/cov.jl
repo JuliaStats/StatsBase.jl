@@ -85,15 +85,15 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=false)
             @test m == mean(X, dims = 1)
-            @test C == StatsCompat.cov(X, dims = 1, corrected=false)
+            @test C == cov(X, dims = 1, corrected=false)
 
             (m, C) = mean_and_cov(X, 1; corrected=false)
             @test m == mean(X, dims = 1)
-            @test C == StatsCompat.cov(X, dims = 1, corrected = false)
+            @test C == cov(X, dims = 1, corrected = false)
 
             (m, C) = mean_and_cov(X, 2; corrected=false)
             @test m == mean(X, dims = 2)
-            @test C == StatsCompat.cov(X, dims = 2, corrected = false)
+            @test C == cov(X, dims = 2, corrected = false)
 
             (m, C) = mean_and_cov(X, wv1; corrected=false)
             @test m == mean(X, wv1, 1)
@@ -118,14 +118,14 @@ weight_funcs = (weights, aweights, fweights, pweights)
             cor2 = cor(X, wv2, 2)
 
             @testset "cov2cor" begin
-                @test cov2cor(StatsCompat.cov(X, dims = 1), StatsCompat.std(X, dims = 1)) ≈ StatsCompat.cor(X, dims = 1)
-                @test cov2cor(StatsCompat.cov(X, dims = 2), StatsCompat.std(X, dims = 2)) ≈ StatsCompat.cor(X, dims = 2)
+                @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
+                @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
                 @test cov2cor(cov1, std1) ≈ cor1
                 @test cov2cor(cov2, std2) ≈ cor2
             end
             @testset "cor2cov" begin
-                @test cor2cov(StatsCompat.cor(X, dims = 1), StatsCompat.std(X, dims = 1)) ≈ StatsCompat.cov(X, dims = 1)
-                @test cor2cov(StatsCompat.cor(X, dims = 2), StatsCompat.std(X, dims = 2)) ≈ StatsCompat.cov(X, dims = 2)
+                @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
+                @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
                 @test cor2cov(cor1, std1) ≈ cov1
                 @test cor2cov(cor2, std2) ≈ cov2
             end
@@ -156,15 +156,15 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=true)
             @test m == mean(X, dims =1)
-            @test C == StatsCompat.cov(X, dims = 1, corrected = true)
+            @test C == cov(X, dims = 1, corrected = true)
 
             (m, C) = mean_and_cov(X, 1; corrected=true)
             @test m == mean(X, dims = 1)
-            @test C == StatsCompat.cov(X, dims = 1, corrected = true)
+            @test C == cov(X, dims = 1, corrected = true)
 
             (m, C) = mean_and_cov(X, 2; corrected=true)
             @test m == mean(X, dims = 2)
-            @test C == StatsCompat.cov(X, dims = 2, corrected = true)
+            @test C == cov(X, dims = 2, corrected = true)
 
             if isa(wv1, Weights)
                 @test_throws ArgumentError mean_and_cov(X, wv1; corrected=true)
@@ -194,8 +194,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 cor2 = cor(X, wv2, 2)
 
                 @testset "cov2cor" begin
-                    @test cov2cor(StatsCompat.cov(X, dims = 1), StatsCompat.std(X, dims = 1)) ≈ StatsCompat.cor(X, dims = 1)
-                    @test cov2cor(StatsCompat.cov(X, dims = 2), StatsCompat.std(X, dims = 2)) ≈ StatsCompat.cor(X, dims = 2)
+                    @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
+                    @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
                     @test cov2cor(cov1, std1) ≈ cor1
                     @test cov2cor(cov2, std2) ≈ cor2
                 end
@@ -213,8 +213,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 end
 
                 @testset "cor2cov" begin
-                    @test cor2cov(StatsCompat.cor(X, dims = 1), StatsCompat.std(X, dims = 1)) ≈ StatsCompat.cov(X, dims = 1)
-                    @test cor2cov(StatsCompat.cor(X, dims = 2), StatsCompat.std(X, dims = 2)) ≈ StatsCompat.cov(X, dims = 2)
+                    @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
+                    @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
                     @test cor2cov(cor1, std1) ≈ cov1
                     @test cor2cov(cor2, std2) ≈ cov2
                 end
@@ -235,8 +235,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     end
 
     @testset "Correlation" begin
-        @test cor(X, f(ones(3)), 1) ≈ StatsCompat.cor(X, dims = 1)
-        @test cor(X, f(ones(8)), 2) ≈ StatsCompat.cor(X, dims = 2)
+        @test cor(X, f(ones(3)), 1) ≈ cor(X, dims = 1)
+        @test cor(X, f(ones(8)), 2) ≈ cor(X, dims = 2)
 
         cov1 = cov(X, wv1, 1; corrected=false)
         std1 = std(X, wv1, 1; corrected=false)

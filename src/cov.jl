@@ -85,7 +85,7 @@ scattermat(x::DenseMatrix, vardim::Int=1) =
     scattermatm(x, mean(x, dims = vardim), vardim)
 
 scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
-    scattermatm(x, MEANHOME.mean(x, wv, vardim), wv, vardim)
+    scattermatm(x, Statistics.mean(x, wv, vardim), wv, vardim)
 
 ## weighted cov
 covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;

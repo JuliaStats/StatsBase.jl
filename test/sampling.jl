@@ -78,19 +78,11 @@ test_rng_use(sample, 1:10, 10)
 
     srand(1)
 
-    if VERSION < v"0.7.0-DEV.1325" # new faster rand(MersenneTwister, UnitRange)
-        @test samplepair(2)  ===  (1, 2)
-        @test samplepair(10) === (10, 6)
+    @test samplepair(2)  ===  (1, 2)
+    @test samplepair(10) === (8, 2)
 
-        @test samplepair([3, 4, 2, 6, 8]) === (6, 2)
-        @test samplepair([1, 2])          === (1, 2)
-    else
-        @test samplepair(2)  ===  (1, 2)
-        @test samplepair(10) === (8, 2)
-
-        @test samplepair([3, 4, 2, 6, 8]) === (2, 6)
-        @test samplepair([1, 2])          === (1, 2)
-    end
+    @test samplepair([3, 4, 2, 6, 8]) === (2, 6)
+    @test samplepair([1, 2])          === (1, 2)
 end
 
 test_rng_use(samplepair, 1000)

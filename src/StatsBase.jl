@@ -8,27 +8,16 @@ module StatsBase
     using SortingAlgorithms
     using Missings
 
-    if VERSION >= v"0.7.0-beta.85"
-        using Statistics
-        import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
-                           cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
-                           median, middle
-    else
-        import Base: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
-                     cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
-                     median, middle
-    end
-
-    # Location of the `mean` function, used for calling the function inside of
-    # functions definitions that have `mean` as a keyword argument
-    const MEANHOME = (VERSION >= v"0.7.0-beta.85" ? Statistics : Base)::Module
-
+    using Statistics
     using LinearAlgebra
     using Random
     using Printf
     using SparseArrays
     import Random: rand, rand!
     import LinearAlgebra: BlasReal, BlasFloat
+    import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
+                       cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
+                       median, middle
 
     ## tackle compatibility issues
 
@@ -205,18 +194,6 @@ module StatsBase
     r²,
 
     ConvergenceException
-
-const BASESTATS_IN_STATSBASE = v"0.7.0-DEV.5238" <= VERSION < v"0.7.0-beta.85"
-
-@static if BASESTATS_IN_STATSBASE
-    export cor, cov, std, stdm, var, varm, linreg
-    include("base.jl")
-end
-
-module StatsCompat
-    import ..StatsBase: var, std, varm, cov, cor, MEANHOME
-end
-export StatsCompat
 
     # source files
 

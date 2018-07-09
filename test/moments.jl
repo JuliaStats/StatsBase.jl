@@ -136,7 +136,7 @@ w2 = rand(6)
         for d in 1:2
             (m, v) = mean_and_var(x, d; corrected=false)
             @test m == mean(x, dims = d)
-            @test v == StatsCompat.var(x, dims = d, corrected=false)
+            @test v == var(x, dims = d, corrected=false)
         end
 
         (m, v) = mean_and_var(x, wv1, 1; corrected=false)
@@ -152,7 +152,7 @@ w2 = rand(6)
         for d in 1:2
             (m, s) = mean_and_std(x, d; corrected=false)
             @test m == mean(x, dims = d)
-            @test s == StatsCompat.std(x, dims = d; corrected=false)
+            @test s == std(x, dims = d; corrected=false)
         end
 
         (m, s) = mean_and_std(x, wv1, 1; corrected=false)
@@ -204,7 +204,7 @@ end
         for d in 1:2
             (m, v) = mean_and_var(x, d; corrected=true)
             @test m == mean(x, dims = d)
-            @test v == StatsCompat.var(x, dims = d, corrected=true)
+            @test v == var(x, dims = d, corrected=true)
         end
 
         if isa(wv1, Weights)
@@ -224,7 +224,7 @@ end
         for d in 1:2
             (m, s) = mean_and_std(x, d; corrected=true)
             @test m == mean(x, dims = d)
-            @test s == StatsCompat.std(x, dims = d, corrected=true)
+            @test s == std(x, dims = d, corrected=true)
         end
 
         if isa(wv1, Weights)
