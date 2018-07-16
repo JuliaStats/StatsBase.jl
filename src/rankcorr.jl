@@ -20,11 +20,11 @@ of the columns of `x` and `y`.
 corspearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
 
 corspearman(X::RealMatrix, Y::RealMatrix) =
-    cor(mapslices(tiedrank, X, 1), mapslices(tiedrank, Y, 1))
-corspearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, 1), tiedrank(y))
-corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, 1))
+    cor(mapslices(tiedrank, X, dims=1), mapslices(tiedrank, Y, dims=1))
+corspearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, dims=1), tiedrank(y))
+corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, dims=1))
 
-corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, 1); cor(Z, Z))
+corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, dims=1); cor(Z, Z))
 
 
 #######################################
