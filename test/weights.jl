@@ -2,6 +2,8 @@ using StatsBase
 using LinearAlgebra, Random, SparseArrays, Test
 
 @testset "StatsBase.Weights" begin
+# NOTE: Do not add eweights here, as its methods don't match those of the others, so the
+# tests below don't make sense for it
 weight_funcs = (weights, aweights, fweights, pweights)
 
 # Construction
@@ -445,6 +447,24 @@ end
 
 @testset "Mismatched eltypes" begin
     @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
+end
+
+@testset "ExponentialWeights" begin
+    @testset "Basic Usage" begin
+        θ = 5.25
+        λ = 1 - exp(-1 / θ)     # simple conversion for the more common/readable method
+
+        v = [λ*(1-λ)^(1-i) for i = 1:4]
+        w = ExponentialWeights(v)
+
+        @test round.(w, digits=4) == [0.1734, 0.2098, 0.2539, 0.3071]
+        @test eweights(4, λ) ≈ w
+    end
+
+    @testset "Failure Conditions" begin
+        @test_throws ArgumentError eweights(0, 0.3)
+        @test_throws ArgumentError eweights(1, 1.1)
+    end
 end
 
 end # @testset StatsBase.Weights

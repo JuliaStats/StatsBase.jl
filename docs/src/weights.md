@@ -41,6 +41,16 @@ w = ProbabilityWeights([0.2, 0.1, 0.3])
 w = pweights([0.2, 0.1, 0.3])
 ```
 
+### `ExponentialWeights`
+
+Exponential weights are a common form of temporal weights which assign exponentially decreasing
+weight to past observations.
+
+```julia
+w = ExponentialWeights([0.1837, 0.2222, 0.2688, 0.3253])
+w = eweights(4, 0.173) # construction based on length and rate parameter
+```
+
 ### `Weights`
 
 The `Weights` type describes a generic weights vector which does not support all operations possible for `FrequencyWeights`, `AnalyticWeights` and `ProbabilityWeights`.
@@ -66,9 +76,11 @@ The following constructors are provided:
 AnalyticWeights
 FrequencyWeights
 ProbabilityWeights
+ExponentialWeights
 Weights
 aweights
 fweights
 pweights
+eweights
 weights
 ```

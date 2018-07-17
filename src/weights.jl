@@ -193,9 +193,59 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
     end
 end
 
+@weights ExponentialWeights
+
+@doc """
+    ExponentialWeights(vs, wsum=sum(vs))
+
+Construct an `ExponentialWeights` vector with weight values `vs`.
+A precomputed sum may be provided as `wsum`.
+
+Exponential weights are a common form of temporal weights which assign exponentially
+decreasing weight to past observations, which in this case corresponds to the front of
+the vector. That is, newer observations are assumed to be at the end.
+""" ExponentialWeights
+
+"""
+    eweights(n, λ)
+
+Construct an [`ExponentialWeights`](@ref) vector with length `n`,
+where each element in position ``i`` is set to ``λ (1 - λ)^{1 - i}``.
+
+``λ`` is a smoothing factor or rate parameter such that ``0 < λ \\leq 1``.
+As this value approaches 0, the resulting weights will be almost equal,
+while values closer to 1 will put greater weight on the tail elements of the vector.
+
+# Examples
+
+```julia-repl
+julia> eweights(10, 0.3)
+10-element ExponentialWeights{Float64,Float64,Array{Float64,1}}:
+ 0.3
+ 0.42857142857142855
+ 0.6122448979591837
+ 0.8746355685131197
+ 1.249479383590171
+ 1.7849705479859588
+ 2.549957925694227
+ 3.642797036706039
+ 5.203995766722913
+ 7.434279666747019
+```
+"""
+function eweights(n::Integer, λ::Real)
+    n > 0 || throw(ArgumentError("cannot construct exponential weights of length < 1"))
+    0 < λ <= 1 || throw(ArgumentError("smoothing factor must be between 0 and 1"))
+    w0 = map(i -> λ * (1 - λ)^(1 - i), 1:n)
+    s = sum(w0)
+    ExponentialWeights{typeof(s), eltype(w0), typeof(w0)}(w0, s)
+end
+
+# NOTE: No variance correction is implemented for exponential weights
+
 ##### Equality tests #####
 
-for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, ExponentialWeights, Weights)
     @eval begin
         Base.isequal(x::$w, y::$w) = isequal(x.sum, y.sum) && isequal(x.values, y.values)
         Base.:(==)(x::$w, y::$w)   = (x.sum == y.sum) && (x.values == y.values)
