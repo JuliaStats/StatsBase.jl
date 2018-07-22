@@ -197,7 +197,7 @@ Coefficient of determination (R-squared).
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
 and ``TSS`` the total sum of squares.
 """
-r2(obj::StatisticalModel) = mss(obj) / deviance(obj)
+r2(obj::StatisticalModel) = mss(obj) / sum(abs2, response(obj) .- meanresponse(obj))
 
 """
     r2(obj::StatisticalModel, variant::Symbol)
@@ -207,27 +207,39 @@ Pseudo-coefficient of determination (pseudo R-squared).
 
 For nonlinear models, one of several pseudo R² definitions must be chosen via `variant`.
 Supported variants are:
-- `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log L/\\log L0``.
-- `:CoxSnell`, defined as ``1 - (L0/L)^{2/n}``
-- `:Nagelkerke`, defined as ``(1 - (L0/L)^{2/n})/(1 - L0^{2/n})``, with ``n`` the number
-of observations (as returned by [`nobs`](@ref)).
+- `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
+- `:CoxSnell`, defined as ``1 - (L_0/L)^{2/n}``;
+- `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``;
+- `:Efron`, defined as ``1 - \\sum_i (y_i - \\hat{y})^2 / \\sum_i (y_i - \\bar{y})^2``.
 
-In the above formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
-(the model including only the intercept). These two quantities are taken to be minus half
-`deviance` of the corresponding models.
+In the above formulas, ``L`` is the likelihood of the model,
+``L_0`` is the likelihood of the null model (the model with only an intercept),
+``n`` is the number of observations, ``y_i`` is the response, 
+``\\hat{y}_i`` are fitted values and ``\\bar{y}`` is the average response.
 """
-function r2(obj::StatisticalModel, variant::Symbol)
-    ll = -deviance(obj)/2
-    ll0 = -nulldeviance(obj)/2
 
-    if variant == :McFadden
-        1 - ll/ll0
-    elseif variant == :CoxSnell
-        1 - exp(2/nobs(obj) * (ll0 - ll))
-    elseif variant == :Nagelkerke
-        (1 - exp(2/nobs(obj) * (ll0 - ll)))/(1 - exp(2/nobs(obj) * ll0))
+# The following variants were benchmarked against Stata's fitstat:
+# McFadden, Cox and Snell, Nagelkerke and Efron.
+# Cox and Snell's and Efron's R² should match the classical R² for linear models.
+
+function r2(obj::StatisticalModel, variant::Symbol)
+    if variant == :Efron
+        y = response(obj)
+        ŷ = fitted(obj)
+        μ = meanresponse(obj)
+        1 - sum(abs2, y .- ŷ) / sum(abs2, y .- μ)
     else
-        error("variant must be one of :McFadden, :CoxSnell or :Nagelkerke")
+        ll = loglikelihood(obj)
+        ll0 = nullloglikelihood(obj)
+        if variant == :McFadden
+            1 - ll/ll0
+        elseif variant == :CoxSnell
+            1 - exp(2 * (ll0 - ll) / nobs(obj))
+        elseif variant == :Nagelkerke
+            (1 - exp(2 * (ll0 - ll) / obs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+        else
+            error("variant must be one of :McFadden, :CoxSnell, :Nagelkerke or :Efron")
+        end
     end
 end
 
@@ -259,10 +271,9 @@ In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null m
 of the model (as returned by [`dof`](@ref)).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
-    ll = -deviance(obj)/2
-    ll0 = -nulldeviance(obj)/2
+    ll = likelihood(obj)
+    ll0 = nulllikelihood(obj)
     k = dof(obj)
-
     if variant == :McFadden
         1 - (ll - k)/ll0
     else
