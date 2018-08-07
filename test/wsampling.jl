@@ -1,7 +1,7 @@
 using StatsBase
 using Random, Test
 
-srand(1234)
+Random.seed!(1234)
 
 #### weighted sample with replacement
 

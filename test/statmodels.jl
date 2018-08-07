@@ -1,7 +1,7 @@
 using StatsBase
-using Test
+using Test, Random
 
-srand(10)
+Random.seed!(10)
 v1 = rand(3)
 v2 = ["Good", "Great", "Bad"]
 v3 = rand(Int8, 3)

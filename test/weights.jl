@@ -460,7 +460,7 @@ end
     )
     p = [0.0, 0.25, 0.5, 0.75, 1.0]
 
-    srand(10)
+    Random.seed!(10)
     for i = 1:length(data)
         @test quantile(data[i], f(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
