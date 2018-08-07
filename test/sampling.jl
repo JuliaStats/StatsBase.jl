@@ -1,7 +1,9 @@
 using StatsBase
 using Test, Random
 
-srand(1234)
+Random.seed!(1234)
+
+n = 100000
 
 # test that rng specification is working correctly
 # a) if the same rng is passed to a sample function twice,
@@ -16,9 +18,9 @@ function test_rng_use(func, non_rng_args...)
     @test func(MersenneTwister(1), deepcopy(non_rng_args)...) ==
           func(MersenneTwister(1), deepcopy(non_rng_args)...)
     # default RNG is Random.GLOBAL_RNG
-    srand(47)
+    Random.seed!(47)
     x = func(deepcopy(non_rng_args)...)
-    srand(47)
+    Random.seed!(47)
     y = func(Random.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
 end
@@ -76,7 +78,7 @@ test_rng_use(sample, 1:10, 10)
 
 @testset "sampling pairs" begin
 
-    srand(1)
+    Random.seed!(1)
 
     @test samplepair(2)  ===  (1, 2)
     @test samplepair(10) === (8, 2)
@@ -193,7 +195,7 @@ wv = Weights([zeros(5); 1:4; -1])
 @test_throws ErrorException sample(a, wv, 1, replace=false)
 
 #### weighted sampling with dimension
-srand(1);
+Random.seed!(1);
 
 @test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
