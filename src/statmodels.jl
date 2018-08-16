@@ -24,11 +24,11 @@ Return a table of class `CoefTable` with coefficients and related statistics.
 coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(obj)).")
 
 """
-    confint(obj::StatisticalModel)
+    confint(obj::StatisticalModel, level::Real=0.95)
 
 Compute confidence intervals for coefficients.
 """
-confint(obj::StatisticalModel) = error("coefint is not defined for $(typeof(obj)).")
+confint(obj::StatisticalModel, level::Real=0.95) = error("confint is not defined for $(typeof(obj)).")
 
 """
     deviance(obj::StatisticalModel)
