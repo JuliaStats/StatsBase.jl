@@ -228,7 +228,7 @@ function r2(obj::StatisticalModel, variant::Symbol)
         y = response(obj)
         ŷ = fitted(obj)
         μ = meanresponse(obj)
-        1 - sum(abs2, y .- ŷ) / sum(x -> abs2(x - μ), response(obj))
+        1 - sum(x -> abs2(x[1] - x[2]), zip(y, ŷ)) / sum(x -> abs2(x - μ), response(obj))
     else
         ll = loglikelihood(obj)
         ll0 = nullloglikelihood(obj)
