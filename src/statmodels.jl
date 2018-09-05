@@ -197,7 +197,10 @@ Coefficient of determination (R-squared).
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
 and ``TSS`` the total sum of squares.
 """
-r2(obj::StatisticalModel) = mss(obj) / sum(abs2, response(obj) .- meanresponse(obj))
+function r2(obj::StatisticalModel)
+    μ = meanresponse(obj)
+    mss(obj) / sum(x -> abs2(x - μ), response(obj))
+end
 
 """
     r2(obj::StatisticalModel, variant::Symbol)
@@ -210,24 +213,22 @@ Supported variants are:
 - `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
 - `:CoxSnell`, defined as ``1 - (L_0/L)^{2/n}``;
 - `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``;
-- `:Efron`, defined as ``1 - \\sum_i (y_i - \\hat{y})^2 / \\sum_i (y_i - \\bar{y})^2``.
+- `:Efron`, defined as ``1 - \\sum_i (y_i - \\hat{y}_i)^2 / \\sum_i (y_i - \\bar{y})^2``.
 
 In the above formulas, ``L`` is the likelihood of the model,
 ``L_0`` is the likelihood of the null model (the model with only an intercept),
-``n`` is the number of observations, ``y_i`` is the response, 
+``n`` is the number of observations, ``y_i`` are the responses, 
 ``\\hat{y}_i`` are fitted values and ``\\bar{y}`` is the average response.
-"""
 
-# The following variants were benchmarked against Stata's fitstat:
-# McFadden, Cox and Snell, Nagelkerke and Efron.
-# Cox and Snell's and Efron's R² should match the classical R² for linear models.
+Cox and Snell's and Efron's R² should match the classical R² for linear models.
+"""
 
 function r2(obj::StatisticalModel, variant::Symbol)
     if variant == :Efron
         y = response(obj)
         ŷ = fitted(obj)
         μ = meanresponse(obj)
-        1 - sum(abs2, y .- ŷ) / sum(abs2, y .- μ)
+        1 - sum(abs2, y .- ŷ) / sum(x -> abs2(x - μ), response(obj))
     else
         ll = loglikelihood(obj)
         ll0 = nullloglikelihood(obj)
@@ -264,15 +265,15 @@ adjr2(obj::StatisticalModel) = error("adjr2 is not defined for $(typeof(obj)).")
 Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
-The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log L - k)/\\log L0``.
+The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)``.
 In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept). These two quantities are taken to be minus half
 `deviance` of the corresponding models. ``k`` is the number of consumed degrees of freedom
 of the model (as returned by [`dof`](@ref)).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
-    ll = likelihood(obj)
-    ll0 = nulllikelihood(obj)
+    ll = loglikelihood(obj)
+    ll0 = nullloglikelihood(obj)
     k = dof(obj)
     if variant == :McFadden
         1 - (ll - k)/ll0
