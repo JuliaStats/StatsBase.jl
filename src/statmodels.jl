@@ -198,6 +198,10 @@ For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explaine
 and ``TSS`` the total sum of squares.
 """
 function r2(obj::StatisticalModel)
+
+    Base.depwarn("The default r² method for linear models is deprecated. " *
+                 "Packages should define their own methods.", :r2)
+
     μ = meanresponse(obj)
     mss(obj) / sum(x -> abs2(x - μ), response(obj))
 end
