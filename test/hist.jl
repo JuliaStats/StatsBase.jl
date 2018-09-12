@@ -1,5 +1,3 @@
-# See src/hist.jl for meaning of "FIXME: closed" comments.
-
 using StatsBase
 using LinearAlgebra, Random, Test
 
@@ -10,9 +8,12 @@ using LinearAlgebra, Random, Test
     edg1 = -2:0.5:9
     edg1f0 = -2:0.5f0:9
     edg2 = [-2, -1, 2, 7, 19]
-    h1 = Histogram(edg1, :left)
-    h2 = Histogram((edg1, edg2), :left)
-    h3 = Histogram((edg1f0, edg2), :left)
+    h1 = Histogram(edg1)
+    h2 = Histogram((edg1, edg2))
+    h3 = Histogram((edg1f0, edg2))
+
+    @test h1 == Histogram(edg1, :left, false)
+
     @test @inferred StatsBase.binindex(h1, -0.5) == 4
     @test @inferred StatsBase.binindex(h2, (1.5, 2)) == (8, 3)
 
@@ -26,7 +27,6 @@ end
 
 
 @testset "Histogram append" begin
-    # FIXME: closed (all lines in this block):
     h = Histogram(0:20:100, Float64, :left, false)
     @test @inferred(append!(h, 0:0.5:99.99)) == h
     @test append!(Histogram(0:20:100, Float64, :left, false), 0:0.5:99.99).weights ≈ [40,40,40,40,40]
@@ -37,39 +37,35 @@ end
 
 
 @testset "Histogram fit" begin
-    # FIXME: closed (all lines in this block):
-    @test sum(fit(Histogram,[1,2,3], closed=:left).weights) == 3  # FIXME: closed
-    @test fit(Histogram,Int[], closed=:left).weights == Int[]  # FIXME: closed
-    @test fit(Histogram,[1], closed=:left).weights == [1]  # FIXME: closed
-    @test fit(Histogram,[1,2,3],[0,2,4], closed=:left) == Histogram([0,2,4],[1,2], :left)  # FIXME: closed
-    @test fit(Histogram,[1,2,3],[0,2,4], closed=:left) != Histogram([0,2,4],[1,1], :left)  # FIXME: closed
-    @test fit(Histogram,[1,2,3],0:2:4, closed=:left) == Histogram(0:2:4,[1,2], :left)  # FIXME: closed
-    @test all(fit(Histogram,[0:99;]/100,0.0:0.01:1.0, closed=:left).weights .==1)  # FIXME: closed
-    @test fit(Histogram,[1,1,1,1,1], closed=:left).weights[1] == 5  # FIXME: closed
-    @test sum(fit(Histogram,(rand(100),rand(100)), closed=:left).weights) == 100  # FIXME: closed
+    @test sum(fit(Histogram,[1,2,3]).weights) == 3
+    @test fit(Histogram,Int[]).weights == Int[]
+    @test fit(Histogram,[1]).weights == [1]
+    @test fit(Histogram,[1,2,3],[0,2,4]) == Histogram([0,2,4],[1,2], :left)
+    @test fit(Histogram,[1,2,3],[0,2,4]) != Histogram([0,2,4],[1,1], :left)
+    @test fit(Histogram,[1,2,3],0:2:4) == Histogram(0:2:4,[1,2], :left)
+    @test all(fit(Histogram,[0:99;]/100,0.0:0.01:1.0).weights .==1)
+    @test fit(Histogram,[1,1,1,1,1]).weights[1] == 5
+    @test sum(fit(Histogram,(rand(100),rand(100))).weights) == 100
     @test fit(Histogram,1:100,nbins=5,closed=:right).weights == [20,20,20,20,20]
     @test fit(Histogram,1:100,nbins=5,closed=:left).weights == [19,20,20,20,20,1]
     @test fit(Histogram,0:99,nbins=5,closed=:right).weights == [1,20,20,20,20,19]
     @test fit(Histogram,0:99,nbins=5,closed=:left).weights == [20,20,20,20,20]
 
-    # FIXME: closed (all lines in this block):
-    @test fit(Histogram,(0:99,0:99),nbins=5, closed=:left).weights == Matrix(Diagonal([20,20,20,20,20]))
-    @test fit(Histogram,(0:99,0:99),nbins=(5,5), closed=:left).weights == Matrix(Diagonal([20,20,20,20,20]))
+    @test fit(Histogram,(0:99,0:99),nbins=5).weights == Matrix(Diagonal([20,20,20,20,20]))
+    @test fit(Histogram,(0:99,0:99),nbins=(5,5)).weights == Matrix(Diagonal([20,20,20,20,20]))
 
-    # FIXME: closed (all lines in this block):
-    @test fit(Histogram,0:99,weights(ones(100)),nbins=5, closed=:left).weights == [20,20,20,20,20]
-    @test fit(Histogram,0:99,weights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
-    @test fit(Histogram{Int32},0:99,weights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
-    @test fit(Histogram{Float32},0:99,weights(2*ones(100)),nbins=5, closed=:left).weights == [40,40,40,40,40]
+    @test fit(Histogram,0:99,weights(ones(100)),nbins=5).weights == [20,20,20,20,20]
+    @test fit(Histogram,0:99,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
+    @test fit(Histogram{Int32},0:99,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
+    @test fit(Histogram{Float32},0:99,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
 end
 
 
 @testset "Histogram element type" begin
-    # FIXME: closed (all lines in this block):
-    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Int,100)),nbins=5, closed=:left)).weights) == Int
-    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Int,100)),nbins=5, closed=:left)).weights) == Float32
-    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float64
-    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Float64,100)),nbins=5, closed=:left)).weights) == Float32
+    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Int,100)),nbins=5)).weights) == Int
+    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Int,100)),nbins=5)).weights) == Float32
+    @test eltype(@inferred(fit(Histogram,1:100,weights(ones(Float64,100)),nbins=5)).weights) == Float64
+    @test eltype(@inferred(fit(Histogram{Float32},1:100,weights(ones(Float64,100)),nbins=5)).weights) == Float32
 end
 
 
@@ -95,7 +91,6 @@ end
     @test @inferred(StatsBase.histrange(Int64[1:5;], 1, :left)) == 0:5:10
     @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
 
-    # FIXME: closed (all lines in this block):
     @test StatsBase.histrange([0, 1, 2, 3], 4, :left) == 0.0:1.0:4.0
     @test StatsBase.histrange([0, 1, 1, 3], 4, :left) == 0.0:1.0:4.0
     @test StatsBase.histrange([0, 9], 4, :left) == 0.0:5.0:10.0
@@ -104,11 +99,10 @@ end
     @test StatsBase.histrange([-1, -1000], 4, :left) == -1000.0:500.0:0.0
 
     # Base issue #13326
-    l,h = extrema(StatsBase.histrange([typemin(Int),typemax(Int)], 10, :left))  # FIXME: closed
+    l,h = extrema(StatsBase.histrange([typemin(Int),typemax(Int)], 10, :left))
     @test l <= typemin(Int)
     @test h >= typemax(Int)
 
-    # FIXME: closed (all lines in this block):
     @test_throws ArgumentError StatsBase.histrange([1, 10], 0, :left)
     @test_throws ArgumentError StatsBase.histrange([1, 10], -1, :left)
     @test_throws ArgumentError StatsBase.histrange([1.0, 10.0], 0, :left)
@@ -120,7 +114,7 @@ end
 
 @testset "Histogram show" begin
     # hist show
-    show_h = sprint(show, fit(Histogram,[0,1,2], closed=:left))  # FIXME: closed
+    show_h = sprint(show, fit(Histogram,[0,1,2]))
     @test occursin("edges:\n  0.0:1.0:3.0", show_h)
     @test occursin("weights: $([1,1,1])", show_h)
     @test occursin("closed: left", show_h)
@@ -203,7 +197,7 @@ end
 
 
 @testset "Histogram zero" begin
-    h = fit(Histogram, (rand(100), rand(100)), closed=:left)
+    h = fit(Histogram, (rand(100), rand(100)))
     h2 = @inferred zero(h)
     @test all(x -> x≈0, h2.weights)
     @test !(h.weights === h2.weights)
@@ -214,7 +208,7 @@ end
 
 
 @testset "Histogram merge" begin
-    histograms = [fit(Histogram, (rand(100), 10 * rand(100)), (0:0.1:1, 0:1:10), closed=:left) for _ in 1:10]
+    histograms = [fit(Histogram, (rand(100), 10 * rand(100)), (0:0.1:1, 0:1:10)) for _ in 1:10]
     h = zero(histograms[1])
     merge!(h, histograms ...)
     @test h.weights == (+).((x->x.weights).(histograms)...)
