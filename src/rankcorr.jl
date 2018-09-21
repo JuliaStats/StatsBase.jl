@@ -33,7 +33,7 @@ corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, dims=1); cor(Z, Z))
 #
 #######################################
 
-# Knigh JASA (1966)
+# Knight JASA (1966)
 
 function corkendall!(x::RealVector, y::RealVector)
     if any(isnan, x) || any(isnan, y) return NaN end
