@@ -214,35 +214,27 @@ For nonlinear models, one of several pseudo R² definitions must be chosen via `
 Supported variants are:
 - `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
 - `:CoxSnell`, defined as ``1 - (L_0/L)^{2/n}``;
-- `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``;
-- `:Efron`, defined as ``1 - \\sum_i (y_i - \\hat{y}_i)^2 / \\sum_i (y_i - \\bar{y})^2``.
+- `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``.
 
 In the above formulas, ``L`` is the likelihood of the model,
 ``L_0`` is the likelihood of the null model (the model with only an intercept),
 ``n`` is the number of observations, ``y_i`` are the responses, 
 ``\\hat{y}_i`` are fitted values and ``\\bar{y}`` is the average response.
 
-Cox and Snell's and Efron's R² should match the classical R² for linear models.
+Cox and Snell's R² should match the classical R² for linear models.
 """
 
 function r2(obj::StatisticalModel, variant::Symbol)
-    if variant == :Efron
-        y = response(obj)
-        ŷ = fitted(obj)
-        μ = meanresponse(obj)
-        1 - sum(x -> abs2(x[1] - x[2]), zip(y, ŷ)) / sum(x -> abs2(x - μ), response(obj))
+    ll = loglikelihood(obj)
+    ll0 = nullloglikelihood(obj)
+    if variant == :McFadden
+        1 - ll/ll0
+    elseif variant == :CoxSnell
+        1 - exp(2 * (ll0 - ll) / nobs(obj))
+    elseif variant == :Nagelkerke
+        (1 - exp(2 * (ll0 - ll) / obs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
     else
-        ll = loglikelihood(obj)
-        ll0 = nullloglikelihood(obj)
-        if variant == :McFadden
-            1 - ll/ll0
-        elseif variant == :CoxSnell
-            1 - exp(2 * (ll0 - ll) / nobs(obj))
-        elseif variant == :Nagelkerke
-            (1 - exp(2 * (ll0 - ll) / obs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
-        else
-            error("variant must be one of :McFadden, :CoxSnell, :Nagelkerke or :Efron")
-        end
+        error("variant must be one of :McFadden, :CoxSnell or :Nagelkerke")
     end
 end
 
