@@ -31,7 +31,7 @@ scattermat_zm(x::DenseMatrix, wv::AbstractWeights, vardim::Int) =
     _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
 
 """
-    scattermat(X, [wv::AbstractWeights]; mean=nothing, vardim=1)
+    scattermat(X, [wv::AbstractWeights,] vardim=1; mean=nothing)
 
 Compute the scatter matrix, which is an unnormalized covariance matrix.
 A weighting vector `wv` can be specified to weight
@@ -49,7 +49,7 @@ function scattermat end
 
 
 """
-    cov(X, w::AbstractWeights; mean=nothing, vardim=1, corrected=false)
+    cov(X, w::AbstractWeights, vardim=1; mean=nothing,  corrected=false)
 
 Compute the weighted covariance matrix. Similar to `var` and `std` the biased covariance
 matrix (`corrected=false`) is computed by multiplying `scattermat(X, w)` by
@@ -64,7 +64,7 @@ cov
 
 
 """
-    mean_and_cov(x, [wv::AbstractWeights]; vardim=1, corrected=false) -> (mean, cov)
+    mean_and_cov(x, [wv::AbstractWeights,] vardim=1; corrected=false) -> (mean, cov)
 
 Return the mean and covariance matrix as a tuple. A weighting
 vector `wv` can be specified. `vardim` that designates whether
