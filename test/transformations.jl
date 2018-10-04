@@ -62,4 +62,6 @@ using Test
     @test transform(t, X[:,1]) ≈ Y[:,1]
     @test reconstruct(t, Y[:,1]) ≈ X[:,1]
     @test reconstruct(t, Y) ≈ X
+
+    @test Y == standardize(UnitRangeTransform, X; unit=false)
 end
