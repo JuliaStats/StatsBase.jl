@@ -334,3 +334,25 @@ function reconstruct!(x::AbstractArray{XT,2}, t::UnitRangeTransform, y::Abstract
     end
     return x
 end
+
+"""
+    standardize(DT, X; kwargs...)
+
+Return a row-standardized matrix `X` using `DT` transformation.
+
+# Example
+```julia
+julia> standardize(ZScoreTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
+2×3 Array{Float64,2}:
+  0.0  -1.0  1.0
+ -1.0   0.0  1.0
+
+julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
+2×3 Array{Float64,2}:
+ 0.5  0.0  1.0
+ 0.0  0.5  1.0
+```
+"""
+function standardize(::Type{DT}, X::AbstractArray{T,2}; kwargs...) where {DT<:DataTransform, T<:Real}
+    return transform(fit(DT, X; kwargs...), X)
+end

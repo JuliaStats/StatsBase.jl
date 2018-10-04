@@ -202,7 +202,8 @@ module StatsBase
 
     ConvergenceException,
 
-    # data standartization
+    # data standardization
+    standardize,
     DataTransform,      # the type to represent a abstract data transformation
     ZScoreTransform,    # the type to represent a z-score data transformation
     UnitRangeTransform, # the type to represent a 0-1 data transformation
@@ -212,7 +213,7 @@ module StatsBase
     transform,      # apply a transformation to data
     transform!,     # apply a transformation to data in place
     reconstruct,    # estimate and apply a standardization
-    reconstruct!   # estimate and apply a standardization in place
+    reconstruct!    # estimate and apply a standardization in place
 
     # source files
 
