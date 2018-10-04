@@ -45,42 +45,11 @@ function fit(::Type{ZScoreTransform}, X::AbstractArray{T,2}; center::Bool=true, 
                               (scale ? vec(s) : zeros(T, 0)))
 end
 
-function transform!(y::AbstractArray{YT,1}, t::ZScoreTransform, x::AbstractArray{XT,1}) where {YT<:Real,XT<:Real}
-    d = t.dim
-    length(x) == length(y) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    m = t.mean
-    s = t.scale
-
-    if isempty(m)
-        if isempty(s)
-            if x !== y
-                copyto!(y, x)
-            end
-        else
-            for i = 1:d
-                @inbounds y[i] = x[i] / s[i]
-            end
-        end
-    else
-        if isempty(s)
-            for i = 1:d
-                @inbounds y[i] = x[i] - m[i]
-            end
-        else
-            for i = 1:d
-                @inbounds y[i] = (x[i] - m[i]) / s[i]
-            end
-        end
-    end
-    return y
-end
-
-function transform!(y::AbstractArray{YT,2}, t::ZScoreTransform, x::AbstractArray{XT,2}) where {YT<:Real,XT<:Real}
+function transform!(y::AbstractVecOrMat{YT}, t::ZScoreTransform, x::AbstractVecOrMat{XT}) where {YT<:Real,XT<:Real}
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(x,2)
-    size(y,2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+    n = size(y,2)
+    size(x,2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
     m = t.mean
     s = t.scale
@@ -91,68 +60,19 @@ function transform!(y::AbstractArray{YT,2}, t::ZScoreTransform, x::AbstractArray
                 copyto!(y, x)
             end
         else
-            for j = 1:n
-                xj = view(x, :, j)
-                yj = view(y, :, j)
-                for i = 1:d
-                    @inbounds yj[i] = xj[i] / s[i]
-                end
-            end
+            broadcast!(/, y, x, s)
         end
     else
         if isempty(s)
-            for j = 1:n
-                xj = view(x, :, j)
-                yj = view(y, :, j)
-                for i = 1:d
-                    @inbounds yj[i] = xj[i] - m[i]
-                end
-            end
+            broadcast!(-, y, x, m)
         else
-            for j = 1:n
-                xj = view(x, :, j)
-                yj = view(y, :, j)
-                for i = 1:d
-                    @inbounds yj[i] = (xj[i] - m[i]) / s[i]
-                end
-            end
+            broadcast!((x,m,s)->(x-m)/s, y, x, m, s)
         end
     end
     return y
 end
 
-function reconstruct!(x::AbstractArray{XT,1}, t::ZScoreTransform, y::AbstractArray{YT,1}) where {YT<:Real,XT<:Real}
-    d = t.dim
-    length(x) == length(y) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    m = t.mean
-    s = t.scale
-
-    if isempty(m)
-        if isempty(s)
-            if y !== x
-                copyto!(x, y)
-            end
-        else
-            for i = 1:d
-                @inbounds x[i] = y[i] * s[i]
-            end
-        end
-    else
-        if isempty(s)
-            for i = 1:d
-                @inbounds x[i] = y[i] + m[i]
-            end
-        else
-            for i = 1:d
-                @inbounds x[i] = y[i] * s[i] + m[i]
-            end
-        end
-    end
-    return x
-end
-
-function reconstruct!(x::AbstractArray{XT,2}, t::ZScoreTransform, y::AbstractArray{YT,2}) where {YT<:Real,XT<:Real}
+function reconstruct!(x::AbstractVecOrMat{YT}, t::ZScoreTransform, y::AbstractVecOrMat{XT}) where {YT<:Real,XT<:Real}
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(y,2)
@@ -167,38 +87,19 @@ function reconstruct!(x::AbstractArray{XT,2}, t::ZScoreTransform, y::AbstractArr
                 copyto!(x, y)
             end
         else
-            for j = 1:n
-                xj = view(x, :, j)
-                yj = view(y, :, j)
-                for i = 1:d
-                    @inbounds xj[i] = yj[i] * s[i]
-                end
-            end
+            broadcast!(*, x, y, s)
         end
     else
         if isempty(s)
-            for j = 1:n
-                xj = view(x, :, j)
-                yj = view(y, :, j)
-                for i = 1:d
-                    @inbounds xj[i] = yj[i] + m[i]
-                end
-            end
+            broadcast!(+, x, y, m)
         else
-            for j = 1:n
-                xj = view(x, :, j)
-                yj = view(y, :, j)
-                for i = 1:d
-                    @inbounds xj[i] = yj[i] * s[i] + m[i]
-                end
-            end
+            broadcast!((y,m,s)->y*s+m, x, y, m, s)
         end
     end
     return x
 end
 
-# UnitRangeTransform normalization
-
+# Unit transformation
 struct UnitRangeTransform{T<:Real}  <: DataTransform
     dim::Int
     unit::Bool
@@ -217,6 +118,7 @@ end
 indim(t::UnitRangeTransform) = t.dim
 outdim(t::UnitRangeTransform) = t.dim
 
+# fit a unit transform
 function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true) where T<:Real
     d, n = size(X)
 
@@ -239,26 +141,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true)
     return UnitRangeTransform(d, unit, tmin, tmax)
 end
 
-function transform!(y::AbstractArray{YT,1}, t::UnitRangeTransform, x::AbstractArray{XT,1}) where {YT<:Real,XT<:Real}
-    d = t.dim
-    length(x) == length(y) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    tmin = t.min
-    tscale = t.scale
-
-    if t.unit
-        for i = 1:d
-            @inbounds y[i] = (x[i] - tmin[i]) * tscale[i]
-        end
-    else
-        for i = 1:d
-            @inbounds y[i] = x[i] * tscale[i]
-        end
-    end
-    return y
-end
-
-function transform!(y::AbstractArray{YT,2}, t::UnitRangeTransform, x::AbstractArray{XT,2}) where {YT<:Real,XT<:Real}
+function transform!(y::AbstractVecOrMat{YT}, t::UnitRangeTransform, x::AbstractVecOrMat{XT}) where {YT<:Real,XT<:Real}
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(x,2)
@@ -268,45 +151,14 @@ function transform!(y::AbstractArray{YT,2}, t::UnitRangeTransform, x::AbstractAr
     tscale = t.scale
 
     if t.unit
-        for j = 1:n
-            xj = view(x, :, j)
-            yj = view(y, :, j)
-            for i = 1:d
-                @inbounds yj[i] = (xj[i] - tmin[i]) * tscale[i]
-            end
-        end
+        broadcast!((x,s,m) -> (x-m)*s, y, x, tscale, tmin)
     else
-        for j = 1:n
-            xj = view(x, :, j)
-            yj = view(y, :, j)
-            for i = 1:d
-                @inbounds yj[i] = xj[i] * tscale[i]
-            end
-        end
+        broadcast!(*, y, x, tscale)
     end
     return y
 end
 
-function reconstruct!(x::AbstractArray{XT,1}, t::UnitRangeTransform, y::AbstractArray{YT,1}) where {YT<:Real,XT<:Real}
-    d = t.dim
-    length(x) == length(y) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    tmin = t.min
-    tscale = t.scale
-
-    if t.unit
-        for i = 1:d
-            @inbounds x[i] = y[i] / tscale[i] +  tmin[i]
-        end
-    else
-        for i = 1:d
-            @inbounds x[i] = y[i] / tscale[i]
-        end
-    end
-    return x
-end
-
-function reconstruct!(x::AbstractArray{XT,2}, t::UnitRangeTransform, y::AbstractArray{YT,2}) where {YT<:Real,XT<:Real}
+function reconstruct!(x::AbstractVecOrMat{XT}, t::UnitRangeTransform, y::AbstractVecOrMat{YT}) where {YT<:Real,XT<:Real}
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(y,2)
@@ -316,21 +168,9 @@ function reconstruct!(x::AbstractArray{XT,2}, t::UnitRangeTransform, y::Abstract
     tscale = t.scale
 
     if t.unit
-        for j = 1:n
-            xj = view(x, :, j)
-            yj = view(y, :, j)
-            for i = 1:d
-                @inbounds xj[i] = yj[i] / tscale[i] + tmin[i]
-            end
-        end
+        broadcast!((y,s,m) -> y/s + m, x, y, tscale, tmin)
     else
-        for j = 1:n
-            xj = view(x, :, j)
-            yj = view(y, :, j)
-            for i = 1:d
-                @inbounds xj[i] = yj[i] / tscale[i]
-            end
-        end
+        broadcast!(/, x, y, tscale)
     end
     return x
 end
