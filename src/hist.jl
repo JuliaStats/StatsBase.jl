@@ -513,3 +513,17 @@ Calculate the midpoints (pairwise mean of consecutive elements).
 midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
 
 midpoints(r::AbstractRange) = r[1:(end - 1)] .+ (step(r) / 2)
+
+function mean(h::Histogram{T,1}) where {T}
+    if !(h.isdensity)
+        msg = "h.isdensity must be true."
+        throw(ArgumentError(msg))
+    end
+    ret = zero(norm_type(h))
+    edges = h.edges[1]
+    edge_indices = axes(edges)[1]
+    for (wt, i) in zip(h.weights, edge_indices)
+        @inbounds ret += wt * middle(edges[i], edges[i+1])
+    end
+    ret
+end
