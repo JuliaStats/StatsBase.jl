@@ -509,7 +509,8 @@ crossentropy(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} 
 """
     kldivergence(p, q, [b])
 
-Compute the Kullback-Leibler divergence of `q` from `p`, optionally specifying
+Compute the Kullback-Leibler divergence from `q` to `p`,
+or the sum `pi * log(pi / qi)`, optionally specifying
 a real number `b` such that the divergence is scaled by `1/log(b)`.
 """
 function kldivergence(p::AbstractArray{T}, q::AbstractArray{T}) where T<:Real
