@@ -28,7 +28,7 @@ coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(
 
 Compute confidence intervals for coefficients.
 """
-confint(obj::StatisticalModel) = error("coefint is not defined for $(typeof(obj)).")
+confint(obj::StatisticalModel) = error("confint is not defined for $(typeof(obj)).")
 
 """
     deviance(obj::StatisticalModel)
@@ -218,7 +218,7 @@ Supported variants are:
 
 In the above formulas, ``L`` is the likelihood of the model,
 ``L_0`` is the likelihood of the null model (the model with only an intercept),
-``n`` is the number of observations, ``y_i`` are the responses, 
+``n`` is the number of observations, ``y_i`` are the responses,
 ``\\hat{y}_i`` are fitted values and ``\\bar{y}`` is the average response.
 
 Cox and Snell's R² should match the classical R² for linear models.
