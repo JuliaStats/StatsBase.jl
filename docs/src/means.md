@@ -12,6 +12,6 @@ The `mean` and `mean!` functions are also extended to accept a weight vector of 
 `AbstractWeights` to compute weighted mean.
 
 ```@docs
-Base.mean(A::AbstractArray, w::AbstractWeights)
-Base.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int)
+Statistics.mean(A::AbstractArray, w::AbstractWeights)
+Statistics.mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int)
 ```
