@@ -1,4 +1,4 @@
-using Documenter, StatsBase
+using Documenter, StatsBase, Statistics, Random
 
 makedocs(
     format = :html,

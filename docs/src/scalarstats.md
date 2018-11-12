@@ -46,7 +46,7 @@ percentile
 iqr
 nquantile
 quantile
-Base.median(v::StatsBase.RealVector, w::AbstractWeights{<:Real})
+Statistics.median(v::StatsBase.RealVector, w::AbstractWeights{<:Real})
 ```
 
 ## Mode and Modes

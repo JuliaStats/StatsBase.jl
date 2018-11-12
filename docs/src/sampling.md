@@ -38,7 +38,7 @@ All following functions write results to `x` (pre-allocated) and return `x`.
 ### Sampling Algorithms (Non-Weighted)
 
 ```@docs
-StatsBase.direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+StatsBase.direct_sample!(rng::Random.AbstractRNG, a::AbstractArray, x::AbstractArray)
 samplepair
 StatsBase.knuths_sample!
 StatsBase.fisher_yates_sample!
@@ -50,7 +50,7 @@ StatsBase.seqsample_c!
 ### Weighted Sampling Algorithms
 
 ```@docs
-StatsBase.direct_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+StatsBase.direct_sample!(rng::Random.AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
 StatsBase.alias_sample!
 StatsBase.naive_wsample_norep!
 StatsBase.efraimidis_a_wsample_norep!
