@@ -31,8 +31,13 @@ struct ZScoreTransform{T<:Real} <: DataTransform
     end
 end
 
-indim(t::ZScoreTransform) = t.dim
-outdim(t::ZScoreTransform) = t.dim
+function Base.getproperty(t::ZScoreTransform, p::Symbol)
+    if p == :indim || p == :outdim
+        return t.dim
+    else
+        return getfield(t, p)
+    end
+end
 
 # fit a z-score transform
 function fit(::Type{ZScoreTransform}, X::AbstractArray{T,2}; center::Bool=true, scale::Bool=true) where T<:Real
@@ -115,8 +120,13 @@ struct UnitRangeTransform{T<:Real}  <: DataTransform
     end
 end
 
-indim(t::UnitRangeTransform) = t.dim
-outdim(t::UnitRangeTransform) = t.dim
+function Base.getproperty(t::UnitRangeTransform, p::Symbol)
+    if p == :indim || p == :outdim
+        return t.dim
+    else
+        return getfield(t, p)
+    end
+end
 
 # fit a unit transform
 function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true) where T<:Real

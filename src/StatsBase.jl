@@ -206,14 +206,7 @@ module StatsBase
     standardize,
     DataTransform,      # the type to represent a abstract data transformation
     ZScoreTransform,    # the type to represent a z-score data transformation
-    UnitRangeTransform, # the type to represent a 0-1 data transformation
-
-    indim,          # input dimension of a transform
-    outdim,         # output dimension of a transform
-    transform,      # apply a transformation to data
-    transform!,     # apply a transformation to data in place
-    reconstruct,    # estimate and apply a standardization
-    reconstruct!    # estimate and apply a standardization in place
+    UnitRangeTransform  # the type to represent a 0-1 data transformation
 
     # source files
 

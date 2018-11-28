@@ -1,4 +1,5 @@
 using StatsBase
+import StatsBase: transform, reconstruct
 using Statistics
 using Test
 
