@@ -3,18 +3,18 @@
 abstract type DataTransform end
 
 # apply the transform
-transform!(t::S, x::AbstractArray{T,1}) where {T<:Real, S<:DataTransform} = transform!(x, t, x)
-transform!(t::S, x::AbstractArray{T,2}) where {T<:Real, S<:DataTransform} = transform!(x, t, x)
+transform!(t::DataTransform, x::AbstractArray{<:Real,1}) = transform!(x, t, x)
+transform!(t::DataTransform, x::AbstractArray{<:Real,2}) = transform!(x, t, x)
 
-transform(t::S, x::AbstractArray{T,1}) where {T<:Real, S<:DataTransform} = transform!(similar(x), t, x)
-transform(t::S, x::AbstractArray{T,2}) where {T<:Real, S<:DataTransform} = transform!(similar(x), t, x)
+transform(t::DataTransform, x::AbstractArray{<:Real,1})  = transform!(similar(x), t, x)
+transform(t::DataTransform, x::AbstractArray{<:Real,2})  = transform!(similar(x), t, x)
 
 # reconstruct the original data from transformed values
-reconstruct!(t::S, x::AbstractArray{T,1}) where {T<:Real, S<:DataTransform} = reconstruct!(x, t, x)
-reconstruct!(t::S, x::AbstractArray{T,2}) where {T<:Real, S<:DataTransform} = reconstruct!(x, t, x)
+reconstruct!(t::DataTransform, x::AbstractArray{<:Real,1}) = reconstruct!(x, t, x)
+reconstruct!(t::DataTransform, x::AbstractArray{<:Real,2}) = reconstruct!(x, t, x)
 
-reconstruct(t::S, y::AbstractArray{T,1}) where {T<:Real, S<:DataTransform} = reconstruct!(similar(y), t, y)
-reconstruct(t::S, y::AbstractArray{T,2}) where {T<:Real, S<:DataTransform} = reconstruct!(similar(y), t, y)
+reconstruct(t::DataTransform, y::AbstractArray{<:Real,1})  = reconstruct!(similar(y), t, y)
+reconstruct(t::DataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
 
 # Z-score transformation
 struct ZScoreTransform{T<:Real} <: DataTransform
@@ -32,7 +32,7 @@ struct ZScoreTransform{T<:Real} <: DataTransform
 end
 
 function Base.getproperty(t::ZScoreTransform, p::Symbol)
-    if p == :indim || p == :outdim
+    if p === :indim || p === :outdim
         return t.dim
     else
         return getfield(t, p)
@@ -40,7 +40,7 @@ function Base.getproperty(t::ZScoreTransform, p::Symbol)
 end
 
 # fit a z-score transform
-function fit(::Type{ZScoreTransform}, X::AbstractArray{T,2}; center::Bool=true, scale::Bool=true) where T<:Real
+function fit(::Type{ZScoreTransform}, X::AbstractArray{T,2}; center::Bool=true, scale::Bool=true) where {T<:Real}
     d, n = size(X)
     n >= 2 || error("X must contain at least two columns.")
 
@@ -50,7 +50,7 @@ function fit(::Type{ZScoreTransform}, X::AbstractArray{T,2}; center::Bool=true, 
                               (scale ? vec(s) : zeros(T, 0)))
 end
 
-function transform!(y::AbstractVecOrMat{YT}, t::ZScoreTransform, x::AbstractVecOrMat{XT}) where {YT<:Real,XT<:Real}
+function transform!(y::AbstractVecOrMat{<:Real}, t::ZScoreTransform, x::AbstractVecOrMat{<:Real})
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(y,2)
@@ -77,7 +77,7 @@ function transform!(y::AbstractVecOrMat{YT}, t::ZScoreTransform, x::AbstractVecO
     return y
 end
 
-function reconstruct!(x::AbstractVecOrMat{YT}, t::ZScoreTransform, y::AbstractVecOrMat{XT}) where {YT<:Real,XT<:Real}
+function reconstruct!(x::AbstractVecOrMat{<:Real}, t::ZScoreTransform, y::AbstractVecOrMat{<:Real})
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(y,2)
@@ -111,7 +111,7 @@ struct UnitRangeTransform{T<:Real}  <: DataTransform
     min::Vector{T}
     scale::Vector{T}
 
-    function UnitRangeTransform(d::Int, unit::Bool, min::Vector{T}, max::Vector{T}) where T
+    function UnitRangeTransform(d::Int, unit::Bool, min::Vector{T}, max::Vector{T}) where {T}
         lenmin = length(min)
         lenmax = length(max)
         lenmin == d || lenmin == 0 || throw(DimensionMismatch("Inconsistent dimensions."))
@@ -121,7 +121,7 @@ struct UnitRangeTransform{T<:Real}  <: DataTransform
 end
 
 function Base.getproperty(t::UnitRangeTransform, p::Symbol)
-    if p == :indim || p == :outdim
+    if p === :indim || p === :outdim
         return t.dim
     else
         return getfield(t, p)
@@ -129,13 +129,12 @@ function Base.getproperty(t::UnitRangeTransform, p::Symbol)
 end
 
 # fit a unit transform
-function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true) where T<:Real
+function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true) where {T<:Real}
     d, n = size(X)
 
     tmin = zeros(T, d)
-    tmax = zeros(T, d)
-    copyto!(tmin, X[:, 1])
-    copyto!(tmax, X[:, 1])
+    copyto!(tmin, @view X[:, 1])
+    tmax = copy(tmin)
     for j = 2:n
         @inbounds for i = 1:d
             if X[i, j] < tmin[i]
@@ -146,12 +145,12 @@ function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true)
         end
     end
     for i = 1:d
-        @inbounds tmax[i] = 1.0 / (tmax[i] - tmin[i])
+        @inbounds tmax[i] = 1 / (tmax[i] - tmin[i])
     end
     return UnitRangeTransform(d, unit, tmin, tmax)
 end
 
-function transform!(y::AbstractVecOrMat{YT}, t::UnitRangeTransform, x::AbstractVecOrMat{XT}) where {YT<:Real,XT<:Real}
+function transform!(y::AbstractVecOrMat{<:Real}, t::UnitRangeTransform, x::AbstractVecOrMat{<:Real})
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(x,2)
@@ -168,7 +167,7 @@ function transform!(y::AbstractVecOrMat{YT}, t::UnitRangeTransform, x::AbstractV
     return y
 end
 
-function reconstruct!(x::AbstractVecOrMat{XT}, t::UnitRangeTransform, y::AbstractVecOrMat{YT}) where {YT<:Real,XT<:Real}
+function reconstruct!(x::AbstractVecOrMat{<:Real}, t::UnitRangeTransform, y::AbstractVecOrMat{<:Real})
     d = t.dim
     size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
     n = size(y,2)
@@ -188,10 +187,10 @@ end
 """
     standardize(DT, X; kwargs...)
 
-Return a row-standardized matrix `X` using `DT` transformation.
+Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `DataTransform`.
 
 # Example
-```julia
+```jldoctest
 julia> standardize(ZScoreTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
 2×3 Array{Float64,2}:
   0.0  -1.0  1.0
@@ -203,6 +202,6 @@ julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
  0.0  0.5  1.0
 ```
 """
-function standardize(::Type{DT}, X::AbstractArray{T,2}; kwargs...) where {DT<:DataTransform, T<:Real}
+function standardize(::Type{DT}, X::AbstractArray{<:Real,2}; kwargs...) where {DT<:DataTransform}
     return transform(fit(DT, X; kwargs...), X)
 end
