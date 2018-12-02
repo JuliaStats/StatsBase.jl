@@ -5,6 +5,9 @@
 - **Current Release**: 
   [![StatsBase](http://pkg.julialang.org/badges/StatsBase_0.5.svg)](http://pkg.julialang.org/?pkg=StatsBase)
   [![StatsBase](http://pkg.julialang.org/badges/StatsBase_0.6.svg)](http://pkg.julialang.org/?pkg=StatsBase)
+  [![StatsBase](http://pkg.julialang.org/badges/StatsBase_0.7.svg)](http://pkg.julialang.org/?pkg=StatsBase)
+  [![StatsBase](http://pkg.julialang.org/badges/StatsBase_1.0.svg)](http://pkg.julialang.org/?pkg=StatsBase)
+  
 - **Build & Testing Status:**
   [![Build Status](https://travis-ci.org/JuliaStats/StatsBase.jl.svg?branch=master)](https://travis-ci.org/JuliaStats/StatsBase.jl)
   [![Build status](https://ci.appveyor.com/api/projects/status/fsut3j3onulvws1w?svg=true)](https://ci.appveyor.com/project/nalimilan/statsbase-jl)
