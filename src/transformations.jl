@@ -3,16 +3,38 @@
 abstract type DataTransform end
 
 # apply the transform
+"""
+    transform!(t, X)
+
+Perform in-place standardization of vector or matrix `X` using `t` transformation.
+"""
 transform!(t::DataTransform, x::AbstractArray{<:Real,1}) = transform!(x, t, x)
 transform!(t::DataTransform, x::AbstractArray{<:Real,2}) = transform!(x, t, x)
 
+"""
+    transform(t, x)
+
+Return a row-standardized vector or matrix `x` using `t` transformation.
+"""
 transform(t::DataTransform, x::AbstractArray{<:Real,1})  = transform!(similar(x), t, x)
 transform(t::DataTransform, x::AbstractArray{<:Real,2})  = transform!(similar(x), t, x)
 
 # reconstruct the original data from transformed values
-reconstruct!(t::DataTransform, x::AbstractArray{<:Real,1}) = reconstruct!(x, t, x)
-reconstruct!(t::DataTransform, x::AbstractArray{<:Real,2}) = reconstruct!(x, t, x)
+"""
+    reconstruct!(t, y)
 
+Perform an in-place reconstruction into an original data scale from a row-transformed
+vector or matrix `y` using `t` transformation.
+"""
+reconstruct!(t::DataTransform, y::AbstractArray{<:Real,1}) = reconstruct!(y, t, y)
+reconstruct!(t::DataTransform, y::AbstractArray{<:Real,2}) = reconstruct!(y, t, y)
+
+"""
+    reconstruct(t, y)
+
+Return a reconstruction of an originally scaled data from a row-transformed vector
+or matrix `y` using `t` transformation.
+"""
 reconstruct(t::DataTransform, y::AbstractArray{<:Real,1})  = reconstruct!(similar(y), t, y)
 reconstruct(t::DataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
 
@@ -39,11 +61,45 @@ function Base.getproperty(t::ZScoreTransform, p::Symbol)
     end
 end
 
-# fit a z-score transform
-function fit(::Type{ZScoreTransform}, X::AbstractArray{T,2}; center::Bool=true, scale::Bool=true) where {T<:Real}
+"""
+    fit(ZScoreTransform, X; center=true, scale=true)
+
+Fit a standardization parameters to `X` and return transformation description.
+
+# Arguments
+
+* `data`: matrix  of samples to fit transformation parameters.
+
+# Keyword arguments
+
+* `center`: if `true` (the default) centere data around zero.
+
+* `scale`: if `true` (the default) perform variance scaling.
+
+# Examples
+
+```jldoctest
+julia> using StatsBase
+
+julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+2×3 Array{Float64,2}:
+ 0.0  -0.5  0.5
+ 0.0   1.0  2.0
+
+julia> dt = fit(ZScoreTransform, X)
+ZScoreTransform{Float64}(2, [0.0, 1.0], [0.5, 1.0])
+
+julia> StatsBase.transform(dt, X)
+2×3 Array{Float64,2}:
+  0.0  -1.0  1.0
+ -1.0   0.0  1.0
+```
+"""
+function fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool=true, scale::Bool=true)
     d, n = size(X)
     n >= 2 || error("X must contain at least two columns.")
 
+    T = eltype(X)
     m, s = mean_and_std(X, 2)
 
     return ZScoreTransform(d, (center ? vec(m) : zeros(T, 0)),
@@ -129,12 +185,45 @@ function Base.getproperty(t::UnitRangeTransform, p::Symbol)
 end
 
 # fit a unit transform
-function fit(::Type{UnitRangeTransform}, X::AbstractArray{T,2}; unit::Bool=true) where {T<:Real}
+"""
+    fit(UnitRangeTransform, X; center=true, scale=true)
+
+Fit a scaling parameters to `X` and return transformation description.
+
+# Arguments
+
+* `data`: matrix  of samples to fit transformation parameters.
+
+# Keyword arguments
+
+* `center`: if `true` (the default) centere data around zero.
+
+* `scale`: if `true` (the default) perform variance scaling.
+
+# Examples
+
+```jldoctest
+julia> using StatsBase
+
+julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
+2×3 Array{Float64,2}:
+ 0.0  -0.5  0.5
+ 0.0   1.0  2.0
+
+julia> dt = fit(UnitRangeTransform, X)
+UnitRangeTransform{Float64}(2, true, [-0.5, 0.0], [1.0, 0.5])
+
+julia> StatsBase.transform(dt, X)
+2×3 Array{Float64,2}:
+ 0.5  0.0  1.0
+ 0.0  0.5  1.0
+```
+"""
+function fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,2}; unit::Bool=true)
     d, n = size(X)
 
-    tmin = zeros(T, d)
-    copyto!(tmin, @view X[:, 1])
-    tmax = copy(tmin)
+    tmin = X[:, 1]
+    tmax = X[:, 1]
     for j = 2:n
         @inbounds for i = 1:d
             if X[i, j] < tmin[i]
@@ -190,7 +279,10 @@ end
 Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `DataTransform`.
 
 # Example
+
 ```jldoctest
+julia> using StatsBase
+
 julia> standardize(ZScoreTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
 2×3 Array{Float64,2}:
   0.0  -1.0  1.0
