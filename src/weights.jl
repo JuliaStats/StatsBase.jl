@@ -477,71 +477,17 @@ end
 """
     median(v::RealVector, w::AbstractWeights)
 
-Compute the weighted median of `x`, using weights given by a weight vector `w`
-(of type `AbstractWeights`). The weight and data vectors must have the same length.
-
-The weighted median ``x_k`` is the element of `x` that satisfies
-``\\sum_{x_i < x_k} w_i \\le \\frac{1}{2} \\sum_{j} w_j`` and
-``\\sum_{x_i > x_k} w_i \\le \\frac{1}{2} \\sum_{j} w_j``.
-
-If a weight has value zero, then its associated data point is ignored.
-If none of the weights are positive, an error is thrown.
-`NaN` is returned if `x` contains any `NaN` values.
-An error is raised if `w` contains any `NaN` values.
+Compute the weighted median of `v` with weights `w`
+(of type `AbstractWeights`). See the documentation for [`quantile`](@ref) for more details.
 """
-function median(v::RealVector, w::AbstractWeights{<:Real})
-    isempty(v) && error("median of an empty array is undefined")
-    if length(v) != length(w)
-        error("data and weight vectors must be the same size")
-    end
-    @inbounds for x in w.values
-        isnan(x) && error("weight vector cannot contain NaN entries")
-    end
-    @inbounds for x in v
-        isnan(x) && return x
-    end
-    mask = w.values .!= 0
-    if !any(mask)
-        error("all weights are zero")
-    end
-    if all(w.values .<= 0)
-        error("no positive weights found")
-    end
-    v = v[mask]
-    wt = w[mask]
-    midpoint = w.sum / 2
-    maxval, maxind = findmax(wt)
-    if maxval > midpoint
-        v[maxind]
-    else
-        permute = sortperm(v)
-        cumulative_weight = zero(eltype(wt))
-        i = 0
-        for (_i, p) in enumerate(permute)
-            i = _i
-            if cumulative_weight == midpoint
-                i += 1
-                break
-            elseif cumulative_weight > midpoint
-                cumulative_weight -= wt[p]
-                break
-            end
-            cumulative_weight += wt[p]
-        end
-        if cumulative_weight == midpoint
-            middle(v[permute[i-2]], v[permute[i-1]])
-        else
-            middle(v[permute[i-1]])
-        end
-    end
-end
+median(v::RealVector, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
 
 
 """
     wmedian(v, w)
 
-Compute the weighted median of an array `v` with weights `w`, given as either a
-vector or an `AbstractWeights` vector.
+Compute the median of `v` with weights `w`, given as either a vector
+    or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
 """
 wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
 wmedian(v::RealVector, w::AbstractWeights{<:Real}) = median(v, w)
@@ -555,16 +501,15 @@ wmedian(v::RealVector, w::AbstractWeights{<:Real}) = median(v, w)
 Compute the weighted quantiles of a vector `v` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
+`NaN` is returned if `x` contains any `NaN` values. An error is raised if `w` contains any `NaN` values.
 
-With [`FrequencyWeights`](@ref), the function returns the same result as
-`quantile` for a vector with repeated values.
-With non `FrequencyWeights`,  denote ``N`` the length of the vector, ``w`` the vector of weights,
+With [`FrequencyWeights`](@ref), the function returns the same result as the unweighted `quantile` applied to a vector with repeated values. The function returns an error if the weights are not of type `AbstractVector{<:Integer}`.
+With non `FrequencyWeights`, denote ``N`` the length of the vector, ``w`` the vector of weights,
 ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the
 probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each
 observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
 is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -v_k)``
-with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when `w` is a vector
-of ones, the function returns the same result as `quantile`.
+with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. 
 """
 function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
     # checks
@@ -578,6 +523,12 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         x < 0 && error("weight vector cannot contain negative entries")
     end
 
+
+    isa(w, FrequencyWeights) && !isa(w, AbstractVector{<:Integer}) && error("the vector of `FrequencyWeights` must be of type `AbstractVector{<:Integer}`. Use `ProbabilityWeights` or `AnalyticWeights` if applicable.")
+
+    @inbounds for x in v
+        isnan(x) && return fill(x, length(p))
+    end
 
     # remove zeros weights and sort
     wsum = sum(w)
@@ -640,7 +591,7 @@ quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, 
     wquantile(v, w, p)
 
 Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
-or an `AbstractWeights` vector.
+or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
 """
 wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector) = quantile(v, w, p)
 wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
