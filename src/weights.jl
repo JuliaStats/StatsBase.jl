@@ -469,38 +469,8 @@ mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:R
     mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
 
 
-###### Weighted median #####
-function median(v::AbstractArray, w::AbstractWeights)
-    throw(MethodError(median, (v, w)))
-end
-
-"""
-    median(v::RealVector, w::AbstractWeights)
-
-Compute the weighted median of `v` with weights `w`
-(of type `AbstractWeights`). See the documentation for [`quantile`](@ref) for more details.
-"""
-median(v::RealVector, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
-
-
-"""
-    wmedian(v, w)
-
-Compute the median of `v` with weights `w`, given as either a vector
-    or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
-"""
-function wmedian(v::RealVector, w::AbstractWeights{<:Real})
-    Base.depwarn("wmedian is deprecated, use median(v, w) instead.", :wmedian)
-    median(v, w)
-end
-function wmedian(v::RealVector, w::RealVector)
-    Base.depwarn("wmedian is deprecated, use median(v, weights(w)) instead.", :wmedian)
-    median(v, weights(w))
-end
 
 ###### Weighted quantile #####
-
-
 """
     quantile(v, w::AbstractWeights, p)
 
@@ -614,4 +584,33 @@ end
 function wquantile(v::RealVector, w::RealVector, p::Number)
     Base.depwarn("wquantile is deprecated, use quantile(v, weights(w), p) instead.", :wquantile)
     quantile(v, weights(w), [p])[1]
+end
+
+###### Weighted median #####
+function median(v::AbstractArray, w::AbstractWeights)
+    throw(MethodError(median, (v, w)))
+end
+
+"""
+    median(v::RealVector, w::AbstractWeights)
+
+Compute the weighted median of `v` with weights `w`
+(of type `AbstractWeights`). See the documentation for [`quantile`](@ref) for more details.
+"""
+median(v::RealVector, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
+
+
+"""
+    wmedian(v, w)
+
+Compute the median of `v` with weights `w`, given as either a vector
+    or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
+"""
+function wmedian(v::RealVector, w::AbstractWeights{<:Real})
+    Base.depwarn("wmedian is deprecated, use median(v, w) instead.", :wmedian)
+    median(v, w)
+end
+function wmedian(v::RealVector, w::RealVector)
+    Base.depwarn("wmedian is deprecated, use median(v, weights(w)) instead.", :wmedian)
+    median(v, weights(w))
 end
