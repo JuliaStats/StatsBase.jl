@@ -489,8 +489,14 @@ median(v::RealVector, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
 Compute the median of `v` with weights `w`, given as either a vector
     or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
 """
-wmedian(v::RealVector, w::RealVector) = median(v, weights(w))
-wmedian(v::RealVector, w::AbstractWeights{<:Real}) = median(v, w)
+function wmedian(v::RealVector, w::AbstractWeights{<:Real})
+    Base.depwarn("wmedian is deprecated, use median(v, w) instead.", :wmedian)
+    median(v, w)
+end
+function wmedian(v::RealVector, w::RealVector)
+    Base.depwarn("wmedian is deprecated, use median(v, weights(w)) instead.", :wmedian)
+    median(v, weights(w))
+end
 
 ###### Weighted quantile #####
 
@@ -593,7 +599,19 @@ quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, 
 Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
 or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
 """
-wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector) = quantile(v, w, p)
-wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
-wquantile(v::RealVector, w::RealVector, p::RealVector) = quantile(v, weights(w), p)
-wquantile(v::RealVector, w::RealVector, p::Number) = quantile(v, weights(w), [p])[1]
+function wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector)
+    Base.depwarn("wquantile is deprecated, use quantile(v, w, p) instead.", :wquantile)
+    quantile(v, w, p)
+end
+function wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number)
+    Base.depwarn("wquantile is deprecated, use quantile(v, w, p) instead.", :wquantile)
+    quantile(v, w, [p])[1]
+end
+function wquantile(v::RealVector, w::RealVector, p::RealVector)
+    Base.depwarn("wquantile is deprecated, use quantile(v, weights(w), p) instead.", :wquantile)
+    quantile(v, weights(w), p)
+end
+function wquantile(v::RealVector, w::RealVector, p::Number)
+    Base.depwarn("wquantile is deprecated, use quantile(v, weights(w), p) instead.", :wquantile)
+    quantile(v, weights(w), [p])[1]
+end
