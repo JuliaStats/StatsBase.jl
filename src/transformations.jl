@@ -4,24 +4,24 @@ abstract type DataTransform end
 
 # apply the transform
 """
-    transform!(t, X)
+    transform!(t::DataTransform, x)
 
-Perform in-place standardization of vector or matrix `X` using `t` transformation.
+Apply transformation `t` to vector or matrix `x` in place.
 """
 transform!(t::DataTransform, x::AbstractArray{<:Real,1}) = transform!(x, t, x)
 transform!(t::DataTransform, x::AbstractArray{<:Real,2}) = transform!(x, t, x)
 
 """
-    transform(t, x)
+    transform(t::DataTransform, x)
 
 Return a row-standardized vector or matrix `x` using `t` transformation.
 """
-transform(t::DataTransform, x::AbstractArray{<:Real,1})  = transform!(similar(x), t, x)
-transform(t::DataTransform, x::AbstractArray{<:Real,2})  = transform!(similar(x), t, x)
+transform(t::DataTransform, x::AbstractArray{<:Real,1}) = transform!(similar(x), t, x)
+transform(t::DataTransform, x::AbstractArray{<:Real,2}) = transform!(similar(x), t, x)
 
 # reconstruct the original data from transformed values
 """
-    reconstruct!(t, y)
+    reconstruct!(t::DataTransform, y)
 
 Perform an in-place reconstruction into an original data scale from a row-transformed
 vector or matrix `y` using `t` transformation.
@@ -30,7 +30,7 @@ reconstruct!(t::DataTransform, y::AbstractArray{<:Real,1}) = reconstruct!(y, t, 
 reconstruct!(t::DataTransform, y::AbstractArray{<:Real,2}) = reconstruct!(y, t, y)
 
 """
-    reconstruct(t, y)
+    reconstruct(t::DataTransform, y)
 
 Return a reconstruction of an originally scaled data from a row-transformed vector
 or matrix `y` using `t` transformation.
@@ -64,7 +64,7 @@ end
 """
     fit(ZScoreTransform, X; center=true, scale=true)
 
-Fit a standardization parameters to `X` and return transformation description.
+Fit standardization parameters to `X` and return a `ZScoreTransform` transformation object.
 
 # Arguments
 
@@ -72,9 +72,9 @@ Fit a standardization parameters to `X` and return transformation description.
 
 # Keyword arguments
 
-* `center`: if `true` (the default) centere data around zero.
+* `center`: if `true` (the default) center data so that its mean is zero.
 
-* `scale`: if `true` (the default) perform variance scaling.
+* `scale`: if `true` (the default) scale the data so that its variance is equal to one.
 
 # Examples
 
