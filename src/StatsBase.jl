@@ -204,9 +204,9 @@ module StatsBase
 
     # data standardization
     standardize,
-    DataTransform,      # the type to represent a abstract data transformation
-    ZScoreTransform,    # the type to represent a z-score data transformation
-    UnitRangeTransform  # the type to represent a 0-1 data transformation
+    AbstractDataTransform, # the type to represent a abstract data transformation
+    ZScoreTransform,       # the type to represent a z-score data transformation
+    UnitRangeTransform     # the type to represent a 0-1 data transformation
 
     # source files
 

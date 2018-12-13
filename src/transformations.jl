@@ -1,45 +1,45 @@
 ### Transformations
 
-abstract type DataTransform end
+abstract type AbstractDataTransform end
 
 # apply the transform
 """
-    transform!(t::DataTransform, x)
+    transform!(t::AbstractDataTransform, x)
 
 Apply transformation `t` to vector or matrix `x` in place.
 """
-transform!(t::DataTransform, x::AbstractArray{<:Real,1}) = transform!(x, t, x)
-transform!(t::DataTransform, x::AbstractArray{<:Real,2}) = transform!(x, t, x)
+transform!(t::AbstractDataTransform, x::AbstractArray{<:Real,1}) = transform!(x, t, x)
+transform!(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(x, t, x)
 
 """
-    transform(t::DataTransform, x)
+    transform(t::AbstractDataTransform, x)
 
 Return a row-standardized vector or matrix `x` using `t` transformation.
 """
-transform(t::DataTransform, x::AbstractArray{<:Real,1}) = transform!(similar(x), t, x)
-transform(t::DataTransform, x::AbstractArray{<:Real,2}) = transform!(similar(x), t, x)
+transform(t::AbstractDataTransform, x::AbstractArray{<:Real,1}) = transform!(similar(x), t, x)
+transform(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(similar(x), t, x)
 
 # reconstruct the original data from transformed values
 """
-    reconstruct!(t::DataTransform, y)
+    reconstruct!(t::AbstractDataTransform, y)
 
 Perform an in-place reconstruction into an original data scale from a row-transformed
 vector or matrix `y` using `t` transformation.
 """
-reconstruct!(t::DataTransform, y::AbstractArray{<:Real,1}) = reconstruct!(y, t, y)
-reconstruct!(t::DataTransform, y::AbstractArray{<:Real,2}) = reconstruct!(y, t, y)
+reconstruct!(t::AbstractDataTransform, y::AbstractArray{<:Real,1}) = reconstruct!(y, t, y)
+reconstruct!(t::AbstractDataTransform, y::AbstractArray{<:Real,2}) = reconstruct!(y, t, y)
 
 """
-    reconstruct(t::DataTransform, y)
+    reconstruct(t::AbstractDataTransform, y)
 
 Return a reconstruction of an originally scaled data from a row-transformed vector
 or matrix `y` using `t` transformation.
 """
-reconstruct(t::DataTransform, y::AbstractArray{<:Real,1})  = reconstruct!(similar(y), t, y)
-reconstruct(t::DataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
+reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,1})  = reconstruct!(similar(y), t, y)
+reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
 
 # Z-score transformation
-struct ZScoreTransform{T<:Real} <: DataTransform
+struct ZScoreTransform{T<:Real} <: AbstractDataTransform
     dim::Int
     mean::Vector{T}
     scale::Vector{T}
@@ -161,7 +161,7 @@ function reconstruct!(x::AbstractVecOrMat{<:Real}, t::ZScoreTransform, y::Abstra
 end
 
 # Unit transformation
-struct UnitRangeTransform{T<:Real}  <: DataTransform
+struct UnitRangeTransform{T<:Real}  <: AbstractDataTransform
     dim::Int
     unit::Bool
     min::Vector{T}
@@ -276,7 +276,7 @@ end
 """
     standardize(DT, X; kwargs...)
 
-Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `DataTransform`.
+Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `AbstractDataTransform`.
 
 # Example
 
@@ -294,6 +294,6 @@ julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
  0.0  0.5  1.0
 ```
 """
-function standardize(::Type{DT}, X::AbstractArray{<:Real,2}; kwargs...) where {DT<:DataTransform}
+function standardize(::Type{DT}, X::AbstractArray{<:Real,2}; kwargs...) where {DT<:AbstractDataTransform}
     return transform(fit(DT, X; kwargs...), X)
 end
