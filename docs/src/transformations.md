@@ -14,7 +14,7 @@ by removing mean and scaling to unit variance.
 
 The **standard score** is the signed number of standard deviations by which
 the value of an observation or data point is above the mean value of what
-is being observed or measured.s
+is being observed or measured.
 
 Standardization can be performed using `fit(ZScoreTransform, ...)`.
 
@@ -22,9 +22,9 @@ Standardization can be performed using `fit(ZScoreTransform, ...)`.
 fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool=true, scale::Bool=true)
 ```
 
-## Normalization
+## Unit range normalization
 
-**Normalization* is an alternative data transformation which scales features
+**Unit range normalization* is an alternative data transformation which scales features
 to lie in the interval `[0; 1]`.
 
 Unit range normalization can be performed using `fit(UnitRangeTransform, ...)`.

@@ -38,7 +38,9 @@ or matrix `y` using `t` transformation.
 reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,1})  = reconstruct!(similar(y), t, y)
 reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
 
-# Z-score transformation
+"""
+    Standardization (Z-score transformation)
+"""
 struct ZScoreTransform{T<:Real} <: AbstractDataTransform
     dim::Int
     mean::Vector{T}
@@ -160,7 +162,9 @@ function reconstruct!(x::AbstractVecOrMat{<:Real}, t::ZScoreTransform, y::Abstra
     return x
 end
 
-# Unit transformation
+"""
+    Unit range normalization
+"""
 struct UnitRangeTransform{T<:Real}  <: AbstractDataTransform
     dim::Int
     unit::Bool
@@ -276,7 +280,10 @@ end
 """
     standardize(DT, X; kwargs...)
 
-Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `AbstractDataTransform`.
+Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `AbstractDataTransform`:
+
+- `ZScoreTransform`
+- `UnitRangeTransform`
 
 # Example
 
