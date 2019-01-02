@@ -223,7 +223,6 @@ In the above formulas, ``L`` is the likelihood of the model,
 
 Cox and Snell's R² should match the classical R² for linear models.
 """
-
 function r2(obj::StatisticalModel, variant::Symbol)
     ll = loglikelihood(obj)
     ll0 = nullloglikelihood(obj)
