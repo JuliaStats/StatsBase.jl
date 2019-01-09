@@ -439,13 +439,13 @@ function wmean(v::AbstractArray{<:Number}, w::AbstractVector)
 end
 
 """
-    mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights[; dims::Int=nothing])
+    mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights[; dims=nothing])
 
 Compute the weighted mean of array `A` with weight vector `w`
 (of type `AbstractWeights`) along dimension `dims`, and write results to `R`.
 """
-mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights; dims=nothing) =
-    _mean!(R, A, w, dims)
+mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights;
+      dims::Union{Nothing,Int}=nothing) = _mean!(R, A, w, dims)
 _mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Nothing) = throw(ArgumentError("dims argument must be provided"))
 _mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Int) =
     rmul!(Base.sum!(R, A, w, dims), inv(sum(w)))
@@ -466,11 +466,11 @@ w = rand(n)
 mean(x, weights(w))
 ```
 """
-mean(A::AbstractArray{T}, w::AbstractWeights{W}; dims=nothing) where {T<:Number,W<:Real} =
-    _mean(A, w, dims)
+mean(A::AbstractArray{T}, w::AbstractWeights{W};
+    dims::Union{Nothing,Int}=nothing) where {T<:Number,W<:Real} = _mean(A, w, dims)
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Nothing) where {T<:Number,W<:Real} =
     sum(A, w) / sum(w)
-_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims) where {T<:Number,W<:Real} =
+_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T<:Number,W<:Real} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
 ###### Weighted median #####
