@@ -85,7 +85,7 @@ _scattermatm(x::DenseMatrix, mean, dims::Int=1) =
 scattermat(x::DenseMatrix, wv::AbstractWeights; mean=nothing, dims::Int=1) =
     _scattermatm(x, wv, mean, dims)
 _scattermatm(x::DenseMatrix, wv::AbstractWeights, ::Nothing, dims::Int) =
-    _unscaled_covzm(x .- mean(x, wv, dims), wv, dims)
+    _unscaled_covzm(x .- mean(x, wv, dims=dims), wv, dims)
 _scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
     _unscaled_covzm(x .- mean, wv, dims)
 
@@ -103,8 +103,8 @@ covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
     rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, corrected)))
 
 
-cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
-    covm(x, mean(x, w, vardim), w, vardim; corrected=depcheck(:cov, corrected))
+cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing) =
+    covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, corrected))
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
     c = covm(x, mean, w, vardim; corrected=false)
@@ -113,22 +113,22 @@ function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
 end
 
 """
-    cor(X, w::AbstractWeights, vardim=1)
+    cor(X, w::AbstractWeights, dims=1)
 
 Compute the Pearson correlation matrix of `X` along the dimension
-`vardim` with a weighting `w` .
+`dims` with a weighting `w` .
 """
-cor(x::DenseMatrix, w::AbstractWeights, vardim::Int=1) =
-    corm(x, mean(x, w, vardim), w, vardim)
+cor(x::DenseMatrix, w::AbstractWeights, dims::Int=1) =
+    corm(x, mean(x, w, dims=dims), w, dims)
 
-function mean_and_cov(x::DenseMatrix, vardim::Int=1; corrected::Bool=true)
-    m = mean(x, dims = vardim)
-    return m, covm(x, m, vardim, corrected=corrected)
+function mean_and_cov(x::DenseMatrix, dims::Int=1; corrected::Bool=true)
+    m = mean(x, dims=dims)
+    return m, covm(x, m, dims, corrected=corrected)
 end
-function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1;
+function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
                       corrected::DepBool=nothing)
-    m = mean(x, wv, vardim)
-    return m, cov(x, wv, vardim; corrected=depcheck(:mean_and_cov, corrected))
+    m = mean(x, wv, dims=dims)
+    return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, corrected))
 end
 
 """

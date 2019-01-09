@@ -439,11 +439,29 @@ function wmean(v::AbstractArray{<:Number}, w::AbstractVector)
 end
 
 """
-    mean(A::AbstractArray, w::AbstractWeights[, dim::Int])
+    mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights[; dims::Int=nothing])
+
+Compute the weighted mean of array `A` with weight vector `w`
+(of type `AbstractWeights`) along dimension `dims`, and write results to `R`.
+"""
+mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights; dims=nothing) =
+    _mean!(R, A, w, dims)
+_mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Nothing) = throw(ArgumentError("dims argument must be provided"))
+_mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Int) =
+    rmul!(Base.sum!(R, A, w, dims), inv(sum(w)))
+
+### Deprecated January 2019
+@deprecate mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Int) mean!(R, A, w, dims=dims)
+
+wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
+wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
+
+"""
+    mean(A::AbstractArray, w::AbstractWeights[, dims::Int])
 
 Compute the weighted mean of array `A` with weight vector `w`
 (of type `AbstractWeights`). If `dim` is provided, compute the
-weighted mean along dimension `dim`.
+weighted mean along dimension `dims`.
 
 # Examples
 ```julia
@@ -451,23 +469,15 @@ w = rand(n)
 mean(x, weights(w))
 ```
 """
-mean(A::AbstractArray, w::AbstractWeights) = sum(A, w) / sum(w)
+mean(A::AbstractArray{T}, w::AbstractWeights{W}; dims=nothing) where {T<:Number,W<:Real} =
+    _mean(A, w, dims)
+_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Nothing) where {T<:Number,W<:Real} =
+    sum(A, w) / sum(w)
+_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims) where {T<:Number,W<:Real} =
+    _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
-"""
-    mean(R::AbstractArray, , A::AbstractArray, w::AbstractWeights[, dim::Int])
-
-Compute the weighted mean of array `A` with weight vector `w`
-(of type `AbstractWeights`) along dimension `dim`, and write results to `R`.
-"""
-mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dim::Int) =
-    rmul!(Base.sum!(R, A, w, dim), inv(sum(w)))
-
-wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
-wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
-
-mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:Real} =
-    mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dim)), A, w, dim)
-
+### Deprecated January 2019
+@deprecate mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T<:Number,W<:Real} mean(A, w, dims=dims)
 
 ###### Weighted median #####
 function median(v::AbstractArray, w::AbstractWeights)
