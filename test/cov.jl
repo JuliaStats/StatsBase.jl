@@ -40,30 +40,30 @@ weight_funcs = (weights, aweights, fweights, pweights)
     Sz2w = X * Matrix(Diagonal(w2)) * X'
 
     @testset "Scattermat" begin
-        @test scattermat(X)    ≈ S1
-        @test scattermat(X, 2) ≈ S2
+        @test scattermat(X)         ≈ S1
+        @test scattermat(X, dims=2) ≈ S2
 
-        @test StatsBase.scattermatm(X, 0)    ≈ Sz1
-        @test StatsBase.scattermatm(X, 0, 2) ≈ Sz2
+        @test StatsBase.scattermat(X, mean=0)         ≈ Sz1
+        @test StatsBase.scattermat(X, mean=0, dims=2) ≈ Sz2
 
-        @test StatsBase.scattermatm(X, mean(X, dims = 1))    ≈ S1
-        @test StatsBase.scattermatm(X, mean(X, dims = 2), 2) ≈ S2
+        @test StatsBase.scattermat(X, mean=mean(X, dims = 1))         ≈ S1
+        @test StatsBase.scattermat(X, mean=mean(X, dims = 2), dims=2) ≈ S2
 
-        @test StatsBase.scattermatm(X, zeros(1,8))  ≈ Sz1
-        @test StatsBase.scattermatm(X, zeros(3), 2) ≈ Sz2
+        @test StatsBase.scattermat(X, mean=zeros(1,8))       ≈ Sz1
+        @test StatsBase.scattermat(X, mean=zeros(3), dims=2) ≈ Sz2
 
         @testset "Weighted" begin
-            @test scattermat(X, wv1)    ≈ S1w
-            @test scattermat(X, wv2, 2) ≈ S2w
+            @test scattermat(X, wv1)         ≈ S1w
+            @test scattermat(X, wv2, dims=2) ≈ S2w
 
-            @test StatsBase.scattermatm(X, 0, wv1)    ≈ Sz1w
-            @test StatsBase.scattermatm(X, 0, wv2, 2) ≈ Sz2w
+            @test StatsBase.scattermat(X, wv1, mean=0)         ≈ Sz1w
+            @test StatsBase.scattermat(X, wv2, mean=0, dims=2) ≈ Sz2w
 
-            @test StatsBase.scattermatm(X, mean(X, wv1, 1), wv1)    ≈ S1w
-            @test StatsBase.scattermatm(X, mean(X, wv2, 2), wv2, 2) ≈ S2w
+            @test StatsBase.scattermat(X, wv1, mean=mean(X, wv1, 1))         ≈ S1w
+            @test StatsBase.scattermat(X, wv2, mean=mean(X, wv2, 2), dims=2) ≈ S2w
 
-            @test StatsBase.scattermatm(X, zeros(1,8), wv1)  ≈ Sz1w
-            @test StatsBase.scattermatm(X, zeros(3), wv2, 2) ≈ Sz2w
+            @test StatsBase.scattermat(X, wv1, mean=zeros(1,8))       ≈ Sz1w
+            @test StatsBase.scattermat(X, wv2, mean=zeros(3), dims=2) ≈ Sz2w
         end
     end
 

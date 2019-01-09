@@ -15,23 +15,24 @@ function _symmetrize!(a::DenseMatrix)
     return a
 end
 
-function _scalevars(x::DenseMatrix, s::DenseVector, vardim::Int)
-    vardim == 1 ? Diagonal(s) * x :
-    vardim == 2 ? x * Diagonal(s) :
-    error("vardim should be either 1 or 2.")
+function _scalevars(x::DenseMatrix, s::DenseVector, dims::Int)
+    dims == 1 ? Diagonal(s) * x :
+    dims == 2 ? x * Diagonal(s) :
+    error("dims should be either 1 or 2.")
 end
 
 ## scatter matrix
 
+_unscaled_covzm(x::DenseMatrix, dims::Colon)   = unscaled_covzm(x)
+_unscaled_covzm(x::DenseMatrix, dims::Integer) = unscaled_covzm(x, dims)
 
-scattermat_zm(x::DenseMatrix, vardim::Int) = unscaled_covzm(x, vardim)
-
-
-scattermat_zm(x::DenseMatrix, wv::AbstractWeights, vardim::Int) =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv), vardim), vardim))
+_unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Colon)   =
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv))))
+_unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer) =
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv), dims), dims))
 
 """
-    scattermat(X, [wv::AbstractWeights,] vardim=1; mean=nothing)
+    scattermat(X, [wv::AbstractWeights]; mean=nothing, dims=1)
 
 Compute the scatter matrix, which is an unnormalized covariance matrix.
 A weighting vector `wv` can be specified to weight
@@ -41,9 +42,9 @@ the estimate.
 * `mean=nothing`: a known mean value. `nothing` indicates that the mean is
   unknown, and the function will compute the mean. Specifying `mean=0` indicates
   that the data are centered and hence there's no need to subtract the mean.
-* `vardim=1`: the dimension along which the variables are organized.
-  When `vardim = 1`, the variables are considered columns with observations in rows;
-  when `vardim = 2`, variables are in rows with observations in columns.
+* `dims=1`: the dimension along which the variables are organized.
+  When `dims = 1`, the variables are considered columns with observations in rows;
+  when `dims = 2`, variables are in rows with observations in columns.
 """
 function scattermat end
 
@@ -74,23 +75,32 @@ Finally, bias correction is applied to the covariance calculation if
 """
 function mean_and_cov end
 
+scattermat(x::DenseMatrix; mean=nothing, dims::Int=1) =
+    _scattermatm(x, mean, dims)
+_scattermatm(x::DenseMatrix, ::Nothing, dims::Int) =
+    _unscaled_covzm(x .- mean(x, dims=dims), dims)
+_scattermatm(x::DenseMatrix, mean, dims::Int=1) =
+    _unscaled_covzm(x .- mean, dims)
 
-scattermatm(x::DenseMatrix, mean, vardim::Int=1) =
-    scattermat_zm(x .- mean, vardim)
+scattermat(x::DenseMatrix, wv::AbstractWeights; mean=nothing, dims::Int=1) =
+    _scattermatm(x, wv, mean, dims)
+_scattermatm(x::DenseMatrix, wv::AbstractWeights, ::Nothing, dims::Int) =
+    _unscaled_covzm(x .- mean(x, wv, dims), wv, dims)
+_scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
+    _unscaled_covzm(x .- mean, wv, dims)
 
-scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, vardim::Int=1) =
-    scattermat_zm(x .- mean, wv, vardim)
-
-scattermat(x::DenseMatrix, vardim::Int=1) =
-    scattermatm(x, mean(x, dims = vardim), vardim)
-
-scattermat(x::DenseMatrix, wv::AbstractWeights, vardim::Int=1) =
-    scattermatm(x, Statistics.mean(x, wv, vardim), wv, vardim)
+### Deprecated January 2019
+@deprecate scattermatm(x::DenseMatrix, mean, dims::Int) scattermat(x, mean=mean, dims=dims)
+@deprecate scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, dims::Int) scattermat(x, wv, mean=mean, dims=dims)
+@deprecate scattermat(x::DenseMatrix, dims::Int) scattermat(x, dims=dims)
+@deprecate scattermat(x::DenseMatrix, wv::AbstractWeights, dims::Int) scattermat(x, wv, dims=dims)
+@deprecate scattermat_zm(x::DenseMatrix, dims::Int) scattermat_zm(x, dims=dims)
+@deprecate scattermat_zm(x::DenseMatrix, wv::AbstractWeights, dims::Int) scattermat_zm(x::DenseMatrix, wv::AbstractWeights, dims=dims)
 
 ## weighted cov
-covm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1;
+covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
      corrected::DepBool=nothing) =
-    rmul!(scattermatm(x, mean, w, vardim), varcorrection(w, depcheck(:covm, corrected)))
+    rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, corrected)))
 
 
 cov(x::DenseMatrix, w::AbstractWeights, vardim::Int=1; corrected::DepBool=nothing) =
