@@ -89,14 +89,6 @@ _scattermatm(x::DenseMatrix, wv::AbstractWeights, ::Nothing, dims::Int) =
 _scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
     _unscaled_covzm(x .- mean, wv, dims)
 
-### Deprecated January 2019
-@deprecate scattermatm(x::DenseMatrix, mean, dims::Int) scattermat(x, mean=mean, dims=dims)
-@deprecate scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, dims::Int) scattermat(x, wv, mean=mean, dims=dims)
-@deprecate scattermat(x::DenseMatrix, dims::Int) scattermat(x, dims=dims)
-@deprecate scattermat(x::DenseMatrix, wv::AbstractWeights, dims::Int) scattermat(x, wv, dims=dims)
-@deprecate scattermat_zm(x::DenseMatrix, dims::Int) scattermat_zm(x, dims=dims)
-@deprecate scattermat_zm(x::DenseMatrix, wv::AbstractWeights, dims::Int) scattermat_zm(x::DenseMatrix, wv::AbstractWeights, dims=dims)
-
 ## weighted cov
 covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
      corrected::DepBool=nothing) =

@@ -450,9 +450,6 @@ _mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Nothing) = 
 _mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Int) =
     rmul!(Base.sum!(R, A, w, dims), inv(sum(w)))
 
-### Deprecated January 2019
-@deprecate mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Int) mean!(R, A, w, dims=dims)
-
 wmeantype(::Type{T}, ::Type{W}) where {T,W} = typeof((zero(T)*zero(W) + zero(T)*zero(W)) / one(W))
 wmeantype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
@@ -475,9 +472,6 @@ _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Nothing) where {T<:Numbe
     sum(A, w) / sum(w)
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims) where {T<:Number,W<:Real} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
-
-### Deprecated January 2019
-@deprecate mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T<:Number,W<:Real} mean(A, w, dims=dims)
 
 ###### Weighted median #####
 function median(v::AbstractArray, w::AbstractWeights)
