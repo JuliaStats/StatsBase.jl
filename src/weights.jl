@@ -467,7 +467,7 @@ mean(x, weights(w))
 ```
 """
 mean(A::AbstractArray{T}, w::AbstractWeights{W};
-    dims::Union{Nothing,Int}=nothing) where {T<:Number,W<:Real} = _mean(A, w, dims)
+     dims::Union{Nothing,Int}=nothing) where {T<:Number,W<:Real} = _mean(A, w, dims)
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Nothing) where {T<:Number,W<:Real} =
     sum(A, w) / sum(w)
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T<:Number,W<:Real} =
