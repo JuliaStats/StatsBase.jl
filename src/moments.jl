@@ -58,27 +58,27 @@ function varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealArray,
           varcorrection(w, corrected))
 end
 
-function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dim::Int;
+function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
               mean=nothing, corrected::DepBool=nothing)
     corrected = depcheck(:var!, corrected)
 
     if mean == 0
-        varm!(R, A, w, Base.reducedim_initarray(A, dim, 0, eltype(R)), dim;
+        varm!(R, A, w, Base.reducedim_initarray(A, dims, 0, eltype(R)), dims;
                    corrected=corrected)
     elseif mean == nothing
-        varm!(R, A, w, Statistics.mean(A, w, dim), dim; corrected=corrected)
+        varm!(R, A, w, Statistics.mean(A, w, dims=dims), dims; corrected=corrected)
     else
         # check size of mean
         for i = 1:ndims(A)
             dA = size(A,i)
             dM = size(mean,i)
-            if i == dim
+            if i == dims
                 dM == 1 || throw(DimensionMismatch("Incorrect size of mean."))
             else
                 dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
             end
         end
-        varm!(R, A, w, mean, dim; corrected=corrected)
+        varm!(R, A, w, mean, dims; corrected=corrected)
     end
 end
 
@@ -203,16 +203,16 @@ function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)
 end
 
 
-function mean_and_var(A::RealArray, w::AbstractWeights, dim::Int;
+function mean_and_var(A::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
-    m = mean(A, w, dim)
-    v = varm(A, w, m, dim; corrected=depcheck(:mean_and_var, corrected))
+    m = mean(A, w, dims=dims)
+    v = varm(A, w, m, dims; corrected=depcheck(:mean_and_var, corrected))
     m, v
 end
-function mean_and_std(A::RealArray, w::AbstractWeights, dim::Int;
+function mean_and_std(A::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
-    m = mean(A, w, dim)
-    s = stdm(A, w, m, dim; corrected=depcheck(:mean_and_std, corrected))
+    m = mean(A, w, dims=dims)
+    s = stdm(A, w, m, dims; corrected=depcheck(:mean_and_std, corrected))
     m, s
 end
 
