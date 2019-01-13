@@ -231,7 +231,7 @@ function r2(obj::StatisticalModel, variant::Symbol)
     elseif variant == :CoxSnell
         1 - exp(2 * (ll0 - ll) / nobs(obj))
     elseif variant == :Nagelkerke
-        (1 - exp(2 * (ll0 - ll) / obs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+        (1 - exp(2 * (ll0 - ll) / nobs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
     else
         error("variant must be one of :McFadden, :CoxSnell or :Nagelkerke")
     end
