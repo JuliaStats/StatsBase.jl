@@ -1,6 +1,6 @@
 # Counting Functions
 
-The package provides functions to count the occurences of distinct values.
+The package provides functions to count the occurrences of distinct values.
 
 ## Counting over an Integer Range
 
