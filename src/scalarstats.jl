@@ -35,17 +35,12 @@ function genmean(a, p::Real)
     if p == 0
         return geomean(a)
     end
-    if p isa Integer && p < 0
-        r = mean(a) do x
-            x^p
-        end
-    else
-        # At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
-        # We choose `x` in order to exploit exponentiation by squaring when `p` is an int.
-        r = mean(a) do x
-            float(x)^p
-        end
-    end
+    
+    # At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
+    # We choose `x` in order to exploit exponentiation by squaring when `p` is an int.
+    r = mean(a) do x
+        float(x)^p
+    end        
     return r^inv(p)
 end
 
