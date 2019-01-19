@@ -11,31 +11,17 @@
 """
     geomean(a)
 
-Return the geometric mean of a real-valued array.
+Return the geometric mean of a collection.
 """
-function geomean(a::RealArray)
-    s = 0.0
-    n = length(a)
-    for i = 1 : n
-        @inbounds s += log(a[i])
-    end
-    return exp(s / n)
-end
+geomean(a) = exp(mean(log, a))
 
 # Harmonic mean
 """
     harmmean(a)
 
-Return the harmonic mean of a real-valued array.
+Return the harmonic mean of a collection.
 """
-function harmmean(a::RealArray)
-    s = 0.0
-    n = length(a)
-    for i in 1 : n
-        @inbounds s += inv(a[i])
-    end
-    return n / s
-end
+harmmean(a) = inv(mean(inv, a))
 
 # Generalized mean
 """
@@ -45,18 +31,22 @@ Return the generalized/power mean with exponent `p` of a real-valued array,
 i.e. ``\\left( \\frac{1}{n} \\sum_{i=1}^n a_i^p \\right)^{\\frac{1}{p}}``, where `n = length(a)`.
 It is taken to be the geometric mean when `p == 0`.
 """
-function genmean(a::RealArray, p::Real)
+function genmean(a, p::Real)
     if p == 0
         return geomean(a)
     end
-    s = 0.0
-    n = length(a)
-    for x in a
-        #= At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
-        We choose `x` in order to exploit exponentiation by squaring when `p` is an int. =#
-        @inbounds s += convert(Float64, x)^p
+    if p isa Integer && p < 0
+        r = mean(a) do x
+            x^p
+        end
+    else
+        # At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
+        # We choose `x` in order to exploit exponentiation by squaring when `p` is an int.
+        r = mean(a) do x
+            float(x)^p
+        end
     end
-    return (s/n)^(1/p)
+    return r^inv(p)
 end
 
 # compute mode, given the range of integer values
