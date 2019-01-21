@@ -450,22 +450,11 @@ zscore(X::AbstractArray{<:Real}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); z
 """
     entropy(p, [b])
 
-Compute the entropy of an array `p`, optionally specifying a real number
+Compute the entropy of a collection of probabilities `p`, optionally specifying a real number
 `b` such that the entropy is scaled by `1/log(b)`.
 """
-function entropy(p::AbstractArray{T}) where T<:Real
-    s = zero(T)
-    z = zero(T)
-    for i = 1:length(p)
-        @inbounds pi = p[i]
-        if pi > z
-            s += pi * log(pi)
-        end
-    end
-    return -s
-end
-
-entropy(p::AbstractArray{<:Real}, b::Real) = entropy(p) / log(b)
+entropy(p) = -sum(pi -> pi * log(pi), p)
+entropy(p, b::Real) = entropy(p) / log(b)
 
 """
     renyientropy(p, α)
