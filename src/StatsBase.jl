@@ -200,7 +200,13 @@ module StatsBase
     r2,
     r²,
 
-    ConvergenceException
+    ConvergenceException,
+
+    # data standardization
+    standardize,
+    AbstractDataTransform, # the type to represent a abstract data transformation
+    ZScoreTransform,       # the type to represent a z-score data transformation
+    UnitRangeTransform     # the type to represent a 0-1 data transformation
 
     # source files
 
@@ -223,6 +229,8 @@ module StatsBase
 
     include("sampling.jl")
     include("statmodels.jl")
+
+    include("transformations.jl")
 
     include("deprecates.jl")
 
