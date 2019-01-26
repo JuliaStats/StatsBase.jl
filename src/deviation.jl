@@ -5,10 +5,10 @@
 """
     counteq(a, b)
 
-Count the number of indices at which the elements of the arrays
+Count the number of indices at which the elements of the collectin
 `a` and `b` are equal.
 """
-function counteq(a::AbstractArray, b::AbstractArray)
+counteq(a::AbstractArray, b::AbstractArray) = sum(map(==, a,b))
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
@@ -43,28 +43,17 @@ end
 """
     sqL2dist(a, b)
 
-Compute the squared L2 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|^2``.
-Efficient equivalent of `sumabs2(a - b)`.
+Compute the squared L2 distance between `a` and `b`: ``\\sum_{i=1}^n |a_i - b_i|^2``.
 """
-function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
-    r = 0.0
-    for i = 1:n
-        @inbounds r += abs2(a[i] - b[i])
-    end
-    return r
-end
-
+sqL2dist(a, b) = sum(abs2.(a .- b))
 
 # L2 distance
 """
     L2dist(a, b)
 
-Compute the L2 distance between two arrays: ``\\sqrt{\\sum_{i=1}^n |a_i - b_i|^2}``.
-Efficient equivalent of `sqrt(sumabs2(a - b))`.
+Compute the L2 distance between `a` and b`: ``\\sqrt{\\sum_{i=1}^n |a_i - b_i|^2}``.
 """
-L2dist(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqrt(sqL2dist(a, b))
+L2dist(a, b) = sqrt(sqL2dist(a, b))
 
 
 # L1 distance
@@ -72,17 +61,8 @@ L2dist(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqrt(sqL2di
     L1dist(a, b)
 
 Compute the L1 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|``.
-Efficient equivalent of `sum(abs, a - b)`.
 """
-function L1dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
-    r = 0.0
-    for i = 1:n
-        @inbounds r += abs(a[i] - b[i])
-    end
-    return r
-end
+L1dist(a, b) = sum(abs.(a .- b))
 
 
 # Linf distance
@@ -93,19 +73,7 @@ Compute the L∞ distance, also called the Chebyshev distance, between
 two arrays: ``\\max_{i\\in1:n} |a_i - b_i|``.
 Efficient equivalent of `maxabs(a - b)`.
 """
-function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
-    r = 0.0
-    for i = 1:n
-        @inbounds v = abs(a[i] - b[i])
-        if r < v
-            r = v
-        end
-    end
-    return r
-end
-
+function Linfdist(a, b) = maximum(abs.(a .- b))
 
 # Generalized KL-divergence
 """
@@ -137,17 +105,16 @@ end
 
 Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
 """
-meanad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
-    L1dist(a, b) / length(a)
-
+meanad(a, b) = mean(abs.(a .- b))
 
 # MaxAD: maximum absolute deviation
 """
     maxad(a, b)
 
-Return the maximum absolute deviation between two arrays: `maxabs(a - b)`.
+Return the maximum absolute deviation between `a` and `b`.
+Equivelent to `Linfdist`
 """
-maxad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = Linfdist(a, b)
+maxad(a, b) = Linfdist(a, b)
 
 
 # MSD: mean squared deviation
@@ -156,9 +123,7 @@ maxad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = Linfdist(a, 
 
 Return the mean squared deviation between two arrays: `mean(abs2(a - b))`.
 """
-msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
-    sqL2dist(a, b) / length(a)
-
+msd(a, b) = mean(abs2.(a .- b))
 
 # RMSD: root mean squared deviation
 """
@@ -182,10 +147,8 @@ end
 """
     psnr(a, b, maxv)
 
-Compute the peak signal-to-noise ratio between two arrays `a` and `b`.
+Compute the peak signal-to-noise ratio between `a` and `b`.
 `maxv` is the maximum possible value either array can take. The PSNR
 is computed as `10 * log10(maxv^2 / msd(a, b))`.
 """
-function psnr(a::AbstractArray{T}, b::AbstractArray{T}, maxv::Real) where T<:Real
-    20. * log10(maxv) - 10. * log10(msd(a, b))
-end
+psnr(a, b, maxv) = 20log10(maxv) - 10log10(msd(a, b))
