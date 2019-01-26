@@ -5,10 +5,10 @@
 """
     counteq(a, b)
 
-Count the number of indices at which the elements of the collectin
+Count the number of indices at which the elements of the arrays 
 `a` and `b` are equal.
 """
-counteq(a::AbstractArray, b::AbstractArray) = sum(map(==, a,b))
+function counteq(a::AbstractArray, b::AbstractArray)
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
