@@ -5,7 +5,7 @@
 """
     counteq(a, b)
 
-Count the number of indices at which the elements of the arrays 
+Count the number of indices at which the elements of the arrays
 `a` and `b` are equal.
 """
 function counteq(a::AbstractArray, b::AbstractArray)
