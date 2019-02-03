@@ -477,30 +477,37 @@ mean(A::AbstractArray{T}, w::AbstractWeights{W}, dim::Int) where {T<:Number,W<:R
 Compute the weighted quantiles of a vector `v` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
-`NaN` is returned if `x` contains any `NaN` values. An error is raised if `w` contains any `NaN` values.
+`NaN` is returned if `x` contains any `NaN` values. An error is raised if `w` contains 
+any `NaN` values.
 
-With [`FrequencyWeights`](@ref), the function returns the same result as the unweighted `quantile` applied to a vector with repeated values. The function returns an error if the weights are not of type `AbstractVector{<:Integer}`.
-With non `FrequencyWeights`, denote ``N`` the length of the vector, ``w`` the vector of weights,
-``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to the
-probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each
+With [`FrequencyWeights`](@ref), the function returns the same result as the unweighted 
+`quantile` applied to a vector with repeated values. The function returns an error if the 
+weights are not of type `AbstractVector{<:Integer}`.
+With non `FrequencyWeights`, denote ``N`` the length of the vector, ``w`` the vector of 
+weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to 
+the probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each
 observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
-is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -v_k)``
-with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. 
+is strictly superior to ``h``. The weighted ``p`` quantile is given by 
+``v_k + \\gamma (v_{k+1} -v_k)`` with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. 
 """
+
 function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
     # checks
     isempty(v) && error("quantile of an empty array is undefined")
     isempty(p) && throw(ArgumentError("empty quantile array"))
 
     w.sum == 0 && error("weight vector cannot sum to zero")
-    length(v) == length(w) || error("data and weight vectors must be the same size, got $(length(v)) and $(length(w))")
+    length(v) == length(w) || error("data and weight vectors must be the same size, 
+        got $(length(v)) and $(length(w))")
     for x in w.values
         isnan(x) && error("weight vector cannot contain NaN entries")
         x < 0 && error("weight vector cannot contain negative entries")
     end
 
 
-    isa(w, FrequencyWeights) && !isa(w, AbstractVector{<:Integer}) && error("the vector of `FrequencyWeights` must be of type `AbstractVector{<:Integer}`. Use `ProbabilityWeights` or `AnalyticWeights` if applicable.")
+    isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) && 
+        error("The values of the vector of `FrequencyWeights` must be numerically equal to 
+        integers. Use `ProbabilityWeights` or `AnalyticWeights` instead.")
 
     @inbounds for x in v
         isnan(x) && return fill(x, length(p))
@@ -521,7 +528,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     out = Vector{typeof(zero(V)/1)}(undef, length(p))
     fill!(out, vw[end][1])
 
-    # start looping on quantiles
+    # loop on quantiles
     Sk, Skold = zero(W), zero(W)
     vk, vkold = zero(V), zero(V)
     k = 0
@@ -551,7 +558,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
-# similarly to statistics.jl in Base
+# similar function in Base statistics.jl
 function bound_quantiles(qs::AbstractVector{T}) where T<:Real
     epsilon = 100 * eps()
     if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
@@ -559,38 +566,11 @@ function bound_quantiles(qs::AbstractVector{T}) where T<:Real
     end
     T[min(one(T), max(zero(T), q)) for q = qs]
 end
-
 quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
 
 
-"""
-    wquantile(v, w, p)
-
-Compute the `p`th quantile(s) of `v` with weights `w`, given as either a vector
-or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
-"""
-function wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector)
-    Base.depwarn("wquantile is deprecated, use quantile(v, w, p) instead.", :wquantile)
-    quantile(v, w, p)
-end
-function wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number)
-    Base.depwarn("wquantile is deprecated, use quantile(v, w, p) instead.", :wquantile)
-    quantile(v, w, [p])[1]
-end
-function wquantile(v::RealVector, w::RealVector, p::RealVector)
-    Base.depwarn("wquantile is deprecated, use quantile(v, weights(w), p) instead.", :wquantile)
-    quantile(v, weights(w), p)
-end
-function wquantile(v::RealVector, w::RealVector, p::Number)
-    Base.depwarn("wquantile is deprecated, use quantile(v, weights(w), p) instead.", :wquantile)
-    quantile(v, weights(w), [p])[1]
-end
 
 ###### Weighted median #####
-function median(v::AbstractArray, w::AbstractWeights)
-    throw(MethodError(median, (v, w)))
-end
-
 """
     median(v::RealVector, w::AbstractWeights)
 
@@ -598,19 +578,3 @@ Compute the weighted median of `v` with weights `w`
 (of type `AbstractWeights`). See the documentation for [`quantile`](@ref) for more details.
 """
 median(v::RealVector, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
-
-
-"""
-    wmedian(v, w)
-
-Compute the median of `v` with weights `w`, given as either a vector
-    or an `AbstractWeights` vector. See the documentation for [`quantile`](@ref) for more details.
-"""
-function wmedian(v::RealVector, w::AbstractWeights{<:Real})
-    Base.depwarn("wmedian is deprecated, use median(v, w) instead.", :wmedian)
-    median(v, w)
-end
-function wmedian(v::RealVector, w::RealVector)
-    Base.depwarn("wmedian is deprecated, use median(v, weights(w)) instead.", :wmedian)
-    median(v, weights(w))
-end

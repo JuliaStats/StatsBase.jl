@@ -377,6 +377,7 @@ end
 
     Random.seed!(10)
     for i = 1:length(data)
+        @show i
         @test quantile(data[i], f(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
             # order of p does not matter
@@ -406,19 +407,13 @@ end
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
     @test quantile(data[1], f(w), 0.5)    ≈  answer atol = 1e-5
-    @test wquantile(data[1], f(w), [0.5]) ≈ [answer] atol = 1e-5
-    @test wquantile(data[1], f(w), 0.5)   ≈  answer atol = 1e-5
-    @test wquantile(data[1], w, [0.5])    ≈ [answer] atol = 1e-5
-    @test wquantile(data[1], w, 0.5)      ≈  answer atol = 1e-5
 end
 
 
 @testset "Median $f" for f in weight_funcs
     data = [4, 3, 2, 1]
     wt = [0, 0, 0, 0]
-    @test_throws MethodError wmedian(data[1])
     @test_throws ErrorException median(data, f(wt))
-    @test_throws ErrorException wmedian(data, wt)
     @test_throws ErrorException median((Float64)[], f((Float64)[]))
     wt = [1, 2, 3, 4, 5]
     @test_throws ErrorException median(data, f(wt))
@@ -435,6 +430,5 @@ end
     wt = [-1, -1, -1, 0, 0]
     @test_throws ErrorException median(data, f(wt))
 end
-
 
 end # @testset StatsBase.Weights

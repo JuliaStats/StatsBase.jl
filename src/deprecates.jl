@@ -93,3 +93,10 @@ rand(s::RandIntSampler) = rand(Random.GLOBAL_RNG, s)
 @deprecate(mad!(v::AbstractArray{<:Real}, center;
                 constant::Real = BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")),
            mad!(v, center=center, constant=constant))
+
+@deprecate wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector) quantile(v, w, p)
+@deprecate wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) quantile(v, w, [p])[1]
+@deprecate wquantile(v::RealVector, w::RealVector, p::RealVector) quantile(v, weights(w), p)
+@deprecate wquantile(v::RealVector, w::RealVector, p::Number) quantile(v, weights(w), [p])[1]
+@deprecate wmedian(v::RealVector, w::AbstractWeights{<:Real}) median(v, w)
+@deprecate wmedian(v::RealVector, w::RealVector) median(v, weights(w))
