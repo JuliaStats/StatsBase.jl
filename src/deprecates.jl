@@ -16,6 +16,7 @@ end
 @deprecate(mad!(v::AbstractArray{<:Real}, center;
                 constant::Real = BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")),
            mad!(v, center=center, constant=constant))
+
 ### Deprecated January 2019
 @deprecate scattermatm(x::DenseMatrix, mean, dims::Int) scattermat(x, mean=mean, dims=dims)
 @deprecate scattermatm(x::DenseMatrix, mean, wv::AbstractWeights, dims::Int) scattermat(x, wv, mean=mean, dims=dims)
