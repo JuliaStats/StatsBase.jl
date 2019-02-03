@@ -377,7 +377,6 @@ end
 
     Random.seed!(10)
     for i = 1:length(data)
-        @show i
         @test quantile(data[i], f(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
             # order of p does not matter
