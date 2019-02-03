@@ -153,3 +153,37 @@ function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     end
     return C
 end
+
+"""
+    CovarianceEstimator
+
+Abstract type for covariance estimators.
+"""
+abstract type CovarianceEstimator end
+
+"""
+    cov(ce::CovarianceEstimator, x::AbstractVector)
+
+Compute the sample variance of the vector `x` using estimator `ce`.
+"""
+cov(ce::CovarianceEstimator, x::AbstractVector) =
+    error("cov is not defined for $(typeof(ce)) and $(typeof(x))")
+
+
+"""
+    cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
+
+Compute the covariance of the vectors `x` and `y` using estimator `ce`.
+"""
+cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector) =
+    error("cov is not defined for $(typeof(ce)), $(typeof(x)) and $(typeof(y))")
+
+
+"""
+    cov(ce::CovarianceEstimator, X::AbstractMatrix, vardim::Int=1)
+
+Compute the covariance matrix associated with `X` along dimension `vardim`
+using estimator `ce`.
+"""
+cov(ce::CovarianceEstimator, X::AbstractMatrix, vardim::Int=1) =
+    error("cov is not defined for $(typeof(ce)) and $(typeof(X))")

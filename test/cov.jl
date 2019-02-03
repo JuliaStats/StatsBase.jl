@@ -249,4 +249,13 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @test cor(X, wv2, 2) ≈ expected_cor2
     end
 end
+
+@testset "Abstract covariance estimation" begin
+    struct EmptyCovarianceEstimator <: CovarianceEstimator end
+    est = EmptyCovarianceEstimator()
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0])
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], 2)
+    @test_throws ErrorException cov(est, [1.0, 2.0], [3.0, 4.0])
+    @test_throws ErrorException cov(est, [1.0, 2.0])
+end
 end # @testset "StatsBase.Covariance"

@@ -5,8 +5,12 @@ This package implements functions for computing scatter matrix, as well as weigh
 ```@docs
 scattermat
 cov
+cov(::CovarianceEstimator, ::AbstractVector)
+cov(::CovarianceEstimator, ::AbstractVector, ::AbstractVector)
+cov(::CovarianceEstimator, ::AbstractMatrix, ::Int)
 cor
 mean_and_cov
 cov2cor
 cor2cov
+CovarianceEstimator
 ```
