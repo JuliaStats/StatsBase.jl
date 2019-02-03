@@ -12,7 +12,7 @@ end
 
 
 ```@contents
-Pages = ["weights.md", "means.md", "scalarstats.md", "robust.md", "deviation.md", "cov.md", "counts.md", "ranking.md", "sampling.md", "empirical.md", "signalcorr.md", "misc.md", "statmodels.md"]
+Pages = ["weights.md", "means.md", "scalarstats.md", "robust.md", "deviation.md", "cov.md", "counts.md", "ranking.md", "sampling.md", "empirical.md", "signalcorr.md", "misc.md", "statmodels.md", "transformations.md"]
 Depth = 2
 ```
 

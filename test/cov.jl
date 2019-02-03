@@ -22,8 +22,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     wv1 = f(w1)
     wv2 = f(w2)
 
-    Z1w = X .- mean(X, wv1, 1)
-    Z2w = X .- mean(X, wv2, 2)
+    Z1w = X .- mean(X, wv1, dims=1)
+    Z2w = X .- mean(X, wv2, dims=2)
 
     ## reference results
 
@@ -40,30 +40,30 @@ weight_funcs = (weights, aweights, fweights, pweights)
     Sz2w = X * Matrix(Diagonal(w2)) * X'
 
     @testset "Scattermat" begin
-        @test scattermat(X)    ≈ S1
-        @test scattermat(X, 2) ≈ S2
+        @test scattermat(X)         ≈ S1
+        @test scattermat(X, dims=2) ≈ S2
 
-        @test StatsBase.scattermatm(X, 0)    ≈ Sz1
-        @test StatsBase.scattermatm(X, 0, 2) ≈ Sz2
+        @test StatsBase.scattermat(X, mean=0)         ≈ Sz1
+        @test StatsBase.scattermat(X, mean=0, dims=2) ≈ Sz2
 
-        @test StatsBase.scattermatm(X, mean(X, dims = 1))    ≈ S1
-        @test StatsBase.scattermatm(X, mean(X, dims = 2), 2) ≈ S2
+        @test StatsBase.scattermat(X, mean=mean(X, dims=1))         ≈ S1
+        @test StatsBase.scattermat(X, mean=mean(X, dims=2), dims=2) ≈ S2
 
-        @test StatsBase.scattermatm(X, zeros(1,8))  ≈ Sz1
-        @test StatsBase.scattermatm(X, zeros(3), 2) ≈ Sz2
+        @test StatsBase.scattermat(X, mean=zeros(1,8))       ≈ Sz1
+        @test StatsBase.scattermat(X, mean=zeros(3), dims=2) ≈ Sz2
 
         @testset "Weighted" begin
-            @test scattermat(X, wv1)    ≈ S1w
-            @test scattermat(X, wv2, 2) ≈ S2w
+            @test scattermat(X, wv1)         ≈ S1w
+            @test scattermat(X, wv2, dims=2) ≈ S2w
 
-            @test StatsBase.scattermatm(X, 0, wv1)    ≈ Sz1w
-            @test StatsBase.scattermatm(X, 0, wv2, 2) ≈ Sz2w
+            @test StatsBase.scattermat(X, wv1, mean=0)         ≈ Sz1w
+            @test StatsBase.scattermat(X, wv2, mean=0, dims=2) ≈ Sz2w
 
-            @test StatsBase.scattermatm(X, mean(X, wv1, 1), wv1)    ≈ S1w
-            @test StatsBase.scattermatm(X, mean(X, wv2, 2), wv2, 2) ≈ S2w
+            @test StatsBase.scattermat(X, wv1, mean=mean(X, wv1, dims=1))         ≈ S1w
+            @test StatsBase.scattermat(X, wv2, mean=mean(X, wv2, dims=2), dims=2) ≈ S2w
 
-            @test StatsBase.scattermatm(X, zeros(1,8), wv1)  ≈ Sz1w
-            @test StatsBase.scattermatm(X, zeros(3), wv2, 2) ≈ Sz2w
+            @test StatsBase.scattermat(X, wv1, mean=zeros(1,8))       ≈ Sz1w
+            @test StatsBase.scattermat(X, wv2, mean=zeros(3), dims=2) ≈ Sz2w
         end
     end
 
@@ -75,8 +75,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
             @test StatsBase.covm(X, 0, wv1, 1; corrected=false) ≈ Sz1w ./ sum(wv1)
             @test StatsBase.covm(X, 0, wv2, 2; corrected=false) ≈ Sz2w ./ sum(wv2)
 
-            @test StatsBase.covm(X, mean(X, wv1, 1), wv1, 1; corrected=false) ≈ S1w ./ sum(wv1)
-            @test StatsBase.covm(X, mean(X, wv2, 2), wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
+            @test StatsBase.covm(X, mean(X, wv1, dims=1), wv1, 1; corrected=false) ≈ S1w ./ sum(wv1)
+            @test StatsBase.covm(X, mean(X, wv2, dims=2), wv2, 2; corrected=false) ≈ S2w ./ sum(wv2)
 
             @test StatsBase.covm(X, zeros(1,8), wv1, 1; corrected=false) ≈ Sz1w ./ sum(wv1)
             @test StatsBase.covm(X, zeros(3), wv2, 2; corrected=false)   ≈ Sz2w ./ sum(wv2)
@@ -84,27 +84,27 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=false)
-            @test m == mean(X, dims = 1)
-            @test C == cov(X, dims = 1, corrected=false)
+            @test m == mean(X, dims=1)
+            @test C == cov(X, dims=1, corrected=false)
 
             (m, C) = mean_and_cov(X, 1; corrected=false)
-            @test m == mean(X, dims = 1)
-            @test C == cov(X, dims = 1, corrected = false)
+            @test m == mean(X, dims=1)
+            @test C == cov(X, dims=1, corrected = false)
 
             (m, C) = mean_and_cov(X, 2; corrected=false)
-            @test m == mean(X, dims = 2)
-            @test C == cov(X, dims = 2, corrected = false)
+            @test m == mean(X, dims=2)
+            @test C == cov(X, dims=2, corrected = false)
 
             (m, C) = mean_and_cov(X, wv1; corrected=false)
-            @test m == mean(X, wv1, 1)
+            @test m == mean(X, wv1, dims=1)
             @test C == cov(X, wv1, 1, corrected=false)
 
             (m, C) = mean_and_cov(X, wv1, 1; corrected=false)
-            @test m == mean(X, wv1, 1)
+            @test m == mean(X, wv1, dims=1)
             @test C == cov(X, wv1, 1, corrected=false)
 
             (m, C) = mean_and_cov(X, wv2, 2; corrected=false)
-            @test m == mean(X, wv2, 2)
+            @test m == mean(X, wv2, dims=2)
             @test C == cov(X, wv2, 2, corrected=false)
         end
         @testset "Conversions" begin
@@ -146,8 +146,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 @test StatsBase.covm(X, 0, wv1, 1; corrected=true) ≈ Sz1w .* var_corr1
                 @test StatsBase.covm(X, 0, wv2, 2; corrected=true) ≈ Sz2w .* var_corr2
 
-                @test StatsBase.covm(X, mean(X, wv1, 1), wv1, 1; corrected=true) ≈ S1w .* var_corr1
-                @test StatsBase.covm(X, mean(X, wv2, 2), wv2, 2; corrected=true) ≈ S2w .* var_corr2
+                @test StatsBase.covm(X, mean(X, wv1, dims=1), wv1, 1; corrected=true) ≈ S1w .* var_corr1
+                @test StatsBase.covm(X, mean(X, wv2, dims=2), wv2, 2; corrected=true) ≈ S2w .* var_corr2
 
                 @test StatsBase.covm(X, zeros(1,8), wv1, 1; corrected=true) ≈ Sz1w .* var_corr1
                 @test StatsBase.covm(X, zeros(3), wv2, 2; corrected=true)   ≈ Sz2w .* var_corr2
@@ -155,30 +155,30 @@ weight_funcs = (weights, aweights, fweights, pweights)
         end
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=true)
-            @test m == mean(X, dims =1)
-            @test C == cov(X, dims = 1, corrected = true)
+            @test m == mean(X, dims=1)
+            @test C == cov(X, dims=1, corrected = true)
 
             (m, C) = mean_and_cov(X, 1; corrected=true)
-            @test m == mean(X, dims = 1)
-            @test C == cov(X, dims = 1, corrected = true)
+            @test m == mean(X, dims=1)
+            @test C == cov(X, dims=1, corrected = true)
 
             (m, C) = mean_and_cov(X, 2; corrected=true)
-            @test m == mean(X, dims = 2)
-            @test C == cov(X, dims = 2, corrected = true)
+            @test m == mean(X, dims=2)
+            @test C == cov(X, dims=2, corrected = true)
 
             if isa(wv1, Weights)
                 @test_throws ArgumentError mean_and_cov(X, wv1; corrected=true)
             else
                 (m, C) = mean_and_cov(X, wv1; corrected=true)
-                @test m == mean(X, wv1, 1)
+                @test m == mean(X, wv1, dims=1)
                 @test C == cov(X, wv1, 1; corrected=true)
 
                 (m, C) = mean_and_cov(X, wv1, 1; corrected=true)
-                @test m == mean(X, wv1, 1)
+                @test m == mean(X, wv1, dims=1)
                 @test C == cov(X, wv1, 1; corrected=true)
 
                 (m, C) = mean_and_cov(X, wv2, 2; corrected=true)
-                @test m == mean(X, wv2, 2)
+                @test m == mean(X, wv2, dims=2)
                 @test C == cov(X, wv2, 2; corrected=true)
             end
         end

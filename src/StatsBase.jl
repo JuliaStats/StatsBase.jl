@@ -68,6 +68,9 @@ module StatsBase
     mad,         # median absolute deviation
     iqr,         # interquatile range
 
+    genvar,      # generalized variance
+    totalvar,    # total variation
+
     entropy,        # the entropy of a probability vector
     renyientropy,   # the Rényi (generalised) entropy of a probability vector
     crossentropy,   # cross entropy between two probability vectors
@@ -113,6 +116,9 @@ module StatsBase
     corspearman,       # spearman's rank correlation
     corkendall,        # kendall's rank correlation
 
+    ## partialcor
+    partialcor,        # partial correlation
+
     ## signalcorr
     autocov!, autocov,      # auto covariance
     autocor!, autocor,      # auto correlation
@@ -133,7 +139,6 @@ module StatsBase
 
     AbstractHistogram,
     Histogram,
-    hist,
     midpoints,
     # histrange,
 
@@ -194,7 +199,13 @@ module StatsBase
     r2,
     r²,
 
-    ConvergenceException
+    ConvergenceException,
+
+    # data standardization
+    standardize,
+    AbstractDataTransform, # the type to represent a abstract data transformation
+    ZScoreTransform,       # the type to represent a z-score data transformation
+    UnitRangeTransform     # the type to represent a 0-1 data transformation
 
     # source files
 
@@ -210,12 +221,15 @@ module StatsBase
     include("toeplitzsolvers.jl")
     include("rankcorr.jl")
     include("signalcorr.jl")
+    include("partialcor.jl")
     include("empirical.jl")
     include("hist.jl")
     include("misc.jl")
 
     include("sampling.jl")
     include("statmodels.jl")
+
+    include("transformations.jl")
 
     include("deprecates.jl")
 

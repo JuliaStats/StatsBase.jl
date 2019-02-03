@@ -223,7 +223,6 @@ In the above formulas, ``L`` is the likelihood of the model,
 
 Cox and Snell's R² should match the classical R² for linear models.
 """
-
 function r2(obj::StatisticalModel, variant::Symbol)
     ll = loglikelihood(obj)
     ll0 = nullloglikelihood(obj)
@@ -232,7 +231,7 @@ function r2(obj::StatisticalModel, variant::Symbol)
     elseif variant == :CoxSnell
         1 - exp(2 * (ll0 - ll) / nobs(obj))
     elseif variant == :Nagelkerke
-        (1 - exp(2 * (ll0 - ll) / obs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+        (1 - exp(2 * (ll0 - ll) / nobs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
     else
         error("variant must be one of :McFadden, :CoxSnell or :Nagelkerke")
     end
