@@ -11,31 +11,17 @@
 """
     geomean(a)
 
-Return the geometric mean of a real-valued array.
+Return the geometric mean of a collection.
 """
-function geomean(a::RealArray)
-    s = 0.0
-    n = length(a)
-    for i = 1 : n
-        @inbounds s += log(a[i])
-    end
-    return exp(s / n)
-end
+geomean(a) = exp(mean(log, a))
 
 # Harmonic mean
 """
     harmmean(a)
 
-Return the harmonic mean of a real-valued array.
+Return the harmonic mean of a collection.
 """
-function harmmean(a::RealArray)
-    s = 0.0
-    n = length(a)
-    for i in 1 : n
-        @inbounds s += inv(a[i])
-    end
-    return n / s
-end
+harmmean(a) = inv(mean(inv, a))
 
 # Generalized mean
 """
@@ -45,18 +31,17 @@ Return the generalized/power mean with exponent `p` of a real-valued array,
 i.e. ``\\left( \\frac{1}{n} \\sum_{i=1}^n a_i^p \\right)^{\\frac{1}{p}}``, where `n = length(a)`.
 It is taken to be the geometric mean when `p == 0`.
 """
-function genmean(a::RealArray, p::Real)
+function genmean(a, p::Real)
     if p == 0
         return geomean(a)
     end
-    s = 0.0
-    n = length(a)
-    for x in a
-        #= At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
-        We choose `x` in order to exploit exponentiation by squaring when `p` is an int. =#
-        @inbounds s += convert(Float64, x)^p
-    end
-    return (s/n)^(1/p)
+    
+    # At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
+    # We choose `x` in order to exploit exponentiation by squaring when `p` is an int.
+    r = mean(a) do x
+        float(x)^p
+    end        
+    return r^inv(p)
 end
 
 # compute mode, given the range of integer values
@@ -304,6 +289,33 @@ minus the 25th percentile.
 """
 iqr(v::AbstractArray{<:Real}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
 
+# Generalized variance
+"""
+    genvar(X)
+
+Compute the generalized sample variance of `X`. If `X` is a vector, one-column matrix,
+or other one-dimensional iterable, this is equivalent to the sample variance.
+Otherwise if `X` is a matrix, this is equivalent to the determinant of the covariance
+matrix of `X`.
+
+!!! note
+    The generalized sample variance will be 0 if the columns of the matrix of deviations
+    are linearly dependent.
+"""
+genvar(X::AbstractMatrix) = size(X, 2) == 1 ? var(vec(X)) : det(cov(X))
+genvar(itr) = var(itr)
+
+# Total variation
+"""
+    totalvar(X)
+
+Compute the total sample variance of `X`. If `X` is a vector, one-column matrix,
+or other one-dimensional iterable, this is equivalent to the sample variance.
+Otherwise if `X` is a matrix, this is equivalent to the sum of the diagonal elements
+of the covariance matrix of `X`.
+"""
+totalvar(X::AbstractMatrix) = sum(var(X, dims=1))
+totalvar(itr) = var(itr)
 
 #############################
 #
@@ -423,22 +435,11 @@ zscore(X::AbstractArray{<:Real}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); z
 """
     entropy(p, [b])
 
-Compute the entropy of an array `p`, optionally specifying a real number
+Compute the entropy of a collection of probabilities `p`, optionally specifying a real number
 `b` such that the entropy is scaled by `1/log(b)`.
 """
-function entropy(p::AbstractArray{T}) where T<:Real
-    s = zero(T)
-    z = zero(T)
-    for i = 1:length(p)
-        @inbounds pi = p[i]
-        if pi > z
-            s += pi * log(pi)
-        end
-    end
-    return -s
-end
-
-entropy(p::AbstractArray{<:Real}, b::Real) = entropy(p) / log(b)
+entropy(p) = -sum(pi -> pi * log(pi), p)
+entropy(p, b::Real) = entropy(p) / log(b)
 
 """
     renyientropy(p, α)

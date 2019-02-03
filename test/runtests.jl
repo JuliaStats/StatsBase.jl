@@ -19,7 +19,9 @@ tests = ["ambiguous",
          "robust",
          "sampling",
          "wsampling",
-         "statmodels"]
+         "statmodels",
+         "partialcor",
+         "transformations"]
          #"statquiz"]
 
 println("Running tests:")
