@@ -305,7 +305,8 @@ end
     @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
     @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
 
-    # test non integer frequency weights returns an error
+    # test non integer frequency weights
+    quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
     @test_throws ErrorException quantile([1, 2], fweights([1.5, 2.0]), 0.25)
 end
 
