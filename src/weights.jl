@@ -485,14 +485,14 @@ Weights must not be negative. The weights and data vectors must have the same le
 any `NaN` values.
 
 With [`FrequencyWeights`](@ref), the function returns the same result as the unweighted 
-`quantile` applied to a vector with repeated values. The function returns an error if the 
+`quantile` applied to a vector with repeated values. The function returns an error if 
 weights are not integers.
 With non `FrequencyWeights`, denote ``N`` the length of the vector, ``w`` the vector of 
 weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to 
 the probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each
 observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
-is strictly superior to ``h``. The weighted ``p`` quantile is given by  ``v_k + \\gamma (v_{k+1} - 
-v_k)``with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when `w` is a vector 
+is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} -
+v_k)`` with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when `w` is a vector 
 of ones, the function returns the same result as `quantile`.
 """
 function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
