@@ -307,7 +307,7 @@ end
 
     # test non integer frequency weights
     quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
-    @test_throws ErrorException quantile([1, 2], fweights([1.5, 2.0]), 0.25)
+    @test_throws ArgumentError quantile([1, 2], fweights([1.5, 2.0]), 0.25)
 end
 
 @testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
@@ -413,10 +413,10 @@ end
 @testset "Median $f" for f in weight_funcs
     data = [4, 3, 2, 1]
     wt = [0, 0, 0, 0]
-    @test_throws ErrorException median(data, f(wt))
-    @test_throws ErrorException median(Float64[], f(Float64[]))
+    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(Float64[], f(Float64[]))
     wt = [1, 2, 3, 4, 5]
-    @test_throws ErrorException median(data, f(wt))
+    @test_throws ArgumentError median(data, f(wt))
     if VERSION >= v"1.0"
         @test_throws MethodError median([4 3 2 1 0], f(wt))
         @test_throws MethodError median([[1 2] ; [4 5] ; [7 8] ; [10 11] ; [13 14]], f(wt))
@@ -424,15 +424,17 @@ end
     data = [1, 3, 2, NaN, 2]
     @test isnan(median(data, f(wt)))
     wt = [1, 2, NaN, 4, 5]
-    @test_throws ErrorException median(data, f(wt))
+    @test_throws ArgumentError median(data, f(wt))
     data = [1, 3, 2, 1, 2]
-    @test_throws ErrorException median(data, f(wt))
+    @test_throws ArgumentError median(data, f(wt))
     wt = [-1, -1, -1, -1, -1]
-    @test_throws ErrorException median(data, f(wt))
+    @test_throws ArgumentError median(data, f(wt))
     wt = [-1, -1, -1, 0, 0]
-    @test_throws ErrorException median(data, f(wt))
-    
-    @test median(data, f(wt)) quantile(data, f(wt), 0.5)
+    @test_throws ArgumentError median(data, f(wt))
+
+    data = [4, 3, 2, 1]
+    wt = [1, 2, 3, 4]
+    @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
 end
 
 end # @testset StatsBase.Weights
