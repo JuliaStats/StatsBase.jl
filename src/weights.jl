@@ -486,36 +486,32 @@ any `NaN` values.
 
 With [`FrequencyWeights`](@ref), the function returns the same result as the unweighted 
 `quantile` applied to a vector with repeated values. The function returns an error if the 
-weights are not of type `AbstractVector{<:Integer}`.
+weights are not integers.
 With non `FrequencyWeights`, denote ``N`` the length of the vector, ``w`` the vector of 
 weights, ``h = p (\\sum_{i<= N}w_i - w_1) + w_1`` the cumulative weight corresponding to 
 the probability ``p`` and ``S_k = \\sum_{i<=k}w_i`` the cumulative weight for each
 observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
-is strictly superior to ``h``. The weighted ``p`` quantile is given by 
-``v_k + \\gamma (v_{k+1} -v_k)`` with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. 
+is strictly superior to ``h``. The weighted ``p`` quantile is given by  ``v_k + \\gamma (v_{k+1} - 
+v_k)``with  ``\\gamma = (h - S_k)/(S_{k+1}-S_k)``. In particular, when `w` is a vector 
+of ones, the function returns the same result as `quantile`.
 """
-
 function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
     # checks
-    isempty(v) && error("quantile of an empty array is undefined")
+    isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
 
-    w.sum == 0 && error("weight vector cannot sum to zero")
-    length(v) == length(w) || error("data and weight vectors must be the same size, 
-        got $(length(v)) and $(length(w))")
+    w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
+    length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," * 
+        "got $(length(v)) and $(length(w))"))
     for x in w.values
-        isnan(x) && error("weight vector cannot contain NaN entries")
-        x < 0 && error("weight vector cannot contain negative entries")
+        isnan(x) && throw(ArgumentError("weight vector cannot contain NaN entries"))
+        x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
     end
 
 
     isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) && 
-        error("The values of the vector of `FrequencyWeights` must be numerically equal to 
-        integers. Use `ProbabilityWeights` or `AnalyticWeights` instead.")
-
-    @inbounds for x in v
-        isnan(x) && return fill(x, length(p))
-    end
+        throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" * 
+            "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
 
     # remove zeros weights and sort
     wsum = sum(w)
@@ -531,6 +527,11 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     # prepare out vector
     out = Vector{typeof(zero(V)/1)}(undef, length(p))
     fill!(out, vw[end][1])
+
+    @inbounds for x in v
+        isnan(x) && return fill!(out, x)
+    end
+
 
     # loop on quantiles
     Sk, Skold = zero(W), zero(W)
@@ -562,7 +563,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
-# similar function in Base statistics.jl
 function bound_quantiles(qs::AbstractVector{T}) where T<:Real
     epsilon = 100 * eps()
     if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
