@@ -508,7 +508,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
     end
 
-
     isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) && 
         throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" * 
             "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
@@ -532,12 +531,10 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         isnan(x) && return fill!(out, x)
     end
 
-
     # loop on quantiles
     Sk, Skold = zero(W), zero(W)
     vk, vkold = zero(V), zero(V)
     k = 0
-
     for i in 1:length(p)
         if isa(w, FrequencyWeights)
             h = p[i] * (wsum - 1) + 1
