@@ -536,11 +536,12 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     vk, vkold = zero(V), zero(V)
     k = 0
 
+    w1 = vw[1][2]
     for i in 1:length(p)
         if isa(w, FrequencyWeights)
             h = p[i] * (wsum - 1) + 1
         else
-            h = p[i] * (wsum - vw[1][2]) + vw[1][2]
+            h = p[i] * (wsum - w1) + w1
         end
         while Sk <= h
             k += 1
