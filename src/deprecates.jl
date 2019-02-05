@@ -29,7 +29,7 @@ end
 
 @deprecate wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector) quantile(v, w, p)
 @deprecate wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) quantile(v, w, [p])[1]
-@deprecate wquantile(v::RealVector, w::RealVector, p::RealVector) quantile(v, weights(w), p)
-@deprecate wquantile(v::RealVector, w::RealVector, p::Number) quantile(v, weights(w), [p])[1]
+@deprecate wquantile(v::RealVector, w::RealVector, p::RealVector) quantile(v, pweights(w), p)
+@deprecate wquantile(v::RealVector, w::RealVector, p::Number) quantile(v, pweights(w), [p])[1]
 @deprecate wmedian(v::RealVector, w::AbstractWeights{<:Real}) median(v, w)
 @deprecate wmedian(v::RealVector, w::RealVector) median(v, weights(w))
