@@ -510,7 +510,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
 
     isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) && 
         throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" * 
-            "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
+                            "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
 
     # remove zeros weights and sort
     wsum = sum(w)
