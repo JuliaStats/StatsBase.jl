@@ -474,12 +474,15 @@ end
             @test quantile(data[i][reorder], f(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
         end
     end
-    # w = 1 corresponds to base quantile
-    for i = 1:length(data)
-        @test quantile(data[i], f(ones(Int64, length(data[i]))), p) ≈ quantile(data[i], p) atol = 1e-5
-        for j = 1:10
-            prandom = rand(4)
-            @test quantile(data[i], f(ones(Int64, length(data[i]))),  prandom) ≈ quantile(data[i], prandom) atol = 1e-5
+    # All equal weights corresponds to base quantile
+    for v in (1, 2, 345)
+        for i = 1:length(data)
+            w = f(fill(v, length(data[i])))
+            @test quantile(data[i], w, p) ≈ quantile(data[i], p) atol = 1e-5
+            for j = 1:10
+                prandom = rand(4)
+                @test quantile(data[i], w,  prandom) ≈ quantile(data[i], prandom) atol = 1e-5
+            end
         end
     end
     # test zeros are removed
