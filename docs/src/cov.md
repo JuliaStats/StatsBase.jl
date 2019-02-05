@@ -7,7 +7,7 @@ scattermat
 cov
 cov(::CovarianceEstimator, ::AbstractVector)
 cov(::CovarianceEstimator, ::AbstractVector, ::AbstractVector)
-cov(::CovarianceEstimator, ::AbstractMatrix, ::Int)
+cov(::CovarianceEstimator, ::AbstractMatrix)
 cor
 mean_and_cov
 cov2cor

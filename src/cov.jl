@@ -180,10 +180,10 @@ cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector) =
 
 
 """
-    cov(ce::CovarianceEstimator, X::AbstractMatrix, vardim::Int=1)
+    cov(ce::CovarianceEstimator, X::AbstractMatrix; dims::Int=1)
 
-Compute the covariance matrix associated with `X` along dimension `vardim`
+Compute the covariance matrix associated with `X` along dimension `dims`
 using estimator `ce`.
 """
-cov(ce::CovarianceEstimator, X::AbstractMatrix, vardim::Int=1) =
+cov(ce::CovarianceEstimator, X::AbstractMatrix; dims::Int=1) =
     error("cov is not defined for $(typeof(ce)) and $(typeof(X))")
