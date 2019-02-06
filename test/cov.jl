@@ -274,8 +274,11 @@ end
 
 @testset "Abstract covariance estimation" begin
     est = EmptyCovarianceEstimator()
+    wv = fweights(rand(2))
     @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0])
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], wv)
     @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], dims = 2)
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], wv, dims = 2)
     @test_throws ErrorException cov(est, [1.0, 2.0], [3.0, 4.0])
     @test_throws ErrorException cov(est, [1.0, 2.0])
 
