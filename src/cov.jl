@@ -162,13 +162,12 @@ Abstract type for covariance estimators.
 abstract type CovarianceEstimator end
 
 """
-    cov(ce::CovarianceEstimator, x::AbstractVector)
+    cov(ce::CovarianceEstimator, x::AbstractVector; mean=nothing)
 
-Compute the sample variance of the vector `x` using estimator `ce`.
+Compute the variance of the vector `x` using estimator `ce`.
 """
-cov(ce::CovarianceEstimator, x::AbstractVector) =
+cov(ce::CovarianceEstimator, x::AbstractVector; mean=nothing) =
     error("cov is not defined for $(typeof(ce)) and $(typeof(x))")
-
 
 """
     cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
@@ -178,12 +177,52 @@ Compute the covariance of the vectors `x` and `y` using estimator `ce`.
 cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector) =
     error("cov is not defined for $(typeof(ce)), $(typeof(x)) and $(typeof(y))")
 
-
 """
-    cov(ce::CovarianceEstimator, X::AbstractMatrix; dims::Int=1)
+    cov(ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights]; mean=nothing, dims::Int=1)
 
-Compute the covariance matrix associated with `X` along dimension `dims`
-using estimator `ce`.
+Compute the covariance matrix of the matrix `X` along dimension `dims`
+using estimator `ce`. A weighting vector `w` can be specified.
+The keyword `mean` can be
+
+    * `nothing` (default) in which case the mean is estimated then subtracted
+    from the data `X`,
+    * a given number in which case that provided mean is subtracted from the
+    data `X`.
 """
 cov(ce::CovarianceEstimator, X::AbstractMatrix; dims::Int=1) =
     error("cov is not defined for $(typeof(ce)) and $(typeof(X))")
+
+cov(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; dims::Int=1) =
+    error("cov is not defined for $(typeof(ce)), $(typeof(X)) and $(typeof(w))")
+
+"""
+    SimpleCovariance(corrected::Bool)
+
+Simple covariance estimator. Estimation calls `cov(x; corrected=corrected)`,
+`cov(x, y; corrected=corrected)` or `cov(X, w, dims; corrected=corrected)`
+where `x`, `y` are vectors, `X` is a matrix and `w` is a weighting vector.
+"""
+struct SimpleCovariance <: CovarianceEstimator
+    corrected::Bool
+end
+SimpleCovariance(;corrected::Bool = false) = SimpleCovariance(corrected)
+
+cov(sc::SimpleCovariance, x::AbstractVector) =
+    cov(x; corrected=sc.corrected)
+
+cov(sc::SimpleCovariance, x::AbstractVector, y::AbstractVector) =
+    cov(x, y; corrected=sc.corrected)
+
+function cov(sc::SimpleCovariance, X::AbstractMatrix; dims::Int=1, mean=nothing)
+    @assert dims ∈ [1, 2] "Argument dims can only be 1 or 2 (given: $dims)"
+    if mean === nothing
+        return cov(X; dims=dims, corrected=sc.corrected)
+    else
+        return cov(X .- mean; dims=dims, corrected=sc.corrected)
+    end
+end
+
+function cov(sc::SimpleCovariance, X::AbstractMatrix, w::AbstractWeights; dims::Int=1, mean=nothing)
+    @assert dims ∈ [1, 2] "Argument dims can only be 1 or 2 (given: $dims)"
+    return cov(X, w, dims; corrected=sc.corrected)
+end

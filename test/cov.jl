@@ -12,8 +12,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     Z1 = X .- mean(X, dims = 1)
     Z2 = X .- mean(X, dims = 2)
 
-    w1 = rand(3)
     w2 = rand(8)
+    w1 = rand(3)
 
     # varcorrection is negative if sum of weights is smaller than 1
     if f === fweights
@@ -250,6 +250,26 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @test cor(X, wv1, 1) ≈ expected_cor1
         @test cor(X, wv2, 2) ≈ expected_cor2
     end
+
+    @testset "Abstract covariance estimation" begin
+        Xm = mean(X)
+
+        scc = SimpleCovariance(corrected=true)
+        @test cov(scc, X) ≈ cov(X, corrected=true)
+        @test cov(scc, X, mean=Xm) ≈ cov(X .- Xm, corrected=true)
+        @test cov(scc, X, mean=Xm) ≈ cov(X .- Xm, corrected=true)
+        if f !== weights
+            @test cov(scc, X, wv1, dims=1) ≈ cov(X, wv1, 1, corrected=true)
+            @test cov(scc, X, wv2, dims=2) ≈ cov(X, wv2, 2, corrected=true)
+        end
+
+        scu = SimpleCovariance(corrected=false)
+        @test cov(scu, X) ≈ cov(X, corrected=false)
+        @test cov(scu, X, mean=Xm) ≈ cov(X .- Xm, corrected=false)
+        @test cov(scu, X, mean=Xm) ≈ cov(X .- Xm, corrected=false)
+        @test cov(scu, X, wv1, dims=1) ≈ cov(X, wv1, 1, corrected=false)
+        @test cov(scu, X, wv2, dims=2) ≈ cov(X, wv2, 2, corrected=false)
+    end
 end
 
 @testset "Abstract covariance estimation" begin
@@ -258,5 +278,16 @@ end
     @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], dims = 2)
     @test_throws ErrorException cov(est, [1.0, 2.0], [3.0, 4.0])
     @test_throws ErrorException cov(est, [1.0, 2.0])
+
+    x = rand(8)
+    y = rand(8)
+
+    scc = SimpleCovariance(corrected=true)
+    @test cov(scc, x) ≈ cov(x; corrected=true)
+    @test cov(scc, x, y) ≈ cov(x, y; corrected=true)
+
+    scu = SimpleCovariance(corrected=false)
+    @test cov(scu, x) ≈ cov(x; corrected=false)
+    @test cov(scu, x, y) ≈ cov(x, y; corrected=false)
 end
 end # @testset "StatsBase.Covariance"

@@ -13,4 +13,5 @@ mean_and_cov
 cov2cor
 cor2cov
 CovarianceEstimator
+SimpleCovariance
 ```
