@@ -214,15 +214,19 @@ cov(sc::SimpleCovariance, x::AbstractVector, y::AbstractVector) =
     cov(x, y; corrected=sc.corrected)
 
 function cov(sc::SimpleCovariance, X::AbstractMatrix; dims::Int=1, mean=nothing)
-    @assert dims ∈ [1, 2] "Argument dims can only be 1 or 2 (given: $dims)"
+    dims ∈ (1, 2) || throw(ArgumentError("Argument dims can only be 1 or 2 (given: $dims)"))
     if mean === nothing
         return cov(X; dims=dims, corrected=sc.corrected)
     else
-        return cov(X .- mean; dims=dims, corrected=sc.corrected)
+        return covm(X, mean, dims, corrected=sc.corrected)
     end
 end
 
 function cov(sc::SimpleCovariance, X::AbstractMatrix, w::AbstractWeights; dims::Int=1, mean=nothing)
-    @assert dims ∈ [1, 2] "Argument dims can only be 1 or 2 (given: $dims)"
-    return cov(X, w, dims; corrected=sc.corrected)
+    dims ∈ (1, 2) || throw(ArgumentError("Argument dims can only be 1 or 2 (given: $dims)"))
+    if mean === nothing
+        return cov(X, w, dims, corrected=sc.corrected)
+    else
+        return covm(X, mean, w, dims, corrected=sc.corrected)
+    end
 end

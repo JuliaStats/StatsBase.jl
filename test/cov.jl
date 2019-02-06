@@ -252,23 +252,23 @@ weight_funcs = (weights, aweights, fweights, pweights)
     end
 
     @testset "Abstract covariance estimation" begin
-        Xm = mean(X)
+        Xm1 = mean(X, dims=1)
+        Xm2 = mean(X, dims=2)
 
-        scc = SimpleCovariance(corrected=true)
-        @test cov(scc, X) ≈ cov(X, corrected=true)
-        @test cov(scc, X, mean=Xm) ≈ cov(X .- Xm, corrected=true)
-        @test cov(scc, X, mean=Xm) ≈ cov(X .- Xm, corrected=true)
-        if f !== weights
-            @test cov(scc, X, wv1, dims=1) ≈ cov(X, wv1, 1, corrected=true)
-            @test cov(scc, X, wv2, dims=2) ≈ cov(X, wv2, 2, corrected=true)
+        for corrected ∈ (false, true)
+            scc = SimpleCovariance(corrected=corrected)
+            @test_throws ArgumentError cov(scc, X, dims=0)
+            @test_throws ArgumentError cov(scc, X, wv1, dims=0)
+            @test cov(scc, X) ≈ cov(X, corrected=corrected)
+            @test cov(scc, X, mean=Xm1) ≈ StatsBase.covm(X, Xm1, corrected=corrected)
+            @test cov(scc, X, mean=Xm2, dims=2) ≈ StatsBase.covm(X, Xm2, 2, corrected=corrected)
+            if f !== weights || corrected === false
+                @test cov(scc, X, wv1, dims=1) ≈ cov(X, wv1, 1, corrected=corrected)
+                @test cov(scc, X, wv2, dims=2) ≈ cov(X, wv2, 2, corrected=corrected)
+                @test cov(scc, X, wv1, mean=Xm1) ≈ StatsBase.covm(X, Xm1, wv1, corrected=corrected)
+                @test cov(scc, X, wv2, mean=Xm2, dims=2) ≈ StatsBase.covm(X, Xm2, wv2, 2, corrected=corrected)
+            end
         end
-
-        scu = SimpleCovariance(corrected=false)
-        @test cov(scu, X) ≈ cov(X, corrected=false)
-        @test cov(scu, X, mean=Xm) ≈ cov(X .- Xm, corrected=false)
-        @test cov(scu, X, mean=Xm) ≈ cov(X .- Xm, corrected=false)
-        @test cov(scu, X, wv1, dims=1) ≈ cov(X, wv1, 1, corrected=false)
-        @test cov(scu, X, wv2, dims=2) ≈ cov(X, wv2, 2, corrected=false)
     end
 end
 
@@ -282,12 +282,10 @@ end
     x = rand(8)
     y = rand(8)
 
-    scc = SimpleCovariance(corrected=true)
-    @test cov(scc, x) ≈ cov(x; corrected=true)
-    @test cov(scc, x, y) ≈ cov(x, y; corrected=true)
-
-    scu = SimpleCovariance(corrected=false)
-    @test cov(scu, x) ≈ cov(x; corrected=false)
-    @test cov(scu, x, y) ≈ cov(x, y; corrected=false)
+    for corrected ∈ (false, true)
+        scc = SimpleCovariance(corrected=corrected)
+        @test cov(scc, x) ≈ cov(x; corrected=corrected)
+        @test cov(scc, x, y) ≈ cov(x, y; corrected=corrected)
+    end
 end
 end # @testset "StatsBase.Covariance"
