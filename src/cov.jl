@@ -182,21 +182,20 @@ cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector) =
 
 Compute the covariance matrix of the matrix `X` along dimension `dims`
 using estimator `ce`. A weighting vector `w` can be specified.
-The keyword `mean` can be
+The keyword argument `mean` can be:
 
-    * `nothing` (default) in which case the mean is estimated then subtracted
+    * `nothing` (default) in which case the mean is estimated and subtracted
     from the data `X`,
-    * a given number in which case that provided mean is subtracted from the
-    data `X`.
+    * a precalculated mean in which case it is subtracted from the data `X`.
 """
-cov(ce::CovarianceEstimator, X::AbstractMatrix; dims::Int=1) =
+cov(ce::CovarianceEstimator, X::AbstractMatrix; mean=nothing, dims::Int=1) =
     error("cov is not defined for $(typeof(ce)) and $(typeof(X))")
 
-cov(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; dims::Int=1) =
+cov(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; mean=nothing, dims::Int=1) =
     error("cov is not defined for $(typeof(ce)), $(typeof(X)) and $(typeof(w))")
 
 """
-    SimpleCovariance(corrected::Bool)
+    SimpleCovariance(;corrected::Bool=false)
 
 Simple covariance estimator. Estimation calls `cov(x; corrected=corrected)`,
 `cov(x, y; corrected=corrected)` or `cov(X, w, dims; corrected=corrected)`
@@ -204,8 +203,8 @@ where `x`, `y` are vectors, `X` is a matrix and `w` is a weighting vector.
 """
 struct SimpleCovariance <: CovarianceEstimator
     corrected::Bool
+    SimpleCovariance(;corrected::Bool=false) = new(corrected)
 end
-SimpleCovariance(;corrected::Bool = false) = SimpleCovariance(corrected)
 
 cov(sc::SimpleCovariance, x::AbstractVector) =
     cov(x; corrected=sc.corrected)

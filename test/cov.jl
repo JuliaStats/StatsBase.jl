@@ -279,6 +279,10 @@ end
     @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], wv)
     @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], dims = 2)
     @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], wv, dims = 2)
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], mean = nothing)
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], wv, mean = nothing)
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], dims = 2, mean = nothing)
+    @test_throws ErrorException cov(est, [1.0 2.0; 3.0 4.0], wv, dims = 2, mean = nothing)
     @test_throws ErrorException cov(est, [1.0, 2.0], [3.0, 4.0])
     @test_throws ErrorException cov(est, [1.0, 2.0])
 
@@ -286,6 +290,7 @@ end
     y = rand(8)
 
     for corrected ∈ (false, true)
+        @test_throws MethodError SimpleCovariance(corrected)
         scc = SimpleCovariance(corrected=corrected)
         @test cov(scc, x) ≈ cov(x; corrected=corrected)
         @test cov(scc, x, y) ≈ cov(x, y; corrected=corrected)
