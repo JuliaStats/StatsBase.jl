@@ -12,8 +12,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     Z1 = X .- mean(X, dims = 1)
     Z2 = X .- mean(X, dims = 2)
 
-    w2 = rand(8)
     w1 = rand(3)
+    w2 = rand(8)
 
     # varcorrection is negative if sum of weights is smaller than 1
     if f === fweights
