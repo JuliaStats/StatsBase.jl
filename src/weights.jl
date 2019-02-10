@@ -521,7 +521,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     # prepare percentiles
     ppermute = sortperm(p)
     p = p[ppermute]
-    p = bound_quantiles(p)
 
     # prepare out vector
     out = Vector{typeof(zero(V)/1)}(undef, length(p))
@@ -562,13 +561,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
-function bound_quantiles(qs::AbstractVector{T}) where T<:Real
-    epsilon = 100 * eps()
-    if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
-        throw(ArgumentError("quantiles out of [0,1] range"))
-    end
-    T[min(one(T), max(zero(T), q)) for q = qs]
-end
 quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
 
 
