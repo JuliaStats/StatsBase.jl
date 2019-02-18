@@ -499,6 +499,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
+    all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
     w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
     length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," * 

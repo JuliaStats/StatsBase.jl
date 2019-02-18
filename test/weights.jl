@@ -308,6 +308,9 @@ end
     # test non integer frequency weights
     quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
     @test_throws ArgumentError quantile([1, 2], fweights([1.5, 2.0]), 0.25)
+
+    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), nextfloat(1.0))
+    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), prevfloat(0.0))
 end
 
 @testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
