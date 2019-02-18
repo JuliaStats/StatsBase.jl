@@ -26,3 +26,10 @@ end
 @deprecate scattermat_zm(x::DenseMatrix, wv::AbstractWeights, dims::Int) scattermat_zm(x::DenseMatrix, wv::AbstractWeights, dims=dims)
 @deprecate mean!(R::AbstractArray, A::AbstractArray, w::AbstractWeights, dims::Int) mean!(R, A, w, dims=dims)
 @deprecate mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T<:Number,W<:Real} mean(A, w, dims=dims)
+
+@deprecate wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::RealVector) quantile(v, w, p)
+@deprecate wquantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) quantile(v, w, [p])[1]
+@deprecate wquantile(v::RealVector, w::RealVector, p::RealVector) quantile(v, pweights(w), p)
+@deprecate wquantile(v::RealVector, w::RealVector, p::Number) quantile(v, pweights(w), [p])[1]
+@deprecate wmedian(v::RealVector, w::AbstractWeights{<:Real}) median(v, w)
+@deprecate wmedian(v::RealVector, w::RealVector) median(v, weights(w))

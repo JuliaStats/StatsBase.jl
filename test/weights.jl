@@ -233,94 +233,6 @@ end
     end
 end
 
-@testset "Median $f" for f in weight_funcs
-    data = (
-        [7, 1, 2, 4, 10],
-        [7, 1, 2, 4, 10],
-        [7, 1, 2, 4, 10, 15],
-        [1, 2, 4, 7, 10, 15],
-        [0, 10, 20, 30],
-        [1, 2, 3, 4, 5],
-        [1, 2, 3, 4, 5],
-        [30, 40, 50, 60, 35],
-        [2, 0.6, 1.3, 0.3, 0.3, 1.7, 0.7, 1.7, 0.4],
-        [3.7, 3.3, 3.5, 2.8],
-        [100, 125, 123, 60, 45, 56, 66],
-        [2, 2, 2, 2, 2, 2],
-        [2.3],
-        [-2, -3, 1, 2, -10],
-        [1, 2, 3, 4, 5],
-        [5, 4, 3, 2, 1],
-        [-2, 2, -1, 3, 6],
-        [-10, 1, 1, -10, -10],
-        [2, 4],
-        [2, 2, 4, 4],
-        [2, 2, 2, 4]
-    )
-    wt = (
-        [1, 1/3, 1/3, 1/3, 1],
-        [1, 1, 1, 1, 1],
-        [1, 1/3, 1/3, 1/3, 1, 1],
-        [1/3, 1/3, 1/3, 1, 1, 1],
-        [30, 191, 9, 0],
-        [10, 1, 1, 1, 9],
-        [10, 1, 1, 1, 900],
-        [1, 3, 5, 4, 2],
-        [2, 2, 0, 1, 2, 2, 1, 6, 0],
-        [5, 5, 4, 1],
-        [30, 56, 144, 24, 55, 43, 67],
-        [0.1, 0.2, 0.3, 0.4, 0.5, 0.6],
-        [12],
-        [7, 1, 1, 1, 6],
-        [1, 0, 0, 0, 2],
-        [1, 2, -3, 4, -5],
-        [0.1, 0.2, 0.3, -0.2, 0.1],
-        [-1, -1, -1, -1, 1],
-        [1, 1],
-        [1, 1, 1, 1],
-        [1, 1, 1, 1]
-    )
-    median_answers = (7.0,   4.0,   8.5,
-                      8.5,  10.0,   2.5,
-                      5.0,  50.0,   1.7,
-                      3.5, 100.0,   2.0,
-                      2.3,  -2.0,   5.0,
-                      2.0,  -1.0, -10.0,
-                      3.0,   3.0,   2.0)
-    num_tests = length(data)
-    for i = 1:num_tests
-        @test wmedian(data[i], wt[i]) == median_answers[i]
-        @test wmedian(data[i], f(wt[i])) == median_answers[i]
-        @test median(data[i], f(wt[i])) == median_answers[i]
-        for j = 1:100
-            # Make sure the weighted median does not change if the data
-            # and weights are reordered.
-            reorder = sortperm(rand(length(data[i])))
-            @test median(data[i][reorder], f(wt[i][reorder])) == median_answers[i]
-        end
-    end
-    data = [4, 3, 2, 1]
-    wt = [0, 0, 0, 0]
-    @test_throws MethodError wmedian(data[1])
-    @test_throws ErrorException median(data, f(wt))
-    @test_throws ErrorException wmedian(data, wt)
-    @test_throws ErrorException median((Float64)[], f((Float64)[]))
-    wt = [1, 2, 3, 4, 5]
-    @test_throws ErrorException median(data, f(wt))
-    @test_throws MethodError median([4 3 2 1 0], f(wt))
-    @test_throws MethodError median([[1 2];[4 5];[7 8];[10 11];[13 14]], f(wt))
-    data = [1, 3, 2, NaN, 2]
-    @test isnan(median(data, f(wt)))
-    wt = [1, 2, NaN, 4, 5]
-    @test_throws ErrorException median(data, f(wt))
-    data = [1, 3, 2, 1, 2]
-    @test_throws ErrorException median(data, f(wt))
-    wt = [-1, -1, -1, -1, -1]
-    @test_throws ErrorException median(data, f(wt))
-    wt = [-1, -1, -1, 0, 0]
-    @test_throws ErrorException median(data, f(wt))
-end
-
 
 # Quantile fweights
 @testset "Quantile fweights" begin
@@ -392,6 +304,10 @@ end
     @test quantile([1, 2, 3, 4, 5], fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
     @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
     @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
+
+    # test non integer frequency weights
+    quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
+    @test_throws ArgumentError quantile([1, 2], fweights([1.5, 2.0]), 0.25)
 end
 
 @testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
@@ -494,10 +410,34 @@ end
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
     @test quantile(data[1], f(w), 0.5)    ≈  answer atol = 1e-5
-    @test wquantile(data[1], f(w), [0.5]) ≈ [answer] atol = 1e-5
-    @test wquantile(data[1], f(w), 0.5)   ≈  answer atol = 1e-5
-    @test wquantile(data[1], w, [0.5])    ≈ [answer] atol = 1e-5
-    @test wquantile(data[1], w, 0.5)      ≈  answer atol = 1e-5
+end
+
+
+@testset "Median $f" for f in weight_funcs
+    data = [4, 3, 2, 1]
+    wt = [0, 0, 0, 0]
+    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(Float64[], f(Float64[]))
+    wt = [1, 2, 3, 4, 5]
+    @test_throws ArgumentError median(data, f(wt))
+    if VERSION >= v"1.0"
+        @test_throws MethodError median([4 3 2 1 0], f(wt))
+        @test_throws MethodError median([[1 2] ; [4 5] ; [7 8] ; [10 11] ; [13 14]], f(wt))
+    end
+    data = [1, 3, 2, NaN, 2]
+    @test isnan(median(data, f(wt)))
+    wt = [1, 2, NaN, 4, 5]
+    @test_throws ArgumentError median(data, f(wt))
+    data = [1, 3, 2, 1, 2]
+    @test_throws ArgumentError median(data, f(wt))
+    wt = [-1, -1, -1, -1, -1]
+    @test_throws ArgumentError median(data, f(wt))
+    wt = [-1, -1, -1, 0, 0]
+    @test_throws ArgumentError median(data, f(wt))
+
+    data = [4, 3, 2, 1]
+    wt = [1, 2, 3, 4]
+    @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
 end
 
 end # @testset StatsBase.Weights
