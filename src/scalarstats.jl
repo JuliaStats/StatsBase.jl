@@ -538,13 +538,15 @@ kldivergence(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} 
 #
 #############################
 
-struct SummaryStats{T<:AbstractFloat}
+struct SummaryStats{T<:Union{AbstractFloat,Missing}}
     mean::T
     min::T
     q25::T
     median::T
     q75::T
     max::T
+    nobs::Int
+    nmiss::Int
 end
 
 
@@ -555,27 +557,37 @@ Compute summary statistics for a real-valued array `a`. Returns a
 `SummaryStats` object containing the mean, minimum, 25th percentile,
 median, 75th percentile, and maxmimum.
 """
-function summarystats(a::AbstractArray{T}) where T<:Real
+function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
+    # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
+    # return type to populate the `SummaryStats` structure.
     m = mean(a)
-    qs = quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
-    R = typeof(convert(AbstractFloat, zero(T)))
-    SummaryStats{R}(
-        convert(R, m),
-        convert(R, qs[1]),
-        convert(R, qs[2]),
-        convert(R, qs[3]),
-        convert(R, qs[4]),
-        convert(R, qs[5]))
+    R = typeof(m)
+    n = length(a)
+    qs = if n == 0
+        R[NaN, NaN, NaN, NaN, NaN]
+    elseif ismissing(m)
+        [missing, missing, missing, missing, missing]
+    else
+        quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
+    end
+    SummaryStats{R}(m, qs..., n, count(ismissing, a))
 end
 
 function Base.show(io::IO, ss::SummaryStats)
     println(io, "Summary Stats:")
-    @printf(io, "Mean:           %.6f\n", ss.mean)
-    @printf(io, "Minimum:        %.6f\n", ss.min)
-    @printf(io, "1st Quartile:   %.6f\n", ss.q25)
-    @printf(io, "Median:         %.6f\n", ss.median)
-    @printf(io, "3rd Quartile:   %.6f\n", ss.q75)
-    @printf(io, "Maximum:        %.6f\n", ss.max)
+    @printf(io, "Length:         %i\n", ss.nobs)
+    ss.nobs > 0 || return
+    @printf(io, "Missing Count:  %i\n", ss.nmiss)
+    if ss.nmiss > 0
+        println(io, "(All summary stats are missing)")
+    else
+        @printf(io, "Mean:           %.6f\n", ss.mean)
+        @printf(io, "Minimum:        %.6f\n", ss.min)
+        @printf(io, "1st Quartile:   %.6f\n", ss.q25)
+        @printf(io, "Median:         %.6f\n", ss.median)
+        @printf(io, "3rd Quartile:   %.6f\n", ss.q75)
+        @printf(io, "Maximum:        %.6f\n", ss.max)
+    end
 end
 
 
@@ -587,9 +599,8 @@ the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
 describe(a::AbstractArray) = describe(stdout, a)
-function describe(io::IO, a::AbstractArray{T}) where T<:Real
+function describe(io::IO, a::AbstractArray{T}) where T<:Union{Real,Missing}
     show(io, summarystats(a))
-    println(io, "Length:         $(length(a))")
     println(io, "Type:           $(string(eltype(a)))")
 end
 function describe(io::IO, a::AbstractArray)

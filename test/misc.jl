@@ -40,14 +40,31 @@ io = IOBuffer()
 describe(io, collect(1:10))
 @test String(take!(io)) == """
                            Summary Stats:
+                           Length:         10
+                           Missing Count:  0
                            Mean:           5.500000
                            Minimum:        1.000000
                            1st Quartile:   3.250000
                            Median:         5.500000
                            3rd Quartile:   7.750000
                            Maximum:        10.000000
-                           Length:         10
                            Type:           $Int
+                           """
+
+describe(io, Union{Float32,Missing}[1.0, 4.5, missing, missing, 33.1])
+@test String(take!(io)) == """
+                           Summary Stats:
+                           Length:         5
+                           Missing Count:  2
+                           (All summary stats are missing)
+                           Type:           $(Union{Float32,Missing})
+                           """
+
+describe(io, Float64[])
+@test String(take!(io)) == """
+                           Summary Stats:
+                           Length:         0
+                           Type:           Float64
                            """
 
 describe(io, fill("s", 3))
