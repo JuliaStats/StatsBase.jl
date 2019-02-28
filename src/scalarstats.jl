@@ -105,17 +105,18 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     return ms
 end
 
-# compute mode over arbitrary array
-function mode(a::AbstractArray{T}) where T
-    isempty(a) && error("mode: input array cannot be empty.")
-    cnts = Dict{T,Int}()
+# compute mode over arbitrary iterable
+function mode(a)
+    isempty(a) && error("mode: input collection cannot be empty.")
+    cnts = Dict{eltype(a),Int}()
     # first element
     mc = 1
-    mv = a[1]
+    mv, st = iterate(a)
     cnts[mv] = 1
     # find the mode along with table construction
-    for i = 2 : length(a)
-        @inbounds x = a[i]
+    y = iterate(a, st)
+    while y !== nothing
+        x, st = y
         if haskey(cnts, x)
             c = (cnts[x] += 1)
             if c > mc
@@ -126,19 +127,22 @@ function mode(a::AbstractArray{T}) where T
             cnts[x] = 1
             # in this case: c = 1, and thus c > mc won't happen
         end
+        y = iterate(a, st)
     end
     return mv
 end
 
-function modes(a::AbstractArray{T}) where T
-    isempty(a) && error("modes: input array cannot be empty.")
-    cnts = Dict{T,Int}()
+function modes(a)
+    isempty(a) && error("modes: input collection cannot be empty.")
+    cnts = Dict{eltype(a),Int}()
     # first element
     mc = 1
-    cnts[a[1]] = 1
+    x, st = iterate(a)
+    cnts[x] = 1
     # find the mode along with table construction
-    for i = 2 : length(a)
-        @inbounds x = a[i]
+    y = iterate(a, st)
+    while y !== nothing
+        x, st = y
         if haskey(cnts, x)
             c = (cnts[x] += 1)
             if c > mc
@@ -148,15 +152,10 @@ function modes(a::AbstractArray{T}) where T
             cnts[x] = 1
             # in this case: c = 1, and thus c > mc won't happen
         end
+        y = iterate(a, st)
     end
     # find values corresponding to maximum counts
-    ms = T[]
-    for (x, c) in cnts
-        if c == mc
-            push!(ms, x)
-        end
-    end
-    return ms
+    return [x for (x, c) in cnts if c == mc]
 end
 
 
@@ -167,24 +166,22 @@ end
 #############################
 
 """
-    percentile(v, p)
+    percentile(x, p)
 
-Return the `p`th percentile of a real-valued array `v`, i.e. `quantile(x, p / 100)`.
+Return the `p`th percentile of a collection `x`, i.e. `quantile(x, p / 100)`.
 """
-percentile(v::AbstractArray{<:Real}, p) = quantile(v, p * 0.01)
-
-quantile(v::AbstractArray{<:Real}) = quantile(v, [.0, .25, .5, .75, 1.0])
+percentile(x, p) = quantile(x, p * 0.01)
 
 """
-    nquantile(v, n)
+    nquantile(x, n::Integer)
 
-Return the n-quantiles of a real-valued array, i.e. the values which
+Return the n-quantiles of collection `x`, i.e. the values which
 partition `v` into `n` subsets of nearly equal size.
 
-Equivalent to `quantile(v, [0:n]/n)`. For example, `nquantiles(x, 5)`
+Equivalent to `quantile(x, [0:n]/n)`. For example, `nquantiles(x, 5)`
 returns a vector of quantiles, respectively at `[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]`.
 """
-nquantile(v::AbstractArray{<:Real}, n::Integer) = quantile(v, (0:n)/n)
+nquantile(x, n::Integer) = quantile(x, (0:n)/n)
 
 
 #############################
@@ -197,75 +194,117 @@ nquantile(v::AbstractArray{<:Real}, n::Integer) = quantile(v, (0:n)/n)
 """
     span(x)
 
-Return the span of an integer array, i.e. the range `minimum(x):maximum(x)`.
-The minimum and maximum of `x` are computed in one-pass using `extrema`.
+Return the span of a collection, i.e. the range `minimum(x):maximum(x)`.
+The minimum and maximum of `x` are computed in one pass using `extrema`.
 """
-span(x::AbstractArray{<:Integer}) = ((a, b) = extrema(x); a:b)
+span(x) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 """
     variation(x, m=mean(x))
 
-Return the coefficient of variation of an array `x`, optionally specifying
+Return the coefficient of variation of collection `x`, optionally specifying
 a precomputed mean `m`. The coefficient of variation is the ratio of the
 standard deviation to the mean.
 """
-variation(x::AbstractArray{<:Real}, m::Real) = stdm(x, m) / m
-variation(x::AbstractArray{<:Real}) = variation(x, mean(x))
+variation(x, m) = stdm(x, m) / m
+variation(x) = ((m, s) = mean_and_std(x); s/m)
 
-# Standard error of the mean: std(a) / sqrt(len)
-"""
-    sem(a)
+# Standard error of the mean: std / sqrt(len)
+# Code taken from var in the Statistics stdlib module
 
-Return the standard error of the mean of `a`, i.e. `sqrt(var(a) / length(a))`.
+# faster computation of real(conj(x)*y)
+realXcY(x::Real, y::Real) = x*y
+realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
+
 """
-sem(a::AbstractArray{<:Real}) = sqrt(var(a) / length(a))
+    sem(x)
+
+Return the standard error of the mean of collection `x`,
+i.e. `sqrt(var(x, corrected=true) / length(x))`.
+"""
+function sem(x)
+    y = iterate(x)
+    if y === nothing
+        T = eltype(x)
+        return oftype(sqrt((abs2(zero(T)) + abs2(zero(T)))/2), NaN)
+    end
+    count = 1
+    value, state = y
+    y = iterate(x, state)
+    # Use Welford algorithm as seen in (among other places)
+    # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
+    M = value / 1
+    S = real(zero(M))
+    while y !== nothing
+        value, state = y
+        y = iterate(x, state)
+        count += 1
+        new_M = M + (value - M) / count
+        S = S + realXcY(value - M, value - new_M)
+        M = new_M
+    end
+    var = S / (count - 1)
+    return sqrt(var/count)
+end
 
 # Median absolute deviation
 """
-    mad(v; center=median(v), normalize=true)
+    mad(x; center=median(x), normalize=true)
 
-Compute the median absolute deviation (MAD) of `v` around `center`
+Compute the median absolute deviation (MAD) of collection `x` around `center`
 (by default, around the median).
 
 If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad(v::AbstractArray{T};
-             center::Union{Real,Nothing}=nothing,
-             normalize::Union{Bool, Nothing}=nothing) where T<:Real
-    isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
+function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing)
+    isempty(x) && throw(ArgumentError("mad is not defined for empty collections"))
 
-    S = promote_type(T, typeof(middle(first(v))))
-    v2 = LinearAlgebra.copy_oftype(v, S)
+    if x isa AbstractArray
+        T = eltype(x)
+        S = promote_type(T, typeof(middle(zero(T))))
+        x2 = LinearAlgebra.copy_oftype(x, S)
+    else # Use type of first element
+        v, st = iterate(x)
+        S = promote_type(typeof(v), typeof(middle(v)))
+        x2 = Vector{S}(undef, 1)
+        x2[1] = v
+        y = iterate(x, st)
+        while y !== nothing
+            v, st = y
+            push!(x2, v)
+            y = iterate(x, st)
+        end
+    end
 
     if normalize === nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
         normalize = true
     end
 
-    mad!(v2, center=center === nothing ? median!(v2) : center, normalize=normalize)
+    mad!(x2, center=center === nothing ? median!(x2) : center, normalize=normalize)
 end
 
 @irrational mad_constant 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
 """
-    StatsBase.mad!(v; center=median!(v), normalize=true)
+    StatsBase.mad!(x; center=median!(x), normalize=true)
 
-Compute the median absolute deviation (MAD) of `v` around `center`
-(by default, around the median), overwriting `v` in the process.
+Compute the median absolute deviation (MAD) of array `x` around `center`
+(by default, around the median), overwriting `x` in the process.
 
 If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad!(v::AbstractArray{<:Real};
-              center::Real=median!(v),
+function mad!(x::AbstractArray;
+              center=median!(x),
               normalize::Union{Bool,Nothing}=true,
               constant=nothing)
-    isempty(v) && throw(ArgumentError("mad is not defined for empty arrays"))
-    v .= abs.(v .- center)
-    m = median!(v)
+    isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
+    center !== 0 && (x .= abs.(x .- center))
+    m = median!(x)
     if normalize isa Nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
         normalize = true
@@ -282,19 +321,19 @@ end
 
 # Interquartile range
 """
-    iqr(v)
+    iqr(x)
 
-Compute the interquartile range (IQR) of an array, i.e. the 75th percentile
+Compute the interquartile range (IQR) of collection `x`, i.e. the 75th percentile
 minus the 25th percentile.
 """
-iqr(v::AbstractArray{<:Real}) = (q = quantile(v, [.25, .75]); q[2] - q[1])
+iqr(x) = (q = quantile(x, [.25, .75]); q[2] - q[1])
 
 # Generalized variance
 """
     genvar(X)
 
 Compute the generalized sample variance of `X`. If `X` is a vector, one-column matrix,
-or other one-dimensional iterable, this is equivalent to the sample variance.
+or other iterable, this is equivalent to the sample variance.
 Otherwise if `X` is a matrix, this is equivalent to the determinant of the covariance
 matrix of `X`.
 
@@ -310,7 +349,7 @@ genvar(itr) = var(itr)
     totalvar(X)
 
 Compute the total sample variance of `X`. If `X` is a vector, one-column matrix,
-or other one-dimensional iterable, this is equivalent to the sample variance.
+or other iterable, this is equivalent to the sample variance.
 Otherwise if `X` is a matrix, this is equivalent to the sum of the diagonal elements
 of the covariance matrix of `X`.
 """

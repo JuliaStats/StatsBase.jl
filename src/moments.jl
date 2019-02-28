@@ -2,7 +2,7 @@
 
 ## var
 """
-    varm(x, w::AbstractWeights, m, [dim]; corrected=false)
+    varm(x::AbstractArray, w::AbstractWeights, m, [dim]; corrected=false)
 
 Compute the variance of a real-valued array `x` with a known mean `m`, optionally
 over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
@@ -22,7 +22,7 @@ varm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     _moment2(v, w, m; corrected=depcheck(:varm, corrected))
 
 """
-    var(x, w::AbstractWeights, [dim]; mean=nothing, corrected=false)
+    var(x::AbstractArray, w::AbstractWeights, [dim]; mean=nothing, corrected=false)
 
 Compute the variance of a real-valued array `x`, optionally over a dimension `dim`.
 Observations in `x` are weighted using weight vector `w`.
@@ -98,7 +98,7 @@ end
 
 ## std
 """
-    stdm(v, w::AbstractWeights, m, [dim]; corrected=false)
+    stdm(x::AbstractArray, w::AbstractWeights, m, [dim]; corrected=false)
 
 Compute the standard deviation of a real-valued array `x` with a known mean `m`,
 optionally over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
@@ -118,7 +118,7 @@ stdm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
     sqrt(varm(v, w, m, corrected=depcheck(:stdm, corrected)))
 
 """
-    std(v, w::AbstractWeights, [dim]; mean=nothing, corrected=false)
+    std(x::AbstractArray, w::AbstractWeights, [dim]; mean=nothing, corrected=false)
 
 Compute the standard deviation of a real-valued array `x`,
 optionally over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
@@ -153,66 +153,68 @@ std(v::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
 """
     mean_and_var(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, var)
 
-Return the mean and variance of a real-valued array `x`, optionally over a dimension
-`dim`, as a tuple. Observations in `x` can be weighted using weight vector `w`.
+Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
+`dim` can be specified as a tuple to compute statistics over these dimensions.
+A weighting vector `w` can be specified to weight the estimates.
 Finally, bias correction is be applied to the variance calculation if `corrected=true`.
 See [`var`](@ref) documentation for more details.
 """
-function mean_and_var(A::RealArray; corrected::Bool=true)
-    m = mean(A)
-    v = varm(A, m; corrected=corrected)
+function mean_and_var(x; corrected::Bool=true)
+    m = mean(x)
+    v = varm(x, m; corrected=corrected)
     m, v
 end
 
 """
     mean_and_std(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, std)
 
-Return the mean and standard deviation of a real-valued array `x`, optionally
-over a dimension `dim`, as a tuple. A weighting vector `w` can be specified
-to weight the estimates. Finally, bias correction is applied to the
+Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
+`dim` can be specified as a tuple to compute statistics over these dimensions.
+A weighting vector `w` can be specified to weight the estimates.
+Finally, bias correction is applied to the
 standard deviation calculation if `corrected=true`.
 See [`std`](@ref) documentation for more details.
 """
-function mean_and_std(A::RealArray; corrected::Bool=true)
-    m = mean(A)
-    s = stdm(A, m; corrected=corrected)
+function mean_and_std(x; corrected::Bool=true)
+    m = mean(x)
+    s = stdm(x, m; corrected=corrected)
     m, s
 end
 
-function mean_and_var(A::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
-    m = mean(A, w)
-    v = varm(A, w, m; corrected=depcheck(:mean_and_var, corrected))
+function mean_and_var(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
+    m = mean(x, w)
+    v = varm(x, w, m; corrected=depcheck(:mean_and_var, corrected))
     m, v
 end
-function mean_and_std(A::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
-    m = mean(A, w)
-    s = stdm(A, w, m; corrected=depcheck(:mean_and_std, corrected))
+function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
+    m = mean(x, w)
+    s = stdm(x, w, m; corrected=depcheck(:mean_and_std, corrected))
     m, s
 end
 
 
-function mean_and_var(A::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(A, dims = dim)
-    v = varm(A, m, dims = dim, corrected=corrected)
+function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
+    m = mean(x, dims = dim)
+    v = varm(x, m, dims = dim, corrected=corrected)
     m, v
 end
-function mean_and_std(A::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(A, dims = dim)
-    s = stdm(A, m, dim; corrected=corrected)
+function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
+    m = mean(x, dims = dim)
+    s = stdm(x, m, dim; corrected=corrected)
     m, s
 end
 
 
-function mean_and_var(A::RealArray, w::AbstractWeights, dims::Int;
+function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
-    m = mean(A, w, dims=dims)
-    v = varm(A, w, m, dims; corrected=depcheck(:mean_and_var, corrected))
+    m = mean(x, w, dims=dims)
+    v = varm(x, w, m, dims; corrected=depcheck(:mean_and_var, corrected))
     m, v
 end
-function mean_and_std(A::RealArray, w::AbstractWeights, dims::Int;
+function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
-    m = mean(A, w, dims=dims)
-    s = stdm(A, w, m, dims; corrected=depcheck(:mean_and_std, corrected))
+    m = mean(x, w, dims=dims)
+    s = stdm(x, w, m, dims; corrected=depcheck(:mean_and_std, corrected))
     m, s
 end
 
