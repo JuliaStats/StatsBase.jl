@@ -65,7 +65,6 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 ###### quantile & friends
 
-@test quantile(1:5)     ≈ [1:5;]
 @test nquantile(1:5, 2) ≈ [1, 3, 5]
 @test nquantile(1:5, 4) ≈ [1:5;]
 
