@@ -53,7 +53,7 @@ over a specified range `r`. If several modes exist, the first
 one (in order of appearance) is returned.
 """
 function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
-    isempty(a) && error("mode: input array cannot be empty.")
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     len = length(a)
     r0 = r[1]
     r1 = r[end]
@@ -107,7 +107,7 @@ end
 
 # compute mode over arbitrary iterable
 function mode(a)
-    isempty(a) && error("mode: input collection cannot be empty.")
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     cnts = Dict{eltype(a),Int}()
     # first element
     mc = 1
@@ -133,7 +133,7 @@ function mode(a)
 end
 
 function modes(a)
-    isempty(a) && error("modes: input collection cannot be empty.")
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     cnts = Dict{eltype(a),Int}()
     # first element
     mc = 1

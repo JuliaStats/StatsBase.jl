@@ -43,6 +43,11 @@ using DelimitedFiles
 @test modes(skipmissing([1, missing, missing, 3, 2, 2, missing])) == [2]
 @test sort(modes(skipmissing([1, missing, 3, 3, 2, 2, missing]))) == [2, 3]
 
+@test_throws ArgumentError mode(Int[])
+@test_throws ArgumentError modes(Int[])
+@test_throws ArgumentError mode(Any[])
+@test_throws ArgumentError modes(Any[])
+
 ## zscores
 
 @test zscore([-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]
