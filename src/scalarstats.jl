@@ -562,17 +562,19 @@ median, 75th percentile, and maxmimum.
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
-    m = mean(a)
+    s = T >: Missing ? collect(skipmissing(a)) : a
+    m = mean(s)
     R = typeof(m)
     n = length(a)
-    qs = if n == 0
+    ns = length(s)
+    qs = if m == 0 || n == 0
         R[NaN, NaN, NaN, NaN, NaN]
-    elseif ismissing(m)
-        [missing, missing, missing, missing, missing]
+    elseif T >: Missing
+        quantile!(s, [0.00, 0.25, 0.50, 0.75, 1.00])
     else
-        quantile(a, [0.00, 0.25, 0.50, 0.75, 1.00])
+        quantile(s, [0.00, 0.25, 0.50, 0.75, 1.00])
     end
-    SummaryStats{R}(m, qs..., n, count(ismissing, a))
+    SummaryStats{R}(m, qs..., n, n - ns)
 end
 
 function Base.show(io::IO, ss::SummaryStats)
@@ -580,16 +582,12 @@ function Base.show(io::IO, ss::SummaryStats)
     @printf(io, "Length:         %i\n", ss.nobs)
     ss.nobs > 0 || return
     @printf(io, "Missing Count:  %i\n", ss.nmiss)
-    if ss.nmiss > 0
-        println(io, "(All summary stats are missing)")
-    else
-        @printf(io, "Mean:           %.6f\n", ss.mean)
-        @printf(io, "Minimum:        %.6f\n", ss.min)
-        @printf(io, "1st Quartile:   %.6f\n", ss.q25)
-        @printf(io, "Median:         %.6f\n", ss.median)
-        @printf(io, "3rd Quartile:   %.6f\n", ss.q75)
-        @printf(io, "Maximum:        %.6f\n", ss.max)
-    end
+    @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Minimum:        %.6f\n", ss.min)
+    @printf(io, "1st Quartile:   %.6f\n", ss.q25)
+    @printf(io, "Median:         %.6f\n", ss.median)
+    @printf(io, "3rd Quartile:   %.6f\n", ss.q75)
+    @printf(io, "Maximum:        %.6f\n", ss.max)
 end
 
 
