@@ -119,7 +119,6 @@ it = (xᵢ for xᵢ in x)
 
 @test entropy([0.5, 0.5],2)       ≈ 1.0
 @test entropy([0.2, 0.3, 0.5], 2) ≈ 1.4854752972273344
-@test entropy([0.2, 0.3, 0.5], 2) ≈ 1.4854752972273344
 @test entropy([1.0, 0.0]) ≈ 0.0
 
 ##### Renyi entropies

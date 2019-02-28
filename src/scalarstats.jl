@@ -35,12 +35,12 @@ function genmean(a, p::Real)
     if p == 0
         return geomean(a)
     end
-    
+
     # At least one of `x` or `p` must not be an int to avoid domain errors when `p` is a negative int.
     # We choose `x` in order to exploit exponentiation by squaring when `p` is an int.
     r = mean(a) do x
         float(x)^p
-    end        
+    end
     return r^inv(p)
 end
 
@@ -435,8 +435,9 @@ zscore(X::AbstractArray{<:Real}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); z
 """
     entropy(p, [b])
 
-Compute the entropy of a collection of probabilities `p`, optionally specifying a real number
-`b` such that the entropy is scaled by `1/log(b)`.
+Compute the entropy of a collection of probabilities `p`,
+optionally specifying a real number `b` such that the entropy is scaled by `1/log(b)`.
+Elements with probability 0 or 1 add 0 to the entropy.
 """
 entropy(p) = -sum(pᵢ -> iszero(pᵢ) ? zero(pᵢ) : pᵢ * log(pᵢ), p)
 
