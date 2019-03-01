@@ -227,6 +227,8 @@ function sem(x)
     y = iterate(x)
     if y === nothing
         T = eltype(x)
+        # Return the NaN of the type that we would get, had this collection
+        # contained any elements (this is consistent with std)
         return oftype(sqrt((abs2(zero(T)) + abs2(zero(T)))/2), NaN)
     end
     count = 1
