@@ -110,7 +110,9 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test mad(1:5, center=3, normalize=false) ≈ 1.0
 @test mad(skipmissing([missing; 1:5; missing]), center=3, normalize=false) ≈ 1.0
 @test StatsBase.mad!([1:5;], center=3, normalize=false) ≈ 1.0
-@test mad((x for x in (1, 2.0)), normalize=false) ≈ 0.5
+@test mad((x for x in (1, 2.1)), normalize=false) ≈ 0.55
+@test mad(Any[1, 2.1], normalize=false) ≈ 0.55
+@test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
 @test_throws ArgumentError mad(Int[])
 
 # Issue 197
