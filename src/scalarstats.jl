@@ -173,8 +173,6 @@ Return the `p`th percentile of a real-valued array `v`, i.e. `quantile(x, p / 10
 """
 percentile(v::AbstractArray{<:Real}, p) = quantile(v, p * 0.01)
 
-quantile(v::AbstractArray{<:Real}) = quantile(v, [.0, .25, .5, .75, 1.0])
-
 """
     nquantile(v, n)
 
