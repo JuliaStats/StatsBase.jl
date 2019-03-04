@@ -164,7 +164,7 @@ abstract type CovarianceEstimator end
 """
     cov(ce::CovarianceEstimator, x::AbstractVector; mean=nothing)
 
-Compute the variance of the vector `x` using estimator `ce`.
+Compute a variance estimate from the observation vector `x` using the  estimator `ce`.
 """
 cov(ce::CovarianceEstimator, x::AbstractVector; mean=nothing) =
     error("cov is not defined for $(typeof(ce)) and $(typeof(x))")
