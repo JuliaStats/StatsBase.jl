@@ -443,4 +443,8 @@ end
     @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
 end
 
+@testset "Mismatched eltypes" begin
+    @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
+end
+
 end # @testset StatsBase.Weights
