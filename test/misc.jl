@@ -56,7 +56,12 @@ describe(io, Union{Float32,Missing}[1.0, 4.5, missing, missing, 33.1])
                            Summary Stats:
                            Length:         5
                            Missing Count:  2
-                           (All summary stats are missing)
+                           Mean:           12.866666
+                           Minimum:        1.000000
+                           1st Quartile:   2.750000
+                           Median:         4.500000
+                           3rd Quartile:   18.799999
+                           Maximum:        33.099998
                            Type:           $(Union{Float32,Missing})
                            """
 

@@ -308,6 +308,9 @@ end
     # test non integer frequency weights
     quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
     @test_throws ArgumentError quantile([1, 2], fweights([1.5, 2.0]), 0.25)
+
+    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), nextfloat(1.0))
+    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), prevfloat(0.0))
 end
 
 @testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
@@ -438,6 +441,10 @@ end
     data = [4, 3, 2, 1]
     wt = [1, 2, 3, 4]
     @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
+end
+
+@testset "Mismatched eltypes" begin
+    @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
 end
 
 end # @testset StatsBase.Weights

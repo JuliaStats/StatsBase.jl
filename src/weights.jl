@@ -466,11 +466,11 @@ w = rand(n)
 mean(x, weights(w))
 ```
 """
-mean(A::AbstractArray{T}, w::AbstractWeights{W};
-     dims::Union{Nothing,Int}=nothing) where {T<:Number,W<:Real} = _mean(A, w, dims)
-_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Nothing) where {T<:Number,W<:Real} =
+mean(A::AbstractArray, w::AbstractWeights; dims::Union{Nothing,Int}=nothing) =
+    _mean(A, w, dims)
+_mean(A::AbstractArray, w::AbstractWeights, dims::Nothing) =
     sum(A, w) / sum(w)
-_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T<:Number,W<:Real} =
+_mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
 
@@ -499,6 +499,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
+    all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
     w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
     length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," * 
@@ -521,7 +522,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     # prepare percentiles
     ppermute = sortperm(p)
     p = p[ppermute]
-    p = bound_quantiles(p)
 
     # prepare out vector
     out = Vector{typeof(zero(V)/1)}(undef, length(p))
@@ -562,13 +562,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
-function bound_quantiles(qs::AbstractVector{T}) where T<:Real
-    epsilon = 100 * eps()
-    if (any(qs .< -epsilon) || any(qs .> 1+epsilon))
-        throw(ArgumentError("quantiles out of [0,1] range"))
-    end
-    T[min(one(T), max(zero(T), q)) for q = qs]
-end
 quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
 
 
