@@ -4,14 +4,15 @@ using Test, Random
 v1 = [1.45666, -23.14, 1.56734e-13]
 v2 = ["Good", "Great", "Bad"]
 v3 = [1, 56, 2]
-v4 = [0.12, 0.3467, 1.345e-16]
-@test sprint(show, CoefTable(Any[v1, v2, v3, v4],
-    ["Estimate", "Comments", "df", "p"],
-    ["x1", "x2", "x3"], 4)) == """
-         Estimate  Comments  df       p
-x1    1.45666         Good    1  0.1200
-x2  -23.14            Great  56  0.3467
-x3    1.56734e-13     Bad     2  <1e-15"""
+v4 = [-12.56, 0.1326, 2.68e-16]
+v5 = [0.12, 0.3467, 1.345e-16]
+@test sprint(show, CoefTable(Any[v1, v2, v3, v4, v5],
+    ["Estimate", "Comments", "df", "t", "p"],
+    ["x1", "x2", "x3"], 5, 4)) == """
+         Estimate  Comments  df       t       p
+x1    1.45666         Good    1  -12.56  0.1200
+x2  -23.14            Great  56    0.13  0.3467
+x3    1.56734e-13     Bad     2    0.00  <1e-15"""
 
 Random.seed!(10)
 m = rand(3,4)

@@ -363,7 +363,9 @@ mutable struct CoefTable
     colnms::Vector
     rownms::Vector
     pvalcol::Int
-    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector,pvalcol::Int=0)
+    teststatcol::Int
+    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector,
+                       pvalcol::Int=0,teststatcol::Int=0)
         nc = length(cols)
         nrs = map(length,cols)
         nr = nrs[1]
@@ -371,13 +373,15 @@ mutable struct CoefTable
         length(rownms) in [0,nr] || throw(ArgumentError("rownms should have length 0 or $nr"))
         all(nrs .== nr) || throw(ArgumentError("Elements of cols should have equal lengths, but got $nrs"))
         pvalcol in 0:nc || throw(ArgumentError("pvalcol should be between 0 and $nc"))
-        new(cols,colnms,rownms,pvalcol)
+        teststatcol in 0:nc || throw(ArgumentError("teststatcol should be between 0 and $nc"))
+        new(cols,colnms,rownms,pvalcol,teststatcol)
     end
 
-    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0)
+    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,
+                       pvalcol::Int=0,teststatcol::Int=0)
         nc = size(mat,2)
         cols = Any[mat[:, i] for i in 1:nc]
-        CoefTable(cols,colnms,rownms,pvalcol)
+        CoefTable(cols,colnms,rownms,pvalcol,teststatcol)
     end
 end
 
@@ -404,6 +408,13 @@ function show(io::IO, pv::PValue)
     end
 end
 
+"""Show a test statistic using 2 decimal digits"""
+struct TestStat <: Real
+    v::Real
+end
+
+show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
+
 """Wrap a string so that show omits quotes"""
 struct NoQuote
     s::String
@@ -420,6 +431,7 @@ function show(io::IO, ct::CoefTable)
     end
     mat = [j == 1 ? NoQuote(rownms[i]) :
            j-1 == ct.pvalcol ? PValue(cols[j-1][i]) :
+           j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
            cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
            for i in 1:nr, j in 1:nc+1]
     # Code inspired by print_matrix in Base
