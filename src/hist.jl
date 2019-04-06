@@ -5,7 +5,7 @@ import LinearAlgebra: norm, normalize, normalize!
 
 
 ## Fast getindex function for multiple arrays, returns a tuple of array elements
-@inline Base.@propagate_inbounds @generated function _multi_getindex(i::Integer, c::AbstractArray...)
+@inline Base.@propagate_inbounds @generated function _multi_getindex(i::Union{Integer, CartesianIndex}, c::AbstractArray...)
     N = length(c)
     result_expr = Expr(:tuple)
     for j in 1:N
