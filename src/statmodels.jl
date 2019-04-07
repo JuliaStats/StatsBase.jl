@@ -446,17 +446,22 @@ struct ConvergenceException{T<:Real} <: Exception
     iters::Int
     lastchange::T
     tol::T
-    function ConvergenceException{T}(iters, lastchange::T, tol::T) where T<:Real
+    info::String
+    function ConvergenceException{T}(
+        iters, lastchange::T, tol::T, info::String
+    ) where T<:Real
         if tol > lastchange
             throw(ArgumentError("Change must be greater than tol."))
         else
-            new(iters, lastchange, tol)
+            new(iters, lastchange, tol, info)
         end
     end
 end
 
-ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} =
-    ConvergenceException{T}(iters, lastchange, tol)
+ConvergenceException(
+    iters, lastchange::T=NaN, tol::T=NaN, info::AbstractString = ""
+) where {T<:Real} =
+    ConvergenceException{T}(iters, lastchange, tol, string(info))
 
 function Base.showerror(io::IO, ce::ConvergenceException)
     print(io, "failure to converge after ", ce.iters, " iterations.")
@@ -469,5 +474,8 @@ function Base.showerror(io::IO, ce::ConvergenceException)
             ce.tol,
             ")."
         )
+    end
+    if !isempty(ce.info)
+        print(io, ' ', ce.info)
     end
 end
