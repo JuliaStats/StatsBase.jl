@@ -459,8 +459,15 @@ ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} =
     ConvergenceException{T}(iters, lastchange, tol)
 
 function Base.showerror(io::IO, ce::ConvergenceException)
-    print(io, "failure to converge after $(ce.iters) iterations.")
+    print(io, "failure to converge after ", ce.iters, " iterations.")
     if !isnan(ce.lastchange)
-        print(io, " Last change ($(ce.lastchange)) was greater than tolerance ($(ce.tol)).")
+        print(
+            io,
+            " Last change (",
+            ce.lastchange,
+            ") was greater than tolerance (",
+            ce.tol,
+            ")."
+        )
     end
 end
