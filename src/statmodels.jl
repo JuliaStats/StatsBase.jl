@@ -437,19 +437,24 @@ function show(io::IO, ct::CoefTable)
     # Code inspired by print_matrix in Base
     io = IOContext(io, :compact=>true, :limit=>false)
     A = Base.alignment(io, mat, 1:size(mat, 1), 1:size(mat, 2),
-                       typemax(Int), typemax(Int), 2)
+                       typemax(Int), typemax(Int), 3)
     nmswidths = pushfirst!(length.(colnms), 0)
     A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
          for i in 1:length(A)]
-    print(io, repeat(' ', sum(A[1])))
+    totwidth = sum(sum.(A)) + 2 * length(A)
+    print(io, "┌", repeat('─', totwidth), "┐\n")
+    print(io, '│', repeat(' ', sum(A[1])+1))
     for j in 1:length(colnms)
         print(io, "  ", lpad(colnms[j], sum(A[j+1])))
     end
-    println(io)
+    print(io, " │\n├", repeat('─', totwidth), "┤\n")
     for i in 1:size(mat, 1)
+        print(io, "│ ")
         Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), "  ")
+        print(io, " │")
         i != size(mat, 1) && println(io)
     end
+    print(io, "\n└", repeat('─', totwidth), '┘')
     nothing
 end
 
