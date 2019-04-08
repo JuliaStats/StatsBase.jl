@@ -173,7 +173,7 @@ check_sample_norep(a, (3, 12), 0; ordered=true)
 # tests of multidimensional sampling
 
 a = sample(1:4, (2, 2); replace=false)
-@test sort(vec(a)) == collect(1:4)
+check_sample_norep(a, (1, 4), 0; ordered=false)
 
 @test sample(1:1, (2, 2); replace=true) == ones(Int, 2, 2)
 
