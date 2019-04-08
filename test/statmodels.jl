@@ -39,6 +39,5 @@ x3   0.453058  0.72525 0.999172 0.5567
 @test sprint(showerror, ConvergenceException(10, 0.2, 0.1, "Try changing maxIter.")) ==
     "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1). Try changing maxIter."
 
-
 err = @test_throws ArgumentError ConvergenceException(10,.1,.2)
 @test err.value.msg == "Change must be greater than tol."

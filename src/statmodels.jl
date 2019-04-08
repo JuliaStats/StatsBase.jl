@@ -447,9 +447,7 @@ struct ConvergenceException{T<:Real} <: Exception
     lastchange::T
     tol::T
     msg::String
-    function ConvergenceException{T}(
-        iters, lastchange::T, tol::T, msg::String
-    ) where T<:Real
+    function ConvergenceException{T}(iters, lastchange::T, tol::T, msg::String) where T<:Real
         if tol > lastchange
             throw(ArgumentError("Change must be greater than tol."))
         else
