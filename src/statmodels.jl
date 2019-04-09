@@ -456,10 +456,9 @@ struct ConvergenceException{T<:Real} <: Exception
     end
 end
 
-ConvergenceException(
-    iters, lastchange::T=NaN, tol::T=NaN, msg::AbstractString = ""
-) where {T<:Real} =
-    ConvergenceException{T}(iters, lastchange, tol, string(msg))
+ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN,
+                     msg::AbstractString="") where {T<:Real} =
+    ConvergenceException{T}(iters, lastchange, tol, String(msg))
 
 function Base.showerror(io::IO, ce::ConvergenceException)
     print(io, "failure to converge after $(ce.iters) iterations.")
