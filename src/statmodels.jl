@@ -441,20 +441,18 @@ function show(io::IO, ct::CoefTable)
     nmswidths = pushfirst!(length.(colnms), 0)
     A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
          for i in 1:length(A)]
-    totwidth = sum(sum.(A)) + 2 * length(A)
-    print(io, "┌", repeat('─', totwidth), "┐\n")
-    print(io, '│', repeat(' ', sum(A[1])+1))
+    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
+    println(io, repeat('─', totwidth))
+    print(io, repeat(' ', sum(A[1])))
     for j in 1:length(colnms)
         print(io, "  ", lpad(colnms[j], sum(A[j+1])))
     end
-    print(io, " │\n├", repeat('─', totwidth), "┤\n")
+    println(io, " \n", repeat('─', totwidth))
     for i in 1:size(mat, 1)
-        print(io, "│ ")
         Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), "  ")
-        print(io, " │")
         i != size(mat, 1) && println(io)
     end
-    print(io, "\n└", repeat('─', totwidth), '┘')
+    print(io, '\n', repeat('─', totwidth))
     nothing
 end
 
