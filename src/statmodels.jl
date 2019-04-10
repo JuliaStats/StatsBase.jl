@@ -447,7 +447,7 @@ function show(io::IO, ct::CoefTable)
     for j in 1:length(colnms)
         print(io, "  ", lpad(colnms[j], sum(A[j+1])))
     end
-    println(io, " \n", repeat('─', totwidth))
+    println(io, '\n', repeat('─', totwidth))
     for i in 1:size(mat, 1)
         Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), "  ")
         i != size(mat, 1) && println(io)
