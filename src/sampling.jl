@@ -390,7 +390,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample(rng::AbstractRNG, a::AbstractArray{T}, dims::Dims;
                 replace::Bool=true, ordered::Bool=false) where T
-    sample!(rng, a, Array{T}(undef, dims), rng; replace=replace, ordered=ordered)
+    sample!(rng, a, Array{T}(undef, dims); replace=replace, ordered=ordered)
 end
 sample(a::AbstractArray, dims::Dims; replace::Bool=true, ordered::Bool=false) =
     sample(Random.GLOBAL_RNG, a, dims; replace=replace, ordered=ordered)
