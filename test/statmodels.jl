@@ -40,5 +40,8 @@ m = rand(3,4)
 @test sprint(showerror, ConvergenceException(10, 0.2, 0.1)) ==
     "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1)."
 
+@test sprint(showerror, ConvergenceException(10, 0.2, 0.1, "Try changing maxIter.")) ==
+    "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1). Try changing maxIter."
+
 err = @test_throws ArgumentError ConvergenceException(10,.1,.2)
 @test err.value.msg == "Change must be greater than tol."
