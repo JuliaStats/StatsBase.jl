@@ -17,16 +17,17 @@ Return the names of the coefficients.
 coefnames(obj::StatisticalModel) = error("coefnames is not defined for $(typeof(obj)).")
 
 """
-    coeftable(obj::StatisticalModel)
+    coeftable(obj::StatisticalModel; level::Real=0.95)
 
 Return a table of class `CoefTable` with coefficients and related statistics.
+`level` determines the level for confidence intervals (by default, 95%).
 """
 coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(obj)).")
 
 """
-    confint(obj::StatisticalModel)
+    confint(obj::StatisticalModel; level::Real=0.95)
 
-Compute confidence intervals for coefficients.
+Compute confidence intervals for coefficients, with confidence level `level` (by default 95%).
 """
 confint(obj::StatisticalModel) = error("confint is not defined for $(typeof(obj)).")
 
