@@ -1,7 +1,11 @@
 using Documenter, StatsBase, Statistics, Random
 
+# Workaround for JuliaLang/julia/pull/28625
+if Base.HOME_PROJECT[] !== nothing
+    Base.HOME_PROJECT[] = abspath(Base.HOME_PROJECT[])
+end
+
 makedocs(
-    format = :html,
     sitename = "StatsBase.jl",
     modules = [StatsBase],
     pages = ["index.md",
@@ -23,9 +27,5 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/JuliaStats/StatsBase.jl.git",
-    target = "build",
-    julia  = "1.0",
-    deps   = nothing,
-    make   = nothing
+    repo = "github.com/JuliaStats/StatsBase.jl.git"
 )
