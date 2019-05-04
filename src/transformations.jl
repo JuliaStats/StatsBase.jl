@@ -14,7 +14,7 @@ transform!(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(x,
 """
     transform(t::AbstractDataTransform, x)
 
-Return a row-standardized vector or matrix `x` using `t` transformation.
+Return a row-standardized copy of vector or matrix `x` using `t` transformation.
 """
 transform(t::AbstractDataTransform, x::AbstractArray{<:Real,1}) = transform!(similar(x), t, x)
 transform(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(similar(x), t, x)
@@ -39,7 +39,7 @@ reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,1})  = reconstruct
 reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
 
 """
-    Standardization (Z-score transformation)
+Standardization (Z-score transformation)
 """
 struct ZScoreTransform{T<:Real} <: AbstractDataTransform
     dim::Int
@@ -66,11 +66,8 @@ end
 """
     fit(ZScoreTransform, X; center=true, scale=true)
 
-Fit standardization parameters to `X` and return a `ZScoreTransform` transformation object.
-
-# Arguments
-
-* `data`: matrix  of samples to fit transformation parameters.
+Fit standardization parameters to vector or matrix `X`
+and return a `ZScoreTransform` transformation object.
 
 # Keyword arguments
 
@@ -163,7 +160,7 @@ function reconstruct!(x::AbstractVecOrMat{<:Real}, t::ZScoreTransform, y::Abstra
 end
 
 """
-    Unit range normalization
+Unit range normalization
 """
 struct UnitRangeTransform{T<:Real}  <: AbstractDataTransform
     dim::Int
@@ -192,11 +189,8 @@ end
 """
     fit(UnitRangeTransform, X; center=true, scale=true)
 
-Fit a scaling parameters to `X` and return transformation description.
-
-# Arguments
-
-* `data`: matrix  of samples to fit transformation parameters.
+Fit a scaling parameters to vector or matrix `X`
+and return a `UnitRangeTransform` transformation object.
 
 # Keyword arguments
 
@@ -280,7 +274,8 @@ end
 """
     standardize(DT, X; kwargs...)
 
-Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `AbstractDataTransform`:
+Return a row-standardized matrix copy of vector or matrix `X` using transformation `DT`
+which is a subtype of `AbstractDataTransform`:
 
 - `ZScoreTransform`
 - `UnitRangeTransform`
