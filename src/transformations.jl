@@ -280,10 +280,13 @@ end
 """
     standardize(DT, X; kwargs...)
 
-Return a row-standardized matrix `X` using `DT` transformation which is a subtype of `AbstractDataTransform`:
+Standardize data using `DT` transformation which is a subtype of `AbstractDataTransform`:
 
 - `ZScoreTransform`
 - `UnitRangeTransform`
+
+Return a row-standardized matrix while the input of `X` is a `AbstractMatrix`.
+Return a standardized vector while the input of `X` is a `AbstractVector`.
 
 # Example
 
@@ -302,7 +305,7 @@ julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
 ```
 """
 function standardize(::Type{DT}, X::AbstractArray{<:Real,1}; kwargs...) where {DT <: AbstractDataTransform}
-    return transform(fit(DT, X; kwargs...), X)
+    return transform(fit(DT, X'; kwargs...), X')'
 end
 function standardize(::Type{DT}, X::AbstractArray{<:Real,2}; kwargs...) where {DT <: AbstractDataTransform}
     return transform(fit(DT, X; kwargs...), X)
