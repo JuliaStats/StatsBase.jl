@@ -280,7 +280,8 @@ end
 """
     standardize(DT, X; kwargs...)
 
-Standardize data using `DT` transformation which is a subtype of `AbstractDataTransform`:
+ Return a row-standardized copy of vector or matrix `X` using transformation `DT`
+ which is a subtype of `AbstractDataTransform`:
 
 - `ZScoreTransform`
 - `UnitRangeTransform`
