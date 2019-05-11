@@ -586,7 +586,7 @@ kldivergence(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} 
 
     
 """
-    jsdivergence(p, q, [b])
+    jsdivergence(p, q)
 
 Compute the Jensen-Shannon divergence from `q` to `p`,
 that is the 1/2(kldivergence(p, m))+1/2(kldivergence(q, m)), where m = 1/2(p+q),
