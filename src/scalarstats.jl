@@ -583,29 +583,21 @@ end
 
 kldivergence(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} =
     kldivergence(p,q) / log(b)
+
+    
 """
     jsdivergence(p, q, [b])
 
 Compute the Jensen-Shannon divergence from `q` to `p`,
-that is the sum `pᵢ * log(pᵢ / qᵢ)`. Optionally a real number `b`
-can be specified such that the divergence is scaled by `1/log(b)`.
+that is the 1/2(kldivergence(p, m))+1/2(kldivergence(q, m)), where m = 1/2(p+q),
+also known as the symmetrized and smoothed version of the Kullback-Leibler divergence.
 """
-function kldivergence(p::AbstractArray{T}, q::AbstractArray{T}) where T<:Real
+function jsdivergence(p::AbstractArray{T}, q::AbstractArray{T}) where T<:Real
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-    s = 0.
-    z = zero(T)
-    for i = 1:length(p)
-        @inbounds pi = p[i]
-        @inbounds qi = q[i]
-        if pi > z
-            s += pi * log(pi / qi)
-        end
-    end
-    return s
+    m = p + q
+    jsd = 1/2(kldivergence(p,m)) + 1/2(kldivergence(q,m))
+    return jsd
 end
-
-kldivergence(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} =
-    kldivergence(p,q) / log(b)
 #############################
 #
 #   summary
