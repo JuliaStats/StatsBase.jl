@@ -8,16 +8,14 @@ abstract type AbstractDataTransform end
 
 Apply transformation `t` to vector or matrix `x` in place.
 """
-transform!(t::AbstractDataTransform, x::AbstractArray{<:Real,1}) = transform!(x, t, x)
-transform!(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(x, t, x)
+transform!(t::AbstractDataTransform, x::AbstractVecOrMat{<:Real}) = transform!(x, t, x)
 
 """
     transform(t::AbstractDataTransform, x)
 
 Return a row-standardized vector or matrix `x` using `t` transformation.
 """
-transform(t::AbstractDataTransform, x::AbstractArray{<:Real,1}) = transform!(similar(x), t, x)
-transform(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(similar(x), t, x)
+transform(t::AbstractDataTransform, x::AbstractVecOrMat{<:Real}) = transform!(similar(x), t, x)
 
 # reconstruct the original data from transformed values
 """
@@ -26,8 +24,7 @@ transform(t::AbstractDataTransform, x::AbstractArray{<:Real,2}) = transform!(sim
 Perform an in-place reconstruction into an original data scale from a row-transformed
 vector or matrix `y` using `t` transformation.
 """
-reconstruct!(t::AbstractDataTransform, y::AbstractArray{<:Real,1}) = reconstruct!(y, t, y)
-reconstruct!(t::AbstractDataTransform, y::AbstractArray{<:Real,2}) = reconstruct!(y, t, y)
+reconstruct!(t::AbstractDataTransform, y::AbstractVecOrMat{<:Real}) = reconstruct!(y, t, y)
 
 """
     reconstruct(t::AbstractDataTransform, y)
@@ -35,13 +32,12 @@ reconstruct!(t::AbstractDataTransform, y::AbstractArray{<:Real,2}) = reconstruct
 Return a reconstruction of an originally scaled data from a row-transformed vector
 or matrix `y` using `t` transformation.
 """
-reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,1})  = reconstruct!(similar(y), t, y)
-reconstruct(t::AbstractDataTransform, y::AbstractArray{<:Real,2})  = reconstruct!(similar(y), t, y)
+reconstruct(t::AbstractDataTransform, y::AbstractVecOrMat{<:Real})  = reconstruct!(similar(y), t, y)
 
 """
     Standardization (Z-score transformation)
 """
-struct ZScoreTransform{T <: Real} <: AbstractDataTransform
+struct ZScoreTransform{T<:Real} <: AbstractDataTransform
     dim::Int
     mean::Vector{T}
     scale::Vector{T}
@@ -97,7 +93,7 @@ julia> StatsBase.transform(dt, X)
  -1.0   0.0  1.0
 ```
 """
-function fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool = true, scale::Bool = true)
+function fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool=true, scale::Bool=true)
     d, n = size(X)
     n >= 2 || error("X must contain at least two columns.")
 
@@ -108,11 +104,15 @@ function fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool =
                               (scale ? vec(s) : zeros(T, 0)))
 end
 
+function fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,1}; kwargs...)
+    return fit(ZScoreTransform, X'; kwargs...)
+end
+
 function transform!(y::AbstractVecOrMat{<:Real}, t::ZScoreTransform, x::AbstractVecOrMat{<:Real})
     d = t.dim
-    size(x, 1) == size(y, 1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(y, 2)
-    size(x, 2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+    size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
+    n = size(y,2)
+    size(x,2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
     m = t.mean
     s = t.scale
@@ -129,7 +129,7 @@ function transform!(y::AbstractVecOrMat{<:Real}, t::ZScoreTransform, x::Abstract
         if isempty(s)
             broadcast!(-, y, x, m)
         else
-            broadcast!((x, m, s)->(x - m) / s, y, x, m, s)
+            broadcast!((x,m,s)->(x-m)/s, y, x, m, s)
         end
     end
     return y
@@ -137,9 +137,9 @@ end
 
 function reconstruct!(x::AbstractVecOrMat{<:Real}, t::ZScoreTransform, y::AbstractVecOrMat{<:Real})
     d = t.dim
-    size(x, 1) == size(y, 1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(y, 2)
-    size(x, 2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+    size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
+    n = size(y,2)
+    size(x,2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
     m = t.mean
     s = t.scale
@@ -156,7 +156,7 @@ function reconstruct!(x::AbstractVecOrMat{<:Real}, t::ZScoreTransform, y::Abstra
         if isempty(s)
             broadcast!(+, x, y, m)
         else
-            broadcast!((y, m, s)->y * s + m, x, y, m, s)
+            broadcast!((y,m,s)->y*s+m, x, y, m, s)
         end
     end
     return x
@@ -165,7 +165,7 @@ end
 """
     Unit range normalization
 """
-struct UnitRangeTransform{T <: Real}  <: AbstractDataTransform
+struct UnitRangeTransform{T<:Real}  <: AbstractDataTransform
     dim::Int
     unit::Bool
     min::Vector{T}
@@ -223,7 +223,7 @@ julia> StatsBase.transform(dt, X)
  0.0  0.5  1.0
 ```
 """
-function fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,2}; unit::Bool = true)
+function fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,2}; unit::Bool=true)
     d, n = size(X)
 
     tmin = X[:, 1]
@@ -243,17 +243,21 @@ function fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,2}; unit::Bool 
     return UnitRangeTransform(d, unit, tmin, tmax)
 end
 
+function fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,1}; kwargs...)
+    return fit(UnitRangeTransform, X'; kwargs...)
+end
+
 function transform!(y::AbstractVecOrMat{<:Real}, t::UnitRangeTransform, x::AbstractVecOrMat{<:Real})
     d = t.dim
-    size(x, 1) == size(y, 1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(x, 2)
-    size(y, 2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+    size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
+    n = size(x,2)
+    size(y,2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
     tmin = t.min
     tscale = t.scale
 
     if t.unit
-        broadcast!((x, s, m)->(x - m) * s, y, x, tscale, tmin)
+        broadcast!((x,s,m)->(x-m)*s, y, x, tscale, tmin)
     else
         broadcast!(*, y, x, tscale)
     end
@@ -262,15 +266,15 @@ end
 
 function reconstruct!(x::AbstractVecOrMat{<:Real}, t::UnitRangeTransform, y::AbstractVecOrMat{<:Real})
     d = t.dim
-    size(x, 1) == size(y, 1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(y, 2)
-    size(x, 2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+    size(x,1) == size(y,1) == d || throw(DimensionMismatch("Inconsistent dimensions."))
+    n = size(y,2)
+    size(x,2) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
     tmin = t.min
     tscale = t.scale
 
     if t.unit
-        broadcast!((y, s, m)->y / s + m, x, y, tscale, tmin)
+        broadcast!((y,s,m)->y/s+m, x, y, tscale, tmin)
     else
         broadcast!(/, x, y, tscale)
     end
@@ -305,9 +309,9 @@ julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
  0.0  0.5  1.0
 ```
 """
-function standardize(::Type{DT}, X::AbstractArray{<:Real,1}; kwargs...) where {DT <: AbstractDataTransform}
-    return transform(fit(DT, X'; kwargs...), X')'
+function standardize(::Type{DT}, X::AbstractVector{<:Real}; kwargs...) where {DT <: AbstractDataTransform}
+    return transform(fit(DT, X; kwargs...), X')'
 end
-function standardize(::Type{DT}, X::AbstractArray{<:Real,2}; kwargs...) where {DT <: AbstractDataTransform}
+function standardize(::Type{DT}, X::AbstractMatrix{<:Real}; kwargs...) where {DT <: AbstractDataTransform}
     return transform(fit(DT, X; kwargs...), X)
 end
