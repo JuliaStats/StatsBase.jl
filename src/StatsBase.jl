@@ -1,10 +1,9 @@
-__precompile__()
-
 module StatsBase
 
 import Base: length, isempty, eltype, values, sum, show, maximum, minimum, extrema
 import Base.Cartesian: @nloops, @nref, @nextract
 using Base: @irrational, @propagate_inbounds
+using DataAPI
 import DataStructures: heapify!, heappop!, percolate_down!
 using SortingAlgorithms
 using Missings

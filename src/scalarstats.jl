@@ -648,12 +648,12 @@ Pretty-print the summary statistics provided by [`summarystats`](@ref):
 the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
-describe(a::AbstractArray) = describe(stdout, a)
-function describe(io::IO, a::AbstractArray{T}) where T<:Union{Real,Missing}
+DataAPI.describe(x) = describe(stdout, x)
+function DataAPI.describe(io::IO, a::AbstractArray{T}) where T<:Union{Real,Missing}
     show(io, summarystats(a))
     println(io, "Type:           $(string(eltype(a)))")
 end
-function describe(io::IO, a::AbstractArray)
+function DataAPI.describe(io::IO, a::AbstractArray)
     println(io, "Summary Stats:")
     println(io, "Length:         $(length(a))")
     println(io, "Type:           $(string(eltype(a)))")
