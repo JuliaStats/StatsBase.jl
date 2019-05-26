@@ -56,7 +56,7 @@ using Test
     @test reconstruct(t, Y[:,1]) ≈ X[:,1]
     @test reconstruct(t, Y) ≈ X
 
-    t = fit(UnitRangeTransform, X; unit = false)
+    t = fit(UnitRangeTransform, X; unit=false)
     Y = transform(t, X)
     @test length(t.min) == 5
     @test length(t.scale) == 5
