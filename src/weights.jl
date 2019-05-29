@@ -224,32 +224,6 @@ julia> eweights(1:10, 0.3)
  5.203995766722913
  7.434279666747019
 ```
-
-Simply passing the number of observations `n` is equivalent to passing in `1:n`.
-```julia-repl
-julia> eweights(10, 0.3)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
- 0.3
- 0.42857142857142855
- 0.6122448979591837
- 0.8746355685131197
- 1.249479383590171
- 1.7849705479859588
- 2.549957925694227
- 3.642797036706039
- 5.203995766722913
- 7.434279666747019
-```
-
-Finally, passing arbitrary times and a step range is equivalent to passing
-`something.(indexin(t, r))`.
-```julia-repl
-julia> eweights([1, 3, 5], 1:10, 0.3)
-3-element Weights{Float64,Float64,Array{Float64,1}}:
- 0.3
- 0.6122448979591837
- 1.249479383590171
-```
 """
 function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
