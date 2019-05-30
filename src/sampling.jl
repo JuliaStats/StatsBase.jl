@@ -451,9 +451,9 @@ end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
-function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
-                           a::AbstractVector{Float64},
-                           alias::AbstractVector{Int})
+function make_alias_table!(w::AbstractVector{AbstractFloat}, wsum::AbstractFloat,
+                           a::AbstractVector{AbstractFloat},
+                           alias::AbstractVector{Integer})
     # Arguments:
     #
     #   w [in]:         input weights
@@ -491,10 +491,11 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
         end
     end
 
+    aliaseltype = eltype(alias)
     while kl > 0 && ks > 0
         s = smalls[ks]; ks -= 1  # pop from smalls
         l = larges[kl]; kl -= 1  # pop from larges
-        @inbounds alias[s] = l
+        @inbounds alias[s] = aliaseltype(l)
         @inbounds al = a[l] = (a[l] - 1.0) + a[s]
         if al > 1.0
             larges[kl+=1] = l  # push to larges
@@ -528,7 +529,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
-    ap = Vector{Float64}(undef, n)
+    ap = Vector{eltype(wv)}(undef, n)
     alias = Vector{Int}(undef, n)
     make_alias_table!(values(wv), sum(wv), ap, alias)
 
@@ -560,10 +561,11 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
 
-    w = Vector{Float64}(undef, n)
+    w = Vector{eltype(wv)}(undef, n)
     copyto!(w, values(wv))
     wsum = sum(wv)
 
+    zz = zero(eltype(wv))
     for i = 1:k
         u = rand(rng) * wsum
         j = 1
@@ -574,7 +576,7 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         @inbounds x[i] = a[j]
 
         @inbounds wsum -= w[j]
-        @inbounds w[j] = 0.0
+        @inbounds w[j] = zz
     end
     return x
 end
