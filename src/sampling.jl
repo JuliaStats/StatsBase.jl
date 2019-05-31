@@ -451,9 +451,9 @@ end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
-function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
-                           a::AbstractVector{Float64},
-                           alias::AbstractVector{Int})
+function make_alias_table!(w::AbstractVector{T}, wsum::S,
+                           a::AbstractVector{T},
+                           alias::AbstractVector{<:Integer}) where {S, T}
     # Arguments:
     #
     #   w [in]:         input weights
@@ -523,12 +523,12 @@ with General Distributions." *ACM Transactions on Mathematical Software* 3 (3): 
 Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n \\log n)`` time
 for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
 """
-function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights{S, T}, x::AbstractArray) where {S, T}
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
-    ap = Vector{Float64}(undef, n)
+    ap = Vector{T}(undef, n)
     alias = Vector{Int}(undef, n)
     make_alias_table!(values(wv), sum(wv), ap, alias)
 

@@ -34,6 +34,7 @@ import StatsBase: direct_sample!, alias_sample!
 
 n = 10^5
 wv = weights([0.2, 0.8, 0.4, 0.6])
+wv_f32 = weights(Float32[0.2, 0.8, 0.4, 0.6])
 
 a = direct_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
@@ -41,6 +42,9 @@ test_rng_use(direct_sample!, 4:7, wv, zeros(Int, 100))
 
 a = alias_sample!(4:7, wv, zeros(Int, n, 3))
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+
+a = alias_sample!(4:7, wv_f32, zeros(Int, n, 3))
+check_wsample_wrep(a, (4, 7), wv_f32, 5.0e-3; ordered=false)
 
 a = sample(4:7, wv, n; ordered=false)
 check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
