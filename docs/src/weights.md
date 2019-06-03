@@ -53,7 +53,7 @@ w = weights([1., 2., 3.])
 ### Exponential weights: `eweights`
 
 Exponential weights are a common form of temporal weights which assign exponentially decreasing
-weight to past observations.
+weights to past observations.
 
 For each element `i` in `t` the weight value is computed as:
 
