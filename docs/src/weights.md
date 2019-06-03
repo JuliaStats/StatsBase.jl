@@ -50,7 +50,7 @@ w = Weights([1., 2., 3.])
 w = weights([1., 2., 3.])
 ```
 
-### `eweights`
+### Exponential weights: `eweights`
 
 Exponential weights are a common form of temporal weights which assign exponentially decreasing
 weight to past observations.
