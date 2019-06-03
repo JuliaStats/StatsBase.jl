@@ -234,7 +234,7 @@ function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
     end
 
     s = sum(w0)
-    Weights{typeof(s), eltype(w0), typeof(w0)}(w0, s)
+    Weights(w0, s)
 end
 
 function eweights(n::Integer, λ::Real)
