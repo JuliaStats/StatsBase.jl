@@ -2,8 +2,6 @@ using StatsBase
 using LinearAlgebra, Random, SparseArrays, Test
 
 @testset "StatsBase.Weights" begin
-# NOTE: Do not add eweights here, as its methods don't match those of the others, so the
-# tests below don't make sense for it
 weight_funcs = (weights, aweights, fweights, pweights)
 
 # Construction
@@ -481,10 +479,13 @@ end
         end
     end
 
-    @testset "Failure Conditions" begin
-        # n == 0
-        @test_throws ArgumentError eweights(0, 0.3)
+    @testset "Empty" begin
+        @test eweights(0, 0.3) == Weights(Float64[])
+        @test eweights(1:0, 0.3) == Weights(Float64[])
+        @test eweights(Int[], 1:10, 0.4) == Weights(Float64[])
+    end
 
+    @testset "Failure Conditions" begin
         # λ > 1.0
         @test_throws ArgumentError eweights(1, 1.1)
 

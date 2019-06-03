@@ -237,11 +237,7 @@ function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
     Weights(w0, s)
 end
 
-function eweights(n::Integer, λ::Real)
-    n > 0 || throw(ArgumentError("cannot construct exponential weights of length < 1"))
-    eweights(1:n, λ)
-end
-
+eweights(n::Integer, λ::Real) = eweights(1:n, λ)
 eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
     eweights(something.(indexin(t, r)), λ)
 
