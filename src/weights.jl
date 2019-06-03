@@ -205,7 +205,7 @@ For each element `i` in `t` the weight value is computed as:
 
 ``λ (1 - λ)^{1 - i}``
 
-``λ`` is a smoothing factor or rate parameter such that ``0 < λ \\leq 1``.
+``λ`` is a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
 As this value approaches 0, the resulting weights will be almost equal,
 while values closer to 1 will put greater weight on the tail elements of the vector.
 
