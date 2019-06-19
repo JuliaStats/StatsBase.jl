@@ -122,7 +122,7 @@ The `Histogram` type represents data that has been tabulated into intervals
 # Fields
 * edges: An iterator that contains the boundaries of the bins in each dimension.
 * weights: Array that contains the weight of each bin.
-* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` field is a symbol with value `:right` or `:left`, that indicates which side if closed.
+* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` field is a symbol with value `:right` or `:left`, that indicates which side is closed.
 ```jldoctest
 julia> fit(Histogram, [2.],  1:3, closed=:left)
 Histogram{Int64,1,Tuple{UnitRange{Int64}}}
