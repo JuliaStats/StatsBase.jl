@@ -116,13 +116,17 @@ abstract type AbstractHistogram{T<:Real,N,E} end
 
 # N-dimensional histogram object
 """
+    Histogram <: AbstractHistogram
+
 The `Histogram` type represents data that has been tabulated into intervals
-(known as *bins*) along the real line, or in higher dimensions, over the real plane. Histograms can be fitted to data using the `fit` method.
+(known as *bins*) along the real line, or in higher dimensions, over a real space.
+Histograms can be fitted to data using the `fit` method.
 
 # Fields
 * edges: An iterator that contains the boundaries of the bins in each dimension.
-* weights: Array that contains the weight of each bin.
-* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` field is a symbol with value `:right` or `:left`, that indicates which side is closed.
+* weights: An array that contains the weight of each bin.
+* closed: A symbol with value `:right` or `:left` indicating on which side bins
+  (which half-open intervals or higher-dimensional analogues thereof) are closed.
 ```jldoctest
 julia> fit(Histogram, [2.],  1:3, closed=:left)
 Histogram{Int64,1,Tuple{UnitRange{Int64}}}
