@@ -122,7 +122,7 @@ The `Histogram` type represents data that has been tabulated into intervals
 # Fields
 * edges: An iterator that contains the boundaries of the bins in each dimension.
 * weights: Array that contains the weight of each bin.
-* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` fieldis a symbol with value `:right` or `:left` which side if closed.
+* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` field is a symbol with value `:right` or `:left`, that indicates which side if closed.
 ```jldoctest
 julia> fit(Histogram, [2.],  1:3, closed=:left)
 Histogram{Int64,1,Tuple{UnitRange{Int64}}}
@@ -140,7 +140,7 @@ weights: [1, 0]
 closed: right
 isdensity: false
 ```
-* isdensity: There are two interpretations of a `Histogram`. If `isdensity=false` the weight of a bin corresponds to amount of a quantity in the bin. If `isdensity=true` then it corresponds to the density (amount / volume) of the quantity in the bin.
+* isdensity: There are two interpretations of a `Histogram`. If `isdensity=false` the weight of a bin corresponds to the amount of a quantity in the bin. If `isdensity=true` then it corresponds to the density (amount / volume) of the quantity in the bin.
 """
 mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     edges::E
