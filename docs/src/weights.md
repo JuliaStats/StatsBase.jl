@@ -55,7 +55,7 @@ w = weights([1., 2., 3.])
 Exponential weights are a common form of temporal weights which assign exponentially decreasing
 weights to past observations.
 
-For each element `i` in `t` the weight value is computed as:
+If `t` is a vector of temporal indices then for each index `i` we compute the weight as:
 
 ``λ (1 - λ)^{1 - i}``
 
@@ -64,6 +64,7 @@ As this value approaches 0, the resulting weights will be almost equal,
 while values closer to 1 will put greater weight on the tail elements of the vector.
 
 # Examples
+
 ```julia-repl
 julia> eweights(1:10, 0.3)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
@@ -80,6 +81,7 @@ julia> eweights(1:10, 0.3)
 ```
 
 Simply passing the number of observations `n` is equivalent to passing in `1:n`.
+
 ```julia-repl
 julia> eweights(10, 0.3)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
@@ -95,14 +97,24 @@ julia> eweights(10, 0.3)
  7.434279666747019
 ```
 
-Finally, passing arbitrary times and a step range is equivalent to passing `something.(indexin(t, r))`.
+Finally, you can construct exponential weights from an arbitrary subset of timestamps within a larger range.
+
 ```julia-repl
-julia> eweights([1, 3, 5], 1:10, 0.3)
+julia> t
+2019-01-01T01:00:00:2 hours:2019-01-01T05:00:00
+
+julia> r
+2019-01-01T01:00:00:1 hour:2019-01-02T01:00:00
+
+julia> eweights(t, r, 0.3)
 3-element Weights{Float64,Float64,Array{Float64,1}}:
  0.3
  0.6122448979591837
  1.249479383590171
 ```
+
+NOTE: This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
+Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
 
 ## Methods
 

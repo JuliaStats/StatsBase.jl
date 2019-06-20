@@ -205,9 +205,14 @@ For each element `i` in `t` the weight value is computed as:
 
 ``λ (1 - λ)^{1 - i}``
 
-``λ`` is a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
-As this value approaches 0, the resulting weights will be almost equal,
-while values closer to 1 will put greater weight on the tail elements of the vector.
+# Arguments
+
+- `t::AbstractVector`: temporal indices or timestamps
+- `r::StepRange`: a larger range to use when constructing weights from a subset of timestamps
+- `n::Integer`: number of temporal indices to assume for the exponential weighting
+- `λ::Real`: a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
+  As this value approaches 0, the resulting weights will be almost equal,
+  while values closer to 1 will put greater weight on the tail elements of the vector.
 
 # Examples
 ```julia-repl
