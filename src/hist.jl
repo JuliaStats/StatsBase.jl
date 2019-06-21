@@ -122,7 +122,11 @@ The `Histogram` type represents data that has been tabulated into intervals
 # Fields
 * edges: An iterator that contains the boundaries of the bins in each dimension.
 * weights: Array that contains the weight of each bin.
-* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` field is a symbol with value `:right` or `:left`, that indicates which side is closed.
+* closed: The bins are (higher dimensional analogues) of half open intervals. The `closed` field is a symbol with value `:right` or `:left`, that indicates which side is closed. See below for an example.
+* isdensity: There are two interpretations of a `Histogram`. If `isdensity=false` the weight of a bin corresponds to the amount of a quantity in the bin. If `isdensity=true` then it corresponds to the density (amount / volume) of the quantity in the bin. See below for an example.
+
+# Examples
+## Example illustrating `closed`
 ```jldoctest
 julia> fit(Histogram, [2.],  1:3, closed=:left)
 Histogram{Int64,1,Tuple{UnitRange{Int64}}}
@@ -140,7 +144,34 @@ weights: [1, 0]
 closed: right
 isdensity: false
 ```
-* isdensity: There are two interpretations of a `Histogram`. If `isdensity=false` the weight of a bin corresponds to the amount of a quantity in the bin. If `isdensity=true` then it corresponds to the density (amount / volume) of the quantity in the bin.
+## Example illustrating `isdensity`
+```julia
+julia> using StatsBase, LinearAlgebra
+
+julia> bins = [0,1,7]; # a small and a large bin
+
+julia> obs = [0.5, 1.5, 1.5, 2.5]; # one observation in the small bin and three in the large
+
+julia> h = fit(Histogram, obs, bins)
+Histogram{Int64,1,Tuple{Array{Int64,1}}}
+edges:
+  [0, 1, 7]
+weights: [1, 3]
+closed: left
+isdensity: false
+
+julia> # observe isdensity = false and the weights field records the number of observations in each bin
+
+julia> normalize(h, mode=:density)
+Histogram{Float64,1,Tuple{Array{Int64,1}}}
+edges:
+  [0, 1, 7]
+weights: [1.0, 0.5]
+closed: left
+isdensity: true
+
+julia> # observe isdensity = true and weights tells us the number of observation per binsize in each bin
+```
 """
 mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
     edges::E
