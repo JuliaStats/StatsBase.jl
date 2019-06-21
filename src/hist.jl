@@ -126,7 +126,7 @@ Histograms can be fitted to data using the `fit` method.
 * edges: An iterator that contains the boundaries of the bins in each dimension.
 * weights: An array that contains the weight of each bin.
 * closed: A symbol with value `:right` or `:left` indicating on which side bins
-  (which half-open intervals or higher-dimensional analogues thereof) are closed.
+  (half-open intervals or higher-dimensional analogues thereof) are closed.
   See below for an example.
 * isdensity: There are two interpretations of a `Histogram`. If `isdensity=false` the weight of a bin corresponds to the amount of a quantity in the bin.
   If `isdensity=true` then it corresponds to the density (amount / volume) of the quantity in the bin. See below for an example.
