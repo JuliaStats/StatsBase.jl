@@ -4,68 +4,109 @@ using Statistics
 using Test
 
 @testset "Transformations" begin
+    # matrix
     X = rand(5, 8)
 
-    t = fit(ZScoreTransform, X; center=false, scale=false)
+    t = fit(ZScoreTransform, X, dims=1, center=false, scale=false)
     Y = transform(t, X)
     @test isa(t, AbstractDataTransform)
     @test isempty(t.mean)
     @test isempty(t.scale)
     @test isequal(X, Y)
-    @test transform(t, X[:,1]) ≈ Y[:,1]
-    @test reconstruct(t, Y[:,1]) ≈ X[:,1]
     @test reconstruct(t, Y) ≈ X
 
-    t = fit(ZScoreTransform, X; center=false)
+    t = fit(ZScoreTransform, X, dims=1, center=false)
     Y = transform(t, X)
     @test isempty(t.mean)
-    @test length(t.scale) == 5
-    @test Y ≈ X ./ std(X, dims=2)
-    @test transform(t, X[:,1]) ≈ Y[:,1]
-    @test reconstruct(t, Y[:,1]) ≈ X[:,1]
+    @test length(t.scale) == 8
+    @test Y ≈ X ./ std(X, dims=1)
     @test reconstruct(t, Y) ≈ X
 
-    t = fit(ZScoreTransform, X; scale=false)
+    t = fit(ZScoreTransform, X, dims=1, scale=false)
     Y = transform(t, X)
-    @test length(t.mean) == 5
+    @test length(t.mean) == 8
     @test isempty(t.scale)
-    @test Y ≈ X .- mean(X, dims=2)
-    @test transform(t, X[:,1]) ≈ Y[:,1]
-    @test reconstruct(t, Y[:,1]) ≈ X[:,1]
+    @test Y ≈ X .- mean(X, dims=1)
     @test reconstruct(t, Y) ≈ X
 
-    t = fit(ZScoreTransform, X)
+    t = fit(ZScoreTransform, X, dims=1)
+    Y = transform(t, X)
+    @test length(t.mean) == 8
+    @test length(t.scale) == 8
+    @test Y ≈ (X .- mean(X, dims=1)) ./ std(X, dims=1)
+    @test reconstruct(t, Y) ≈ X
+    @test Y ≈ standardize(ZScoreTransform, X, dims=1)
+
+    t = fit(ZScoreTransform, X, dims=2)
     Y = transform(t, X)
     @test length(t.mean) == 5
     @test length(t.scale) == 5
     @test Y ≈ (X .- mean(X, dims=2)) ./ std(X, dims=2)
-    @test transform(t, X[:,1]) ≈ Y[:,1]
-    @test reconstruct(t, Y[:,1]) ≈ X[:,1]
+    @test reconstruct(t, Y) ≈ X
+    @test Y ≈ standardize(ZScoreTransform, X, dims=2)
+
+    t = fit(UnitRangeTransform, X, dims=1, unit=false)
+    Y = transform(t, X)
+    @test length(t.min) == 8
+    @test length(t.scale) == 8
+    @test Y ≈ X ./ (maximum(X, dims=1) .- minimum(X, dims=1))
     @test reconstruct(t, Y) ≈ X
 
-    @test Y == standardize(ZScoreTransform, X)
-    @test Y[1,:] == standardize(ZScoreTransform, X[1,:])
+    t = fit(UnitRangeTransform, X, dims=1)
+    Y = transform(t, X)
+    @test isa(t, AbstractDataTransform)
+    @test length(t.min) == 8
+    @test length(t.scale) == 8
+    @test Y ≈ (X .- minimum(X, dims=1)) ./ (maximum(X, dims=1) .- minimum(X, dims=1))
+    @test reconstruct(t, Y) ≈ X
+    @test Y ≈ standardize(UnitRangeTransform, X, dims=1)
 
-    t = fit(UnitRangeTransform, X)
+    t = fit(UnitRangeTransform, X, dims=2)
     Y = transform(t, X)
     @test isa(t, AbstractDataTransform)
     @test length(t.min) == 5
     @test length(t.scale) == 5
     @test Y ≈ (X .- minimum(X, dims=2)) ./ (maximum(X, dims=2) .- minimum(X, dims=2))
-    @test transform(t, X[:,1]) ≈ Y[:,1]
-    @test reconstruct(t, Y[:,1]) ≈ X[:,1]
     @test reconstruct(t, Y) ≈ X
 
-    t = fit(UnitRangeTransform, X; unit=false)
+    # vector
+    X = rand(10)
+
+    t = fit(ZScoreTransform, X, dims=1, center=false, scale=false)
     Y = transform(t, X)
-    @test length(t.min) == 5
-    @test length(t.scale) == 5
-    @test Y ≈ X ./ (maximum(X, dims=2) .- minimum(X, dims=2))
-    @test transform(t, X[:,1]) ≈ Y[:,1]
-    @test reconstruct(t, Y[:,1]) ≈ X[:,1]
+    @test transform(t, X) ≈ Y
     @test reconstruct(t, Y) ≈ X
 
-    @test Y == standardize(UnitRangeTransform, X; unit=false)
-    @test Y[1,:] == standardize(UnitRangeTransform, X[1,:]; unit=false)
+    t = fit(ZScoreTransform, X, dims=1, center=false)
+    Y = transform(t, X)
+    @test Y ≈ X ./ std(X, dims=1)
+    @test transform(t, X) ≈ Y
+    @test reconstruct(t, Y) ≈ X
+
+    t = fit(ZScoreTransform, X, dims=1, scale=false)
+    Y = transform(t, X)
+    @test Y ≈ X .- mean(X, dims=1)
+    @test transform(t, X) ≈ Y
+    @test reconstruct(t, Y) ≈ X
+
+    t = fit(ZScoreTransform, X, dims=1)
+    Y = transform(t, X)
+    @test Y ≈ (X .- mean(X, dims=1)) ./ std(X, dims=1)
+    @test transform(t, X) ≈ Y
+    @test reconstruct(t, Y) ≈ X
+    @test Y ≈ standardize(ZScoreTransform, X, dims=1)
+
+    t = fit(UnitRangeTransform, X, dims=1)
+    Y = transform(t, X)
+    @test Y ≈ (X .- minimum(X, dims=1)) ./ (maximum(X, dims=1) .- minimum(X, dims=1))
+    @test transform(t, X) ≈ Y
+    @test reconstruct(t, Y) ≈ X
+
+    t = fit(UnitRangeTransform, X, dims=1, unit=false)
+    Y = transform(t, X)
+    @test Y ≈ X ./ (maximum(X, dims=1) .- minimum(X, dims=1))
+    @test transform(t, X) ≈ Y
+    @test reconstruct(t, Y) ≈ X
+    @test Y ≈ standardize(UnitRangeTransform, X, dims=1, unit=false)
 
 end
