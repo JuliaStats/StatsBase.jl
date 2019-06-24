@@ -33,7 +33,7 @@ end
 """
     reconstruct!(t::AbstractDataTransform, y)
 
-Perform an in-place reconstruction into an original data scale from a row-transformed
+Perform an in-place reconstruction into an original data scale from a transformed
 vector or matrix `y` using `t` transformation.
 """
 function reconstruct!(t::AbstractDataTransform, y::AbstractVecOrMat{<:Real})
@@ -47,7 +47,7 @@ end
 """
     reconstruct(t::AbstractDataTransform, y)
 
-Return a reconstruction of an originally scaled data from a row-transformed vector
+Return a reconstruction of an originally scaled data from a transformed vector
 or matrix `y` using `t` transformation.
 """
 function reconstruct(t::AbstractDataTransform, y::AbstractVecOrMat{<:Real})
@@ -95,8 +95,8 @@ Fit standardization parameters to `X` and return a `ZScoreTransform` transformat
 
 # Keyword arguments
 
-* `dims`: if `1` (the default) fit standardization parameters in column-wise fashion;
-  if `2` fit in row-wise fashion.
+* `dims`: if `1` fit standardization parameters in column-wise fashion;
+  if `2` fit in row-wise fashion. The default is `nothing`.
 
 * `center`: if `true` (the default) center data so that its mean is zero.
 
@@ -112,7 +112,7 @@ julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
  0.0  -0.5  0.5
  0.0   1.0  2.0
 
-julia> dt = fit(ZScoreTransform, X)
+julia> dt = fit(ZScoreTransform, X, dims=2)
 ZScoreTransform{Float64}(2, [0.0, 1.0], [0.5, 1.0])
 
 julia> StatsBase.transform(dt, X)
@@ -298,7 +298,8 @@ Fit a scaling parameters to `X` and return transformation description.
 
 # Keyword arguments
 
-* `dims`: if `1` (the default) fit standardization parameters in column-wise fashion; if `2` fit in row-wise fashion.
+* `dims`: if `1` fit standardization parameters in column-wise fashion;
+ if `2` fit in row-wise fashion. The default is `nothing`.
 
 * `unit`: if `true` (the default) shift the minimum data to zero.
 
@@ -312,7 +313,7 @@ julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
  0.0  -0.5  0.5
  0.0   1.0  2.0
 
-julia> dt = fit(UnitRangeTransform, X)
+julia> dt = fit(UnitRangeTransform, X, dims=2)
 UnitRangeTransform{Float64}(2, true, [-0.5, 0.0], [1.0, 0.5])
 
 julia> StatsBase.transform(dt, X)
@@ -444,13 +445,13 @@ end
 """
     standardize(DT, X; dims=nothing, kwargs...)
 
- Return a column-standardized copy of vector or matrix `X` along dimensions `dims`
+ Return a standardized copy of vector or matrix `X` along dimensions `dims`
  using transformation `DT` which is a subtype of `AbstractDataTransform`:
 
 - `ZScoreTransform`
 - `UnitRangeTransform`
 
-Return a column-standardized matrix while the input of `X` is a `AbstractMatrix`.
+Return a standardized matrix while the input of `X` is a `AbstractMatrix`.
 Return a standardized vector while the input of `X` is a `AbstractVector`.
 
 # Example
@@ -458,12 +459,12 @@ Return a standardized vector while the input of `X` is a `AbstractVector`.
 ```jldoctest
 julia> using StatsBase
 
-julia> standardize(ZScoreTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
+julia> standardize(ZScoreTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0], dims=2)
 2×3 Array{Float64,2}:
   0.0  -1.0  1.0
  -1.0   0.0  1.0
 
-julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0])
+julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0], dims=2)
 2×3 Array{Float64,2}:
  0.5  0.0  1.0
  0.0  0.5  1.0
