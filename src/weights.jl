@@ -198,7 +198,7 @@ end
     eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real) where T
     eweights(n::Integer, λ::Real)
 
-Construct [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
+Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
 observations, which in this case corresponds to larger integer values `i` in `t`.
 
 For each element `i` in `t` the weight value is computed as:
