@@ -200,6 +200,8 @@ end
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
 observations, which in this case corresponds to larger integer values `i` in `t`.
+If an integer `n` is provided, weights are generated for values from 1 to `n`
+(equivalent to `t = 1:n`).
 
 For each element `i` in `t` the weight value is computed as:
 
