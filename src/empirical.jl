@@ -3,12 +3,15 @@
 
 ## Empirical CDF
 
-struct ECDF{T <: AbstractVector{<:Real}}
+struct ECDF{T <: AbstractVector{<:Real}, W <: AbstractWeights{<:Real}}
     sorted_values::T
+    weights::W
 end
 
 function (ecdf::ECDF)(x::Real)
-    searchsortedlast(ecdf.sorted_values, x) / length(ecdf.sorted_values)
+    weightsum = sum(ecdf.weights)
+    n         = searchsortedlast(ecdf.sorted_values, x)
+    sum(ecdf.weights.values[1:n]) / weightsum
 end
 
 function (ecdf::ECDF)(v::RealVector)
@@ -17,22 +20,22 @@ function (ecdf::ECDF)(v::RealVector)
     r = similar(ecdf.sorted_values, m)
     r0 = 0
     i = 1
-    n = length(ecdf.sorted_values)
-    for x in ecdf.sorted_values
+    weightsum = sum(ecdf.weights)
+    for (j, x) in enumerate(ecdf.sorted_values)
         while i <= m && x > v[ord[i]]
             r[ord[i]] = r0
             i += 1
         end
-        r0 += 1
+        r0 += ecdf.weights.values[j]
         if i > m
             break
         end
     end
     while i <= m
-        r[ord[i]] = n
+        r[ord[i]] = weightsum
         i += 1
     end
-    return r / n
+    return r / weightsum
 end
 
 """
@@ -47,7 +50,12 @@ evaluate CDF values on other samples.
 `extrema`, `minimum`, and `maximum` are supported to for obtaining the range over which
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
-ecdf(X::RealVector{T}) where T<:Real = ECDF(sort(X))
+function ecdf(X::RealVector{T}, w::AbstractWeights{W} = weights(ones(length(X)))) where {T, W <: Real}
+    length(X) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
+        "got $(length(X)) and $(length(w))"))
+    ord = sortperm(X)
+    ECDF(X[ord], weights(w.values[ord]))
+end
 
 minimum(ecdf::ECDF) = first(ecdf.sorted_values)
 
