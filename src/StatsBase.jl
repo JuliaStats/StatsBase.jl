@@ -34,6 +34,7 @@ export
     aweights,           # construct an AnalyticWeights vector
     fweights,           # construct a FrequencyWeights vector
     pweights,           # construct a ProbabilityWeights vector
+    eweights,           # construct an exponential Weights vector
     wsum,               # weighted sum with vector as second argument
     wsum!,              # weighted sum across dimensions with provided storage
     wmean,              # weighted mean

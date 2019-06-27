@@ -193,6 +193,63 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
     end
 end
 
+"""
+    eweights(t::AbstractVector{<:Integer}, λ::Real)
+    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real) where T
+    eweights(n::Integer, λ::Real)
+
+Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
+observations, which in this case corresponds to larger integer values `i` in `t`.
+If an integer `n` is provided, weights are generated for values from 1 to `n`
+(equivalent to `t = 1:n`).
+
+For each element `i` in `t` the weight value is computed as:
+
+``λ (1 - λ)^{1 - i}``
+
+# Arguments
+
+- `t::AbstractVector`: temporal indices or timestamps
+- `r::StepRange`: a larger range to use when constructing weights from a subset of timestamps
+- `n::Integer`: if provided instead of `t`, temporal indices are taken to be `1:n`
+- `λ::Real`: a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
+  As this value approaches 0, the resulting weights will be almost equal,
+  while values closer to 1 will put greater weight on the tail elements of the vector.
+
+# Examples
+```julia-repl
+julia> eweights(1:10, 0.3)
+10-element Weights{Float64,Float64,Array{Float64,1}}:
+ 0.3
+ 0.42857142857142855
+ 0.6122448979591837
+ 0.8746355685131197
+ 1.249479383590171
+ 1.7849705479859588
+ 2.549957925694227
+ 3.642797036706039
+ 5.203995766722913
+ 7.434279666747019
+```
+"""
+function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
+    0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
+
+    w0 = map(t) do i
+        i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
+        λ * (1 - λ)^(1 - i)
+    end
+
+    s = sum(w0)
+    Weights(w0, s)
+end
+
+eweights(n::Integer, λ::Real) = eweights(1:n, λ)
+eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
+    eweights(something.(indexin(t, r)), λ)
+
+# NOTE: No variance correction is implemented for exponential weights
+
 ##### Equality tests #####
 
 for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
@@ -481,7 +538,7 @@ _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
 Compute the weighted quantiles of a vector `v` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
-`NaN` is returned if `x` contains any `NaN` values. An error is raised if `w` contains 
+`NaN` is returned if `x` contains any `NaN` values. An error is raised if `w` contains
 any `NaN` values.
 
 With [`FrequencyWeights`](@ref), the function returns the same result as
@@ -502,15 +559,15 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
     w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
-    length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," * 
+    length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(v)) and $(length(w))"))
     for x in w.values
         isnan(x) && throw(ArgumentError("weight vector cannot contain NaN entries"))
         x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
     end
 
-    isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) && 
-        throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" * 
+    isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) &&
+        throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" *
                             "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
 
     # remove zeros weights and sort
