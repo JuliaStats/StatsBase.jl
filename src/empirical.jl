@@ -11,7 +11,7 @@ end
 function (ecdf::ECDF)(x::Real)
     weightsum = sum(ecdf.weights)
     n         = searchsortedlast(ecdf.sorted_values, x)
-    sum(ecdf.weights.values[1:n]) / weightsum
+    sum(view(ecdf.weights, 1:n)) / weightsum
 end
 
 function (ecdf::ECDF)(v::RealVector)
