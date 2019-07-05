@@ -26,7 +26,7 @@ function (ecdf::ECDF)(v::RealVector)
             r[ord[i]] = r0
             i += 1
         end
-        r0 += ecdf.weights.values[j]
+        r0 += ecdf.weights[j]
         if i > m
             break
         end
