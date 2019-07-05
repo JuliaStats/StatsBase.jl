@@ -55,7 +55,7 @@ function is inside the interval ``(0,1)``; the function is defined for the whole
 """
 ecdf(X::RealVector{T}) where T<:Real = ECDF(sort(X), weights(Float64[]))
 
-function ecdf(X::RealVector{T}, w::AbstractWeights{W} = weights(ones(length(X)))) where {T, W <: Real}
+function ecdf(X::RealVector{T}, w::AbstractWeights{W}) where {T, W <: Real}
     length(X) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(X)) and $(length(w))"))
     ord = sortperm(X)
