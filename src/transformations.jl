@@ -133,6 +133,7 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
         m, s = mean_and_std(X, 2)
     elseif dims === nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        m, s = mean_and_std(X, 2)
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
@@ -182,32 +183,6 @@ function transform!(y::AbstractMatrix{<:Real}, t::ZScoreTransform, x::AbstractMa
     return y
 end
 
-function transform!(y::AbstractVector{<:Real}, t::ZScoreTransform, x::AbstractVector{<:Real})
-    t.len == 1 || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(y,1)
-    size(x,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    m = t.mean
-    s = t.scale
-
-    if isempty(m)
-        if isempty(s)
-            if x !== y
-                copyto!(y, x)
-            end
-        else
-            broadcast!(/, y, x, s[1])
-        end
-    else
-        if isempty(s)
-            broadcast!(-, y, x, m[1])
-        else
-            broadcast!((x,m,s)->(x-m)/s, y, x, m[1], s[1])
-        end
-    end
-    return y
-end
-
 function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::AbstractMatrix{<:Real})
     l = t.len
     size(x,2) == size(y,2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
@@ -230,32 +205,6 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::Abstract
             broadcast!(+, x, y, m')
         else
             broadcast!((y,m,s)->y*s+m, x, y, m', s')
-        end
-    end
-    return x
-end
-
-function reconstruct!(x::AbstractVector{<:Real}, t::ZScoreTransform, y::AbstractVector{<:Real})
-    t.len == 1 || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(y,1)
-    size(x,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    m = t.mean
-    s = t.scale
-
-    if isempty(m)
-        if isempty(s)
-            if y !== x
-                copyto!(x, y)
-            end
-        else
-            broadcast!(*, x, y, s[1])
-        end
-    else
-        if isempty(s)
-            broadcast!(+, x, y, m[1])
-        else
-            broadcast!((y,m,s)->y*s+m, x, y, m[1], s[1])
         end
     end
     return x
@@ -332,6 +281,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         l, tmin, tmax = _extract_info(X')
     elseif dims == nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        l, tmin, tmax = _extract_info(X')
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
@@ -397,22 +347,6 @@ function transform!(y::AbstractMatrix{<:Real}, t::UnitRangeTransform, x::Abstrac
     return y
 end
 
-function transform!(y::AbstractVector{<:Real}, t::UnitRangeTransform, x::AbstractVector{<:Real})
-    t.len == 1 || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(x,1)
-    size(y,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    tmin = t.min
-    tscale = t.scale
-
-    if t.unit
-        broadcast!((x,s,m)->(x-m)*s, y, x, tscale[1], tmin[1])
-    else
-        broadcast!(*, y, x, tscale[1])
-    end
-    return y
-end
-
 function reconstruct!(x::AbstractMatrix{<:Real}, t::UnitRangeTransform, y::AbstractMatrix{<:Real})
     l = t.len
     size(x,2) == size(y,2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
@@ -426,22 +360,6 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::UnitRangeTransform, y::Abstr
         broadcast!((y,s,m)->y/s+m, x, y, tscale', tmin')
     else
         broadcast!(/, x, y, tscale')
-    end
-    return x
-end
-
-function reconstruct!(x::AbstractVector{<:Real}, t::UnitRangeTransform, y::AbstractVector{<:Real})
-    t.len == 1 || throw(DimensionMismatch("Inconsistent dimensions."))
-    n = size(y,1)
-    size(x,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
-
-    tmin = t.min
-    tscale = t.scale
-
-    if t.unit
-        broadcast!((y,s,m)->y/s+m, x, y, tscale[1], tmin[1])
-    else
-        broadcast!(/, x, y, tscale[1])
     end
     return x
 end
