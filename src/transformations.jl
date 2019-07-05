@@ -133,6 +133,8 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
         m, s = mean_and_std(X, 2)
     elseif dims === nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+    else
+        throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
     T = eltype(X)
     return ZScoreTransform(l, dims, (center ? vec(m) : zeros(T, 0)),
@@ -330,6 +332,8 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         l, tmin, tmax = _extract_info(X')
     elseif dims == nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+    else
+        throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
 
     for i = 1:l
