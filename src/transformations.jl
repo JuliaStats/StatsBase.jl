@@ -96,7 +96,7 @@ Fit standardization parameters to `X` and return a `ZScoreTransform` transformat
 # Keyword arguments
 
 * `dims`: if `1` fit standardization parameters in column-wise fashion;
-  if `2` fit in row-wise fashion. The default is `nothing`.
+  if `2` fit in row-wise fashion. The default is `nothing`, which is equivalent to `dims=2` with a deprecation warning.
 
 * `center`: if `true` (the default) center data so that its mean is zero.
 
