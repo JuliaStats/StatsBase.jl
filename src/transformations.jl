@@ -8,11 +8,16 @@ abstract type AbstractDataTransform end
 
 Apply transformation `t` to vector or matrix `x` in place.
 """
-transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) = _transform!(x, t, x)
+function transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real})
+    if t.dims == 1
+        return transform!(x, t, x)
+    elseif t.dims == 2
+        return transform!(x', t, x')'
+    end
+end
 
 function transform!(t::AbstractDataTransform, x::AbstractVector{<:Real})
-    x = reshape(x, :, 1)
-    _transform!(x, t, x)
+    transform!(t, reshape(x, :, 1))
     return vec(x)
 end
 
@@ -21,20 +26,17 @@ end
 
 Return a standardized vector or matrix `x` using `t` transformation.
 """
-transform(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) = _transform!(similar(x), t, x)
-
-function transform(t::AbstractDataTransform, x::AbstractVector{<:Real})
-    x = reshape(x, :, 1)
-    x_ = _transform!(similar(x), t, x)
-    return vec(x_)
+function transform(t::AbstractDataTransform, x::AbstractMatrix{<:Real})
+    if t.dims == 1
+        return transform!(similar(x), t, x)
+    elseif t.dims == 2
+        return transform!(similar(x)', t, x')'
+    end
 end
 
-function _transform!(y::AbstractMatrix{<:Real}, t::AbstractDataTransform, x::AbstractMatrix{<:Real})
-    if t.dims == 1
-        return transform!(y, t, x)
-    elseif t.dims == 2
-        return transform!(y', t, x')'
-    end
+function transform(t::AbstractDataTransform, x::AbstractVector{<:Real})
+    xmat = transform(t, reshape(x, :, 1))
+    return vec(xmat)
 end
 
 # reconstruct the original data from transformed values
@@ -44,11 +46,16 @@ end
 Perform an in-place reconstruction into an original data scale from a transformed
 vector or matrix `y` using `t` transformation.
 """
-reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) = _reconstruct!(y, t, y)
+function reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real})
+    if t.dims == 1
+        return reconstruct!(y, t, y)
+    elseif t.dims == 2
+        return reconstruct!(y', t, y')'
+    end
+end
 
 function reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real})
-    y = reshape(y, :, 1)
-    _reconstruct!(y, t, y)
+    reconstruct!(t, reshape(y, :, 1))
     return vec(y)
 end
 
@@ -58,20 +65,17 @@ end
 Return a reconstruction of an originally scaled data from a transformed vector
 or matrix `y` using `t` transformation.
 """
-reconstruct(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) = _reconstruct!(similar(y), t, y)
-
-function reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real})
-    y = reshape(y, :, 1)
-    y_ = _reconstruct!(similar(y), t, y)
-    return vec(y_)
+function reconstruct(t::AbstractDataTransform, y::AbstractMatrix{<:Real})
+    if t.dims == 1
+        return reconstruct!(similar(y), t, y)
+    elseif t.dims == 2
+        return reconstruct!(similar(y)', t, y')'
+    end
 end
 
-function _reconstruct!(y::AbstractMatrix{<:Real}, t::AbstractDataTransform, x::AbstractMatrix{<:Real})
-    if t.dims == 1
-        return reconstruct!(y, t, x)
-    elseif t.dims == 2
-        return reconstruct!(y', t, x')'
-    end
+function reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real})
+    ymat = reconstruct(t, reshape(y, :, 1))
+    return vec(ymat)
 end
 
 """
