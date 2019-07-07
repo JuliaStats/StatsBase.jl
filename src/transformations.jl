@@ -10,10 +10,11 @@ Apply transformation `t` to vector or matrix `x` in place.
 """
 function transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real})
     if t.dims == 1
-        return transform!(x, t, x)
+        transform!(x, t, x)
     elseif t.dims == 2
-        return transform!(x', t, x')'
+        transform!(x', t, x')
     end
+    return x
 end
 
 function transform!(t::AbstractDataTransform, x::AbstractVector{<:Real})
@@ -48,10 +49,11 @@ vector or matrix `y` using `t` transformation.
 """
 function reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real})
     if t.dims == 1
-        return reconstruct!(y, t, y)
+        reconstruct!(y, t, y)
     elseif t.dims == 2
-        return reconstruct!(y', t, y')'
+        reconstruct!(y', t, y')
     end
+    return y
 end
 
 function reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real})
