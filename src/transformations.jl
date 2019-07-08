@@ -19,7 +19,7 @@ end
 
 function transform!(t::AbstractDataTransform, x::AbstractVector{<:Real})
     transform!(t, reshape(x, :, 1))
-    return vec(x)
+    return x
 end
 
 """
@@ -36,8 +36,7 @@ function transform(t::AbstractDataTransform, x::AbstractMatrix{<:Real})
 end
 
 function transform(t::AbstractDataTransform, x::AbstractVector{<:Real})
-    xmat = transform(t, reshape(x, :, 1))
-    return vec(xmat)
+    return vec(transform(t, reshape(x, :, 1)))
 end
 
 # reconstruct the original data from transformed values
@@ -58,7 +57,7 @@ end
 
 function reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real})
     reconstruct!(t, reshape(y, :, 1))
-    return vec(y)
+    return y
 end
 
 """
@@ -76,8 +75,7 @@ function reconstruct(t::AbstractDataTransform, y::AbstractMatrix{<:Real})
 end
 
 function reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real})
-    ymat = reconstruct(t, reshape(y, :, 1))
-    return vec(ymat)
+    return vec(reconstruct(t, reshape(y, :, 1)))
 end
 
 """
