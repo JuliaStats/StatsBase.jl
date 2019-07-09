@@ -63,8 +63,7 @@ If `t` is a vector of temporal indices then for each index `i` we compute the we
 As this value approaches 0, the resulting weights will be almost equal,
 while values closer to 1 will put greater weight on the tail elements of the vector.
 
-# Examples
-
+For example, the following call generates exponential weights for ten observations with ``λ = 0.3``.
 ```julia-repl
 julia> eweights(1:10, 0.3)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
