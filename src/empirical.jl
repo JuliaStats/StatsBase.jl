@@ -59,7 +59,7 @@ function ecdf(X::RealVector, w::AbstractVector{<:Real})
     length(X) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(X)) and $(length(w))"))
     ord = sortperm(X)
-    ECDF(X[ord], weights(w.values[ord]))
+    ECDF(X[ord], weights(w[ord]))
 end
 
 minimum(ecdf::ECDF) = first(ecdf.sorted_values)
