@@ -27,5 +27,4 @@ end
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 1.0)
 
     @test_throws MethodError ecdf(rand(8), rand(10))
-
 end
