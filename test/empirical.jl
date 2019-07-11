@@ -19,7 +19,7 @@ end
     w = weights(rand(10000000))
     fnecdf = ecdf(x, w)
     y = [-1.96, -1.644854, -1.281552, -0.6744898, 0, 0.6744898, 1.281552, 1.644854, 1.96]
-    @test fnecdf.weights.values != w.values
+    @test fnecdf.weights != w.values
     @test fnecdf(y) ≈ map(fnecdf, y)
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == extrema(x)
     fnecdf = ecdf([1.0, 0.5], weights([3, 1]))
