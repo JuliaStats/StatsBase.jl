@@ -53,7 +53,7 @@ evaluate CDF values on other samples.
 `extrema`, `minimum`, and `maximum` are supported to for obtaining the range over which
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
-ecdf(X::RealVector{T}) where T<:Real = ECDF(sort(X), weights(Float64[]))
+ecdf(X::RealVector) = ECDF(sort(X), weights(Float64[]))
 
 function ecdf(X::RealVector, w::AbstractVector{<:Real})
     length(X) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
