@@ -22,8 +22,9 @@ end
     fnecdfalt = ecdf(x, w2)
     @test fnecdf.sorted_values == fnecdfalt.sorted_values
     @test fnecdf.weights == fnecdfalt.weights
+    @test fnecdf.weights != w1  #  check that w wasn't accidently modified in place
+    @test fnecdfalt.weights != w2
     y = [-1.96, -1.644854, -1.281552, -0.6744898, 0, 0.6744898, 1.281552, 1.644854, 1.96]
-    @test fnecdf.weights != w2  #  check that w wasn't accidently modified in place
     @test isapprox(fnecdf(y), [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975], atol=1e-3)
     @test isapprox(fnecdf(1.96), 0.975, atol=1e-3)
     @test fnecdf(y) ≈ map(fnecdf, y)
