@@ -19,12 +19,14 @@ end
     w = weights(rand(10000000))
     fnecdf = ecdf(x, w)
     y = [-1.96, -1.644854, -1.281552, -0.6744898, 0, 0.6744898, 1.281552, 1.644854, 1.96]
-    @test fnecdf.weights != w.values
+    @test fnecdf.weights != w  #  check that w wasn't accidently modified in place
+    @test isapprox(fnecdf(y), [0.025, 0.05, 0.1, 0.25, 0.5, 0.75, 0.9, 0.95, 0.975], atol=1e-3)
+    @test isapprox(fnecdf(1.96), 0.975, atol=1e-3)
     @test fnecdf(y) ≈ map(fnecdf, y)
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == extrema(x)
     fnecdf = ecdf([1.0, 0.5], weights([3, 1]))
     @test fnecdf(0.75) == 0.25
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 1.0)
 
-    @test_throws MethodError ecdf(rand(8), rand(10))
+    @test_throws ArgumentError ecdf(rand(8), weights(rand(10)))
 end
