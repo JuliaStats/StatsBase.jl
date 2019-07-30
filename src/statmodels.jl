@@ -17,16 +17,17 @@ Return the names of the coefficients.
 coefnames(obj::StatisticalModel) = error("coefnames is not defined for $(typeof(obj)).")
 
 """
-    coeftable(obj::StatisticalModel)
+    coeftable(obj::StatisticalModel; level::Real=0.95)
 
 Return a table of class `CoefTable` with coefficients and related statistics.
+`level` determines the level for confidence intervals (by default, 95%).
 """
 coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(obj)).")
 
 """
-    confint(obj::StatisticalModel)
+    confint(obj::StatisticalModel; level::Real=0.95)
 
-Compute confidence intervals for coefficients.
+Compute confidence intervals for coefficients, with confidence level `level` (by default 95%).
 """
 confint(obj::StatisticalModel) = error("confint is not defined for $(typeof(obj)).")
 
@@ -358,36 +359,41 @@ function params! end
 
 ## coefficient tables with specialized show method
 
-## Nms are the coefficient names, corresponding to rows in the table
 mutable struct CoefTable
     cols::Vector
     colnms::Vector
     rownms::Vector
-    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector)
+    pvalcol::Int
+    teststatcol::Int
+    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector,
+                       pvalcol::Int=0,teststatcol::Int=0)
         nc = length(cols)
         nrs = map(length,cols)
         nr = nrs[1]
-        length(colnms) in [0,nc] || error("colnms should have length 0 or $nc")
-        length(rownms) in [0,nr] || error("rownms should have length 0 or $nr")
-        all(nrs .== nr) || error("Elements of cols should have equal lengths, but got $nrs")
-        new(cols,colnms,rownms)
+        length(colnms) in [0,nc] || throw(ArgumentError("colnms should have length 0 or $nc"))
+        length(rownms) in [0,nr] || throw(ArgumentError("rownms should have length 0 or $nr"))
+        all(nrs .== nr) || throw(ArgumentError("Elements of cols should have equal lengths, but got $nrs"))
+        pvalcol in 0:nc || throw(ArgumentError("pvalcol should be between 0 and $nc"))
+        teststatcol in 0:nc || throw(ArgumentError("teststatcol should be between 0 and $nc"))
+        new(cols,colnms,rownms,pvalcol,teststatcol)
     end
 
-    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,pvalcol::Int=0)
+    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,
+                       pvalcol::Int=0,teststatcol::Int=0)
         nc = size(mat,2)
         cols = Any[mat[:, i] for i in 1:nc]
-        if pvalcol != 0                         # format the p-values column
-            cols[pvalcol] = [PValue(cols[pvalcol][j])
-                            for j in eachindex(cols[pvalcol])]
-        end
-        CoefTable(cols,colnms,rownms)
+        CoefTable(cols,colnms,rownms,pvalcol,teststatcol)
     end
 end
 
-mutable struct PValue
-    v::Number
-    function PValue(v::Number)
-        0. <= v <= 1. || isnan(v) || error("p-values must be in [0.,1.]")
+"""
+Show a p-value using 6 characters, either using the standard 0.XXXX
+representation or as <Xe-YY.
+"""
+struct PValue
+    v::Real
+    function PValue(v::Real)
+        0 <= v <= 1 || isnan(v) || error("p-values must be in [0; 1]")
         new(v)
     end
 end
@@ -403,6 +409,20 @@ function show(io::IO, pv::PValue)
     end
 end
 
+"""Show a test statistic using 2 decimal digits"""
+struct TestStat <: Real
+    v::Real
+end
+
+show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
+
+"""Wrap a string so that show omits quotes"""
+struct NoQuote
+    s::String
+end
+
+show(io::IO, n::NoQuote) = print(io, n.s)
+
 function show(io::IO, ct::CoefTable)
     cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
     nc = length(cols)
@@ -410,29 +430,31 @@ function show(io::IO, ct::CoefTable)
     if length(rownms) == 0
         rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
-    rnwidth = max(4,maximum([length(nm) for nm in rownms]) + 1)
-    rownms = [rpad(nm,rnwidth) for nm in rownms]
-    widths = [length(cn)::Int for cn in colnms]
-    str = String[isa(cols[j][i], AbstractString) ? cols[j][i] :
-        sprint(show, cols[j][i], context=:compact=>true) for i in 1:nr, j in 1:nc]
-    for j in 1:nc
-        for i in 1:nr
-            lij = length(str[i,j])
-            if lij > widths[j]
-                widths[j] = lij
-            end
-        end
+    mat = [j == 1 ? NoQuote(rownms[i]) :
+           j-1 == ct.pvalcol ? PValue(cols[j-1][i]) :
+           j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
+           cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
+           for i in 1:nr, j in 1:nc+1]
+    # Code inspired by print_matrix in Base
+    io = IOContext(io, :compact=>true, :limit=>false)
+    A = Base.alignment(io, mat, 1:size(mat, 1), 1:size(mat, 2),
+                       typemax(Int), typemax(Int), 3)
+    nmswidths = pushfirst!(length.(colnms), 0)
+    A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
+         for i in 1:length(A)]
+    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
+    println(io, repeat('─', totwidth))
+    print(io, repeat(' ', sum(A[1])))
+    for j in 1:length(colnms)
+        print(io, "  ", lpad(colnms[j], sum(A[j+1])))
     end
-    widths .+= 1
-    println(io," " ^ rnwidth *
-            join([lpad(string(colnms[i]), widths[i]) for i = 1:nc], ""))
-    for i = 1:nr
-        print(io, rownms[i])
-        for j in 1:nc
-            print(io, lpad(str[i,j],widths[j]))
-        end
-        println(io)
+    println(io, '\n', repeat('─', totwidth))
+    for i in 1:size(mat, 1)
+        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), "  ")
+        i != size(mat, 1) && println(io)
     end
+    print(io, '\n', repeat('─', totwidth))
+    nothing
 end
 
 """
@@ -446,21 +468,26 @@ struct ConvergenceException{T<:Real} <: Exception
     iters::Int
     lastchange::T
     tol::T
-    function ConvergenceException{T}(iters, lastchange::T, tol::T) where T<:Real
+    msg::String
+    function ConvergenceException{T}(iters, lastchange::T, tol::T, msg::String) where T<:Real
         if tol > lastchange
             throw(ArgumentError("Change must be greater than tol."))
         else
-            new(iters, lastchange, tol)
+            new(iters, lastchange, tol, msg)
         end
     end
 end
 
-ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN) where {T<:Real} =
-    ConvergenceException{T}(iters, lastchange, tol)
+ConvergenceException(iters, lastchange::T=NaN, tol::T=NaN,
+                     msg::AbstractString="") where {T<:Real} =
+    ConvergenceException{T}(iters, lastchange, tol, String(msg))
 
 function Base.showerror(io::IO, ce::ConvergenceException)
     print(io, "failure to converge after $(ce.iters) iterations.")
     if !isnan(ce.lastchange)
         print(io, " Last change ($(ce.lastchange)) was greater than tolerance ($(ce.tol)).")
+    end
+    if !isempty(ce.msg)
+        print(io, ' ', ce.msg)
     end
 end

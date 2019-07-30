@@ -39,6 +39,15 @@ using DelimitedFiles
 @test modes([1, 2, 3, 3, 2, 2, 1]) == [2]
 @test sort(modes([1, 3, 2, 3, 3, 2, 2, 1])) == [2, 3]
 
+@test mode(skipmissing([1, missing, missing, 3, 2, 2, missing])) == 2
+@test modes(skipmissing([1, missing, missing, 3, 2, 2, missing])) == [2]
+@test sort(modes(skipmissing([1, missing, 3, 3, 2, 2, missing]))) == [2, 3]
+
+@test_throws ArgumentError mode(Int[])
+@test_throws ArgumentError modes(Int[])
+@test_throws ArgumentError mode(Any[])
+@test_throws ArgumentError modes(Any[])
+
 ## zscores
 
 @test zscore([-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]
@@ -65,29 +74,45 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 ###### quantile & friends
 
-@test quantile(1:5)     ≈ [1:5;]
 @test nquantile(1:5, 2) ≈ [1, 3, 5]
 @test nquantile(1:5, 4) ≈ [1:5;]
+@test nquantile(skipmissing([missing, 2, 5, missing]), 2) ≈ [2.0, 3.5, 5.0]
 
 @test percentile([1:5;], 25)           ≈  2.0
 @test percentile([1:5;], [25, 50, 75]) ≈ [2.0, 3.0, 4.0]
+@test percentile(skipmissing([missing, 2, 5, missing]), 25) ≈ 2.75
+@test percentile(skipmissing([missing, 2, 5, missing]), [25, 50, 75]) ≈ [2.75, 3.5, 4.25]
 
 
 ##### Dispersion
 
 @test span([3, 4, 5, 6, 2]) == (2:6)
+@test span(skipmissing([1, missing, 5, missing])) == 1:5
 
 @test variation([1:5;]) ≈ 0.527046276694730
+@test variation(skipmissing([missing; 1:5; missing])) ≈ 0.527046276694730
 
 @test sem([1:5;]) ≈ 0.707106781186548
+@test sem(skipmissing([missing; 1:5; missing])) ≈ 0.707106781186548
+@test sem(Int[]) === NaN
+@test sem(skipmissing(Union{Int,Missing}[missing, missing])) === NaN
+@test_throws MethodError sem(Any[])
+@test_throws MethodError sem(skipmissing([missing]))
 
-@test StatsBase.mad(1:5; center=3, normalize=true) ≈ 1.4826022185056018
+@test mad(1:5; center=3, normalize=true) ≈ 1.4826022185056018
+@test mad(skipmissing([missing; 1:5; missing]); center=3, normalize=true) ≈ 1.4826022185056018
 @test StatsBase.mad!([1:5;]; center=3, normalize=true) ≈ 1.4826022185056018
 @test mad(1:5, normalize=true) ≈ 1.4826022185056018
-@test StatsBase.mad(1:5, normalize=false) ≈ 1.0
+@test mad(1:5, normalize=false) ≈ 1.0
+@test mad(skipmissing([missing; 1:5; missing]), normalize=true) ≈ 1.4826022185056018
+@test mad(skipmissing([missing; 1:5; missing]), normalize=false) ≈ 1.0
 @test StatsBase.mad!([1:5;], normalize=false) ≈ 1.0
-@test StatsBase.mad(1:5, center=3, normalize=false) ≈ 1.0
+@test mad(1:5, center=3, normalize=false) ≈ 1.0
+@test mad(skipmissing([missing; 1:5; missing]), center=3, normalize=false) ≈ 1.0
 @test StatsBase.mad!([1:5;], center=3, normalize=false) ≈ 1.0
+@test mad((x for x in (1, 2.1)), normalize=false) ≈ 0.55
+@test mad(Any[1, 2.1], normalize=false) ≈ 0.55
+@test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
 @test_throws ArgumentError mad(Int[])
 
 # Issue 197
@@ -119,6 +144,7 @@ it = (xᵢ for xᵢ in x)
 
 @test entropy([0.5, 0.5],2)       ≈ 1.0
 @test entropy([0.2, 0.3, 0.5], 2) ≈ 1.4854752972273344
+@test entropy([1.0, 0.0]) ≈ 0.0
 
 ##### Renyi entropies
 # Generate a random probability distribution

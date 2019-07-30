@@ -33,3 +33,5 @@ end
 @deprecate wquantile(v::RealVector, w::RealVector, p::Number) quantile(v, pweights(w), [p])[1]
 @deprecate wmedian(v::RealVector, w::AbstractWeights{<:Real}) median(v, w)
 @deprecate wmedian(v::RealVector, w::RealVector) median(v, weights(w))
+
+@deprecate quantile(v::AbstractArray{<:Real}) quantile(v, [.0, .25, .5, .75, 1.0])

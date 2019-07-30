@@ -58,6 +58,10 @@ end
     @test fit(Histogram,0:99,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
     @test fit(Histogram{Int32},0:99,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
     @test fit(Histogram{Float32},0:99,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
+
+    d = collect(0:99)
+    v = view(d, fill(true, 100))
+    @test fit(Histogram{Float32},v,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
 end
 
 

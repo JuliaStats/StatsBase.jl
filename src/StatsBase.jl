@@ -1,27 +1,28 @@
-__precompile__()
-
 module StatsBase
-    import Base: length, isempty, eltype, values, sum, show, maximum, minimum, extrema
-    import Base.Cartesian: @nloops, @nref, @nextract
-    using Base: @irrational, @propagate_inbounds
-    import DataStructures: heapify!, heappop!, percolate_down!
-    using SortingAlgorithms
-    using Missings
 
-    using Statistics
-    using LinearAlgebra
-    using Random
-    using Printf
-    using SparseArrays
-    import Random: rand, rand!
-    import LinearAlgebra: BlasReal, BlasFloat
-    import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
-                       cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
-                       median, middle
+import Base: length, isempty, eltype, values, sum, show, maximum, minimum, extrema
+import Base.Cartesian: @nloops, @nref, @nextract
+using Base: @irrational, @propagate_inbounds
+using DataAPI
+import DataAPI: describe
+import DataStructures: heapify!, heappop!, percolate_down!
+using SortingAlgorithms
+using Missings
+
+using Statistics
+using LinearAlgebra
+using Random
+using Printf
+using SparseArrays
+import Random: rand, rand!
+import LinearAlgebra: BlasReal, BlasFloat
+import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
+                   cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
+                   median, middle
 
     ## tackle compatibility issues
 
-    export
+export
 
     ## weights
     AbstractWeights,    # abstract type to represent any weight vector
@@ -33,6 +34,7 @@ module StatsBase
     aweights,           # construct an AnalyticWeights vector
     fweights,           # construct a FrequencyWeights vector
     pweights,           # construct a ProbabilityWeights vector
+    eweights,           # construct an exponential Weights vector
     wsum,               # weighted sum with vector as second argument
     wsum!,              # weighted sum across dimensions with provided storage
     wmean,              # weighted mean
@@ -97,6 +99,8 @@ module StatsBase
     scattermat,     # scatter matrix (i.e. unnormalized covariance)
     cov2cor,        # converts a covariance matrix to a correlation matrix
     cor2cov,        # converts a correlation matrix to a covariance matrix
+    CovarianceEstimator, # abstract type for covariance estimators
+    SimpleCovariance,    # simple covariance estimator
 
     ## counts
     addcounts!,     # add counts to an accumulating array or map
@@ -207,30 +211,30 @@ module StatsBase
     ZScoreTransform,       # the type to represent a z-score data transformation
     UnitRangeTransform     # the type to represent a 0-1 data transformation
 
-    # source files
+# source files
 
-    include("common.jl")
-    include("weights.jl")
-    include("moments.jl")
-    include("scalarstats.jl")
-    include("robust.jl")
-    include("deviation.jl")
-    include("cov.jl")
-    include("counts.jl")
-    include("ranking.jl")
-    include("toeplitzsolvers.jl")
-    include("rankcorr.jl")
-    include("signalcorr.jl")
-    include("partialcor.jl")
-    include("empirical.jl")
-    include("hist.jl")
-    include("misc.jl")
+include("common.jl")
+include("weights.jl")
+include("moments.jl")
+include("scalarstats.jl")
+include("robust.jl")
+include("deviation.jl")
+include("cov.jl")
+include("counts.jl")
+include("ranking.jl")
+include("toeplitzsolvers.jl")
+include("rankcorr.jl")
+include("signalcorr.jl")
+include("partialcor.jl")
+include("empirical.jl")
+include("hist.jl")
+include("misc.jl")
 
-    include("sampling.jl")
-    include("statmodels.jl")
+include("sampling.jl")
+include("statmodels.jl")
 
-    include("transformations.jl")
+include("transformations.jl")
 
-    include("deprecates.jl")
+include("deprecates.jl")
 
 end # module

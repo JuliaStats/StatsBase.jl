@@ -308,6 +308,9 @@ end
     # test non integer frequency weights
     quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
     @test_throws ArgumentError quantile([1, 2], fweights([1.5, 2.0]), 0.25)
+
+    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), nextfloat(1.0))
+    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), prevfloat(0.0))
 end
 
 @testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
@@ -438,6 +441,61 @@ end
     data = [4, 3, 2, 1]
     wt = [1, 2, 3, 4]
     @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
+end
+
+@testset "Mismatched eltypes" begin
+    @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
+end
+
+@testset "Exponential Weights" begin
+    @testset "Usage" begin
+        θ = 5.25
+        λ = 1 - exp(-1 / θ)     # simple conversion for the more common/readable method
+        v = [λ*(1-λ)^(1-i) for i = 1:4]
+        w = Weights(v)
+
+        @test round.(w, digits=4) == [0.1734, 0.2098, 0.2539, 0.3071]
+
+        @testset "basic" begin
+            @test eweights(1:4, λ) ≈ w
+        end
+
+        @testset "1:n" begin
+            @test eweights(4, λ) ≈ w
+        end
+
+        @testset "indexin" begin
+            v = [λ*(1-λ)^(1-i) for i = 1:10]
+
+            # Test that we should be able to skip indices easily
+            @test eweights([1, 3, 5, 7], 1:10, λ) ≈ Weights(v[[1, 3, 5, 7]])
+
+            # This should also work with actual time types
+            t1 = DateTime(2019, 1, 1, 1)
+            tx = t1 + Hour(7)
+            tn = DateTime(2019, 1, 2, 1)
+
+            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ) ≈ Weights(v[[1, 3, 5, 7]])
+        end
+    end
+
+    @testset "Empty" begin
+        @test eweights(0, 0.3) == Weights(Float64[])
+        @test eweights(1:0, 0.3) == Weights(Float64[])
+        @test eweights(Int[], 1:10, 0.4) == Weights(Float64[])
+    end
+
+    @testset "Failure Conditions" begin
+        # λ > 1.0
+        @test_throws ArgumentError eweights(1, 1.1)
+
+        # time indices are not all positive non-zero integers
+        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3)
+
+        # Passing in an array of bools will work because Bool <: Integer,
+        # but any `false` values will trigger the same argument error as 0.0
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3)
+    end
 end
 
 end # @testset StatsBase.Weights
