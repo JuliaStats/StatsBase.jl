@@ -1,6 +1,7 @@
 using StatsBase
 using Test
 using DelimitedFiles
+using Statistics
 
 ##### Location
 
@@ -113,7 +114,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test mad((x for x in (1, 2.1)), normalize=false) ≈ 0.55
 @test mad(Any[1, 2.1], normalize=false) ≈ 0.55
 @test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
-@test_throws ArgumentError mad(Int[])
+@test_throws ArgumentError mad(Int[], normalize = true)
 
 # Issue 197
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009
