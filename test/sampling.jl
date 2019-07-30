@@ -78,13 +78,13 @@ test_rng_use(sample, 1:10, 10)
 
 @testset "sampling pairs" begin
 
-    Random.seed!(1)
+    rng = Random.MersenneTwister(1)
 
-    @test samplepair(2)  ===  (1, 2)
-    @test samplepair(10) === (8, 2)
+    @test samplepair(rng, 2)  ===  (1, 2)
+    @test samplepair(rng, 10) === (8, 2)
 
-    @test samplepair([3, 4, 2, 6, 8]) === (2, 6)
-    @test samplepair([1, 2])          === (1, 2)
+    @test samplepair(rng, [3, 4, 2, 6, 8]) === (2, 6)
+    @test samplepair(rng, [1, 2])          === (1, 2)
 end
 
 test_rng_use(samplepair, 1000)
