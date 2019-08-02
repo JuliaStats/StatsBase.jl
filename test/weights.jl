@@ -503,12 +503,11 @@ end
 
 @testset "Exponential Weights" begin
     @testset "Usage" begin
-        θ = 5.25
-        λ = 1 - exp(-1 / θ)     # simple conversion for the more common/readable method
-        v = [λ*(1-λ)^(1-i) for i = 1:4]
+        λ = 0.2
+        v = [(1 - λ) ^ (4 - i) for i = 1:4]
         w = Weights(v)
 
-        @test round.(w, digits=4) == [0.1734, 0.2098, 0.2539, 0.3071]
+        @test round.(w, digits=4) == [0.512, 0.64, 0.8, 1.0]
 
         @testset "basic" begin
             @test eweights(1:4, λ) ≈ w
@@ -519,7 +518,7 @@ end
         end
 
         @testset "indexin" begin
-            v = [λ*(1-λ)^(1-i) for i = 1:10]
+            v = [(1 - λ) ^ (10 - i) for i = 1:10]
 
             # Test that we should be able to skip indices easily
             @test eweights([1, 3, 5, 7], 1:10, λ) ≈ Weights(v[[1, 3, 5, 7]])
@@ -527,7 +526,7 @@ end
             # This should also work with actual time types
             t1 = DateTime(2019, 1, 1, 1)
             tx = t1 + Hour(7)
-            tn = DateTime(2019, 1, 2, 1)
+            tn = DateTime(2019, 1, 1, 10)
 
             @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ) ≈ Weights(v[[1, 3, 5, 7]])
         end
@@ -549,6 +548,7 @@ end
         # Passing in an array of bools will work because Bool <: Integer,
         # but any `false` values will trigger the same argument error as 0.0
         @test_throws ArgumentError eweights([true, false, true, true], 0.3)
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3, 4)
     end
 end
 

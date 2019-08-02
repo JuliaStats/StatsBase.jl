@@ -243,10 +243,8 @@ julia> eweights(1:10, 0.3)
  1.0
 ```
 """
-function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
+function eweights(t::AbstractVector{T}, λ::Real, n::Integer) where T <: Integer
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
-    (lo, hi) = extrema(t)
-    n = hi - lo + 1
 
     w0 = map(t) do i
         i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
@@ -257,9 +255,15 @@ function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
     Weights(w0, s)
 end
 
-eweights(n::Integer, λ::Real) = eweights(1:n, λ)
+function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
+    isempty(t) && return Weights(collect(t), 0)
+    (lo, hi) = extrema(t)
+    return eweights(t, λ, hi - lo + 1)
+end
+
+eweights(n::Integer, λ::Real) = eweights(1:n, λ, n)
 eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
-    eweights(something.(indexin(t, r)), λ)
+    eweights(something.(indexin(t, r)), λ, length(r))
 
 # NOTE: no variance correction is implemented for exponential weights
 
