@@ -231,24 +231,26 @@ For each element `i` in `t` the weight value is computed as:
 ```julia-repl
 julia> eweights(1:10, 0.3)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
- 0.3
- 0.42857142857142855
- 0.6122448979591837
- 0.8746355685131197
- 1.249479383590171
- 1.7849705479859588
- 2.549957925694227
- 3.642797036706039
- 5.203995766722913
- 7.434279666747019
+ 0.04035360699999998
+ 0.05764800999999997
+ 0.08235429999999996
+ 0.11764899999999996
+ 0.16806999999999994
+ 0.24009999999999995
+ 0.3429999999999999
+ 0.48999999999999994
+ 0.7
+ 1.0
 ```
 """
 function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
+    (lo, hi) = extrema(t)
+    n = hi - lo + 1
 
     w0 = map(t) do i
         i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
-        λ * (1 - λ)^(1 - i)
+        return (1 - λ) ^ (n - i)
     end
 
     s = sum(w0)
