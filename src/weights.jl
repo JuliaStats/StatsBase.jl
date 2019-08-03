@@ -216,7 +216,7 @@ If an integer `n` is provided, weights are generated for values from 1 to `n`
 
 For each element `i` in `t` the weight value is computed as:
 
-``λ (1 - λ)^{1 - i}``
+``λ (1 - λ)^{n - i}``
 
 # Arguments
 
@@ -241,7 +241,11 @@ julia> eweights(1:10, 0.3)
  0.48999999999999994
  0.7
  1.0
-```
+
+# Links
+- https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+- https://en.wikipedia.org/wiki/Exponential_smoothing
+ ```
 """
 function eweights(t::AbstractVector{T}, λ::Real, n::Integer) where T <: Integer
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
