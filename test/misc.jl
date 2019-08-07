@@ -15,6 +15,11 @@ vals, lens = rle(z)
 @test lens == [2, 2, 1, 1, 3]
 @test inverse_rle(vals, lens) == z
 
+z = BitArray([true, true, false, false, true])
+(vals, lens) = rle(z)
+@test vals == [true, false, true]
+@test lens == [2, 2, 1]
+
 # levelsmap
 a = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3, 2]
 b = [true, false, false, true, false, true, true, false]
