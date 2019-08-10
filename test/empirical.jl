@@ -32,6 +32,22 @@ end
     fnecdf = ecdf([1.0, 0.5], weights([3, 1]))
     @test fnecdf(0.75) == 0.25
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 1.0)
-
     @test_throws ArgumentError ecdf(rand(8), weights(rand(10)))
+    #  Check frequency weights
+    v = randn(100)
+    r = rand(1:100, 100)
+    vv = vcat(fill.(v, r)...)  #  repeat elements of v according to r
+    fw = fweights(r)
+    frecdf1 = ecdf(v, fw)
+    frecdf2 = ecdf(vv)
+    @test frecdf1(y) ≈ frecdf2(y)
+    #  Check probability weights
+    a = randn(100)
+    b = rand(100)
+    b̃ = abs(10randn()) * b
+    bw1 = pweights(b)
+    bw2 = pweights(b̃)
+    precdf1 = ecdf(a, bw1)
+    precdf2 = ecdf(a, bw2)
+    @test precdf1(y) ≈ precdf2(y)
 end
