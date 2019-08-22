@@ -115,7 +115,7 @@ rss(obj::StatisticalModel) = error("rss is not defined for $(typeof(obj)).")
 Return the information matrix. By default the Fisher information matrix is returned,
 while the observed information matrix can be requested with `expected = false`.
 """
-informationmatrix(model::StatisticalModel; expected::Bool = true) =
+informationmatrix(obj::StatisticalModel; expected::Bool = true) =
     error("informationmatrix is not defined for $(typeof(obj)).")
 
 """
@@ -133,6 +133,13 @@ Return the variance-covariance matrix for the coefficients of the model.
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 
 """
+    modeltype(obj::StatisticalModel)
+
+Short description of the model type, as a String
+"""
+modeltype(obj::StatisticalModel) = error("modeltype is not defined for $(typeof(obj))")
+
+"""
     weights(obj::StatisticalModel)
 
 Return the weights used in the model.
@@ -142,17 +149,21 @@ weights(obj::StatisticalModel) = error("weights is not defined for $(typeof(obj)
 """
     isfitted(obj::StatisticalModel)
 
-Indicate whether the model has been fitted.
+Indicate whether the model has been fit.
 """
 isfitted(obj::StatisticalModel) = error("isfitted is not defined for $(typeof(obj)).")
 
 """
-Fit a statistical model.
+    fit(obj::StatisticalModel, args...)
+
+Fit a statistical model.  The `args` that apply depend on the model type.
 """
 fit(obj::StatisticalModel, args...) = error("fit is not defined for $(typeof(obj)).")
 
 """
-Fit a statistical model in-place.
+    fit!(obj::StatisticalModel, args...)
+
+Fit a statistical model in-place.  The `args` that apply depend on the model type.
 """
 fit!(obj::StatisticalModel, args...) = error("fit! is not defined for $(typeof(obj)).")
 
