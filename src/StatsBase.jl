@@ -30,11 +30,13 @@ export
     AnalyticWeights,    # to represent an analytic/precision/reliability weight vector
     FrequencyWeights,   # to representing a frequency/case/repeat weight vector
     ProbabilityWeights, # to representing a probability/sampling weight vector
+    UnitWeights,        # to representing a uniform weight vector
     weights,            # construct a generic Weights vector
     aweights,           # construct an AnalyticWeights vector
     fweights,           # construct a FrequencyWeights vector
     pweights,           # construct a ProbabilityWeights vector
     eweights,           # construct an exponential Weights vector
+    uweights,           # construct an UnitWeights vector
     wsum,               # weighted sum with vector as second argument
     wsum!,              # weighted sum across dimensions with provided storage
     wmean,              # weighted mean

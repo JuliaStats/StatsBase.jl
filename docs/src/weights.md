@@ -115,6 +115,16 @@ julia> eweights(t, r, 0.3)
 NOTE: This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
 Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
 
+### `UnitWeights`
+
+Unit weights treat all observations equally.
+
+```julia
+w = UnitWeights{Float64}(3)
+w = weights(Float64, 3)
+w = weights(3)
+```
+
 ## Methods
 
 `AbstractWeights` implements the following methods:
