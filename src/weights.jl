@@ -179,7 +179,7 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 """
     varcorrection(w::ProbabilityWeights, corrected=false)
 
-* `corrected=true`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `corrected=true`: ``\\frac{n}{(n - 1) \\sum w}``, where ``n`` equals `count(!iszero, w)`
 * `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
@@ -250,11 +250,9 @@ eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
 
 # NOTE: No variance correction is implemented for exponential weights
 
-struct UnitWeights{S<:Real, T<:Real} <: AbstractWeights{S, T, V where V<:Vector{T}}
-    sum::S
+struct UnitWeights{S<:Integer, T<:Real} <: AbstractWeights{S, T, V where V<:Vector{T}}
+    len::S
 end
-
-UnitWeights{T}(s::S) where {S, T} = UnitWeights{S, T}(s)
 
 @doc """
     UnitWeights{T}(s)
@@ -263,30 +261,21 @@ Construct a `UnitWeights` vector with length `s` and weight elements of type `T`
 All weight elements are identically one.
 """ UnitWeights
 
-eltype(wv::UnitWeights{S, T})    where {S, T} = T
-values(wv::UnitWeights{S, T})    where {S, T} = fill(one(T), length(wv))
-isempty(wv::UnitWeights{S, T})   where {S, T} = iszero(wv.sum)
-length(wv::UnitWeights{S, T})    where {S, T} = Int(wv.sum)
-Base.size(wv::UnitWeights{S, T}) where {S, T} = Tuple(length(wv))
+eltype(wv::UnitWeights{S, T}) where {S, T} = T
+values(wv::UnitWeights{S, T}) where {S, T} = fill(one(T), length(wv))
+sum(wv::UnitWeights{S, T}) where {S, T} = convert(T, length(wv))
+isempty(wv::UnitWeights) = iszero(wv.len)
+length(wv::UnitWeights) = wv.len
+Base.size(wv::UnitWeights) = Tuple(length(wv))
 
-function Base.getindex(wv::UnitWeights{S, T}, i::Int) where {S, T}
-    (i > 0) & (i <= length(wv)) ? one(T) : Base.throw_boundserror(wv, i)
+@propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::Integer) where {S, T}
+    @boundscheck checkbounds(wv,i)
+    one(T)
 end
 
-function Base.getindex(wv::UnitWeights{S, T}, i::AbstractRange{<:Int}) where {S, T}
-    if (minimum(i) > 0) & (maximum(i) <= length(wv))
-        return fill(one(T), length(i))
-    else
-        Base.throw_boundserror(wv, i)
-    end
-end
-
-function Base.getindex(wv::UnitWeights{S, T}, i::AbstractArray{<:Int}) where {S, T}
-    if (minimum(i) > 0) & (maximum(i) <= length(wv))
-        return fill(one(T), size(i))
-    else
-        Base.throw_boundserror(wv, i)
-    end
+@propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::AbstractArray{<:Int}) where {S, T}
+    @boundscheck checkbounds(wv,i)
+    fill(one(T), size(i))
 end
 
 Base.getindex(wv::UnitWeights{S, T}, ::Colon) where {S, T} = fill(one(T), length(wv))
@@ -313,8 +302,8 @@ uweights(s::S)            where S      = UnitWeights{S, S}(s)
 """
     varcorrection(w::UnitWeights, corrected=false)
 
-* `corrected=true`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
-* `corrected=false`: ``\\frac{1}{\\sum w}``
+* `corrected=true`: ``\\frac{n}{n - 1}``, where ``n`` is the length of the weight vector
+* `corrected=false`: ``\\frac{1}{n}``, where ``n`` is the length of the weight vector
 """
 @inline function varcorrection(w::UnitWeights, corrected::Bool=false)
     corrected ? (1 / (w.sum - 1)) : (1 / w.sum)
@@ -354,7 +343,7 @@ Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
 
 for v in (AbstractArray{<:Number}, BitArray, SparseArrays.SparseMatrixCSC, AbstractArray)
     @eval begin
-        function Base.sum(v::$v, w::UnitWeights) where {S,T}
+        function Base.sum(v::$v, w::UnitWeights)
             if length(v) != length(w)
                 throw(DimensionMismatch("array and weights have different lengths"))
             end
@@ -559,9 +548,9 @@ function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Num
     _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
 end
 
-function wsum(A::AbstractArray{<:Number}, w::UnitWeights{S,T}, dim::Int) where {S,T}
+function wsum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
     (size(A, dim) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims = dim)
+    return sum(A, dims=dim)
 end
 
 # extended sum! and wsum
@@ -571,9 +560,9 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
 
 Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}, dim::Int) = wsum(A, values(w), dim)
 
-function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights{S,T}, dim::Int) where {S,T}
+function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
     (size(A, dim) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims = dim)
+    return sum(A, dims=dim)
 end
 
 ###### Weighted means #####
@@ -624,13 +613,13 @@ _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
 function StatsBase._mean(A::AbstractArray, w::UnitWeights{S,T}, dims::Nothing) where {S,T}
-    (length(A) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return mean(A)
 end
 
-function StatsBase._mean(A::AbstractArray, w::UnitWeights{S,T}, dims::Int) where {S,T}
-    (length(A) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return mean(A, dims = dims)
+function StatsBase._mean(A::AbstractArray, w::UnitWeights, dims::Int)
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return mean(A, dims=dims)
 end
 
 ###### Weighted quantile #####

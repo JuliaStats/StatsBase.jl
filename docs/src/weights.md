@@ -120,9 +120,8 @@ Since `indexin` returns `nothing` if there is no corresponding value from `t` in
 Unit weights treat all observations equally.
 
 ```julia
-w = UnitWeights{Float64}(3)
-w = weights(Float64, 3)
-w = weights(3)
+w = uweights(Float64, 3)
+w = uweights(3)
 ```
 
 ## Methods
