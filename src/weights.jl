@@ -559,7 +559,7 @@ function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Num
     _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
 end
 
-function Base.wsum(A::AbstractArray{<:Number}, w::UnitWeights{S,T}, dim::Int) where {S,T}
+function wsum(A::AbstractArray{<:Number}, w::UnitWeights{S,T}, dim::Int) where {S,T}
     (size(A, dim) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
     return sum(A, dims = dim)
 end
@@ -623,8 +623,13 @@ _mean(A::AbstractArray, w::AbstractWeights, dims::Nothing) =
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
-function mean(A::AbstractArray, w::UnitWeights{S,T}; dims::Union{Nothing,Int}=nothing) where {S,T}
-    (length(v) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
+function StatsBase._mean(A::AbstractArray, w::UnitWeights{S,T}, dims::Nothing) where {S,T}
+    (length(A) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return mean(A)
+end
+
+function StatsBase._mean(A::AbstractArray, w::UnitWeights{S,T}, dims::Int) where {S,T}
+    (length(A) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
     return mean(A, dims = dims)
 end
 
