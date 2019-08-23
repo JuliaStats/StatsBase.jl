@@ -488,6 +488,7 @@ end
     @test_throws DimensionMismatch mean(a, wt, dims=4)
 
     @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), [0.5]) ≈ [6.0]
+    @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), 0.5) ≈ 6.0
     @test median([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5)) ≈ 6.0
 end
 

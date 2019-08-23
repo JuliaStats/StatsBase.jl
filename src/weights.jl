@@ -249,8 +249,8 @@ eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
 
 # NOTE: No variance correction is implemented for exponential weights
 
-struct UnitWeights{S<:Integer, T<:Real} <: AbstractWeights{S, T, V where V<:Vector{T}}
-    len::S
+struct UnitWeights{T<:Real} <: AbstractWeights{Int, T, V where V<:Vector{T}}
+    len::Int
 end
 
 @doc """
@@ -260,27 +260,27 @@ Construct a `UnitWeights` vector with length `s` and weight elements of type `T`
 All weight elements are identically one.
 """ UnitWeights
 
-values(wv::UnitWeights{S, T}) where {S, T} = fill(one(T), length(wv))
-sum(wv::UnitWeights{S, T}) where {S, T} = convert(T, length(wv))
+values(wv::UnitWeights{T}) where T = fill(one(T), length(wv))
+sum(wv::UnitWeights{T}) where T = convert(T, length(wv))
 isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = Tuple(length(wv))
 
-@propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::Integer) where {S, T}
+@propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
     @boundscheck checkbounds(wv, i)
     one(T)
 end
 
-@propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::AbstractArray{<:Int}) where {S, T}
+@propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::AbstractArray{<:Int}) where T
     @boundscheck checkbounds(wv, i)
     fill(one(T), size(i))
 end
 
-Base.getindex(wv::UnitWeights{S, T}, ::Colon) where {S, T} = fill(one(T), length(wv))
+Base.getindex(wv::UnitWeights{T}, ::Colon) where T = fill(one(T), length(wv))
 
 """
-    uweights(::Type{T}, s::Real) where T<:Real
-    uweights(s::T) where T<:Real
+    uweights(::Type{T}, s::Integer) where T<:Real
+    uweights(s::Integer)
 
 Construct a `UnitWeights` vector with length `s` and weight elements of type `T`.
 All weight elements are identically one.
@@ -288,14 +288,20 @@ All weight elements are identically one.
 # Examples
 ```julia-repl
 julia> uweights(Float64, 3)
-3-element UnitWeights{Int64,Float64}:
+3-element UnitWeights{Float64}:
  1.0
  1.0
  1.0
+
+julia> uweights(3)
+3-element UnitWeights{Int64}:
+ 1
+ 1
+ 1
 ```
 """
-uweights(::Type{T}, s::S) where {S, T} = UnitWeights{S, T}(s)
-uweights(s::S)            where S      = UnitWeights{S, S}(s)
+uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
+uweights(s::Int)                            = UnitWeights{Int}(s)
 
 """
     varcorrection(w::UnitWeights, corrected=false)
@@ -306,7 +312,7 @@ uweights(s::S)            where S      = UnitWeights{S, S}(s)
 This definition is equivalent to the correction applied to unweighted data.
 """
 @inline function varcorrection(w::UnitWeights, corrected::Bool=false)
-    corrected ? (1 / (w.sum - 1)) : (1 / w.sum)
+    corrected ? (1 / (w.len - 1)) : (1 / w.len)
 end
 
 ##### Equality tests #####
@@ -345,7 +351,7 @@ for v in (AbstractArray{<:Number}, BitArray, SparseArrays.SparseMatrixCSC, Abstr
     @eval begin
         function Base.sum(v::$v, w::UnitWeights)
             if length(v) != length(w)
-                throw(DimensionMismatch("array and weights have different lengths"))
+                throw(DimensionMismatch("Inconsistent array dimension."))
             end
             return sum(v)
         end
