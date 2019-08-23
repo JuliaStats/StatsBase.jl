@@ -269,12 +269,12 @@ length(wv::UnitWeights) = wv.len
 Base.size(wv::UnitWeights) = Tuple(length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::Integer) where {S, T}
-    @boundscheck checkbounds(wv,i)
+    @boundscheck checkbounds(wv, i)
     one(T)
 end
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::AbstractArray{<:Int}) where {S, T}
-    @boundscheck checkbounds(wv,i)
+    @boundscheck checkbounds(wv, i)
     fill(one(T), size(i))
 end
 
@@ -304,6 +304,8 @@ uweights(s::S)            where S      = UnitWeights{S, S}(s)
 
 * `corrected=true`: ``\\frac{n}{n - 1}``, where ``n`` is the length of the weight vector
 * `corrected=false`: ``\\frac{1}{n}``, where ``n`` is the length of the weight vector
+
+This definition is equivalent to the correction applied to unweighted data.
 """
 @inline function varcorrection(w::UnitWeights, corrected::Bool=false)
     corrected ? (1 / (w.sum - 1)) : (1 / w.sum)
@@ -318,8 +320,8 @@ for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
     end
 end
 
-Base.isequal(x::UnitWeights, y::UnitWeights) = isequal(x.sum, y.sum)
-Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.sum == y.sum)
+Base.isequal(x::UnitWeights, y::UnitWeights) = isequal(x.len, y.len)
+Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.len == y.len)
 
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
 Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
@@ -549,7 +551,7 @@ function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Num
 end
 
 function wsum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
-    (size(A, dim) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
+    size(A, dim) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return sum(A, dims=dim)
 end
 
@@ -561,7 +563,7 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
 Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}, dim::Int) = wsum(A, values(w), dim)
 
 function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
-    (size(A, dim) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
+    size(A, dim) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return sum(A, dims=dim)
 end
 
@@ -612,13 +614,13 @@ _mean(A::AbstractArray, w::AbstractWeights, dims::Nothing) =
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
-function StatsBase._mean(A::AbstractArray, w::UnitWeights{S,T}, dims::Nothing) where {S,T}
+function _mean(A::AbstractArray, w::UnitWeights, dims::Nothing)
     length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return mean(A)
 end
 
-function StatsBase._mean(A::AbstractArray, w::UnitWeights, dims::Int)
-    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+function _mean(A::AbstractArray, w::UnitWeights, dims::Int)
+    size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return mean(A, dims=dims)
 end
 
@@ -710,8 +712,8 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
-function quantile(v::RealVector, w::UnitWeights{S,T}, p::RealVector) where {S,T}
-    (length(v) != length(w)) && throw(DimensionMismatch("Inconsistent array dimension."))
+function quantile(v::RealVector, w::UnitWeights, p::RealVector)
+    length(v) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return quantile(v, p)
 end
 

@@ -41,6 +41,17 @@ w = ProbabilityWeights([0.2, 0.1, 0.3])
 w = pweights([0.2, 0.1, 0.3])
 ```
 
+### `UnitWeights`
+
+Unit weights are a special case in which all observations are given a weight equal to `1`. Using such weights is equivalent to computing unweighted statistics.
+
+This type can notably be used when implementing an algorithm so that a only a weighted variant has to be written. The unweighted variant is then obtained by passing a `UnitWeights` object. This is very efficient since no weights vector is actually allocated.
+
+```julia
+w = uweights(Float64, 3)
+w = uweights(3)
+```
+
 ### `Weights`
 
 The `Weights` type describes a generic weights vector which does not support all operations possible for `FrequencyWeights`, `AnalyticWeights` and `ProbabilityWeights`.
@@ -114,15 +125,6 @@ julia> eweights(t, r, 0.3)
 
 NOTE: This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
 Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
-
-### `UnitWeights`
-
-Unit weights treat all observations equally.
-
-```julia
-w = uweights(Float64, 3)
-w = uweights(3)
-```
 
 ## Methods
 
