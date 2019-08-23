@@ -300,8 +300,8 @@ julia> uweights(3)
  1
 ```
 """
-uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
 uweights(s::Int)                            = UnitWeights{Int}(s)
+uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
 
 """
     varcorrection(w::UnitWeights, corrected=false)

@@ -106,7 +106,7 @@ end
     @test size(wv) === (3,)
     @test sum(wv) === 3.
     @test values(wv) == fill(1.0, 3)
-    @test varcorrection(wv) == 1/3
+    @test Base.varcorrection(wv) == 1/3
     @test !isequal(wv, fweights(fill(1.0, 3)))
     @test isequal(wv, uweights(3))
     @test wv != fweights(fill(1.0, 3))
@@ -464,7 +464,7 @@ end
     @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
 end
 
-@testset "Sum, mean and quantiles for unit weights" begin
+@testset "Sum, mean, quantiles and variance for unit weights" begin
     wt = uweights(Float64, 3)
 
     @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
@@ -490,6 +490,9 @@ end
     @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), [0.5]) ≈ [6.0]
     @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), 0.5) ≈ 6.0
     @test median([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5)) ≈ 6.0
+
+    @test var(a, uweights(Float64, 27), corrected = false) ≈ var(a, corrected = false)
+    @test var(a, uweights(Float64, 27), corrected = true) ≈ var(a, corrected = true)
 end
 
 @testset "Exponential Weights" begin
