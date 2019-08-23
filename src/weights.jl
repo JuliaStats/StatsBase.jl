@@ -17,14 +17,13 @@ macro weights(name)
     end
 end
 
-eltype(wv::AbstractWeights) = eltype(wv.values)
 length(wv::AbstractWeights) = length(wv.values)
 values(wv::AbstractWeights) = wv.values
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
+size(wv::AbstractWeights) = size(wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
-Base.size(wv::AbstractWeights) = size(wv.values)
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
@@ -261,12 +260,11 @@ Construct a `UnitWeights` vector with length `s` and weight elements of type `T`
 All weight elements are identically one.
 """ UnitWeights
 
-eltype(wv::UnitWeights{S, T}) where {S, T} = T
 values(wv::UnitWeights{S, T}) where {S, T} = fill(one(T), length(wv))
 sum(wv::UnitWeights{S, T}) where {S, T} = convert(T, length(wv))
 isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
-Base.size(wv::UnitWeights) = Tuple(length(wv))
+size(wv::UnitWeights) = Tuple(length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{S, T}, i::Integer) where {S, T}
     @boundscheck checkbounds(wv, i)
