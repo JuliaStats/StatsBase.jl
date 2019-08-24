@@ -48,8 +48,8 @@ Unit weights are a special case in which all observations are given a weight equ
 This type can notably be used when implementing an algorithm so that a only a weighted variant has to be written. The unweighted variant is then obtained by passing a `UnitWeights` object. This is very efficient since no weights vector is actually allocated.
 
 ```julia
-w = uweights(Float64, 3)
 w = uweights(3)
+w = uweights(Float64, 3)
 ```
 
 ### `Weights`

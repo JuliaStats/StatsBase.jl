@@ -106,7 +106,7 @@ end
     @test size(wv) === (3,)
     @test sum(wv) === 3.
     @test values(wv) == fill(1.0, 3)
-    @test Base.varcorrection(wv) == 1/3
+    @test StatsBase.varcorrection(wv) == 1/3
     @test !isequal(wv, fweights(fill(1.0, 3)))
     @test isequal(wv, uweights(3))
     @test wv != fweights(fill(1.0, 3))
