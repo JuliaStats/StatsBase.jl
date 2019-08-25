@@ -8,15 +8,8 @@ abstract type AbstractDataTransform end
 
 Apply transformation `t` to vector or matrix `x` in place.
 """
-function transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real})
-    transform!(x, t, x)
-    return x
-end
-
-function transform!(t::AbstractDataTransform, x::AbstractVector{<:Real})
-    transform!(t, reshape(x, :, 1))
-    return x
-end
+transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) = transform!(x, t, x)
+transform!(t::AbstractDataTransform, x::AbstractVector{<:Real}) = transform!(t, reshape(x, :, 1))
 
 """
     transform(t::AbstractDataTransform, x)
@@ -36,15 +29,8 @@ end
 Perform an in-place reconstruction into an original data scale from a transformed
 vector or matrix `y` using `t` transformation.
 """
-function reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real})
-    reconstruct!(y, t, y)
-    return y
-end
-
-function reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real})
-    reconstruct!(t, reshape(y, :, 1))
-    return y
-end
+reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) = reconstruct!(y, t, y)
+reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) = reconstruct!(t, reshape(y, :, 1))
 
 """
     reconstruct(t::AbstractDataTransform, y)
@@ -181,11 +167,11 @@ function transform!(y::AbstractMatrix{<:Real}, t::ZScoreTransform, x::AbstractMa
                 broadcast!((x,m,s)->(x-m)/s, y, x, m', s')
             end
         end
-        return y
     elseif t.dims == 2
         t_ = ZScoreTransform(t.len, 1, t.mean, t.scale)
-        return transform!(y', t_, x')'
+        transform!(y', t_, x')
     end
+    return y
 end
 
 function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::AbstractMatrix{<:Real})
@@ -213,11 +199,11 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::Abstract
                 broadcast!((y,m,s)->y*s+m, x, y, m', s')
             end
         end
-        return x
     elseif t.dims == 2
         t_ = ZScoreTransform(t.len, 1, t.mean, t.scale)
-        return reconstruct!(x', t_, y')'
+        reconstruct!(x', t_, y')
     end
+    return x
 end
 
 """
@@ -286,12 +272,12 @@ julia> StatsBase.transform(dt, X)
 function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
              dims::Union{Integer,Nothing}=nothing, unit::Bool=true)
     if dims == 1
-        l, tmin, tmax = _extract_info(X)
+        l, tmin, tmax = _compute_extrema(X)
     elseif dims == 2
-        l, tmin, tmax = _extract_info(X')
+        l, tmin, tmax = _compute_extrema(X')
     elseif dims == nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
-        l, tmin, tmax = _extract_info(X')
+        l, tmin, tmax = _compute_extrema(X')
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
@@ -302,7 +288,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
     return UnitRangeTransform(l, dims, unit, tmin, tmax)
 end
 
-function _extract_info(X::AbstractMatrix{<:Real})
+function _compute_extrema(X::AbstractMatrix{<:Real})
     n, l = size(X)
     tmin = X[1, :]
     tmax = X[1, :]
@@ -326,18 +312,9 @@ function fit(::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
         throw(DomainError(dims, "fit only accept dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
-    n = length(X)
-    tmin = X[1]
-    tmax = X[1]
-    @inbounds for i = 2:n
-        if X[i] < tmin
-            tmin = X[i]
-        elseif X[i] > tmax
-            tmax = X[i]
-        end
-    end
+    l, tmin, tmax = _compute_extrema(reshape(X, :, 1))
     tmax = 1 / (tmax - tmin)
-    return UnitRangeTransform(1, dims, unit, [tmin], [tmax])
+    return UnitRangeTransform(1, dims, unit, vec(tmin), vec(tmax))
 end
 
 function transform!(y::AbstractMatrix{<:Real}, t::UnitRangeTransform, x::AbstractMatrix{<:Real})
@@ -355,11 +332,11 @@ function transform!(y::AbstractMatrix{<:Real}, t::UnitRangeTransform, x::Abstrac
         else
             broadcast!(*, y, x, tscale')
         end
-        return y
     elseif t.dims == 2
         t_ = UnitRangeTransform(t.len, 1, t.unit, t.min, t.scale)
-        return transform!(y', t_, x')'
+        transform!(y', t_, x')
     end
+    return y
 end
 
 function reconstruct!(x::AbstractMatrix{<:Real}, t::UnitRangeTransform, y::AbstractMatrix{<:Real})
@@ -377,11 +354,11 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::UnitRangeTransform, y::Abstr
         else
             broadcast!(/, x, y, tscale')
         end
-        return x
     elseif t.dims == 2
         t_ = UnitRangeTransform(t.len, 1, t.unit, t.min, t.scale)
-        return reconstruct!(x', t_, y')'
+        reconstruct!(x', t_, y')
     end
+    return x
 end
 
 """
@@ -392,9 +369,6 @@ end
 
 - `ZScoreTransform`
 - `UnitRangeTransform`
-
-Return a standardized matrix while the input of `X` is a `AbstractMatrix`.
-Return a standardized vector while the input of `X` is a `AbstractVector`.
 
 # Example
 
