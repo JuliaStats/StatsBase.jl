@@ -491,8 +491,8 @@ end
     @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), 0.5) ≈ 6.0
     @test median([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5)) ≈ 6.0
 
-    @test var(a, uweights(Float64, 27), corrected = false) ≈ var(a, corrected = false)
-    @test var(a, uweights(Float64, 27), corrected = true) ≈ var(a, corrected = true)
+    @test var(a, uweights(Float64, 27), corrected=false) ≈ var(a, corrected=false)
+    @test var(a, uweights(Float64, 27), corrected=true) ≈ var(a, corrected= true)
 end
 
 @testset "Exponential Weights" begin
