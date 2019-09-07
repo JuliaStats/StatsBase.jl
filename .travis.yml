@@ -27,4 +27,3 @@ jobs:
                                     Pkg.instantiate()'
         - julia --project=docs/ docs/make.jl
       after_success: skip
-      
