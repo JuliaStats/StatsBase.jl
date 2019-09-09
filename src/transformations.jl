@@ -9,7 +9,7 @@ abstract type AbstractDataTransform end
 Apply transformation `t` to vector or matrix `x` in place.
 """
 transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) = transform!(x, t, x)
-transform!(t::AbstractDataTransform, x::AbstractVector{<:Real}) = transform!(t, reshape(x, :, 1))
+transform!(t::AbstractDataTransform, x::AbstractVector{<:Real}) = (transform!(t, reshape(x, :, 1)); x)
 
 """
     transform(t::AbstractDataTransform, x)
@@ -30,7 +30,7 @@ Perform an in-place reconstruction into an original data scale from a transforme
 vector or matrix `y` using `t` transformation.
 """
 reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) = reconstruct!(y, t, y)
-reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) = reconstruct!(t, reshape(y, :, 1))
+reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) = (reconstruct!(t, reshape(y, :, 1)); y)
 
 """
     reconstruct(t::AbstractDataTransform, y)
@@ -306,9 +306,7 @@ end
 
 function fit(::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
              dims::Union{Integer,Nothing}=nothing, unit::Bool=true)
-    if dims == nothing
-        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
-    elseif dims != 1
+    if dims != 1
         throw(DomainError(dims, "fit only accept dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
