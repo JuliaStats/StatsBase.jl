@@ -31,7 +31,7 @@ function rle(v::AbstractVector{T}) where T
     i = 2
     @inbounds while i <= n
         vi = v[i]
-        if vi == cv
+        if isequal(vi, cv)
             cl += 1
         else
             push!(vals, cv)

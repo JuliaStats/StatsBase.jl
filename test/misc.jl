@@ -20,6 +20,12 @@ z = BitArray([true, true, false, false, true])
 @test vals == [true, false, true]
 @test lens == [2, 2, 1]
 
+z = [1, 1, 2, missing, 2, 3, 1, missing, missing, 3, 3, 3, 3]
+vals, lens = rle(z)
+@test isequal(vals, [1, 2, missing, 2, 3, 1, missing, 3])
+@test lens == [2, 1, 1, 1, 1, 1, 2, 4]
+@test isequal(inverse_rle(vals, lens), z)
+
 # levelsmap
 a = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3, 2]
 b = [true, false, false, true, false, true, true, false]
