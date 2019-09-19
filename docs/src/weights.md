@@ -41,6 +41,17 @@ w = ProbabilityWeights([0.2, 0.1, 0.3])
 w = pweights([0.2, 0.1, 0.3])
 ```
 
+### `UnitWeights`
+
+Unit weights are a special case in which all observations are given a weight equal to `1`. Using such weights is equivalent to computing unweighted statistics.
+
+This type can notably be used when implementing an algorithm so that a only a weighted variant has to be written. The unweighted variant is then obtained by passing a `UnitWeights` object. This is very efficient since no weights vector is actually allocated.
+
+```julia
+w = uweights(3)
+w = uweights(Float64, 3)
+```
+
 ### `Weights`
 
 The `Weights` type describes a generic weights vector which does not support all operations possible for `FrequencyWeights`, `AnalyticWeights` and `ProbabilityWeights`.
@@ -49,6 +60,71 @@ The `Weights` type describes a generic weights vector which does not support all
 w = Weights([1., 2., 3.])
 w = weights([1., 2., 3.])
 ```
+
+### Exponential weights: `eweights`
+
+Exponential weights are a common form of temporal weights which assign exponentially decreasing
+weights to past observations.
+
+If `t` is a vector of temporal indices then for each index `i` we compute the weight as:
+
+``λ (1 - λ)^{1 - i}``
+
+``λ`` is a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
+As this value approaches 0, the resulting weights will be almost equal,
+while values closer to 1 will put greater weight on the tail elements of the vector.
+
+For example, the following call generates exponential weights for ten observations with ``λ = 0.3``.
+```julia-repl
+julia> eweights(1:10, 0.3)
+10-element Weights{Float64,Float64,Array{Float64,1}}:
+ 0.3
+ 0.42857142857142855
+ 0.6122448979591837
+ 0.8746355685131197
+ 1.249479383590171
+ 1.7849705479859588
+ 2.549957925694227
+ 3.642797036706039
+ 5.203995766722913
+ 7.434279666747019
+```
+
+Simply passing the number of observations `n` is equivalent to passing in `1:n`.
+
+```julia-repl
+julia> eweights(10, 0.3)
+10-element Weights{Float64,Float64,Array{Float64,1}}:
+ 0.3
+ 0.42857142857142855
+ 0.6122448979591837
+ 0.8746355685131197
+ 1.249479383590171
+ 1.7849705479859588
+ 2.549957925694227
+ 3.642797036706039
+ 5.203995766722913
+ 7.434279666747019
+```
+
+Finally, you can construct exponential weights from an arbitrary subset of timestamps within a larger range.
+
+```julia-repl
+julia> t
+2019-01-01T01:00:00:2 hours:2019-01-01T05:00:00
+
+julia> r
+2019-01-01T01:00:00:1 hour:2019-01-02T01:00:00
+
+julia> eweights(t, r, 0.3)
+3-element Weights{Float64,Float64,Array{Float64,1}}:
+ 0.3
+ 0.6122448979591837
+ 1.249479383590171
+```
+
+NOTE: This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
+Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
 
 ## Methods
 
@@ -70,5 +146,6 @@ Weights
 aweights
 fweights
 pweights
+eweights
 weights
 ```

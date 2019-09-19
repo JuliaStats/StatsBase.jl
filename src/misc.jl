@@ -18,7 +18,7 @@ julia> rle([1,1,1,2,2,3,3,3,3,2,2,2])
 ([1, 2, 3, 2], [3, 2, 4, 3])
 ```
 """
-function rle(v::Vector{T}) where T
+function rle(v::AbstractVector{T}) where T
     n = length(v)
     vals = T[]
     lens = Int[]
@@ -31,7 +31,7 @@ function rle(v::Vector{T}) where T
     i = 2
     @inbounds while i <= n
         vi = v[i]
-        if vi == cv
+        if isequal(vi, cv)
             cl += 1
         else
             push!(vals, cv)

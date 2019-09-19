@@ -1,4 +1,4 @@
-using Documenter, StatsBase, Statistics, Random
+using Documenter, StatsBase, Statistics, Random, LinearAlgebra
 
 # Workaround for JuliaLang/julia/pull/28625
 if Base.HOME_PROJECT[] !== nothing
