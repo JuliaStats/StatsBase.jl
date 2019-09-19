@@ -24,7 +24,7 @@ fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool=true, scal
 
 ## Unit range normalization
 
-**Unit range normalization* is an alternative data transformation which scales features
+**Unit range normalization** is an alternative data transformation which scales features
 to lie in the interval `[0; 1]`.
 
 Unit range normalization can be performed using `fit(UnitRangeTransform, ...)`.

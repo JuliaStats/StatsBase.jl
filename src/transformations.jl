@@ -16,7 +16,7 @@ transform!(t::AbstractDataTransform, x::AbstractVector{<:Real}) =
 """
     transform(t::AbstractDataTransform, x)
 
-Return a standardized vector or matrix `x` using `t` transformation.
+Return a standardized copy of vector or matrix `x` using transformation `t`.
 """
 transform(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) =
     transform!(similar(x), t, x)
@@ -28,7 +28,7 @@ transform(t::AbstractDataTransform, x::AbstractVector{<:Real}) =
     reconstruct!(t::AbstractDataTransform, y)
 
 Perform an in-place reconstruction into an original data scale from a transformed
-vector or matrix `y` using `t` transformation.
+vector or matrix `y` using transformation `t`.
 """
 reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) =
     reconstruct!(y, t, y)
@@ -39,7 +39,7 @@ reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
     reconstruct(t::AbstractDataTransform, y)
 
 Return a reconstruction of an originally scaled data from a transformed vector
-or matrix `y` using `t` transformation.
+or matrix `y` using transformation `t`.
 """
 reconstruct(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) =
     reconstruct!(similar(y), t, y)
@@ -47,7 +47,7 @@ reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
     vec(reconstruct(t, reshape(y, :, 1)))
 
 """
-    Standardization (Z-score transformation)
+Standardization (Z-score transformation)
 """
 struct ZScoreTransform{T<:Real} <: AbstractDataTransform
     len::Int
@@ -75,11 +75,8 @@ end
 """
     fit(ZScoreTransform, X; dims=nothing, center=true, scale=true)
 
-Fit standardization parameters to `X` and return a `ZScoreTransform` transformation object.
-
-# Arguments
-
-* `data`: matrix  of samples to fit transformation parameters.
+Fit standardization parameters to vector or matrix `X`
+and return a `ZScoreTransform` transformation object.
 
 # Keyword arguments
 
@@ -209,7 +206,7 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::Abstract
 end
 
 """
-    Unit range normalization
+Unit range normalization
 """
 struct UnitRangeTransform{T<:Real}  <: AbstractDataTransform
     len::Int
@@ -239,11 +236,8 @@ end
 """
     fit(UnitRangeTransform, X; dims=nothing, unit=true)
 
-Fit a scaling parameters to `X` and return transformation description.
-
-# Arguments
-
-* `data`: matrix  of samples to fit transformation parameters.
+Fit a scaling parameters to vector or matrix `X`
+and return a `UnitRangeTransform` transformation object.
 
 # Keyword arguments
 
