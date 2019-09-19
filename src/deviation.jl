@@ -103,7 +103,8 @@ end
 """
     meanad(a, b)
 
-Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
+Return the mean absolute deviation between two arrays.
+Efficient equivalent of `mean(abs.(a .- b))`.
 """
 meanad(a, b) = mean(abs.(a .- b))
 
