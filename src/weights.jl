@@ -17,14 +17,13 @@ macro weights(name)
     end
 end
 
-eltype(wv::AbstractWeights) = eltype(wv.values)
 length(wv::AbstractWeights) = length(wv.values)
 values(wv::AbstractWeights) = wv.values
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
+size(wv::AbstractWeights) = size(wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
-Base.size(wv::AbstractWeights) = size(wv.values)
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
@@ -179,7 +178,7 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 """
     varcorrection(w::ProbabilityWeights, corrected=false)
 
-* `corrected=true`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
+* `corrected=true`: ``\\frac{n}{(n - 1) \\sum w}``, where ``n`` equals `count(!iszero, w)`
 * `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
@@ -250,6 +249,72 @@ eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
 
 # NOTE: No variance correction is implemented for exponential weights
 
+struct UnitWeights{T<:Real} <: AbstractWeights{Int, T, V where V<:Vector{T}}
+    len::Int
+end
+
+@doc """
+    UnitWeights{T}(s)
+
+Construct a `UnitWeights` vector with length `s` and weight elements of type `T`.
+All weight elements are identically one.
+""" UnitWeights
+
+values(wv::UnitWeights{T}) where T = fill(one(T), length(wv))
+sum(wv::UnitWeights{T}) where T = convert(T, length(wv))
+isempty(wv::UnitWeights) = iszero(wv.len)
+length(wv::UnitWeights) = wv.len
+size(wv::UnitWeights) = Tuple(length(wv))
+
+@propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
+    @boundscheck checkbounds(wv, i)
+    one(T)
+end
+
+@propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::AbstractArray{<:Int}) where T
+    @boundscheck checkbounds(wv, i)
+    fill(one(T), size(i))
+end
+
+Base.getindex(wv::UnitWeights{T}, ::Colon) where T = fill(one(T), length(wv))
+
+"""
+    uweights(s::Integer)
+    uweights(::Type{T}, s::Integer) where T<:Real
+
+Construct a `UnitWeights` vector with length `s` and weight elements of type `T`.
+All weight elements are identically one.
+
+# Examples
+```julia-repl
+julia> uweights(3)
+3-element UnitWeights{Int64}:
+ 1
+ 1
+ 1
+ 
+julia> uweights(Float64, 3)
+3-element UnitWeights{Float64}:
+ 1.0
+ 1.0
+ 1.0
+```
+"""
+uweights(s::Int)                            = UnitWeights{Int}(s)
+uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
+
+"""
+    varcorrection(w::UnitWeights, corrected=false)
+
+* `corrected=true`: ``\\frac{n}{n - 1}``, where ``n`` is the length of the weight vector
+* `corrected=false`: ``\\frac{1}{n}``, where ``n`` is the length of the weight vector
+
+This definition is equivalent to the correction applied to unweighted data.
+"""
+@inline function varcorrection(w::UnitWeights, corrected::Bool=false)
+    corrected ? (1 / (w.len - 1)) : (1 / w.len)
+end
+
 ##### Equality tests #####
 
 for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
@@ -258,6 +323,9 @@ for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
         Base.:(==)(x::$w, y::$w)   = (x.sum == y.sum) && (x.values == y.values)
     end
 end
+
+Base.isequal(x::UnitWeights, y::UnitWeights) = isequal(x.len, y.len)
+Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.len == y.len)
 
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
 Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
@@ -278,6 +346,17 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, values(w))
 Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
 Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
+
+for v in (AbstractArray{<:Number}, BitArray, SparseArrays.SparseMatrixCSC, AbstractArray)
+    @eval begin
+        function Base.sum(v::$v, w::UnitWeights)
+            if length(v) != length(w)
+                throw(DimensionMismatch("Inconsistent array dimension."))
+            end
+            return sum(v)
+        end
+    end
+end
 
 ## wsum along dimension
 #
@@ -475,6 +554,11 @@ function wsum(A::AbstractArray{T}, w::AbstractVector{W}, dim::Int) where {T<:Num
     _wsum!(similar(A, wsumtype(T,W), Base.reduced_indices(axes(A), dim)), A, w, dim, true)
 end
 
+function wsum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
+    size(A, dim) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A, dims=dim)
+end
+
 # extended sum! and wsum
 
 Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
@@ -482,6 +566,10 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
 
 Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}, dim::Int) = wsum(A, values(w), dim)
 
+function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
+    size(A, dim) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A, dims=dim)
+end
 
 ###### Weighted means #####
 
@@ -530,6 +618,15 @@ _mean(A::AbstractArray, w::AbstractWeights, dims::Nothing) =
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
+function _mean(A::AbstractArray, w::UnitWeights, dims::Nothing)
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return mean(A)
+end
+
+function _mean(A::AbstractArray, w::UnitWeights, dims::Int)
+    size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return mean(A, dims=dims)
+end
 
 ###### Weighted quantile #####
 """
@@ -617,6 +714,11 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         end
     end
     return out
+end
+
+function quantile(v::RealVector, w::UnitWeights, p::RealVector)
+    length(v) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return quantile(v, p)
 end
 
 quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]

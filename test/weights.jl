@@ -96,6 +96,23 @@ end
     @test x == y
 end
 
+@testset "Unit weights" begin
+    wv = uweights(Float64, 3)
+    @test wv[1] === 1.
+    @test wv[1:3] == fill(1.0, 3)
+    @test wv[:] == fill(1.0, 3)
+    @test !isempty(wv)
+    @test length(wv) === 3
+    @test size(wv) === (3,)
+    @test sum(wv) === 3.
+    @test values(wv) == fill(1.0, 3)
+    @test StatsBase.varcorrection(wv) == 1/3
+    @test !isequal(wv, fweights(fill(1.0, 3)))
+    @test isequal(wv, uweights(3))
+    @test wv != fweights(fill(1.0, 3))
+    @test wv == uweights(3)
+end
+
 ## wsum
 x = [6., 8., 9.]
 w = [2., 3., 4.]
@@ -445,6 +462,37 @@ end
 
 @testset "Mismatched eltypes" begin
     @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
+end
+
+@testset "Sum, mean, quantiles and variance for unit weights" begin
+    wt = uweights(Float64, 3)
+
+    @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
+    @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
+
+    @test sum(a, wt, 1) ≈ sum(a, dims=1)
+    @test sum(a, wt, 2) ≈ sum(a, dims=2)
+    @test sum(a, wt, 3) ≈ sum(a, dims=3)
+
+    @test wsum(a, wt, 1) ≈ sum(a, dims=1)
+    @test wsum(a, wt, 2) ≈ sum(a, dims=2)
+    @test wsum(a, wt, 3) ≈ sum(a, dims=3)
+
+    @test mean(a, wt, dims=1) ≈ mean(a, dims=1)
+    @test mean(a, wt, dims=2) ≈ mean(a, dims=2)
+    @test mean(a, wt, dims=3) ≈ mean(a, dims=3)
+
+    @test_throws DimensionMismatch sum(a, wt)
+    @test_throws DimensionMismatch sum(a, wt, 4)
+    @test_throws DimensionMismatch wsum(a, wt, 4)
+    @test_throws DimensionMismatch mean(a, wt, dims=4)
+
+    @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), [0.5]) ≈ [6.0]
+    @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), 0.5) ≈ 6.0
+    @test median([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5)) ≈ 6.0
+
+    @test var(a, uweights(Float64, 27), corrected=false) ≈ var(a, corrected=false)
+    @test var(a, uweights(Float64, 27), corrected=true) ≈ var(a, corrected= true)
 end
 
 @testset "Exponential Weights" begin
