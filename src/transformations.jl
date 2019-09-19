@@ -8,19 +8,20 @@ abstract type AbstractDataTransform end
 
 Apply transformation `t` to vector or matrix `x` in place.
 """
-transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) = transform!(x, t, x)
-transform!(t::AbstractDataTransform, x::AbstractVector{<:Real}) = (transform!(t, reshape(x, :, 1)); x)
+transform!(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) =
+    transform!(x, t, x)
+transform!(t::AbstractDataTransform, x::AbstractVector{<:Real}) =
+    (transform!(t, reshape(x, :, 1)); x)
 
 """
     transform(t::AbstractDataTransform, x)
 
 Return a standardized vector or matrix `x` using `t` transformation.
 """
-transform(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) = transform!(similar(x), t, x)
-
-function transform(t::AbstractDataTransform, x::AbstractVector{<:Real})
-    return vec(transform(t, reshape(x, :, 1)))
-end
+transform(t::AbstractDataTransform, x::AbstractMatrix{<:Real}) =
+    transform!(similar(x), t, x)
+transform(t::AbstractDataTransform, x::AbstractVector{<:Real}) =
+    vec(transform(t, reshape(x, :, 1)))
 
 # reconstruct the original data from transformed values
 """
@@ -29,8 +30,10 @@ end
 Perform an in-place reconstruction into an original data scale from a transformed
 vector or matrix `y` using `t` transformation.
 """
-reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) = reconstruct!(y, t, y)
-reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) = (reconstruct!(t, reshape(y, :, 1)); y)
+reconstruct!(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) =
+    reconstruct!(y, t, y)
+reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
+    (reconstruct!(t, reshape(y, :, 1)); y)
 
 """
     reconstruct(t::AbstractDataTransform, y)
@@ -38,11 +41,10 @@ reconstruct!(t::AbstractDataTransform, y::AbstractVector{<:Real}) = (reconstruct
 Return a reconstruction of an originally scaled data from a transformed vector
 or matrix `y` using `t` transformation.
 """
-reconstruct(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) = reconstruct!(similar(y), t, y)
-
-function reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real})
-    return vec(reconstruct(t, reshape(y, :, 1)))
-end
+reconstruct(t::AbstractDataTransform, y::AbstractMatrix{<:Real}) =
+    reconstruct!(similar(y), t, y)
+reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
+    vec(reconstruct(t, reshape(y, :, 1)))
 
 """
     Standardization (Z-score transformation)
