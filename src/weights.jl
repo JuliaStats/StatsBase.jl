@@ -25,7 +25,18 @@ size(wv::AbstractWeights) = size(wv.values)
 Base.convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
-Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
+@propagate_inbounds function Base.getindex(wv::W, i::Integer) where W <: AbstractWeights
+    @boundscheck checkbounds(wv, i)
+    wv.values[i]
+end
+
+@propagate_inbounds function Base.getindex(wv::W, i::AbstractArray{<:Int}) where W <: AbstractWeights
+    @boundscheck checkbounds(wv, i)
+    v = wv.values[i]
+    W(v, sum(v))
+end
+
+Base.getindex(wv::AbstractWeights, ::Colon) = wv
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
@@ -277,10 +288,10 @@ end
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::AbstractArray{<:Int}) where T
     @boundscheck checkbounds(wv, i)
-    fill(one(T), size(i))
+    UnitWeights{T}(length(i))
 end
 
-Base.getindex(wv::UnitWeights{T}, ::Colon) where T = fill(one(T), length(wv))
+Base.getindex(wv::UnitWeights, ::Colon) = wv
 
 """
     uweights(s::Integer)
