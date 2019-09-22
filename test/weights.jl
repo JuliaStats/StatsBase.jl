@@ -133,8 +133,8 @@ w2 = rand(8)
 @test size(wsum(x, w1, 1)) == (1, 8)
 @test size(wsum(x, w2, 2)) == (6, 1)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, dims = 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', dims = 2)
+@test wsum(x, w1, 1) ≈ sum(x .* w1, dims=1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
 
 x = rand(6, 5, 4)
 w1 = rand(6)
@@ -145,23 +145,23 @@ w3 = rand(4)
 @test size(wsum(x, w2, 2)) == (6, 1, 4)
 @test size(wsum(x, w3, 3)) == (6, 5, 1)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, dims = 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', dims = 2)
-@test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), dims = 3)
+@test wsum(x, w1, 1) ≈ sum(x .* w1, dims=1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
+@test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), dims=3)
 
 v = view(x, 2:4, :, :)
 
-@test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], dims = 1)
-@test wsum(v, w2, 2)      ≈ sum(v .* w2', dims = 2)
-@test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), dims = 3)
+@test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], dims=1)
+@test wsum(v, w2, 2)      ≈ sum(v .* w2', dims=2)
+@test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), dims=3)
 
 ## wsum for Arrays with non-BlasReal elements
 x = rand(1:100, 6, 8)
 w1 = rand(6)
 w2 = rand(8)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, dims = 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', dims = 2)
+@test wsum(x, w1, 1) ≈ sum(x .* w1, dims=1)
+@test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
 
 ## wsum!
 x = rand(6)
@@ -181,19 +181,19 @@ w2 = rand(8)
 
 r = ones(1, 8)
 @test wsum!(r, x, w1, 1; init=true) === r
-@test r ≈ sum(x .* w1, dims = 1)
+@test r ≈ sum(x .* w1, dims=1)
 
 r = ones(1, 8)
 @test wsum!(r, x, w1, 1; init=false) === r
-@test r ≈ sum(x .* w1, dims = 1) .+ 1.0
+@test r ≈ sum(x .* w1, dims=1) .+ 1.0
 
 r = ones(6)
 @test wsum!(r, x, w2, 2; init=true) === r
-@test r ≈ sum(x .* w2', dims = 2)
+@test r ≈ sum(x .* w2', dims=2)
 
 r = ones(6)
 @test wsum!(r, x, w2, 2; init=false) === r
-@test r ≈ sum(x .* w2', dims = 2) .+ 1.0
+@test r ≈ sum(x .* w2', dims=2) .+ 1.0
 
 x = rand(8, 6, 5)
 w1 = rand(8)
@@ -202,27 +202,27 @@ w3 = rand(5)
 
 r = ones(1, 6, 5)
 @test wsum!(r, x, w1, 1; init=true) === r
-@test r ≈ sum(x .* w1, dims = 1)
+@test r ≈ sum(x .* w1, dims=1)
 
 r = ones(1, 6, 5)
 @test wsum!(r, x, w1, 1; init=false) === r
-@test r ≈ sum(x .* w1, dims = 1) .+ 1.0
+@test r ≈ sum(x .* w1, dims=1) .+ 1.0
 
 r = ones(8, 1, 5)
 @test wsum!(r, x, w2, 2; init=true) === r
-@test r ≈ sum(x .* w2', dims = 2)
+@test r ≈ sum(x .* w2', dims=2)
 
 r = ones(8, 1, 5)
 @test wsum!(r, x, w2, 2; init=false) === r
-@test r ≈ sum(x .* w2', dims = 2) .+ 1.0
+@test r ≈ sum(x .* w2', dims=2) .+ 1.0
 
 r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=true) === r
-@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims = 3)
+@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims=3)
 
 r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=false) === r
-@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims = 3) .+ 1.0
+@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims=3) .+ 1.0
 
 ## the sum and mean syntax
 a = reshape(1.0:27.0, 3, 3, 3)
@@ -232,9 +232,9 @@ a = reshape(1.0:27.0, 3, 3, 3)
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test sum(a, f(wt), dims = 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims = 1)
-        @test sum(a, f(wt), dims = 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims = 2)
-        @test sum(a, f(wt), dims = 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims = 3)
+        @test sum(a, f(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
+        @test sum(a, f(wt), dims=2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims=2)
+        @test sum(a, f(wt), dims=3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)
     end
 end
 
@@ -467,20 +467,20 @@ end
     @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
     @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
 
-    @test sum(a, wt, dims = 1) ≈ sum(a, dims = 1)
-    @test sum(a, wt, dims = 2) ≈ sum(a, dims = 2)
-    @test sum(a, wt, dims = 3) ≈ sum(a, dims = 3)
+    @test sum(a, wt, dims=1) ≈ sum(a, dims=1)
+    @test sum(a, wt, dims=2) ≈ sum(a, dims=2)
+    @test sum(a, wt, dims=3) ≈ sum(a, dims=3)
 
-    @test wsum(a, wt, dims = 1) ≈ sum(a, dims = 1)
-    @test wsum(a, wt, dims = 2) ≈ sum(a, dims = 2)
-    @test wsum(a, wt, dims = 3) ≈ sum(a, dims = 3)
+    @test wsum(a, wt, 1) ≈ sum(a, dims=1)
+    @test wsum(a, wt, 2) ≈ sum(a, dims=2)
+    @test wsum(a, wt, 3) ≈ sum(a, dims=3)
 
-    @test mean(a, wt, dims = 1) ≈ mean(a, dims = 1)
-    @test mean(a, wt, dims = 2) ≈ mean(a, dims = 2)
-    @test mean(a, wt, dims = 3) ≈ mean(a, dims = 3)
+    @test mean(a, wt, dims=1) ≈ mean(a, dims=1)
+    @test mean(a, wt, dims=2) ≈ mean(a, dims=2)
+    @test mean(a, wt, dims=3) ≈ mean(a, dims=3)
 
     @test_throws DimensionMismatch sum(a, wt)
-    @test_throws DimensionMismatch sum(a, wt, 4)
+    @test_throws DimensionMismatch sum(a, wt, dims=4)
     @test_throws DimensionMismatch wsum(a, wt, 4)
     @test_throws DimensionMismatch mean(a, wt, dims=4)
 
