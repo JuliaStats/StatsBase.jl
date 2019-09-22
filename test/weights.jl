@@ -250,8 +250,6 @@ end
     end
 end
 
-
-# Quantile fweights
 @testset "Quantile fweights" begin
     data = (
         [7, 1, 2, 4, 10],
@@ -429,9 +427,8 @@ end
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
-    @test quantile(data[1], f(w), 0.5)    ≈  answer atol = 1e-5
+    @test quantile(data[1], f(w), 0.5) ≈ answer atol = 1e-5
 end
-
 
 @testset "Median $f" for f in weight_funcs
     data = [4, 3, 2, 1]
