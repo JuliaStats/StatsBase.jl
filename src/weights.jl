@@ -1,6 +1,5 @@
 ##### Weight vector #####
-
-abstract type AbstractWeights{S<:Real, T<:Real} <: AbstractVector{T} end
+abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
 
 """
     @weights name
@@ -10,8 +9,8 @@ and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
 """
 macro weights(name)
     return quote
-        mutable struct $name{S<:Real, T<:Real} <: AbstractWeights{S, T}
-            values::AbstractVector{T}
+        mutable struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
+            values::V
             sum::S
         end
         $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
@@ -23,8 +22,8 @@ sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 
-convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
-convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
+Base.convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
+Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 
@@ -252,7 +251,7 @@ eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
 
 # NOTE: no variance correction is implemented for exponential weights
 
-struct UnitWeights{T<:Real} <: AbstractWeights{Int, T}
+struct UnitWeights{T<:Real} <: AbstractWeights{Int, T, V where V<:Vector{T}}
     len::Int
 end
 
@@ -268,8 +267,8 @@ isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = Tuple(length(wv))
 
-convert(::Type{AbstractVector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
-convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
+Base.convert(::Type{AbstractVector}, wv::UnitWeights{T}) where T = ones(T, length(wv))
+Base.convert(::Type{Vector}, wv::UnitWeights{T}) where T = ones(T, length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
     @boundscheck checkbounds(wv, i)
@@ -320,7 +319,7 @@ This definition is equivalent to the correction applied to unweighted data.
     corrected ? (1 / (w.len - 1)) : (1 / w.len)
 end
 
-##### Equality tests #####
+#### Equality tests #####
 
 for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
     @eval begin
@@ -381,6 +380,7 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 #     (d) A is a general dense array with eltype <: BlasReal:
 #         dim <= 2: delegate to (a) and (b)
 #         otherwise, decompose A into multiple pages
+#
 
 function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool)
     r = wsum(A, w)
@@ -521,6 +521,7 @@ _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bo
 wsumtype(::Type{T}, ::Type{W}) where {T,W} = typeof(zero(T) * zero(W) + zero(T) * zero(W))
 wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
+
 """
     wsum!(R, A, w, dim; init=true)
 
@@ -549,17 +550,24 @@ end
 ## extended sum! and wsum
 
 Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
-    wsum!(R, A, values(w), dim; init=init)
+    wsum!(R, A, w.values, dim; init=init)
 
-Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Nothing,Int}=nothing) =
-    dims == nothing ? wsum(A, w.values) : wsum(A, w.values, dims)
+function Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Nothing,Int}=nothing)
+    if dims === nothing
+        length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+        return wsum(A, w.values)
+    else
+        size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+        return wsum(A, w.values, dims)
+    end
+end
 
 function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights; dims::Union{Nothing,Int}=nothing)
-    if dims == nothing
-        size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    if dims === nothing
+        length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
         return sum(A)
     else
-        length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+        size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
         return sum(A, dims=dims)
     end
 end

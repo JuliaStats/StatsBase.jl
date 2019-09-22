@@ -4,7 +4,8 @@ using LinearAlgebra, Random, SparseArrays, Test
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
 
-# Construction
+## Construction
+
 @testset "$f" for f in weight_funcs
     @test isa(f([1, 2, 3]), AbstractWeights{Int})
     @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
@@ -17,7 +18,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     wv = f(w)
     @test eltype(wv) === Float64
     @test length(wv) === 3
-    @test values(wv) === w
+    @test values(wv) ==  w
     @test sum(wv) === 6.0
     @test !isempty(wv)
 
@@ -25,7 +26,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     bv = f(b)
     @test eltype(bv) === Bool
     @test length(bv) === 3
-    @test values(bv) === b
+    @test values(bv) ==  b
     @test sum(bv)    === 3
     @test !isempty(bv)
 
@@ -114,6 +115,7 @@ end
 end
 
 ## wsum
+
 x = [6., 8., 9.]
 w = [2., 3., 4.]
 p = [1. 2. ; 3. 4.]
@@ -124,6 +126,7 @@ q = [1., 2., 3., 4.]
 @test wsum(p, q) === 29.0
 
 ## wsum along dimension
+
 @test wsum(x, w, 1) == [72.0]
 
 x  = rand(6, 8)
@@ -156,6 +159,7 @@ v = view(x, 2:4, :, :)
 @test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), dims=3)
 
 ## wsum for Arrays with non-BlasReal elements
+
 x = rand(1:100, 6, 8)
 w1 = rand(6)
 w2 = rand(8)
@@ -164,6 +168,7 @@ w2 = rand(8)
 @test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
 
 ## wsum!
+
 x = rand(6)
 w = rand(6)
 
@@ -224,7 +229,8 @@ r = ones(8, 6)
 @test wsum!(r, x, w3, 3; init=false) === r
 @test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims=3) .+ 1.0
 
-## the sum and mean syntax
+## sum, mean and quantile
+
 a = reshape(1.0:27.0, 3, 3, 3)
 
 @testset "Sum $f" for f in weight_funcs
