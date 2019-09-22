@@ -19,10 +19,11 @@ macro weights(name)
 end
 
 length(wv::AbstractWeights) = length(wv.values)
-values(wv::AbstractWeights) = wv.values
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
+
+convert(::Type{Vector}, wv::AbstractWeights) = wv.values
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 
@@ -261,11 +262,12 @@ Construct a `UnitWeights` vector with length `s` and weight elements of type `T`
 All weight elements are identically one.
 """ UnitWeights
 
-values(wv::UnitWeights{T}) where T = fill(one(T), length(wv))
 sum(wv::UnitWeights{T}) where T = convert(T, length(wv))
 isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = Tuple(length(wv))
+
+convert(::Type{Vector}, wv::UnitWeights{T}) where T = ones(T, length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
     @boundscheck checkbounds(wv, i)
@@ -344,9 +346,9 @@ wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
 # Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
-Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, values(w))
-Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, values(w))
-Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, values(w))
+Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, w.values)
+Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, w.values)
+Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, w.values)
 
 for v in (AbstractArray{<:Number}, BitArray, SparseArrays.SparseMatrixCSC, AbstractArray)
     @eval begin
@@ -561,9 +563,9 @@ end
 ## extended sum! and wsum
 
 Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
-    wsum!(R, A, values(w), dim; init=init)
+    wsum!(R, A, w.values, dim; init=init)
 
-Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}, dim::Int) = wsum(A, values(w), dim)
+Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}, dim::Int) = wsum(A, w.values, dim)
 
 function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
     size(A, dim) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
