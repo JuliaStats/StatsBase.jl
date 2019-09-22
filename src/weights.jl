@@ -23,7 +23,8 @@ sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 
-convert(::Type{Vector}, wv::AbstractWeights) = wv.values
+convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
+convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 
