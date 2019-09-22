@@ -562,14 +562,15 @@ end
 
 ## extended sum! and wsum
 
-Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
-    wsum!(R, A, w.values, dim; init=init)
+Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real};
+          dims::Union{Nothing,Int}=nothing, init::Bool=true) = wsum!(R, A, w.values, dims; init=init)
 
-Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}, dim::Int) = wsum(A, w.values, dim)
+Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Nothing,Int}=nothing) =
+    wsum(A, w.values, dims)
 
-function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
-    size(A, dim) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims=dim)
+function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights; dims::Union{Nothing,Int}=nothing)
+    size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A, dims=dims)
 end
 
 ##### Weighted means #####
