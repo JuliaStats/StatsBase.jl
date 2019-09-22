@@ -1,4 +1,5 @@
-###### Weight vector #####
+##### Weight vector #####
+
 abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
 
 """
@@ -247,7 +248,7 @@ eweights(n::Integer, λ::Real) = eweights(1:n, λ)
 eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
     eweights(something.(indexin(t, r)), λ)
 
-# NOTE: No variance correction is implemented for exponential weights
+# NOTE: no variance correction is implemented for exponential weights
 
 struct UnitWeights{T<:Real} <: AbstractWeights{Int, T, V where V<:Vector{T}}
     len::Int
@@ -392,7 +393,6 @@ end
 #     (d) A is a general dense array with eltype <: BlasReal:
 #         dim <= 2: delegate to (a) and (b)
 #         otherwise, decompose A into multiple pages
-#
 
 function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool)
     r = wsum(A, w)
@@ -455,7 +455,8 @@ function _wsumN!(R::StridedArray{T}, A::DenseArray{T,N}, w::StridedVector{T}, di
     return R
 end
 
-# General Cartesian-based weighted sum across dimensions
+## general Cartesian-based weighted sum across dimensions
+
 @generated function _wsum_general!(R::AbstractArray{RT}, f::supertype(typeof(abs)),
                                    A::AbstractArray{T,N}, w::AbstractVector{WT}, dim::Int, init::Bool) where {T,RT,WT,N}
     quote
@@ -512,7 +513,6 @@ end
     end
 end
 
-
 # N = 1
 _wsum!(R::StridedArray{T}, A::DenseArray{T,1}, w::StridedVector{T}, dim::Int, init::Bool) where {T<:BlasReal} =
     _wsum1!(R, A, w, init)
@@ -532,7 +532,6 @@ _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bo
 
 wsumtype(::Type{T}, ::Type{W}) where {T,W} = typeof(zero(T) * zero(W) + zero(T) * zero(W))
 wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
-
 
 """
     wsum!(R, A, w, dim; init=true)
@@ -559,7 +558,7 @@ function wsum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
     return sum(A, dims=dim)
 end
 
-# extended sum! and wsum
+## extended sum! and wsum
 
 Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
     wsum!(R, A, values(w), dim; init=init)
@@ -571,7 +570,7 @@ function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights, dim::Int)
     return sum(A, dims=dim)
 end
 
-###### Weighted means #####
+##### Weighted means #####
 
 """
     wmean(v, w::AbstractVector)
@@ -628,7 +627,8 @@ function _mean(A::AbstractArray, w::UnitWeights, dims::Int)
     return mean(A, dims=dims)
 end
 
-###### Weighted quantile #####
+##### Weighted quantile #####
+
 """
     quantile(v, w::AbstractWeights, p)
 
@@ -723,9 +723,8 @@ end
 
 quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
 
+##### Weighted median #####
 
-
-###### Weighted median #####
 """
     median(v::RealVector, w::AbstractWeights)
 
