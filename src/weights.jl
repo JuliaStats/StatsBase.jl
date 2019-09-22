@@ -23,7 +23,8 @@ sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 
-convert(::Type{Vector}, wv::AbstractWeights) = wv.values
+convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
+convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 Base.getindex(wv::AbstractWeights, i) = getindex(wv.values, i)
 
@@ -267,7 +268,8 @@ isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = Tuple(length(wv))
 
-convert(::Type{Vector}, wv::UnitWeights{T}) where T = ones(T, length(wv))
+convert(::Type{AbstractVector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
+convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
     @boundscheck checkbounds(wv, i)
