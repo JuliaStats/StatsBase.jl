@@ -553,8 +553,13 @@ Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Not
     dims == nothing ? wsum(A, w.values) : wsum(A, w.values, dims)
 
 function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights; dims::Union{Nothing,Int}=nothing)
-    size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims=dims)
+    if dims == nothing
+        size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+        return sum(A)
+    else
+        length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+        return sum(A, dims=dims)
+    end
 end
 
 ##### Weighted means #####
