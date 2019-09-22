@@ -1,6 +1,6 @@
 ##### Weight vector #####
 
-abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractVector{T} end
+abstract type AbstractWeights{S<:Real, T<:Real} <: AbstractVector{T} end
 
 """
     @weights name
@@ -10,8 +10,8 @@ and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
 """
 macro weights(name)
     return quote
-        mutable struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
-            values::V
+        mutable struct $name{S<:Real, T<:Real} <: AbstractWeights{S, T}
+            values::AbstractVector{T}
             sum::S
         end
         $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
@@ -250,7 +250,7 @@ eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
 
 # NOTE: no variance correction is implemented for exponential weights
 
-struct UnitWeights{T<:Real} <: AbstractWeights{Int, T, V where V<:Vector{T}}
+struct UnitWeights{T<:Real} <: AbstractWeights{Int, T}
     len::Int
 end
 
