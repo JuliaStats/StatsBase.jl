@@ -345,22 +345,6 @@ Compute the weighted sum of an array `v` with weights `w`, optionally over the d
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 
-# Note: the methods for BitArray and SparseMatrixCSC are to avoid ambiguities
-Base.sum(v::BitArray, w::AbstractWeights) = wsum(v, w.values)
-Base.sum(v::SparseArrays.SparseMatrixCSC, w::AbstractWeights) = wsum(v, w.values)
-Base.sum(v::AbstractArray, w::AbstractWeights) = dot(v, w.values)
-
-for v in (AbstractArray{<:Number}, BitArray, SparseArrays.SparseMatrixCSC, AbstractArray)
-    @eval begin
-        function Base.sum(v::$v, w::UnitWeights)
-            if length(v) != length(w)
-                throw(DimensionMismatch("Inconsistent array dimension."))
-            end
-            return sum(v)
-        end
-    end
-end
-
 ## wsum along dimension
 #
 #  Brief explanation of the algorithm:
@@ -562,11 +546,11 @@ end
 
 ## extended sum! and wsum
 
-Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real};
-          dims::Union{Nothing,Int}=nothing, init::Bool=true) = wsum!(R, A, w.values, dims; init=init)
+Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
+    wsum!(R, A, values(w), dim; init=init)
 
 Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Nothing,Int}=nothing) =
-    wsum(A, w.values, dims)
+    dims == nothing ? wsum(A, w.values) : wsum(A, w.values, dims)
 
 function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights; dims::Union{Nothing,Int}=nothing)
     size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))

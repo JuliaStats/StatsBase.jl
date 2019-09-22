@@ -232,9 +232,9 @@ a = reshape(1.0:27.0, 3, 3, 3)
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test sum(a, f(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims = 1)
-        @test sum(a, f(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims = 2)
-        @test sum(a, f(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims = 3)
+        @test sum(a, f(wt), dims = 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims = 1)
+        @test sum(a, f(wt), dims = 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims = 2)
+        @test sum(a, f(wt), dims = 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims = 3)
     end
 end
 
@@ -467,17 +467,17 @@ end
     @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
     @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
 
-    @test sum(a, wt, 1) ≈ sum(a, dims=1)
-    @test sum(a, wt, 2) ≈ sum(a, dims=2)
-    @test sum(a, wt, 3) ≈ sum(a, dims=3)
+    @test sum(a, wt, dims = 1) ≈ sum(a, dims = 1)
+    @test sum(a, wt, dims = 2) ≈ sum(a, dims = 2)
+    @test sum(a, wt, dims = 3) ≈ sum(a, dims = 3)
 
-    @test wsum(a, wt, 1) ≈ sum(a, dims=1)
-    @test wsum(a, wt, 2) ≈ sum(a, dims=2)
-    @test wsum(a, wt, 3) ≈ sum(a, dims=3)
+    @test wsum(a, wt, dims = 1) ≈ sum(a, dims = 1)
+    @test wsum(a, wt, dims = 2) ≈ sum(a, dims = 2)
+    @test wsum(a, wt, dims = 3) ≈ sum(a, dims = 3)
 
-    @test mean(a, wt, dims=1) ≈ mean(a, dims=1)
-    @test mean(a, wt, dims=2) ≈ mean(a, dims=2)
-    @test mean(a, wt, dims=3) ≈ mean(a, dims=3)
+    @test mean(a, wt, dims = 1) ≈ mean(a, dims = 1)
+    @test mean(a, wt, dims = 2) ≈ mean(a, dims = 2)
+    @test mean(a, wt, dims = 3) ≈ mean(a, dims = 3)
 
     @test_throws DimensionMismatch sum(a, wt)
     @test_throws DimensionMismatch sum(a, wt, 4)
