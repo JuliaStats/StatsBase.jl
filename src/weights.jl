@@ -22,7 +22,6 @@ sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 
-Base.convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 @propagate_inbounds function Base.getindex(wv::AbstractWeights, i::Integer)
