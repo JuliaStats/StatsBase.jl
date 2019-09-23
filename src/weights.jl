@@ -277,7 +277,6 @@ isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = Tuple(length(wv))
 
-Base.convert(::Type{AbstractVector}, wv::UnitWeights{T}) where T = ones(T, length(wv))
 Base.convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
