@@ -26,7 +26,7 @@ Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 @propagate_inbounds function Base.getindex(wv::AbstractWeights, i::Integer)
     @boundscheck checkbounds(wv, i)
-    wv.values[i]
+    @inbounds wv.values[i]
 end
 
 @propagate_inbounds function Base.getindex(wv::W, i::AbstractArray) where W <: AbstractWeights
