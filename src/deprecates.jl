@@ -38,5 +38,5 @@ end
 
 ### Deprecated September 2019
 @deprecate sum(A::AbstractArray, w::AbstractWeights, dims::Int) sum(A, w, dims=dims)
-@deprecate values(wv::AbstractWeights{S, T, V}) where {S, T, V} convert(V, wv)
+@deprecate values(wv::AbstractWeights) convert(Vector, wv)
 @deprecate values(wv::UnitWeights) convert(Vector, wv)
