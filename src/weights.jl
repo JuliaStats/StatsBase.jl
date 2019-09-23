@@ -289,7 +289,7 @@ end
     UnitWeights{T}(length(i))
 end
 
-Base.getindex(wv::UnitWeights, ::Colon) = wv
+Base.getindex(wv::UnitWeights{T}, ::Colon) where {T} = UnitWeights{T}(wv.len)
 
 """
     uweights(s::Integer)
