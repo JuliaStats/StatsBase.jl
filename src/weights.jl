@@ -31,7 +31,7 @@ end
 
 @propagate_inbounds function Base.getindex(wv::W, i::AbstractArray) where W <: AbstractWeights
     @boundscheck checkbounds(wv, i)
-    v = wv.values[i]
+    @inbounds v = wv.values[i]
     W(v, sum(v))
 end
 
