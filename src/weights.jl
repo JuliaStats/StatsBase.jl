@@ -25,7 +25,7 @@ size(wv::AbstractWeights) = size(wv.values)
 Base.convert(::Type{AbstractVector}, wv::AbstractWeights) = wv.values
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
-@propagate_inbounds function Base.getindex(wv::W, i::Integer) where W <: AbstractWeights
+@propagate_inbounds function Base.getindex(wv::AbstractWeights, i::Integer)
     @boundscheck checkbounds(wv, i)
     wv.values[i]
 end
