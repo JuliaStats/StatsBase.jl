@@ -564,7 +564,7 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
 function Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Nothing,Int}=nothing)
     if dims === nothing
         length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-        return wsum(A, w.values)
+        return wsum(A, w)
     else
         size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
         return wsum(A, w.values, dims)
