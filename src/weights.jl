@@ -354,6 +354,7 @@ Compute the weighted sum of an array `v` with weights `w`, optionally over the d
 """
 wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
 wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
+wsum(v::AbstractArray, w::AbstractVector, dims::Colon) = wsum(v, w)
 
 ## wsum along dimension
 #
@@ -389,7 +390,6 @@ wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
 #     (d) A is a general dense array with eltype <: BlasReal:
 #         dim <= 2: delegate to (a) and (b)
 #         otherwise, decompose A into multiple pages
-#
 
 function _wsum1!(R::AbstractArray, A::AbstractVector, w::AbstractVector, init::Bool)
     r = wsum(A, w)
@@ -530,7 +530,6 @@ _wsum!(R::AbstractArray, A::AbstractArray, w::AbstractVector, dim::Int, init::Bo
 wsumtype(::Type{T}, ::Type{W}) where {T,W} = typeof(zero(T) * zero(W) + zero(T) * zero(W))
 wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
-
 """
     wsum!(R, A, w, dim; init=true)
 
@@ -561,24 +560,16 @@ end
 Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
     wsum!(R, A, w, dim; init=init)
 
-function Base.sum(A::AbstractArray{<:Number}, w::AbstractWeights{<:Real}; dims::Union{Nothing,Int}=nothing)
-    if dims === nothing
-        length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-        return wsum(A, w)
-    else
-        size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-        return wsum(A, w, dims)
-    end
-end
+Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=Colon()) =
+    wsum(A, w, dims)
 
-function Base.sum(A::AbstractArray{<:Number}, w::UnitWeights; dims::Union{Nothing,Int}=nothing)
-    if dims === nothing
+function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=Colon())
+    if dims === Colon()
         length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-        return sum(A)
     else
         size(A, dims) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-        return sum(A, dims=dims)
     end
+    return sum(A, dims=dims)
 end
 
 ##### Weighted means #####
