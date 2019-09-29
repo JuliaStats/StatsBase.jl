@@ -617,7 +617,7 @@ _mean(A::AbstractArray, w::AbstractWeights, dims::Colon) =
 _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
-function mean(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=Colon())
+function mean(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
     a = dims === : ? length(A) : size(A, dims)
     a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return mean(A, dims=dims)
