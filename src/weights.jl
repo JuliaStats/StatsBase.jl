@@ -560,7 +560,7 @@ end
 Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::Int; init::Bool=true) =
     wsum!(R, A, w, dim; init=init)
 
-Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=Colon()) =
+Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:) =
     wsum(A, w, dims)
 
 function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=Colon())
