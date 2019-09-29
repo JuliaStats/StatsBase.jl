@@ -564,7 +564,7 @@ Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:)
     wsum(A, w, dims)
 
 function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = dims === Colon() ? length(A) : size(A, dims)
+    a = dims === : ? length(A) : size(A, dims)
     a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return sum(A, dims=dims)
 end
