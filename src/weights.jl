@@ -610,7 +610,7 @@ w = rand(n)
 mean(x, weights(w))
 ```
 """
-mean(A::AbstractArray, w::AbstractWeights; dims::Union{Colon,Int}=Colon()) =
+mean(A::AbstractArray, w::AbstractWeights; dims::Union{Colon,Int}=:) =
     _mean(A, w, dims)
 _mean(A::AbstractArray, w::AbstractWeights, dims::Colon) =
     sum(A, w) / sum(w)
