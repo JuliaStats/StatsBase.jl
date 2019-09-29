@@ -564,7 +564,7 @@ Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:)
     wsum(A, w, dims)
 
 function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = dims === : ? length(A) : size(A, dims)
+    a = (dims === :) ? length(A) : size(A, dims)
     a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return sum(A, dims=dims)
 end
@@ -618,7 +618,7 @@ _mean(A::AbstractArray{T}, w::AbstractWeights{W}, dims::Int) where {T,W} =
     _mean!(similar(A, wmeantype(T, W), Base.reduced_indices(axes(A), dims)), A, w, dims)
 
 function mean(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = dims === : ? length(A) : size(A, dims)
+    a = (dims === :) ? length(A) : size(A, dims)
     a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return mean(A, dims=dims)
 end
