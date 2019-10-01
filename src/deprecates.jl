@@ -35,3 +35,7 @@ end
 @deprecate wmedian(v::RealVector, w::RealVector) median(v, weights(w))
 
 @deprecate quantile(v::AbstractArray{<:Real}) quantile(v, [.0, .25, .5, .75, 1.0])
+
+### Deprecated September 2019
+@deprecate sum(A::AbstractArray, w::AbstractWeights, dims::Int) sum(A, w, dims=dims)
+@deprecate values(wv::AbstractWeights) convert(Vector, wv)
