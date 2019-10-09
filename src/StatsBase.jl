@@ -199,6 +199,7 @@ export
     score,
     stderror,
     vcov,
+    covariance_estimator,
     predict,
     predict!,
     residuals,

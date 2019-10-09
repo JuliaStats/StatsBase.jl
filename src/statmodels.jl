@@ -133,6 +133,13 @@ Return the variance-covariance matrix for the coefficients of the model.
 vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 
 """
+    covariance_estimator(obj::StatisticalModel)
+
+Return the variance-covariance estimator used to compute the variance-variance matrix
+"""
+covariance_estimator(obj::StatisticalModel) = error("covariance_estimator is not defined for $(typeof(obj)).")
+
+"""
     weights(obj::StatisticalModel)
 
 Return the weights used in the model.

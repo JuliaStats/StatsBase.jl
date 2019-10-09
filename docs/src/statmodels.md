@@ -29,6 +29,7 @@ rss
 score
 stderror
 vcov
+covariance_estimator
 weights(::StatisticalModel)
 ```
 
