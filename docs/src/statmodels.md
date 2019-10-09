@@ -39,6 +39,7 @@ fitted
 leverage
 meanresponse
 modelmatrix
+crossmodelmatrix
 response
 predict
 predict!

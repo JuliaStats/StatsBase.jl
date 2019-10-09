@@ -190,6 +190,7 @@ export
     loglikelihood,
     meanresponse,
     modelmatrix,
+    crossmodelmatrix,
     mss,
     response,
     nobs,

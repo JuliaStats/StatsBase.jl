@@ -308,6 +308,14 @@ Return the model matrix (a.k.a. the design matrix).
 """
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
 
+
+"""
+    crossmodelmatrix(obj::RegressionModel)
+
+Return X'X where X is the model matrix
+"""
+crossmodelmatrix(obj::RegressionModel) = cholesky!(modelmatrix(x)' * modelmatrix(x))
+
 """
     leverage(obj::RegressionModel)
 
