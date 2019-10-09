@@ -314,7 +314,7 @@ modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(type
 
 Return X'X where X is the model matrix
 """
-crossmodelmatrix(obj::RegressionModel) = cholesky!(modelmatrix(x)' * modelmatrix(x))
+crossmodelmatrix(obj::RegressionModel) = Symmetric(modelmatrix(x)' * modelmatrix(x))
 
 """
     leverage(obj::RegressionModel)
