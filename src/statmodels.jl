@@ -135,7 +135,7 @@ vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
 """
     covariance_estimator(obj::StatisticalModel)
 
-Return the variance-covariance estimator used to compute the variance-variance matrix
+Return the `CovarianceEstimator` used to compute the variance-covariance matrix.
 """
 covariance_estimator(obj::StatisticalModel) = error("covariance_estimator is not defined for $(typeof(obj)).")
 
