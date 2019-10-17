@@ -314,7 +314,7 @@ modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(type
 Return `X'X` where `X` is the model matrix of `obj`.
 This function will return a pre-computed matrix stored in `obj` if possible.
 """
-crossmodelmatrix(obj::RegressionModel) = (x = modelmatrix(x); Symmetric(x' * x))
+crossmodelmatrix(obj::RegressionModel) = (x = modelmatrix(obj); Symmetric(x' * x))
 
 """
     leverage(obj::RegressionModel)
