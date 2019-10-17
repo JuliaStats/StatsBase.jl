@@ -37,10 +37,10 @@ weights(::StatisticalModel)
 dof_residual
 fitted
 leverage
+meanresponse
 modelmatrix
 response
 responsename
-meanresponse
 predict
 predict!
 residuals
