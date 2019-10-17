@@ -295,7 +295,7 @@ Return the model response (a.k.a. the dependent variable).
 response(obj::RegressionModel) = error("response is not defined for $(typeof(obj)).")
 
 """
-    responsename(obj::StatisticalModel)
+    responsename(obj::RegressionModel)
     
 Return the name of the model response (a.k.a. the dependent variable).
 """
