@@ -34,12 +34,12 @@ weights(::StatisticalModel)
 
 `RegressionModel` extends `StatisticalModel` by implementing the following additional methods.
 ```@docs
+crossmodelmatrix
 dof_residual
 fitted
 leverage
 meanresponse
 modelmatrix
-crossmodelmatrix
 response
 predict
 predict!
