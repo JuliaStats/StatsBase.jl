@@ -261,8 +261,7 @@ Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)``.
 In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null model
-(the model including only the intercept). These two quantities are taken to be minus half
-`deviance` of the corresponding models. ``k`` is the number of consumed degrees of freedom
+(the model including only the intercept), and ``k`` is the number of consumed degrees of freedom
 of the model (as returned by [`dof`](@ref)).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
