@@ -192,6 +192,7 @@ export
     modelmatrix,
     mss,
     response,
+    responsename,
     nobs,
     nulldeviance,
     nullloglikelihood,

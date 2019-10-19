@@ -40,6 +40,7 @@ leverage
 meanresponse
 modelmatrix
 response
+responsename
 predict
 predict!
 residuals
