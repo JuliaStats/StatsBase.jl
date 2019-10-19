@@ -139,6 +139,24 @@ function FD(v::AbstractVector{T}) where {T <: Real}
     return 1
 end
 
+function bin_estimator(estimator::Int, v::AbstractVector{T}) where {T<:Real}
+    println("in my other estimator")
+    return estimator
+end
+
+function bin_estimator(estimator::String, v::AbstractVector{T}) where {T<:Real}
+    println("in My estimator")
+    if (estimator == "sturges")
+        return sturges(length(v))
+    elseif (estimator == "scott")
+        return scott(v)
+    elseif (estimator == "FD")
+        return FD(v)
+    else
+        throw(ArgumentError("estimator must be one of 'sturges', 'scott', 'FD'"))
+    end
+end
+
 
 abstract type AbstractHistogram{T<:Real,N,E} end
 
@@ -299,12 +317,12 @@ append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,A
 
 fit(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
-    fit(Histogram{T},(v,); closed=closed, nbins=nbins)
+fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:left, nbins="sturges") where {T} =
+    fit(Histogram{T},(v,); closed=closed, nbins=bin_estimator(nbins, v))
 fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), wv, (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
-    fit(Histogram{T}, (v,), wv; closed=closed, nbins=nbins)
+fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:left, nbins::String="sturges") where {T} =
+    fit(Histogram{T}, (v,), wv; closed=closed, nbins=bin_estimator(nbins, v))
 
 fit(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) where {W} = fit(Histogram{W}, v, wv, args...; kwargs...)
 
