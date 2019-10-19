@@ -112,6 +112,34 @@ function sturges(n)  # Sturges' formula
     ceil(Integer, log2(n))+1
 end
 
+function ptp(v::AbstractVector)
+    e = extrema(v)
+    return e[2] - e[1]
+end
+
+function scott(v::AbstractVector{T}) where {T <: Real}
+    n = length(v)
+    h = 3.5 * std(v) * n^(-1/3)
+    # in the case of a 0 std we need to ensure we 
+    # don't divide by 0
+    if (h>0)
+        return ceil(Integer, ptp(v)/h)
+    end
+    return 1
+end
+
+function FD(v::AbstractVector{T}) where {T <: Real}
+    n = length(v)
+    h = 2 * iqr(v) * n ^ (-1 / 3)
+
+    if (h > 0)
+        return ceil(Integer, ptp(v)/h)
+    end
+    
+    return 1
+end
+
+
 abstract type AbstractHistogram{T<:Real,N,E} end
 
 # N-dimensional histogram object
