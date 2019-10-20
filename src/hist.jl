@@ -139,13 +139,9 @@ function FD(v::AbstractVector{T}) where {T <: Real}
     return 1
 end
 
-function bin_estimator(estimator::Int, v::AbstractVector{T}) where {T<:Real}
-    println("in my other estimator")
-    return estimator
-end
+bin_estimator(estimator::Int, v::AbstractVector{T}) where {T<:Real} = estimator
 
 function bin_estimator(estimator::String, v::AbstractVector{T}) where {T<:Real}
-    println("in My estimator")
     if (estimator == "sturges")
         return sturges(length(v))
     elseif (estimator == "scott")
@@ -153,7 +149,7 @@ function bin_estimator(estimator::String, v::AbstractVector{T}) where {T<:Real}
     elseif (estimator == "FD")
         return FD(v)
     else
-        throw(ArgumentError("estimator must be one of 'sturges', 'scott', 'FD'"))
+        throw(ArgumentError("estimator string must be one of 'sturges', 'scott', 'FD'"))
     end
 end
 
