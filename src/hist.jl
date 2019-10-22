@@ -112,7 +112,9 @@ function sturges(n)  # Sturges' formula
     ceil(Integer, log2(n))+1
 end
 
-function ptp(v::AbstractVector)
+sturges(v::AbstractVector{T}) where {T <: Real} = sturges(length(v))
+
+function _ptp(v::AbstractVector)
     e = extrema(v)
     return e[2] - e[1]
 end
@@ -123,7 +125,7 @@ function scott(v::AbstractVector{T}) where {T <: Real}
     # in the case of a 0 std we need to ensure we 
     # don't divide by 0
     if (h>0)
-        return ceil(Integer, ptp(v)/h)
+        return ceil(Integer, _ptp(v)/h)
     end
     return 1
 end
@@ -133,7 +135,7 @@ function FD(v::AbstractVector{T}) where {T <: Real}
     h = 2 * iqr(v) * n ^ (-1 / 3)
 
     if (h > 0)
-        return ceil(Integer, ptp(v)/h)
+        return ceil(Integer, _ptp(v)/h)
     end
     
     return 1
@@ -141,16 +143,18 @@ end
 
 bin_estimator(estimator::Int, v::AbstractVector{T}) where {T<:Real} = estimator
 
-function bin_estimator(estimator::String, v::AbstractVector{T}) where {T<:Real}
-    if (estimator == "sturges")
-        return sturges(length(v))
-    elseif (estimator == "scott")
-        return scott(v)
-    elseif (estimator == "FD")
-        return FD(v)
+function bin_estimator(estimator::Symbol, v::AbstractVector{T}) where {T<:Real}
+    if (estimator == :sturges)
+        nbins = sturges(length(v))
+    elseif (estimator == :scott)
+        nbins = scott(v)
+    elseif (estimator == :FD || estimator == :fd)
+        nbins = FD(v)
     else
-        throw(ArgumentError("estimator string must be one of 'sturges', 'scott', 'FD'"))
+        throw(ArgumentError("estimator must be one of :sturges, :scott, FD"))
     end
+    # println("Using $estimator, calculated $nbins")
+    return nbins
 end
 
 
@@ -313,11 +317,17 @@ append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,A
 
 fit(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:left, nbins="sturges") where {T} =
+
+# fit(::Type{Histogram{T}},v::AbstractVector, bins::Symbol; closed::Symbol=:left) where {T} =
+#     fit(Histogram{T},(v,), (edg,), closed=closed, nbins=bin_estimator(bins, v))
+# fit(::Type{Histogram{T}},v::AbstractVector, bins::Int; closed::Symbol=:left) where {T} =
+#     fit(Histogram{T},(v,), (edg,), closed=closed, nbins=bins)
+
+fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:left, nbins=:sturges) where {T} =
     fit(Histogram{T},(v,); closed=closed, nbins=bin_estimator(nbins, v))
 fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), wv, (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:left, nbins::String="sturges") where {T} =
+fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:left, nbins=:sturges) where {T} =
     fit(Histogram{T}, (v,), wv; closed=closed, nbins=bin_estimator(nbins, v))
 
 fit(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) where {W} = fit(Histogram{W}, v, wv, args...; kwargs...)

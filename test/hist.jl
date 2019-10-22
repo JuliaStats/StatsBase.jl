@@ -224,4 +224,16 @@ end
     @test StatsBase.midpoints(range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
 end
 
+@testset "Histogram autorange" begin
+    
+    # check we still default to sturges
+    @test fit(Histogram,[1:100; 500:1000],closed=:right).weights ==  [100, 0, 0, 0, 1, 100, 100, 100, 100, 100]
+    @test fit(Histogram,[1:100; 500:1000],nbins=:sturges, closed=:right).weights ==  [100, 0, 0, 0, 1, 100, 100, 100, 100, 100]
+
+    @test fit(Histogram,[1:100; 500:1000],nbins=:scott,closed=:right).weights == [100, 0, 101, 200, 200]
+    @test fit(Histogram,[1:100; 500:1000],nbins=:fd,closed=:right).weights == [100, 0, 0, 0, 1, 100, 100, 100, 100, 100]
+
+end
+
+
 end # @testset "StatsBase.Histogram"
