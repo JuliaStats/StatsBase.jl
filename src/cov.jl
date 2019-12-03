@@ -27,9 +27,9 @@ _unscaled_covzm(x::DenseMatrix, dims::Colon)   = unscaled_covzm(x)
 _unscaled_covzm(x::DenseMatrix, dims::Integer) = unscaled_covzm(x, dims)
 
 _unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Colon)   =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv))))
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, convert(Vector, wv))))
 _unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer) =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv), dims), dims))
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, convert(Vector, wv), dims), dims))
 
 """
     scattermat(X, [wv::AbstractWeights]; mean=nothing, dims=1)

@@ -48,7 +48,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
     m0 = levels[1]
     m1 = levels[end]
     b = m0 - 1
-    w = values(wv)
+    w = convert(Vector, wv)
 
     @inbounds for i in 1 : length(x)
         xi = x[i]
@@ -160,7 +160,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
 
     bx = mx0 - 1
     by = my0 - 1
-    w = values(wv)
+    w = convert(Vector, wv)
 
     for i = 1:n
         xi = x[i]
@@ -326,7 +326,7 @@ radixsort_safe(::Type) = false
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     last_sx = sx[1]
     tmpcount = get(cm, last_sx, 0) + 1
-    
+
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
     @inbounds for i in 2:length(sx)
@@ -358,7 +358,7 @@ end
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
-    w = values(wv)
+    w = convert(Vector, wv)
     z = zero(W)
 
     for i = 1 : n
