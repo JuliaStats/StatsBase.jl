@@ -1,6 +1,5 @@
 # Empirical estimation of CDF and PDF
 
-
 ## Empirical CDF
 
 struct ECDF{T <: AbstractVector{<:Real}, W <: AbstractWeights{<:Real}}
@@ -9,6 +8,7 @@ struct ECDF{T <: AbstractVector{<:Real}, W <: AbstractWeights{<:Real}}
 end
 
 function (ecdf::ECDF)(x::Real)
+    isnan(x) && return NaN
     n = searchsortedlast(ecdf.sorted_values, x)
     evenweights = isempty(ecdf.weights)
     weightsum = evenweights ? length(ecdf.sorted_values) : sum(ecdf.weights)
@@ -54,6 +54,7 @@ evaluate CDF values on other samples.
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
 function ecdf(X::RealVector; weights::AbstractVector{<:Real}=Weights(Float64[]))
+    any(isnan, X) && throw(ArgumentError("ecdf can not include NaN values"))
     isempty(weights) || length(X) == length(weights) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(X)) and $(length(weights))"))
     ord = sortperm(X)

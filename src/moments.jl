@@ -54,7 +54,7 @@ end
 function varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealArray,
                     dim::Int; corrected::DepBool=nothing)
     corrected = depcheck(:varm!, corrected)
-    rmul!(_wsum_centralize!(R, abs2, A, values(w), M, dim, true),
+    rmul!(_wsum_centralize!(R, abs2, A, convert(Vector, w), M, dim, true),
           varcorrection(w, corrected))
 end
 
@@ -234,7 +234,7 @@ end
 function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
     n = length(v)
     s = 0.0
-    w = values(wv)
+    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z) * w[i]
@@ -256,7 +256,7 @@ end
 function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
-    w = values(wv)
+    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * w[i]
@@ -277,7 +277,7 @@ end
 function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
-    w = values(wv)
+    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * w[i]
@@ -298,7 +298,7 @@ end
 function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
-    w = values(wv)
+    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * w[i]
@@ -364,7 +364,7 @@ function skewness(v::RealArray, wv::AbstractWeights, m::Real)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment
-    w = values(wv)
+    w = convert(Vector, wv)
 
     @inbounds for i = 1:n
         x_i = v[i]
@@ -411,7 +411,7 @@ function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
-    w = values(wv)
+    w = convert(Vector, wv)
 
     @inbounds for i = 1 : n
         x_i = v[i]

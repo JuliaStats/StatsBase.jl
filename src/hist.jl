@@ -316,7 +316,7 @@ function append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::Ab
     end
     h
 end
-append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights) where {T,N} = append!(h, vs, values(wv))
+append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights) where {T,N} = append!(h, vs, convert(Vector, wv))
 
 
 # Turn kwargs nbins into a type-stable tuple of integers:
