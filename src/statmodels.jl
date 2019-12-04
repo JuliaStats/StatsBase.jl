@@ -315,6 +315,14 @@ Return the model matrix (a.k.a. the design matrix).
 modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
 
 """
+    crossmodelmatrix(obj::RegressionModel)
+
+Return `X'X` where `X` is the model matrix of `obj`.
+This function will return a pre-computed matrix stored in `obj` if possible.
+"""
+crossmodelmatrix(obj::RegressionModel) = (x = modelmatrix(obj); Symmetric(x' * x))
+
+"""
     leverage(obj::RegressionModel)
 
 Return the diagonal of the projection matrix.

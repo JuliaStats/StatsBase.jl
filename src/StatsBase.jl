@@ -177,6 +177,7 @@ export
     coefnames,
     coeftable,
     confint,
+    crossmodelmatrix,
     deviance,
     dof,
     dof_residual,
