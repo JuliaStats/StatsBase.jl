@@ -16,11 +16,11 @@ and lowest elements removed.  To compute the trimmed mean of `x` use
 
 # Example
 ```julia
-julia> trim([1,2,3,4,5], prop=0.2)
+julia> trim([5,2,4,3,1], prop=0.2)
 3-element Array{Int64,1}:
  2
- 3
  4
+ 3
 ```
 """
 function trim(x::AbstractVector; prop::Real=0.0, count::Integer=0)
@@ -44,10 +44,10 @@ function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
-    partialsort!(x, (n-count+1):n)
-    partialsort!(x, 1:count)
-    deleteat!(x, (n-count+1):n)
-    deleteat!(x, 1:count)
+    ix = vcat(partialsortperm(x, 1:count), partialsortperm(x, (n-count+1):n))
+    sort!(ix)
+    ix = unique(ix) # can be replaced by unique! starting julia 1.1
+    deleteat!(x, ix)
 
     return x
 end
@@ -62,13 +62,13 @@ mean of `x` use `mean(winsor(x))`.
 
 # Example
 ```julia
-julia> winsor([1,2,3,4,5], prop=0.2)
+julia> winsor([5,2,3,4,1], prop=0.2)
 5-element Array{Int64,1}:
- 2
+ 4
  2
  3
  4
- 4
+ 2
 ```
 """
 function winsor(x::AbstractVector; prop::Real=0.0, count::Integer=0)
@@ -92,10 +92,11 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
-    partialsort!(x, (n-count+1):n)
-    partialsort!(x, 1:count)
-    x[1:count] .= x[count+1]
-    x[n-count+1:end] .= x[n-count]
+    ix = partialsortperm(x, 1:(count+1))
+    x[ix[1:count]] .= x[ix[count+1]]
+
+    ix = partialsortperm(x, (n-count):n)
+    x[ix[2:end]] .= x[ix[1]]
 
     return x
 end
