@@ -44,10 +44,18 @@ function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
-    ix = vcat(partialsortperm(x, 1:count), partialsortperm(x, (n-count+1):n))
-    sort!(ix)
-    ix = unique(ix) # can be replaced by unique! starting julia 1.1
-    deleteat!(x, ix)
+    # allocate vector of all x's indicies
+    ixall = collect(1:n)
+    # indicies for lowest count values
+    ixstart = partialsortperm!(ixall, x, 1:count; initialized=true)
+    # indicies for largest count values
+    ixend = partialsortperm!(ixall, x, (n-count+1):n; initialized=true)
+    # indicies for lowest and largest values
+    ixtrim = vcat(ixstart, ixend)
+    sort!(ixtrim)
+    unique!(ixtrim)
+    # trim them from x
+    deleteat!(x, ixtrim)
 
     return x
 end
@@ -92,11 +100,18 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
-    ix = partialsortperm(x, 1:(count+1))
-    x[ix[1:count]] .= x[ix[count+1]]
+    # allocate vector of all x's indicies
+    ixall = collect(1:n)
+    # indicies for lowest count values
+    ixstart = partialsortperm!(ixall, x, 1:(count+1); initialized=true)
+    # indicies for largest count values
+    ixend = partialsortperm!(ixall, x, (n-count):n; initialized=true)
 
-    ix = partialsortperm(x, (n-count):n)
-    x[ix[2:end]] .= x[ix[1]]
+    # set lowest to count+1's value
+    @inbounds x[ixstart[1:count]] .= x[ixstart[count+1]]
+
+    # set largest to n-count)'s value
+    @inbounds x[ixend[2:end]] .= x[ixend[1]]
 
     return x
 end
