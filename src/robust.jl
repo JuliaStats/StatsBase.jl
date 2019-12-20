@@ -44,13 +44,13 @@ function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
-    # allocate vector of all x's indicies
+    # allocate vector of all x's indices
     ixall = collect(1:n)
-    # indicies for lowest count values
+    # indices for lowest count values
     ixstart = partialsortperm!(ixall, x, 1:count; initialized=true)
-    # indicies for largest count values
+    # indices for largest count values
     ixend = partialsortperm!(ixall, x, (n-count+1):n; initialized=true)
-    # indicies for lowest and largest values
+    # indices for lowest and largest values
     ixtrim = vcat(ixstart, ixend)
     sort!(ixtrim)
     unique!(ixtrim)
@@ -100,11 +100,11 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
-    # allocate vector of all x's indicies
+    # allocate vector of all x's indices
     ixall = collect(1:n)
-    # indicies for lowest count values
+    # indices for lowest count values
     ixstart = partialsortperm!(ixall, x, 1:(count+1); initialized=true)
-    # indicies for largest count values
+    # indices for largest count values
     ixend = partialsortperm!(ixall, x, (n-count):n; initialized=true)
 
     # set lowest to count+1's value
