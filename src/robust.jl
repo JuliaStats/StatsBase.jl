@@ -110,7 +110,7 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     # set lowest to count+1's value
     @inbounds x[ixstart[1:count]] .= x[ixstart[count+1]]
 
-    # set largest to n-count)'s value
+    # set largest to n-count's value
     @inbounds x[ixend[2:end]] .= x[ixend[1]]
 
     return x
