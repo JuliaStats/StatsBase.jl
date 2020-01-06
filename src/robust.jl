@@ -32,13 +32,13 @@ end
 """
     trim(x; prop=0.0, count=0)
 
-Return a copy of `x` with either `count` or proportion `prop` of the highest
-and lowest elements removed.  To compute the trimmed mean of `x` use
+Return a generator of all elements of `x` that omits either `count` or proportion
+`prop` of the highest and lowest elements.  To compute the trimmed mean of `x` use
 `mean(trim(x))`; to compute the variance use `trimvar(x)` (see [`trimvar`](@ref)).
 
 # Example
 ```julia
-julia> trim([5,2,4,3,1], prop=0.2)
+julia> collect(trim([5,2,4,3,1], prop=0.2))
 3-element Array{Int64,1}:
  2
  4
@@ -66,14 +66,14 @@ end
 """
     winsor(x; prop=0.0, count=0)
 
-Return a copy of `x` with either `count` or proportion `prop` of the lowest
-elements of `x` replaced with the next-lowest, and an equal number of the
-highest elements replaced with the previous-highest.  To compute the Winsorized
-mean of `x` use `mean(winsor(x))`.
+Return a generator of all elements of `x` that replaces either `count` or
+proportion `prop` of the highest elements with the previous-highest element  
+and an equal number of the lowest elements with the next-lowest element. 
+To compute the Winsorized mean of `x` use `mean(winsor(x))`.
 
 # Example
 ```julia
-julia> winsor([5,2,3,4,1], prop=0.2)
+julia> collect(winsor([5,2,3,4,1], prop=0.2))
 5-element Array{Int64,1}:
  4
  2
