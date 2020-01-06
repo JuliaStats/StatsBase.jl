@@ -32,8 +32,10 @@ end
 """
     trim(x; prop=0.0, count=0)
 
-Return a generator of all elements of `x` that omits either `count` or proportion
-`prop` of the highest and lowest elements.  To compute the trimmed mean of `x` use
+Return an iterator of all elements of `x` that omits either `count` or proportion
+`prop` of the highest and lowest elements.  
+The number of trimmed elements could be smaller than specified if several 
+elements equal the lower or upper bound. To compute the trimmed mean of `x` use
 `mean(trim(x))`; to compute the variance use `trimvar(x)` (see [`trimvar`](@ref)).
 
 # Example
@@ -66,9 +68,11 @@ end
 """
     winsor(x; prop=0.0, count=0)
 
-Return a generator of all elements of `x` that replaces either `count` or
+Return an iterator of all elements of `x` that replaces either `count` or
 proportion `prop` of the highest elements with the previous-highest element  
 and an equal number of the lowest elements with the next-lowest element. 
+The number of replaced elements could be smaller than specified if several 
+elements equal the lower or upper bound.
 To compute the Winsorized mean of `x` use `mean(winsor(x))`.
 
 # Example
