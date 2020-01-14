@@ -18,7 +18,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     wv = f(w)
     @test eltype(wv) === Float64
     @test length(wv) === 3
-    @test convert(Vector, wv) ==  w
+    @test wv ==  w
     @test sum(wv) === 6.0
     @test !isempty(wv)
 
@@ -44,20 +44,20 @@ end
     # Check getindex & sum
     @test wv[1] === 1.
     @test sum(wv) === 6.
-    @test convert(Vector, wv) == w
+    @test wv == w
 
     # Test setindex! success
     @test (wv[1] = 4) === 4             # setindex! returns original val
     @test wv[1] === 4.                  # value correctly converted and set
     @test sum(wv) === 9.                # sum updated
-    @test convert(Vector, wv) == [4., 2., 3.]    # Test state of all values
+    @test wv == [4., 2., 3.]    # Test state of all values
 
     # Test mulivalue setindex!
     wv[1:2] = [3., 5.]
     @test wv[1] === 3.
     @test wv[2] === 5.
     @test sum(wv) === 11.
-    @test convert(Vector, wv) == [3., 5., 3.]   # Test state of all values
+    @test wv == [3., 5., 3.]   # Test state of all values
 
     # Test failed setindex! due to conversion error
     w = [1, 2, 3]
@@ -66,7 +66,7 @@ end
     @test_throws InexactError wv[1] = 1.5   # Returns original value
     @test wv[1] === 1                       # value not updated
     @test sum(wv) === 6                     # sum not corrupted
-    @test convert(Vector, wv) == [1, 2, 3]           # Test state of all values
+    @test wv == [1, 2, 3]           # Test state of all values
 end
 
 @testset "$f, isequal and ==" for f in weight_funcs
@@ -106,7 +106,7 @@ end
     @test length(wv) === 3
     @test size(wv) === (3,)
     @test sum(wv) === 3.
-    @test convert(Vector, wv) == fill(1.0, 3)
+    @test wv == fill(1.0, 3)
     @test StatsBase.varcorrection(wv) == 1/3
     @test !isequal(wv, fweights(fill(1.0, 3)))
     @test isequal(wv, uweights(3))

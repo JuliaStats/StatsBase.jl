@@ -48,12 +48,11 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
     m0 = levels[1]
     m1 = levels[end]
     b = m0 - 1
-    w = convert(Vector, wv)
 
     @inbounds for i in 1 : length(x)
         xi = x[i]
         if m0 <= xi <= m1
-            r[xi - b] += w[i]
+            r[xi - b] += wv[i]
         end
     end
     return r
@@ -160,13 +159,12 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
 
     bx = mx0 - 1
     by = my0 - 1
-    w = convert(Vector, wv)
 
     for i = 1:n
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
-            r[xi - bx, yi - by] += w[i]
+            r[xi - bx, yi - by] += wv[i]
         end
     end
     return r
@@ -358,12 +356,11 @@ end
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
-    w = convert(Vector, wv)
     z = zero(W)
 
     for i = 1 : n
         @inbounds xi = x[i]
-        @inbounds wi = w[i]
+        @inbounds wi = wv[i]
         cm[xi] = get(cm, xi, z) + wi
     end
     return cm
