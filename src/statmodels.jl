@@ -216,13 +216,15 @@ Supported variants are:
 - `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
 - `:CoxSnell`, defined as ``1 - (L_0/L)^{2/n}``;
 - `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``.
+- `:deviance_ratio`, defined as ``1 - D/D_0``.
 
 In the above formulas, ``L`` is the likelihood of the model,
 ``L_0`` is the likelihood of the null model (the model with only an intercept),
-``n`` is the number of observations, ``y_i`` are the responses,
-``\\hat{y}_i`` are fitted values and ``\\bar{y}`` is the average response.
+``D`` is the deviance of the model (from the saturated model),
+``D_0`` is the deviance of the null model,
+``n`` is the number of observations.
 
-Cox and Snell's R² should match the classical R² for linear models.
+The deviance ratio R² matches the classical definition of R² for linear models.
 """
 function r2(obj::StatisticalModel, variant::Symbol)
     ll = loglikelihood(obj)
@@ -233,8 +235,12 @@ function r2(obj::StatisticalModel, variant::Symbol)
         1 - exp(2 * (ll0 - ll) / nobs(obj))
     elseif variant == :Nagelkerke
         (1 - exp(2 * (ll0 - ll) / nobs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+    elseif variant == :deviance_ratio
+        dev  = deviance(obj)
+        dev0 = nulldeviance(obj)
+        1 - dev/dev0
     else
-        error("variant must be one of :McFadden, :CoxSnell or :Nagelkerke")
+        error("variant must be one of :McFadden, :CoxSnell, :Nagelkerke or :deviance_ratio")
     end
 end
 
