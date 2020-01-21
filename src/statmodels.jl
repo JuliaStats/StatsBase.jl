@@ -265,10 +265,14 @@ adjr2(obj::StatisticalModel) = error("adjr2 is not defined for $(typeof(obj)).")
 Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
-The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)``.
+The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
+`:deviance_ration`, defined as ``1 - (D/dof)/(D_0/dof_0)``. 
 In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null model
-(the model including only the intercept), and ``k`` is the number of consumed degrees of freedom
-of the model (as returned by [`dof`](@ref)).
+(the model including only the intercept), ``D`` is the deviance of the model,
+``D_0`` is the deviance of the null model, ``k`` is the number of consumed degrees of freedom
+of the model (as returned by [`dof`](@ref)), ``dof`` is the number of degrees of freedom of 
+the model ([`nobs`](@ref) - k) and
+``dof_0`` is the number of degrees of freedom of the null model ([`nobs`](@ref) - 1).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
     ll = loglikelihood(obj)
@@ -276,8 +280,15 @@ function adjr2(obj::StatisticalModel, variant::Symbol)
     k = dof(obj)
     if variant == :McFadden
         1 - (ll - k)/ll0
+    elseif variant == :deviance_ratio
+        n = nobs(obj)
+        # Number of explanatory variables
+        p = dof(obj)
+        dev  = deviance(obj)/(n - p)
+        dev0 = nulldeviance(obj)/(n - 1)
+        1 - dev/dev0
     else
-        error(":McFadden is the only currently supported variant")
+        error("variant must be one of :McFadden or :deviance_ratio")
     end
 end
 
