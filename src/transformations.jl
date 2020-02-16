@@ -98,7 +98,7 @@ julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
  0.0   1.0  2.0
 
 julia> dt = fit(ZScoreTransform, X, dims=2)
-ZScoreTransform{Float64}(2, [0.0, 1.0], [0.5, 1.0])
+ZScoreTransform{Float64}(2, 2, [0.0, 1.0], [0.5, 1.0])
 
 julia> StatsBase.transform(dt, X)
 2×3 Array{Float64,2}:
@@ -257,7 +257,7 @@ julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
  0.0   1.0  2.0
 
 julia> dt = fit(UnitRangeTransform, X, dims=2)
-UnitRangeTransform{Float64}(2, true, [-0.5, 0.0], [1.0, 0.5])
+UnitRangeTransform{Float64}(2, 2, true, [-0.5, 0.0], [1.0, 0.5])
 
 julia> StatsBase.transform(dt, X)
 2×3 Array{Float64,2}:

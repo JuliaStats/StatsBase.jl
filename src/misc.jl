@@ -127,8 +127,8 @@ julia> using StatsBase
 
 julia> indicatormat([1 2 2], 2)
 2×3 Array{Bool,2}:
-  true  false  false
- false   true   true
+ 1  0  0
+ 0  1  1
 ```
 """
 function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)

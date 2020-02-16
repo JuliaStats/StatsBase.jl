@@ -134,6 +134,8 @@ Histograms can be fitted to data using the `fit` method.
 # Examples
 ## Example illustrating `closed`
 ```jldoctest
+julia> using StatsBase
+
 julia> fit(Histogram, [2.],  1:3, closed=:left)
 Histogram{Int64,1,Tuple{UnitRange{Int64}}}
 edges:
