@@ -234,10 +234,9 @@ end
 function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
     n = length(v)
     s = 0.0
-    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
-        @inbounds s += (z * z) * w[i]
+        @inbounds s += (z * z) * wv[i]
     end
 
     varcorrection(wv, corrected) * s
@@ -256,10 +255,9 @@ end
 function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
-    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
-        @inbounds s += (z * z * z) * w[i]
+        @inbounds s += (z * z * z) * wv[i]
     end
     s / sum(wv)
 end
@@ -277,10 +275,9 @@ end
 function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
-    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
-        @inbounds s += abs2(z * z) * w[i]
+        @inbounds s += abs2(z * z) * wv[i]
     end
     s / sum(wv)
 end
@@ -298,10 +295,9 @@ end
 function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
     n = length(v)
     s = 0.0
-    w = convert(Vector, wv)
     for i = 1:n
         @inbounds z = v[i] - m
-        @inbounds s += (z ^ k) * w[i]
+        @inbounds s += (z ^ k) * wv[i]
     end
     s / sum(wv)
 end
@@ -364,11 +360,10 @@ function skewness(v::RealArray, wv::AbstractWeights, m::Real)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment
-    w = convert(Vector, wv)
 
     @inbounds for i = 1:n
         x_i = v[i]
-        w_i = w[i]
+        w_i = wv[i]
         z = x_i - m
         z2w = z * z * w_i
         cm2 += z2w
@@ -411,11 +406,10 @@ function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
-    w = convert(Vector, wv)
 
     @inbounds for i = 1 : n
         x_i = v[i]
-        w_i = w[i]
+        w_i = wv[i]
         z = x_i - m
         z2 = z * z
         z2w = z2 * w_i

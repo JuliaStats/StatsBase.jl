@@ -412,13 +412,12 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     t = rand(rng) * sum(wv)
-    w = convert(Vector, wv)
-    n = length(w)
+    n = length(wv)
     i = 1
-    cw = w[1]
+    cw = wv[1]
     while cw < t && i < n
         i += 1
-        @inbounds cw += w[i]
+        @inbounds cw += wv[i]
     end
     return i
 end
@@ -530,7 +529,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     # create alias table
     ap = Vector{Float64}(undef, n)
     alias = Vector{Int}(undef, n)
-    make_alias_table!(convert(Vector, wv), sum(wv), ap, alias)
+    make_alias_table!(wv, sum(wv), ap, alias)
 
     # sampling
     s = RangeGenerator(1:n)
@@ -561,7 +560,7 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     k = length(x)
 
     w = Vector{Float64}(undef, n)
-    copyto!(w, convert(Vector, wv))
+    copyto!(w, wv)
     wsum = sum(wv)
 
     for i = 1:k

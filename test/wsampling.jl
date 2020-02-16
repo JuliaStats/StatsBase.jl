@@ -10,7 +10,7 @@ function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::R
     (vmin, vmax) = vrgn
     (amin, amax) = extrema(a)
     @test vmin <= amin <= amax <= vmax
-    p0 = convert(Vector, wv) ./ sum(wv)
+    p0 = wv ./ sum(wv)
     if ordered
         @test issorted(a)
         if ptol > 0
@@ -68,7 +68,7 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::
     end
 
     if ptol > 0
-        p0 = convert(Vector, wv) ./ sum(wv)
+        p0 = wv ./ sum(wv)
         @test isapprox(proportions(a[1,:], vmin:vmax), p0, atol=ptol)
     end
 end
