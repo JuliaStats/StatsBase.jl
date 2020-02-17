@@ -7,96 +7,103 @@
 #############################
 
 # Trimmed set
-"""
-    trim(x; prop=0.0, count=0)
+"Return the upper and lower bound elements used by `trim` and `winsor`"
+function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
+    n = length(x)
+    n > 0 || throw(ArgumentError("x can not be empty."))
 
-Return a copy of `x` with either `count` or proportion `prop` of the highest
-and lowest elements removed.  To compute the trimmed mean of `x` use
-`mean(trim(x))`; to compute the variance use `trimvar(x)` (see [`trimvar`](@ref)).
+    if count == 0
+        0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
+        count = floor(Int, n * prop)
+    else
+        prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
+        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
+    end
 
-# Example
-```julia
-julia> trim([1,2,3,4,5], prop=0.2)
-3-element Array{Int64,1}:
- 2
- 3
- 4
-```
-"""
-function trim(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    trim!(copy(x); prop=prop, count=count)
+    # indices for lowest count values
+    x2 = copy(x)
+    lo = partialsort!(x2, 1:count+1)[end]
+    # indices for largest count values
+    up = partialsort!(x2, n-count:n)[1]
+
+    up, lo
 end
 
 """
-    trim!(x; prop=0.0, count=0)
+    trim(x::AbstractVector; prop=0.0, count=0)
+
+Return an iterator of all elements of `x` that omits either `count` or proportion
+`prop` of the highest and lowest elements.
+
+The number of trimmed elements could be smaller than specified if several
+elements equal the lower or upper bound.
+
+To compute the trimmed mean of `x` use `mean(trim(x))`;
+to compute the variance use `trimvar(x)` (see [`trimvar`](@ref)).
+
+# Example
+```julia
+julia> collect(trim([5,2,4,3,1], prop=0.2))
+3-element Array{Int64,1}:
+ 2
+ 4
+ 3
+```
+"""
+function trim(x::AbstractVector; prop::Real=0.0, count::Integer=0)
+    up, lo = uplo(x; prop=prop, count=count)
+
+    (xi for xi in x if lo <= xi <= up)
+end
+
+"""
+    trim!(x::AbstractVector; prop=0.0, count=0)
 
 A variant of [`trim`](@ref) that modifies `x` in place.
 """
 function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    n = length(x)
-    n > 0 || throw(ArgumentError("x can not be empty."))
-
-    if count == 0
-        0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
-        count = floor(Int, n * prop)
-    else
-        prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
-        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
-    end
-
-    partialsort!(x, (n-count+1):n)
-    partialsort!(x, 1:count)
-    deleteat!(x, (n-count+1):n)
-    deleteat!(x, 1:count)
-
+    up, lo = uplo(x; prop=prop, count=count)
+    ix = (i for (i,xi) in enumerate(x) if lo > xi || xi > up)
+    deleteat!(x, ix)
     return x
 end
 
 """
-    winsor(x; prop=0.0, count=0)
+    winsor(x::AbstractVector; prop=0.0, count=0)
 
-Return a copy of `x` with either `count` or proportion `prop` of the lowest
-elements of `x` replaced with the next-lowest, and an equal number of the
-highest elements replaced with the previous-highest.  To compute the Winsorized
-mean of `x` use `mean(winsor(x))`.
+Return an iterator of all elements of `x` that replaces either `count` or
+proportion `prop` of the highest elements with the previous-highest element
+and an equal number of the lowest elements with the next-lowest element.
+                        
+The number of replaced elements could be smaller than specified if several
+elements equal the lower or upper bound.
+                        
+To compute the Winsorized mean of `x` use `mean(winsor(x))`.
 
 # Example
 ```julia
-julia> winsor([1,2,3,4,5], prop=0.2)
+julia> collect(winsor([5,2,3,4,1], prop=0.2))
 5-element Array{Int64,1}:
- 2
+ 4
  2
  3
  4
- 4
+ 2
 ```
 """
 function winsor(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    winsor!(copy(x); prop=prop, count=count)
+    up, lo = uplo(x; prop=prop, count=count)
+
+    (clamp(xi, lo, up) for xi in x)
 end
 
 """
-    winsor!(x; prop=0.0, count=0)
+    winsor!(x::AbstractVector; prop=0.0, count=0)
 
 A variant of [`winsor`](@ref) that modifies vector `x` in place.
 """
 function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    n = length(x)
-    n > 0 || throw(ArgumentError("x can not be empty."))
-
-    if count == 0
-        0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
-        count = floor(Int, n * prop)
-    else
-        prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
-        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
-    end
-
-    partialsort!(x, (n-count+1):n)
-    partialsort!(x, 1:count)
-    x[1:count] .= x[count+1]
-    x[n-count+1:end] .= x[n-count]
-
+    copyto!(x, winsor(x; prop=prop, count=count))
     return x
 end
 
