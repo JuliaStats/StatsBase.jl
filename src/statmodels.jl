@@ -222,9 +222,9 @@ In the above formulas, ``L`` is the likelihood of the model,
 ``L_0`` is the likelihood of the null model (the model with only an intercept),
 ``D`` is the deviance of the model (from the saturated model),
 ``D_0`` is the deviance of the null model,
-``n`` is the number of observations.
+``n`` is the number of observations (given by [`nobs`](@ref)).
 
-The deviance ratio R² matches the classical definition of R² for linear models.
+The deviance ratio and the CoxSnell R²'s both match the classical definition of R² for linear models.
 """
 function r2(obj::StatisticalModel, variant::Symbol)
     loglikbased = [:McFadden, :CoxSnell, :Nagelkerke]
@@ -269,13 +269,11 @@ Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
-`:devianceratio`, defined as ``1 - (D/df)/(D_0/df_0)``. 
-In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null model
+`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``. 
+In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept), ``D`` is the deviance of the model,
-``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)),
-``k`` is the number of consumed degrees of freedom of the model (as returned by [`dof`](@ref)), 
-``df`` is the number of degrees of freedom of the model (``n - k``) and
-``df_0`` is the number of degrees of freedom of the null model (``n - 1``).
+``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
+``k`` is the number of consumed degrees of freedom of the model (as returned by [`dof`](@ref)).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
     if variant == :McFadden
@@ -285,7 +283,6 @@ function adjr2(obj::StatisticalModel, variant::Symbol)
         1 - (ll - k)/ll0
     elseif variant == :devianceratio
         n = nobs(obj)
-        # Number of explanatory variables
         k = dof(obj)
         dev  = deviance(obj)
         dev0 = nulldeviance(obj)
