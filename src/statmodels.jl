@@ -224,10 +224,11 @@ In the above formulas, ``L`` is the likelihood of the model,
 ``D_0`` is the deviance of the null model,
 ``n`` is the number of observations (given by [`nobs`](@ref)).
 
-The deviance ratio and the CoxSnell R²'s both match the classical definition of R² for linear models.
+The Cox-Snell and the deviance ratio variants both match the classical definition of R²
+for linear models.
 """
 function r2(obj::StatisticalModel, variant::Symbol)
-    loglikbased = [:McFadden, :CoxSnell, :Nagelkerke]
+    loglikbased = (:McFadden, :CoxSnell, :Nagelkerke)
     if variant in loglikbased
         ll = loglikelihood(obj)
         ll0 = nullloglikelihood(obj)
@@ -276,14 +277,13 @@ In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null
 ``k`` is the number of consumed degrees of freedom of the model (as returned by [`dof`](@ref)).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
+    k = dof(obj)
     if variant == :McFadden
         ll = loglikelihood(obj)
         ll0 = nullloglikelihood(obj)
-        k = dof(obj)
         1 - (ll - k)/ll0
     elseif variant == :devianceratio
         n = nobs(obj)
-        k = dof(obj)
         dev  = deviance(obj)
         dev0 = nulldeviance(obj)
         1 - (dev*(n-1))/(dev0*(n-k))
