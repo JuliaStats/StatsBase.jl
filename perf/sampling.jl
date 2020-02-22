@@ -90,6 +90,7 @@ const procs2 = Proc[ SampleProc{Knuths}(),
                      SampleProc{Sample_NoRep}(),
                      SampleProc{Seq_A}(),
                      SampleProc{Seq_C}(),
+                     SampleProc{Seq_D}(),
                      SampleProc{Sample_NoRep_Ord}() ]
 
 const cfgs2 = (Int, Int)[]
