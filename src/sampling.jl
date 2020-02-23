@@ -312,13 +312,14 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 
         while true
 
+            local X
             while true
                 X = N * (1 - vprime)
                 s = trunc(Int, X)
                 if s < q1
                     break
                 end
-                vprime = exp(log(rand(rng)) / n)
+                vprime = exp(-randexp(rng)/n)
             end
 
             y = rand(rng) / q2
@@ -350,7 +351,7 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
                 vprime = exp(-randexp(rng) / (n-1))
                 break
             end
-            vprime = exp(log(rand(rng)) / n)
+            vprime = exp(-randexp(rng)/n)
         end
 
          j += 1
