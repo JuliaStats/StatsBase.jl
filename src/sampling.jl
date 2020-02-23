@@ -302,12 +302,11 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     i = 0
     j = 0
 
-    vprime = exp(log(rand(rng)) / n)
+    vprime = exp(-randexp(rng)/n)
     q1 = N - n + 1
     q2 = q1 / N
     alpha = 1 / 13 # choose alpha value
     threshold = alpha * n
-    X = nothing
 
     while n > 1 && threshold < N
 
@@ -347,14 +346,16 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
                 top -= 1
             end
 
-            if exp(log(y) / (n - 1)) < N / (N - X)
-                vprime = exp(log(rand(rng)) / (n - 1))
+            if log(y) < (n - 1)*(log(N) - log(N - X))
+                vprime = exp(-randexp(rng) / (n-1))
                 break
             end
             vprime = exp(log(rand(rng)) / n)
         end
 
-        @inbounds x[j+=1] = a[i+=s+1]
+         j += 1
+         i += s+1
+        @inbounds x[j] = a[i]
         N = N - s - 1
         n -= 1
         q1 -= s
