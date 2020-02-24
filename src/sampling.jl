@@ -450,9 +450,9 @@ end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
-function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
-                           a::AbstractVector{Float64},
-                           alias::AbstractVector{Int})
+function make_alias_table!(w::AbstractVector{T}, wsum::T,
+                           a::AbstractVector{T},
+                           alias::AbstractVector{Int}) where {T <: AbstractFloat}
     # Arguments:
     #
     #   w [in]:         input weights
@@ -481,11 +481,12 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     kl = 0  # actual number of larges
     ks = 0  # actual number of smalls
 
+    oneT = one(T)
     for i = 1:n
         @inbounds ai = a[i]
-        if ai > 1.0
+        if ai > oneT
             larges[kl+=1] = i  # push to larges
-        elseif ai < 1.0
+        elseif ai < oneT
             smalls[ks+=1] = i  # push to smalls
         end
     end
@@ -494,8 +495,8 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
         s = smalls[ks]; ks -= 1  # pop from smalls
         l = larges[kl]; kl -= 1  # pop from larges
         @inbounds alias[s] = l
-        @inbounds al = a[l] = (a[l] - 1.0) + a[s]
-        if al > 1.0
+        @inbounds al = a[l] = (a[l] - oneT) + a[s]
+        if al > oneT
             larges[kl+=1] = l  # push to larges
         else
             smalls[ks+=1] = l  # push to smalls
@@ -504,7 +505,7 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
 
     # this loop should be redundant, except for rounding
     for i = 1:ks
-        @inbounds a[smalls[i]] = 1.0
+        @inbounds a[smalls[i]] = oneT
     end
     nothing
 end
