@@ -1,113 +1,65 @@
 # Benchmark on non-weighted sampling
+# requires BenchmarkTools
 
-# require the BenchmarkLite package
-using BenchmarkLite
 using StatsBase
+using BenchmarkTools
+using Random
 
-import StatsBase: direct_sample!, xmultinom_sample!
+import StatsBase: direct_sample!, alias_sample!
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
 import StatsBase: seqsample_a!, seqsample_c!
 
-### generic sampling benchmarking
+# set up a testing suite
 
-mutable struct SampleProc{Alg} <: Proc end
+suite = BenchmarkGroup()
+suite["sampling"] = BenchmarkGroup(["sampling", "unweighted"])
+suite["wsampling"] = BenchmarkGroup(["sampling", "weighted"])
 
-abstract type WithRep end
-abstract type NoRep end
+# functions to choose params
 
-mutable struct Direct <: WithRep end
-tsample!(s::Direct, a, x) = direct_sample!(a, x)
-
-mutable struct Xmultinom <: WithRep end
-tsample!(s::Xmultinom, a, x) = xmultinom_sample!(a, x)
-
-mutable struct Sample_WRep <: WithRep end
-tsample!(s::Sample_WRep, a, x) = sample!(a, x; replace=true, ordered=false)
-
-mutable struct Sample_WRep_Ord <: WithRep end
-tsample!(s::Sample_WRep_Ord, a, x) = sample!(a, x; replace=true, ordered=true)
-
-mutable struct Knuths <: NoRep end
-tsample!(s::Knuths, a, x) = knuths_sample!(a, x)
-
-mutable struct Fisher_Yates <: NoRep end
-tsample!(s::Fisher_Yates, a, x) = fisher_yates_sample!(a, x)
-
-mutable struct Self_Avoid <: NoRep end
-tsample!(s::Self_Avoid, a, x) = self_avoid_sample!(a, x)
-
-mutable struct Seq_A <: NoRep end
-tsample!(s::Seq_A, a, x) = seqsample_a!(a, x)
-
-mutable struct Seq_C <: NoRep end
-tsample!(s::Seq_C, a, x) = seqsample_c!(a, x)
-
-mutable struct Sample_NoRep <: NoRep end
-tsample!(s::Sample_NoRep, a, x) = sample!(a, x; replace=false, ordered=false)
-
-mutable struct Sample_NoRep_Ord <: NoRep end
-tsample!(s::Sample_NoRep_Ord, a, x) = sample!(a, x; replace=false, ordered=true)
-
-
-# config is in the form of (n, k)
-
-Base.string(p::SampleProc{Alg}) where {Alg} = lowercase(string(Alg))
-
-Base.length(p::SampleProc, cfg::Tuple{Int,Int}) = cfg[2]
-Base.isvalid(p::SampleProc{<:WithRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= 1 && k >= 1)
-Base.isvalid(p::SampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= k >= 1)
-
-Base.start(p::SampleProc, cfg::Tuple{Int,Int}) = Vector{Int}(cfg[2])
-Base.run(p::SampleProc{Alg}, cfg::Tuple{Int,Int}, s::Vector{Int}) where {Alg} = tsample!(Alg(), 1:cfg[1], s)
-Base.done(p::SampleProc, cfg, s) = nothing
-
-
-### benchmarking
-
-const ns = 5 * (2 .^ [0:9])
-const ks = 2 .^ [1:16]
-
-## with replacement
-
-const procs1 = Proc[ SampleProc{Direct}(),
-                     SampleProc{Sample_WRep}(),
-                     SampleProc{Xmultinom}(),
-                     SampleProc{Sample_WRep_Ord}() ]
-
-const cfgs1 = vec([(n, k) for k in ks, n in ns])
-
-rtable1 = run(procs1, cfgs1; duration=0.2)
-println()
-
-## without replacement
-
-const procs2 = Proc[ SampleProc{Knuths}(),
-                     SampleProc{Fisher_Yates}(),
-                     SampleProc{Self_Avoid}(),
-                     SampleProc{Sample_NoRep}(),
-                     SampleProc{Seq_A}(),
-                     SampleProc{Seq_C}(),
-                     SampleProc{Sample_NoRep_Ord}() ]
-
-const cfgs2 = (Int, Int)[]
-for n in 5 * (2 .^ [0:11]), k in 2 .^ [1:16]
-    if k < n
-        push!(cfgs2, (n, k))
-    end
+function chooseParamsRep()
+  n = 5 * (2 ^ rand(0:9))
+  k = 2 ^ rand(1:16)
+  return [1:n, zeros(Int, k)]
 end
 
-rtable2 = run(procs2, cfgs2; duration=0.2)
-println()
+function chooseParamsNoRep()
+  n = 5 * (2 ^ rand(0:9))
+  k = rand(1:n)
+  return [1:n, zeros(Int, k)]
+end
 
-## show results
+function chooseParamsWRep()
+  n = 5 * (2 ^ rand(0:9))
+  k = 2 ^ rand(1:16)
+  return [1:n, zeros(Int, k)]
+end
 
-println("Sampling With Replacement")
-println("===================================")
-show(rtable1; unit=:mps, cfghead="(n, k)")
-println()
+# unweighted benchmarks
 
-println("Sampling Without Replacement")
-println("===================================")
-show(rtable2; unit=:mps, cfghead="(n, k)")
-println()
+## No Replacement
+suite["sampling"]["Direct"] = @benchmarkable  direct_sample!(p[1], p[2]) setup=(p=chooseParamsRep())
+## With Replacement
+suite["sampling"]["Knuths"] = @benchmarkable  knuths_sample!(p[1], p[2]) setup=(p=chooseParamsNoRep())
+suite["sampling"]["Fisher_Yates"] = @benchmarkable  fisher_yates_sample!(p[1], p[2]) setup=(p=chooseParamsNoRep())
+suite["sampling"]["Fisher_Yates"] = @benchmarkable  self_avoid_sample!(p[1], p[2]) setup=(p=chooseParamsNoRep())
+suite["sampling"]["Seq_A"] = @benchmarkable  seqsample_a!(p[1], p[2]) setup=(p=chooseParamsNoRep())
+suite["sampling"]["Seq_C"] = @benchmarkable  seqsample_c!(p[1], p[2]) setup=(p=chooseParamsNoRep())
+suite["sampling"]["Sample_NoRep"] = @benchmarkable  sample!(p[1], p[2], replace=false, ordered=false) setup=(p=chooseParamsNoRep())
+suite["sampling"]["Sample_NoRep_Ord"] = @benchmarkable  sample!(p[1], p[2], replace=false, ordered=true) setup=(p=chooseParamsNoRep())
 
+# weighted benchmarks
+
+## With Replacement
+suite["wsampling"]["Direct"] = @benchmarkable  direct_sample!(Random.GLOBAL_RNG, p[1], p[2]) setup=(p=chooseParamsRep())
+suite["wsampling"]["Alias"] = @benchmarkable  alias_sample!(Random.GLOBAL_RNG, p[1], p[2]) setup=(p=chooseParamsWRep())
+suite["wsampling"]["Direct_S"] = @benchmarkable  sort!(direct_sample!(Random.GLOBAL_RNG, p[1], p[2])) setup=(p=chooseParamsWRep())
+suite["wsampling"]["Sample_WRep"] = @benchmarkable  sample!(p[1], p[2], ordered=false) setup=(p=chooseParamsWRep())
+suite["wsampling"]["Sample_WRep_Ord"] = @benchmarkable  sample!(p[1], p[2], ordered=true) setup=(p=chooseParamsWRep())
+
+# run the tests
+tune!(suite);
+results = run(suite, verbose = true, seconds = 5)
+
+# Show results
+show(results)
