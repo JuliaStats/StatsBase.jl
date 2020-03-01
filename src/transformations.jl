@@ -280,6 +280,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         l, tmin, tmax = _compute_extrema(X')
     elseif dims == nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        dims = 2
         l, tmin, tmax = _compute_extrema(X')
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
