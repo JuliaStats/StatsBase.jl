@@ -37,9 +37,9 @@ end
 
 # unweighted benchmarks
 
-## No Replacement
-suite["sampling"]["Direct"] = @benchmarkable  direct_sample!(p[1], p[2]) setup=(p=chooseParamsRep())
 ## With Replacement
+suite["sampling"]["Direct"] = @benchmarkable  direct_sample!(p[1], p[2]) setup=(p=chooseParamsRep())
+## No Replacement
 suite["sampling"]["Knuths"] = @benchmarkable  knuths_sample!(p[1], p[2]) setup=(p=chooseParamsNoRep())
 suite["sampling"]["Fisher_Yates"] = @benchmarkable  fisher_yates_sample!(p[1], p[2]) setup=(p=chooseParamsNoRep())
 suite["sampling"]["Fisher_Yates"] = @benchmarkable  self_avoid_sample!(p[1], p[2]) setup=(p=chooseParamsNoRep())
