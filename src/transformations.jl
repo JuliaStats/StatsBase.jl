@@ -63,9 +63,9 @@ struct ZScoreTransform{T<:Real} <: AbstractDataTransform
         new{T}(l, dims, m, s)
     end
 
-    function ZScoreTransform(dims::Int, m::Vector{T}, s::Vector{T}) where T
-        Base.depwarn("ZScoreTransform(dims, m, s) is deprecated: use ZScoreTransform(len, dims, m, s) instead", :ZScoreTransform)
-        ZScoreTransform(max(length(m), length(s)), dims, m, s)
+    function ZScoreTransform(l::Int, m::Vector{T}, s::Vector{T}) where T
+        Base.depwarn("ZScoreTransform(len, m, s) is deprecated: use ZScoreTransform(len, 2, m, s) instead", :ZScoreTransform)
+        ZScoreTransform(l, 2, m, s)
     end
 end
 
