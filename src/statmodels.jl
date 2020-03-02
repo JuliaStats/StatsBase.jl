@@ -216,25 +216,35 @@ Supported variants are:
 - `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
 - `:CoxSnell`, defined as ``1 - (L_0/L)^{2/n}``;
 - `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``.
+- `:devianceratio`, defined as ``1 - D/D_0``.
 
 In the above formulas, ``L`` is the likelihood of the model,
 ``L_0`` is the likelihood of the null model (the model with only an intercept),
-``n`` is the number of observations, ``y_i`` are the responses,
-``\\hat{y}_i`` are fitted values and ``\\bar{y}`` is the average response.
+``D`` is the deviance of the model (from the saturated model),
+``D_0`` is the deviance of the null model,
+``n`` is the number of observations (given by [`nobs`](@ref)).
 
-Cox and Snell's R² should match the classical R² for linear models.
+The Cox-Snell and the deviance ratio variants both match the classical definition of R²
+for linear models.
 """
 function r2(obj::StatisticalModel, variant::Symbol)
-    ll = loglikelihood(obj)
-    ll0 = nullloglikelihood(obj)
-    if variant == :McFadden
-        1 - ll/ll0
-    elseif variant == :CoxSnell
-        1 - exp(2 * (ll0 - ll) / nobs(obj))
-    elseif variant == :Nagelkerke
-        (1 - exp(2 * (ll0 - ll) / nobs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+    loglikbased = (:McFadden, :CoxSnell, :Nagelkerke)
+    if variant in loglikbased
+        ll = loglikelihood(obj)
+        ll0 = nullloglikelihood(obj)
+        if variant == :McFadden
+            1 - ll/ll0
+        elseif variant == :CoxSnell
+            1 - exp(2 * (ll0 - ll) / nobs(obj))
+        elseif variant == :Nagelkerke
+            (1 - exp(2 * (ll0 - ll) / nobs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+        end
+    elseif variant == :devianceratio
+        dev  = deviance(obj)
+        dev0 = nulldeviance(obj)
+        1 - dev/dev0
     else
-        error("variant must be one of :McFadden, :CoxSnell or :Nagelkerke")
+        error("variant must be one of $(join(loglikbased, ", ")) or :devianceratio")
     end
 end
 
@@ -259,19 +269,26 @@ adjr2(obj::StatisticalModel) = error("adjr2 is not defined for $(typeof(obj)).")
 Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
-The only currently supported variant is `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)``.
-In this formula, ``L`` is the likelihood of the model, ``L0`` that of the null model
-(the model including only the intercept), and ``k`` is the number of consumed degrees of freedom
-of the model (as returned by [`dof`](@ref)).
+The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
+`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``. 
+In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
+(the model including only the intercept), ``D`` is the deviance of the model,
+``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
+``k`` is the number of consumed degrees of freedom of the model (as returned by [`dof`](@ref)).
 """
 function adjr2(obj::StatisticalModel, variant::Symbol)
-    ll = loglikelihood(obj)
-    ll0 = nullloglikelihood(obj)
     k = dof(obj)
     if variant == :McFadden
+        ll = loglikelihood(obj)
+        ll0 = nullloglikelihood(obj)
         1 - (ll - k)/ll0
+    elseif variant == :devianceratio
+        n = nobs(obj)
+        dev  = deviance(obj)
+        dev0 = nulldeviance(obj)
+        1 - (dev*(n-1))/(dev0*(n-k))
     else
-        error(":McFadden is the only currently supported variant")
+        error("variant must be one of :McFadden or :devianceratio")
     end
 end
 
