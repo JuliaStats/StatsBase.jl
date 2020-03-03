@@ -135,10 +135,7 @@ end
 
 function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
              dims::Union{Integer,Nothing}=nothing, center::Bool=true, scale::Bool=true)
-    if dims == nothing
-        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
-        dims = 1
-    elseif dims != 1
+    if dims != 1
         throw(DomainError(dims, "fit only accepts dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
