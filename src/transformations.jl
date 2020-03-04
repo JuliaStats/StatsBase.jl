@@ -62,6 +62,11 @@ struct ZScoreTransform{T<:Real} <: AbstractDataTransform
         lens == l || lens == 0 || throw(DimensionMismatch("Inconsistent dimensions."))
         new{T}(l, dims, m, s)
     end
+
+    function ZScoreTransform(l::Int, m::Vector{T}, s::Vector{T}) where T
+        Base.depwarn("ZScoreTransform(len, m, s) is deprecated: use ZScoreTransform(len, 2, m, s) instead", :ZScoreTransform)
+        ZScoreTransform(l, 2, m, s)
+    end
 end
 
 function Base.getproperty(t::ZScoreTransform, p::Symbol)
@@ -118,6 +123,7 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
         m, s = mean_and_std(X, 2)
     elseif dims === nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        dims = 2
         m, s = mean_and_std(X, 2)
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
@@ -129,9 +135,7 @@ end
 
 function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
              dims::Union{Integer,Nothing}=nothing, center::Bool=true, scale::Bool=true)
-    if dims == nothing
-        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
-    elseif dims != 1
+    if dims != 1
         throw(DomainError(dims, "fit only accepts dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
@@ -273,6 +277,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         l, tmin, tmax = _compute_extrema(X')
     elseif dims == nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        dims = 2
         l, tmin, tmax = _compute_extrema(X')
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
