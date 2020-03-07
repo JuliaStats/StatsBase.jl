@@ -43,7 +43,8 @@ end
 
 default_autolags(lx::Int) = 0 : default_laglen(lx)
 
-_autodot(x::AbstractVector{<:RealFP}, lx::Int, l::Int) = dot(x, 1:lx-l, x, 1+l:lx)
+_autodot(x::AbstractVector{<:RealFP}, lx::Int, l::Int) = dot(x, 1:(lx-l), x, (1+l):lx)
+_autodot(x::RealVector, lx::Int, l::Int) = dot(view(x, 1:(lx-l)), view(x, (1+l):lx))
 
 
 ## autocov
@@ -212,8 +213,20 @@ autocor(x::AbstractVecOrMat{<:Real}; demean::Bool=true) =
 
 default_crosslags(lx::Int) = (l=default_laglen(lx); -l:l)
 
-_crossdot(x::AbstractVector{T}, y::AbstractVector{T}, lx::Int, l::Int) where {T<:RealFP} =
-    (l >= 0 ? dot(x, 1:lx-l, y, 1+l:lx) : dot(x, 1-l:lx, y, 1:lx+l))
+function _crossdot(x::AbstractVector{T}, y::AbstractVector{T}, lx::Int, l::Int) where {T<:RealFP}
+    if l >= 0
+        dot(x, 1:(lx-l), y, (1+l):lx)
+    else
+        dot(x, (1-l):lx, y, 1:(lx+l))
+    end
+end
+function _crossdot(x::RealVector, y::RealVector, lx::Int, l::Int)
+    if l >= 0
+        dot(view(x, 1:(lx-l)), view(y, (1+l):lx))
+    else
+        dot(view(x, (1-l):lx), view(y, 1:(lx+l)))
+    end
+end
 
 ## crosscov
 
