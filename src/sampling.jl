@@ -309,10 +309,8 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     threshold = alpha * n
 
     while n > 1 && threshold < N
-
         while true
-
-            local X
+           local X
             while true
                 X = N * (1 - vprime)
                 s = trunc(Int, X)
@@ -354,8 +352,8 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
             vprime = exp(-randexp(rng)/n)
         end
 
-         j += 1
-         i += s+1
+        j += 1
+        i += s+1
         @inbounds x[j] = a[i]
         N = N - s - 1
         n -= 1
