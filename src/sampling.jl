@@ -288,9 +288,11 @@ seqsample_c!(a::AbstractArray, x::AbstractArray) = seqsample_c!(Random.GLOBAL_RN
 
 """
     seqsample_d!([rng], a::AbstractArray, x::AbstractArray)
+
 Random subsequence sampling using algorithm D described in the following paper (page 716-17):
 Jeffrey Scott Vitter. "Faster Methods for Random Sampling". Communications of the ACM,
 27 (7), July 1984.
+
 This algorithm consumes ``O(k)`` random numbers, with `k=length(x)`.
 The outputs are ordered.
 """
