@@ -123,6 +123,7 @@ end
 
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
 import StatsBase: seqsample_a!, seqsample_c!, seqsample_d!
+
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
     knuths_sample!(3:12, view(a,:,j))
