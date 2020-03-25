@@ -42,7 +42,7 @@ position in `sort(x; lt = lt, rev = rev)`.
 Missing values are assigned rank `missing`.
 """
 ordinalrank(x::AbstractArray; lt = isless, rev::Bool = false) =
-    ordinalrank!(similar(x), x, sortperm(x; lt = lt, rev = rev))
+    ordinalrank!(similar(x, Int), x, sortperm(x; lt = lt, rev = rev))
 
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
