@@ -45,6 +45,7 @@ StatsBase.fisher_yates_sample!
 StatsBase.self_avoid_sample!
 StatsBase.seqsample_a!
 StatsBase.seqsample_c!
+StatsBase.seqsample_d!
 ```
 
 ### Weighted Sampling Algorithms

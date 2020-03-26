@@ -286,7 +286,93 @@ function seqsample_c!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 end
 seqsample_c!(a::AbstractArray, x::AbstractArray) = seqsample_c!(Random.GLOBAL_RNG, a, x)
 
-## TODO: implement Algorithm D (page 716 - 717)
+"""
+    seqsample_d!([rng], a::AbstractArray, x::AbstractArray)
+
+Random subsequence sampling using algorithm D described in the following paper (page 716-17):
+Jeffrey Scott Vitter. "Faster Methods for Random Sampling". Communications of the ACM,
+27 (7), July 1984.
+
+This algorithm consumes ``O(k)`` random numbers, with `k=length(x)`.
+The outputs are ordered.
+"""
+function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    N = length(a)
+    n = length(x)
+    n <= N || error("length(x) should not exceed length(a)")
+
+    i = 0
+    j = 0
+
+    vprime = exp(-randexp(rng)/n)
+    q1 = N - n + 1
+    q2 = q1 / N
+    alpha = 1 / 13 # choose alpha value
+    threshold = alpha * n
+
+    while n > 1 && threshold < N
+        while true
+           local X
+            while true
+                X = N * (1 - vprime)
+                s = trunc(Int, X)
+                if s < q1
+                    break
+                end
+                vprime = exp(-randexp(rng)/n)
+            end
+
+            y = rand(rng) / q2
+            lhs = exp(log(y) / (n - 1))
+            rhs = ((q1 - s) / q1) * (N / (N - X))
+
+            if lhs <= rhs
+                vprime = lhs / rhs
+                break
+            end
+
+            if n - 1 > s
+                bottom = N - n
+                limit = N - s
+            else
+                bottom = N - s - 1
+                limit = q1
+            end
+
+            top = N - 1
+
+            while top >= limit
+                y = y * top / bottom
+                bottom -= 1
+                top -= 1
+            end
+
+            if log(y) < (n - 1)*(log(N) - log(N - X))
+                vprime = exp(-randexp(rng) / (n-1))
+                break
+            end
+            vprime = exp(-randexp(rng)/n)
+        end
+
+        j += 1
+        i += s+1
+        @inbounds x[j] = a[i]
+        N = N - s - 1
+        n -= 1
+        q1 -= s
+        q2 = q1 / N
+        threshold -= alpha
+    end
+
+    if n > 1
+        seqsample_a!(rng, a[i+1:end], @view x[j+1:end])
+    else
+        s = trunc(Int, N * vprime)
+        @inbounds x[j+=1] = a[i+=s+1]
+    end
+end
+
+seqsample_d!(a::AbstractArray, x::AbstractArray) = seqsample_d!(Random.GLOBAL_RNG, a, x)
 
 
 ### Interface functions (poly-algorithms)
