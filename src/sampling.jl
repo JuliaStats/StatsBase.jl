@@ -5,12 +5,12 @@
 #
 ###########################################################
 
-using Random: RangeGenerator, Random.GLOBAL_RNG
+using Random: Sampler, Random.GLOBAL_RNG
 
 ### Algorithms for sampling with replacement
 
 function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
-    s = RangeGenerator(1:length(a))
+    s = Sampler(rng, 1:length(a))
     b = a[1] - 1
     if b == 0
         for i = 1:length(x)
@@ -34,7 +34,7 @@ and set `x[j] = a[i]`, with `n=length(a)` and `k=length(x)`.
 This algorithm consumes `k` random numbers.
 """
 function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    s = RangeGenerator(1:length(a))
+    s = Sampler(rng, 1:length(a))
     for i = 1:length(x)
         @inbounds x[i] = a[rand(rng, s)]
     end
@@ -107,7 +107,7 @@ function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
     end
 
     # scan remaining
-    s = RangeGenerator(1:k)
+    s = Sampler(rng, 1:k)
     for i = k+1:n
         if rand(rng) * i < k  # keep it with probability k / i
             @inbounds x[rand(rng, s)] = a[i]
@@ -185,7 +185,7 @@ function self_avoid_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray
 
     s = Set{Int}()
     sizehint!(s, k)
-    rgen = RangeGenerator(1:n)
+    rgen = Sampler(rng, 1:n)
 
     # first one
     idx = rand(rng, rgen)
@@ -618,7 +618,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     make_alias_table!(wv, sum(wv), ap, alias)
 
     # sampling
-    s = RangeGenerator(1:n)
+    s = Sampler(rng, 1:n)
     for i = 1:length(x)
         j = rand(rng, s)
         x[i] = rand(rng) < ap[j] ? a[j] : a[alias[j]]
