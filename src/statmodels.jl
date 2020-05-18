@@ -3,211 +3,214 @@
 abstract type StatisticalModel end
 
 """
-    coef(obj::StatisticalModel)
+    coef(model::StatisticalModel)
 
 Return the coefficients of the model.
 """
-coef(obj::StatisticalModel) = error("coef is not defined for $(typeof(obj)).")
+coef(model::StatisticalModel) = error("coef is not defined for $(typeof(model)).")
 
 """
-    coefnames(obj::StatisticalModel)
+    coefnames(model::StatisticalModel)
 
 Return the names of the coefficients.
 """
-coefnames(obj::StatisticalModel) = error("coefnames is not defined for $(typeof(obj)).")
+coefnames(model::StatisticalModel) = error("coefnames is not defined for $(typeof(model)).")
 
 """
-    coeftable(obj::StatisticalModel; level::Real=0.95)
+    coeftable(model::StatisticalModel; level::Real=0.95)
 
 Return a table of class `CoefTable` with coefficients and related statistics.
 `level` determines the level for confidence intervals (by default, 95%).
 """
-coeftable(obj::StatisticalModel) = error("coeftable is not defined for $(typeof(obj)).")
+coeftable(model::StatisticalModel) = error("coeftable is not defined for $(typeof(model)).")
 
 """
-    confint(obj::StatisticalModel; level::Real=0.95)
+    confint(model::StatisticalModel; level::Real=0.95)
 
 Compute confidence intervals for coefficients, with confidence level `level` (by default 95%).
 """
-confint(obj::StatisticalModel) = error("confint is not defined for $(typeof(obj)).")
+confint(model::StatisticalModel) = error("confint is not defined for $(typeof(model)).")
 
 """
-    deviance(obj::StatisticalModel)
+    deviance(model::StatisticalModel)
 
 Return the deviance of the model relative to a reference, which is usually when applicable
 the saturated model. It is equal, *up to a constant*, to ``-2 \\log L``, with ``L``
 the likelihood of the model.
 """
-deviance(obj::StatisticalModel) = error("deviance is not defined for $(typeof(obj)).")
+deviance(model::StatisticalModel) = error("deviance is not defined for $(typeof(model)).")
 
 """
-    islinear(obj::StatisticalModel)
+    islinear(model::StatisticalModel)
 
 Indicate whether the model is linear.
 """
-islinear(obj::StatisticalModel) = error("islinear is not defined for $(typeof(obj)).")
+islinear(model::StatisticalModel) = error("islinear is not defined for $(typeof(model)).")
 
 """
-    nulldeviance(obj::StatisticalModel)
+    nulldeviance(model::StatisticalModel)
 
 Return the deviance of the null model, that is the one including only the intercept.
 """
-nulldeviance(obj::StatisticalModel) = error("nulldeviance is not defined for $(typeof(obj)).")
+nulldeviance(model::StatisticalModel) =
+    error("nulldeviance is not defined for $(typeof(model)).")
 
 """
-    loglikelihood(obj::StatisticalModel)
+    loglikelihood(model::StatisticalModel)
 
 Return the log-likelihood of the model.
 """
-loglikelihood(obj::StatisticalModel) = error("loglikelihood is not defined for $(typeof(obj)).")
+loglikelihood(model::StatisticalModel) =
+    error("loglikelihood is not defined for $(typeof(model)).")
 
 """
-    loglikelihood(obj::StatisticalModel)
+    loglikelihood(model::StatisticalModel)
 
-Return the log-likelihood of the null model corresponding to model `obj`.
+Return the log-likelihood of the null model corresponding to `model`.
 This is usually the model containing only the intercept.
 """
-nullloglikelihood(obj::StatisticalModel) = error("nullloglikelihood is not defined for $(typeof(obj)).")
+nullloglikelihood(model::StatisticalModel) =
+    error("nullloglikelihood is not defined for $(typeof(model)).")
 
 """
-    score(obj::StatisticalModel)
+    score(model::StatisticalModel)
 
-Return the score of the statistical model. The score is the gradient of the
+Return the score of the model, that is the gradient of the
 log-likelihood with respect to the coefficients.
 """
-score(obj::StatisticalModel) = error("score is not defined for $(typeof(obj)).")
+score(model::StatisticalModel) = error("score is not defined for $(typeof(model)).")
 
 """
-    nobs(obj::StatisticalModel)
+    nobs(model::StatisticalModel)
 
 Return the number of independent observations on which the model was fitted. Be careful
 when using this information, as the definition of an independent observation may vary
 depending on the model, on the format used to pass the data, on the sampling plan
 (if specified), etc.
 """
-nobs(obj::StatisticalModel) = error("nobs is not defined for $(typeof(obj)).")
+nobs(model::StatisticalModel) = error("nobs is not defined for $(typeof(model)).")
 
 """
-    dof(obj::StatisticalModel)
+    dof(model::StatisticalModel)
 
 Return the number of degrees of freedom consumed in the model, including
 when applicable the intercept and the distribution's dispersion parameter.
 """
-dof(obj::StatisticalModel) = error("dof is not defined for $(typeof(obj)).")
+dof(model::StatisticalModel) = error("dof is not defined for $(typeof(model)).")
 
 """
-    mss(obj::StatisticalModel)
+    mss(model::StatisticalModel)
 
 Return the model sum of squares.
 """
-mss(obj::StatisticalModel) = error("mss is not defined for $(typeof(obj)).")
+mss(model::StatisticalModel) = error("mss is not defined for $(typeof(model)).")
 
 """
-    rss(obj::StatisticalModel)
+    rss(model::StatisticalModel)
 
-Return the residual sum of squares.
+Return the residual sum of squares of the model.
 """
-rss(obj::StatisticalModel) = error("rss is not defined for $(typeof(obj)).")
+rss(model::StatisticalModel) = error("rss is not defined for $(typeof(model)).")
 
 """
-    informationmatrix(obj::StatisticalModel; expected::Bool = true)
+    informationmatrix(model::StatisticalModel; expected::Bool = true)
 
 Return the information matrix of the model. By default the Fisher information matrix
 is returned, while the observed information matrix can be requested with `expected = false`.
 """
-informationmatrix(obj::StatisticalModel; expected::Bool = true) =
-    error("informationmatrix is not defined for $(typeof(obj)).")
+informationmatrix(model::StatisticalModel; expected::Bool = true) =
+    error("informationmatrix is not defined for $(typeof(model)).")
 
 """
-    stderror(obj::StatisticalModel)
+    stderror(model::StatisticalModel)
 
 Return the standard errors for the coefficients of the model.
 """
-stderror(obj::StatisticalModel) = sqrt.(diag(vcov(obj)))
+stderror(model::StatisticalModel) = sqrt.(diag(vcov(model)))
 
 """
-    vcov(obj::StatisticalModel)
+    vcov(model::StatisticalModel)
 
 Return the variance-covariance matrix for the coefficients of the model.
 """
-vcov(obj::StatisticalModel) = error("vcov is not defined for $(typeof(obj)).")
+vcov(model::StatisticalModel) = error("vcov is not defined for $(typeof(model)).")
 
 """
-    weights(obj::StatisticalModel)
+    weights(model::StatisticalModel)
 
 Return the weights used in the model.
 """
-weights(obj::StatisticalModel) = error("weights is not defined for $(typeof(obj)).")
+weights(model::StatisticalModel) = error("weights is not defined for $(typeof(model)).")
 
 """
-    isfitted(obj::StatisticalModel)
+    isfitted(model::StatisticalModel)
 
 Indicate whether the model has been fitted.
 """
-isfitted(obj::StatisticalModel) = error("isfitted is not defined for $(typeof(obj)).")
+isfitted(model::StatisticalModel) = error("isfitted is not defined for $(typeof(model)).")
 
 """
 Fit a statistical model.
 """
-fit(obj::StatisticalModel, args...) = error("fit is not defined for $(typeof(obj)).")
+fit(model::StatisticalModel, args...) = error("fit is not defined for $(typeof(model)).")
 
 """
 Fit a statistical model in-place.
 """
-fit!(obj::StatisticalModel, args...) = error("fit! is not defined for $(typeof(obj)).")
+fit!(model::StatisticalModel, args...) = error("fit! is not defined for $(typeof(model)).")
 
 """
-    aic(obj::StatisticalModel)
+    aic(model::StatisticalModel)
 
 Akaike's Information Criterion, defined as ``-2 \\log L + 2k``, with ``L`` the likelihood
 of the model, and `k` its number of consumed degrees of freedom
 (as returned by [`dof`](@ref)).
 """
-aic(obj::StatisticalModel) = -2loglikelihood(obj) + 2dof(obj)
+aic(model::StatisticalModel) = -2loglikelihood(model) + 2dof(model)
 
 """
-    aicc(obj::StatisticalModel)
+    aicc(model::StatisticalModel)
 
 Corrected Akaike's Information Criterion for small sample sizes (Hurvich and Tsai 1989),
 defined as ``-2 \\log L + 2k + 2k(k-1)/(n-k-1)``, with ``L`` the likelihood of the model,
 ``k`` its number of consumed degrees of freedom (as returned by [`dof`](@ref)),
 and ``n`` the number of observations (as returned by [`nobs`](@ref)).
 """
-function aicc(obj::StatisticalModel)
-    k = dof(obj)
-    n = nobs(obj)
-    -2loglikelihood(obj) + 2k + 2k*(k+1)/(n-k-1)
+function aicc(model::StatisticalModel)
+    k = dof(model)
+    n = nobs(model)
+    -2loglikelihood(model) + 2k + 2k*(k+1)/(n-k-1)
 end
 
 """
-    bic(obj::StatisticalModel)
+    bic(model::StatisticalModel)
 
 Bayesian Information Criterion, defined as ``-2 \\log L + k \\log n``, with ``L``
 the likelihood of the model,  ``k`` its number of consumed degrees of freedom
 (as returned by [`dof`](@ref)), and ``n`` the number of observations
 (as returned by [`nobs`](@ref)).
 """
-bic(obj::StatisticalModel) = -2loglikelihood(obj) + dof(obj)*log(nobs(obj))
+bic(model::StatisticalModel) = -2loglikelihood(model) + dof(model)*log(nobs(model))
 
 """
-    r2(obj::StatisticalModel)
-    r²(obj::StatisticalModel)
+    r2(model::StatisticalModel)
+    r²(model::StatisticalModel)
 
 Coefficient of determination (R-squared).
 
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
 and ``TSS`` the total sum of squares.
 """
-function r2(obj::StatisticalModel)
+function r2(model::StatisticalModel)
     Base.depwarn("The default r² method for linear models is deprecated. " *
                  "Packages should define their own methods.", :r2)
 
-    mss(obj) / deviance(obj)
+    mss(model) / deviance(model)
 end
 
 """
-    r2(obj::StatisticalModel, variant::Symbol)
-    r²(obj::StatisticalModel, variant::Symbol)
+    r2(model::StatisticalModel, variant::Symbol)
+    r²(model::StatisticalModel, variant::Symbol)
 
 Pseudo-coefficient of determination (pseudo R-squared).
 
@@ -227,21 +230,21 @@ In the above formulas, ``L`` is the likelihood of the model,
 The Cox-Snell and the deviance ratio variants both match the classical definition of R²
 for linear models.
 """
-function r2(obj::StatisticalModel, variant::Symbol)
+function r2(model::StatisticalModel, variant::Symbol)
     loglikbased = (:McFadden, :CoxSnell, :Nagelkerke)
     if variant in loglikbased
-        ll = loglikelihood(obj)
-        ll0 = nullloglikelihood(obj)
+        ll = loglikelihood(model)
+        ll0 = nullloglikelihood(model)
         if variant == :McFadden
             1 - ll/ll0
         elseif variant == :CoxSnell
-            1 - exp(2 * (ll0 - ll) / nobs(obj))
+            1 - exp(2 * (ll0 - ll) / nobs(model))
         elseif variant == :Nagelkerke
-            (1 - exp(2 * (ll0 - ll) / nobs(obj))) / (1 - exp(2 * ll0 / nobs(obj)))
+            (1 - exp(2 * (ll0 - ll) / nobs(model))) / (1 - exp(2 * ll0 / nobs(model)))
         end
     elseif variant == :devianceratio
-        dev  = deviance(obj)
-        dev0 = nulldeviance(obj)
+        dev  = deviance(model)
+        dev0 = nulldeviance(model)
         1 - dev/dev0
     else
         error("variant must be one of $(join(loglikbased, ", ")) or :devianceratio")
@@ -251,8 +254,8 @@ end
 const r² = r2
 
 """
-    adjr2(obj::StatisticalModel)
-    adjr²(obj::StatisticalModel)
+    adjr2(model::StatisticalModel)
+    adjr²(model::StatisticalModel)
 
 Adjusted coefficient of determination (adjusted R-squared).
 
@@ -260,11 +263,11 @@ For linear models, the adjusted R² is defined as ``1 - (1 - (1-R^2)(n-1)/(n-p))
 the coefficient of determination, ``n`` the number of observations, and ``p`` the number of
 coefficients (including the intercept). This definition is generally known as the Wherry Formula I.
 """
-adjr2(obj::StatisticalModel) = error("adjr2 is not defined for $(typeof(obj)).")
+adjr2(model::StatisticalModel) = error("adjr2 is not defined for $(typeof(model)).")
 
 """
-    adjr2(obj::StatisticalModel, variant::Symbol)
-    adjr²(obj::StatisticalModel, variant::Symbol)
+    adjr2(model::StatisticalModel, variant::Symbol)
+    adjr²(model::StatisticalModel, variant::Symbol)
 
 Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
@@ -276,16 +279,16 @@ In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null
 ``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
 ``k`` is the number of consumed degrees of freedom of the model (as returned by [`dof`](@ref)).
 """
-function adjr2(obj::StatisticalModel, variant::Symbol)
-    k = dof(obj)
+function adjr2(model::StatisticalModel, variant::Symbol)
+    k = dof(model)
     if variant == :McFadden
-        ll = loglikelihood(obj)
-        ll0 = nullloglikelihood(obj)
+        ll = loglikelihood(model)
+        ll0 = nullloglikelihood(model)
         1 - (ll - k)/ll0
     elseif variant == :devianceratio
-        n = nobs(obj)
-        dev  = deviance(obj)
-        dev0 = nulldeviance(obj)
+        n = nobs(model)
+        dev  = deviance(model)
+        dev0 = nulldeviance(model)
         1 - (dev*(n-1))/(dev0*(n-k))
     else
         error("variant must be one of :McFadden or :devianceratio")
@@ -297,72 +300,72 @@ const adjr² = adjr2
 abstract type RegressionModel <: StatisticalModel end
 
 """
-    fitted(obj::RegressionModel)
+    fitted(model::RegressionModel)
 
 Return the fitted values of the model.
 """
-fitted(obj::RegressionModel) = error("fitted is not defined for $(typeof(obj)).")
+fitted(model::RegressionModel) = error("fitted is not defined for $(typeof(model)).")
 
 """
-    response(obj::RegressionModel)
+    response(model::RegressionModel)
 
 Return the model response (a.k.a. the dependent variable).
 """
-response(obj::RegressionModel) = error("response is not defined for $(typeof(obj)).")
+response(model::RegressionModel) = error("response is not defined for $(typeof(model)).")
 
 """
-    responsename(obj::RegressionModel)
+    responsename(model::RegressionModel)
     
 Return the name of the model response (a.k.a. the dependent variable).
 """
-responsename(obj::RegressionModel) = error("responsename is not defined for $(typeof(obj)).")
+responsename(model::RegressionModel) = error("responsename is not defined for $(typeof(model)).")
 
 """
-    meanresponse(obj::RegressionModel)
+    meanresponse(model::RegressionModel)
 
 Return the mean of the response.
 """
-meanresponse(obj::RegressionModel) = error("meanresponse is not defined for $(typeof(obj)).")
+meanresponse(model::RegressionModel) = error("meanresponse is not defined for $(typeof(model)).")
 
 """
-    modelmatrix(obj::RegressionModel)
+    modelmatrix(model::RegressionModel)
 
 Return the model matrix (a.k.a. the design matrix).
 """
-modelmatrix(obj::RegressionModel) = error("modelmatrix is not defined for $(typeof(obj)).")
+modelmatrix(model::RegressionModel) = error("modelmatrix is not defined for $(typeof(model)).")
 
 """
-    crossmodelmatrix(obj::RegressionModel)
+    crossmodelmatrix(model::RegressionModel)
 
-Return `X'X` where `X` is the model matrix of `obj`.
-This function will return a pre-computed matrix stored in `obj` if possible.
+Return `X'X` where `X` is the model matrix of `model`.
+This function will return a pre-computed matrix stored in `model` if possible.
 """
-crossmodelmatrix(obj::RegressionModel) = (x = modelmatrix(obj); Symmetric(x' * x))
-
-"""
-    leverage(obj::RegressionModel)
-
-Return the diagonal of the projection matrix.
-"""
-leverage(obj::RegressionModel) = error("leverage is not defined for $(typeof(obj)).")
+crossmodelmatrix(model::RegressionModel) = (x = modelmatrix(model); Symmetric(x' * x))
 
 """
-    residuals(obj::RegressionModel)
+    leverage(model::RegressionModel)
+
+Return the diagonal of the projection matrix of the model.
+"""
+leverage(model::RegressionModel) = error("leverage is not defined for $(typeof(model)).")
+
+"""
+    residuals(model::RegressionModel)
 
 Return the residuals of the model.
 """
-residuals(obj::RegressionModel) = error("residuals is not defined for $(typeof(obj)).")
+residuals(model::RegressionModel) = error("residuals is not defined for $(typeof(model)).")
 
 """
-    predict(obj::RegressionModel, [newX])
+    predict(model::RegressionModel, [newX])
 
-Form the predicted response of model `obj`. An object with new covariate values `newX` can be supplied,
-which should have the same type and structure as that used to fit `obj`; e.g. for a GLM
+Form the predicted response of `model`. An object with new covariate values `newX` can be supplied,
+which should have the same type and structure as that used to fit `model`; e.g. for a GLM
 it would generally be a `DataFrame` with the same variable names as the original predictors.
 """
 function predict end
 
-predict(obj::RegressionModel) = error("predict is not defined for $(typeof(obj)).")
+predict(model::RegressionModel) = error("predict is not defined for $(typeof(model)).")
 
 """
     predict!
@@ -371,21 +374,21 @@ In-place version of [`predict`](@ref).
 """
 function predict! end
 
-predict!(obj::RegressionModel) = error("predict! is not defined for $(typeof(obj)).")
+predict!(model::RegressionModel) = error("predict! is not defined for $(typeof(model)).")
 
 """
-    dof_residual(obj::RegressionModel)
+    dof_residual(model::RegressionModel)
 
 Return the residual degrees of freedom of the model.
 """
-dof_residual(obj::RegressionModel) = error("dof_residual is not defined for $(typeof(obj)).")
+dof_residual(model::RegressionModel) = error("dof_residual is not defined for $(typeof(model)).")
 
 """
-    params(obj)
+    params(model)
 
 Return all parameters of a model.
 """
-params(obj) = error("params is not defined for $(typeof(obj))")
+params(model) = error("params is not defined for $(typeof(model))")
 function params! end
 
 ## coefficient tables with specialized show method
