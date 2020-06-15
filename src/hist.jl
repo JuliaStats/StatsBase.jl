@@ -1,5 +1,6 @@
 using Base.Cartesian
 
+import Base: +, -, *, /
 import Base: show, ==, push!, append!, float
 import LinearAlgebra: norm, normalize, normalize!
 
@@ -219,6 +220,10 @@ function show(io::IO, h::AbstractHistogram)
 end
 
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
+(+)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights .+ h2.weights) : throw(DimensionMismatch("Binds don't match"))
+(-)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights .- h2.weights) : throw(DimensionMismatch("Binds don't match"))
+(*)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights .* h2.weights) : throw(DimensionMismatch("Binds don't match"))
+(/)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights ./ h2.weights) : throw(DimensionMismatch("Binds don't match"))
 
 
 binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]

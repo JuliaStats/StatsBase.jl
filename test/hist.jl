@@ -219,6 +219,17 @@ end
     @test (@inferred merge(histograms...)) == h
 end
 
+@testset "Histogram arithmetics" begin
+    h1 = fit(Histogram, rand(100), 0:0.1:1)
+    h2 = fit(Histogram, rand(200), 0:0.1:1)
+    h3 = fit(Histogram, rand(100), 0:0.2:1)
+    @test (h1 + h2).weights == h1.weights .+ h2.weights
+    @test (h1 - h2).weights == h1.weights .- h2.weights
+    @test (h1 * h2).weights == h1.weights .* h2.weights
+    @test (h1 / h2).weights == h1.weights ./ h2.weights
+    @test_throws DimensionMismatch h1 + h3
+end
+
 @testset "midpoints" begin
     @test StatsBase.midpoints([1, 2, 4]) == [1.5, 3.0]
     @test StatsBase.midpoints(range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
