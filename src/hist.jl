@@ -224,6 +224,10 @@ end
 (-)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights .- h2.weights) : throw(DimensionMismatch("Binds don't match"))
 (*)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights .* h2.weights) : throw(DimensionMismatch("Binds don't match"))
 (/)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) ? Histogram(h1.edges, h1.weights ./ h2.weights) : throw(DimensionMismatch("Binds don't match"))
+(+)(h1::Histogram,n::Real) = Histogram(h1.edges, h1.weights .+ n)
+(-)(h1::Histogram,n::Real) = Histogram(h1.edges, h1.weights .- n)
+(*)(h1::Histogram,n::Real) = Histogram(h1.edges, h1.weights .* n)
+(/)(h1::Histogram,n::Real) = Histogram(h1.edges, h1.weights ./ n)
 
 
 binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]

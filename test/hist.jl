@@ -227,6 +227,10 @@ end
     @test (h1 - h2).weights == h1.weights .- h2.weights
     @test (h1 * h2).weights == h1.weights .* h2.weights
     @test (h1 / h2).weights == h1.weights ./ h2.weights
+    @test (h1 + 1.5).weights == h1.weights .+ 1.5
+    @test (h1 - 1.5).weights == h1.weights .- 1.5
+    @test (h1 * 1.5).weights == h1.weights .* 1.5
+    @test (h1 / 1.5).weights == h1.weights ./ 1.5
     @test_throws DimensionMismatch h1 + h3
 end
 
