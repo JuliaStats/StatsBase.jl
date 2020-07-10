@@ -123,8 +123,8 @@ The `Histogram` type represents data that has been tabulated into intervals
 (known as *bins*) along the real line, or in higher dimensions, over a real space.
 Histograms can be fitted to data using the `fit` method.
 
-Histogram can be `+, -, *, /`ed with each other (when bins are the same) and with 
-`Number`s, which will change the weights of each bin.
+`Histogram`s support `+`, `-`, `*` and `/` with other `Histogram`s (when bins are the same)
+and with `Real`s, which will change the weights of each bin.
 
 # Fields
 * edges: An iterator that contains the boundaries of the bins in each dimension.
