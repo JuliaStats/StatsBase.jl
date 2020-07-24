@@ -337,7 +337,7 @@ end
 Compute the interquartile range (IQR) of collection `x`, i.e. the 75th percentile
 minus the 25th percentile.
 """
-iqr(x) = (q = quantile.(x, [.25, .75]); q[2] - q[1])
+iqr(x) = (q = quantile.(Ref(x), [.25, .75]); q[2] - q[1])
 
 # Generalized variance
 """
