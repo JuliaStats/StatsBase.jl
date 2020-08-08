@@ -20,10 +20,8 @@ function ordinalrank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
     n = _check_randparams(rks, x, p)
 
     if n > 0
-        i = 1
-        while i <= n
+        @inbounds for i in eachindex(p)
             rks[p[i]] = i
-            i += 1
         end
     end
 
