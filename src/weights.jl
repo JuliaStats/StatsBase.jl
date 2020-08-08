@@ -121,8 +121,8 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
     s = w.sum
 
     if corrected
-        sum_sn = sum(x -> (x / s) ^ 2, w)
-        1 / (s * (1 - sum_sn))
+        sum_w2 = sum(abs2, w)
+        1 / (s - sum_w2 / s)
     else
         1 / s
     end
