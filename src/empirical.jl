@@ -2,44 +2,28 @@
 
 ## Empirical CDF
 
-struct ECDF{T <: AbstractVector{<:Real}, W <: AbstractWeights{<:Real}}
-    sorted_values::T
-    weights::W
+struct ECDF{T <: Real, W <: Real}
+    sorted_values::Vector{Tuple{T, W}}
 end
+
+weighttype(::Type{<:ECDF{<:Any, W}}) where W = W
+weighttype(ecdf::ECDF) = weighttype(typeof(ecdf))
 
 function (ecdf::ECDF)(x::Real)
     isnan(x) && return NaN
-    n = searchsortedlast(ecdf.sorted_values, x)
-    evenweights = isempty(ecdf.weights)
-    weightsum = evenweights ? length(ecdf.sorted_values) : sum(ecdf.weights)
-    partialsum = evenweights ? n : sum(view(ecdf.weights, 1:n))
-    partialsum / weightsum
+    pos = searchsortedlast(ecdf.sorted_values, x, by=first)
+    (pos == 0) && return zero(weighttype(ecdf))
+    @inbounds return ecdf.sorted_values[pos][2]
 end
 
 # broadcasts ecdf() over an array
+# caching the previous calculated value
 function Base.Broadcast.broadcasted(ecdf::ECDF, v::AbstractArray)
-    evenweights = isempty(ecdf.weights)
-    weightsum = evenweights ? length(ecdf.sorted_values) : sum(ecdf.weights)
-    ord = sortperm(v)
-    m = length(v)
-    r = similar(ecdf.sorted_values, m)
-    r0 = zero(weightsum)
-    i = 1
-    for (j, x) in enumerate(ecdf.sorted_values)
-        while i <= m && x > v[ord[i]]
-            r[ord[i]] = r0
-            i += 1
-        end
-        r0 += evenweights ? 1 : ecdf.weights[j]
-        if i > m
-            break
-        end
+    res = similar(v, weighttype(ecdf))
+    @inbounds for i in eachindex(v)
+        res[i] = i == 1 || v[i] != v[i-1] ? ecdf(v[i]) : res[i-1]
     end
-    while i <= m
-        r[ord[i]] = weightsum
-        i += 1
-    end
-    return r / weightsum
+    return res
 end
 
 """
@@ -54,16 +38,49 @@ evaluate CDF values on other samples.
 `extrema`, `minimum`, and `maximum` are supported to for obtaining the range over which
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
-function ecdf(X::RealVector; weights::AbstractVector{<:Real}=Weights(Float64[]))
+function ecdf(X::RealVector;
+              weights::Union{Nothing, RealVector}=nothing)
     any(isnan, X) && throw(ArgumentError("ecdf can not include NaN values"))
-    isempty(weights) || length(X) == length(weights) || throw(ArgumentError("data and weight vectors must be the same size," *
-        "got $(length(X)) and $(length(weights))"))
+    evenweights = isnothing(weights) || isempty(weights)
+    evenweights || (length(X) == length(weights)) ||
+        throw(ArgumentError("data and weight vectors must be the same size, " *
+                            "got $(length(X)) and $(length(weights))"))
+    T = eltype(X)
+    W0 = evenweights ? Int : eltype(weights)
+    W = isnothing(weights) ? Float64 : eltype(one(W0)/sum(weights))
+
+    wsum = evenweights ? length(X) : sum(weights)
     ord = sortperm(X)
-    ECDF(X[ord], isempty(weights) ? weights : Weights(weights[ord]))
+
+    sorted_vals = sizehint!(Vector{Tuple{T, W}}(), length(X))
+    isempty(X) && return ECDF{T, W}(sorted_vals)
+
+    valprev = val = X[first(ord)]
+    wsumprev = zero(W0)
+    valw = zero(W0)
+
+    push_valprev!() = push!(sorted_vals, (valprev, min(wsumprev/wsum, one(W))))
+
+    @inbounds for i in ord
+        valnew = X[i]
+        if (val != valnew) || (i == last(ord))
+            (wsumprev > 0) && push_valprev!()
+            valprev = val
+            val = valnew
+            wsumprev += valw
+            valw = zero(W0)
+        end
+        valw += evenweights ? one(W0) : weights[i]
+    end
+    #@assert valw + wsumprev == wsum # may fail due to fp-arithmetic
+    (wsumprev > 0) && push_valprev!()
+    # last value
+    push!(sorted_vals, (val, one(W)))
+    return ECDF{T,W}(sorted_vals)
 end
 
-minimum(ecdf::ECDF) = first(ecdf.sorted_values)
+minimum(ecdf::ECDF) = first(ecdf.sorted_values)[1]
 
-maximum(ecdf::ECDF) = last(ecdf.sorted_values)
+maximum(ecdf::ECDF) = last(ecdf.sorted_values)[1]
 
 extrema(ecdf::ECDF) = (minimum(ecdf), maximum(ecdf))
