@@ -32,6 +32,7 @@ end
     @test fnecdf(y) ≈ map(fnecdf, y)
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == extrema(x)
     fnecdf = ecdf([1.0, 0.5], weights=weights([3, 1]))
+    @test fnecdf.([0.0, 0.5, 0.75, 1.0, 2.0]) == [0.0, 0.25, 0.25, 1.0, 1.0]
     @test fnecdf(0.75) == 0.25
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 1.0)
     @test_throws ArgumentError ecdf(rand(8), weights=weights(rand(10)))

@@ -16,7 +16,8 @@ function (ecdf::ECDF)(x::Real)
     partialsum / weightsum
 end
 
-function (ecdf::ECDF)(v::RealVector)
+# broadcasts ecdf() over an array
+function Base.Broadcast.broadcasted(ecdf::ECDF, v::AbstractArray)
     evenweights = isempty(ecdf.weights)
     weightsum = evenweights ? length(ecdf.sorted_values) : sum(ecdf.weights)
     ord = sortperm(v)
