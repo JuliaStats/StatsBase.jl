@@ -10,10 +10,13 @@ using Test
     @test fnecdf(y) ≈ map(fnecdf, y)
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == extrema(x)
     fnecdf = ecdf([0.5])
+    @test fnecdf(0.5) == 1.0
     @test fnecdf([zeros(5000); ones(5000)]) == [zeros(5000); ones(5000)]
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 0.5)
     @test isnan(ecdf([1,2,3])(NaN))
     @test_throws ArgumentError ecdf([1, NaN])
+    fnecdf = ecdf(Int[])
+    @test fnecdf.([0, 1, 2, 3]) == [0.0, 0.0, 0.0, 0.0]
 end
 
 @testset "Weighted ECDF" begin
