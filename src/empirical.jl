@@ -2,18 +2,25 @@
 
 ## Empirical CDF
 
-struct ECDF{T <: Real, W <: Real}
-    sorted_values::Vector{Tuple{T, W}}
+struct ECDF{T <: Real, W <: Real, I}
+    sorted_values::Vector{Tuple{T, W, W, W}}
 end
 
 weighttype(::Type{<:ECDF{<:Any, W}}) where W = W
 weighttype(ecdf::ECDF) = weighttype(typeof(ecdf))
+isinterpolating(::Type{<:ECDF{<:Any, <:Any, I}}) where I = I
+isinterpolating(ecdf::ECDF) = isinterpolating(typeof(ecdf))
 
 function (ecdf::ECDF)(x::Real)
     isnan(x) && return NaN
     pos = searchsortedlast(ecdf.sorted_values, x, by=first)
     (pos == 0) && return zero(weighttype(ecdf))
-    @inbounds return ecdf.sorted_values[pos][2]
+    @inbounds val, cdf_val, val_invdelta, cdf_delta = ecdf.sorted_values[pos]
+    if !isinterpolating(ecdf) || (val == x) || (pos == length(ecdf.sorted_values))
+        return cdf_val
+    else
+        return muladd(cdf_delta, min((x - val) * val_invdelta, one(weighttype(ecdf))), cdf_val)
+    end
 end
 
 # broadcasts ecdf() over an array
@@ -39,7 +46,8 @@ evaluate CDF values on other samples.
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
 function ecdf(X::RealVector;
-              weights::Union{Nothing, RealVector}=nothing)
+              weights::Union{Nothing, RealVector}=nothing,
+              interpolate::Bool=false)
     any(isnan, X) && throw(ArgumentError("ecdf can not include NaN values"))
     evenweights = isnothing(weights) || isempty(weights)
     evenweights || (length(X) == length(weights)) ||
@@ -52,14 +60,15 @@ function ecdf(X::RealVector;
     wsum = evenweights ? length(X) : sum(weights)
     ord = sortperm(X)
 
-    sorted_vals = sizehint!(Vector{Tuple{T, W}}(), length(X))
-    isempty(X) && return ECDF{T, W}(sorted_vals)
+    sorted_vals = sizehint!(Vector{Tuple{T, W, W, W}}(), length(X))
+    isempty(X) && return ECDF{T, W, interpolate}(sorted_vals)
 
     valprev = val = X[first(ord)]
     wsumprev = zero(W0)
     valw = zero(W0)
 
-    push_valprev!() = push!(sorted_vals, (valprev, min(wsumprev/wsum, one(W))))
+    push_valprev!() = push!(sorted_vals, (valprev, min(wsumprev/wsum, one(W)),
+                                          inv(val - valprev), valw/wsum))
 
     @inbounds for i in ord
         valnew = X[i]
@@ -75,8 +84,8 @@ function ecdf(X::RealVector;
     #@assert valw + wsumprev == wsum # may fail due to fp-arithmetic
     (wsumprev > 0) && push_valprev!()
     # last value
-    push!(sorted_vals, (val, one(W)))
-    return ECDF{T,W}(sorted_vals)
+    push!(sorted_vals, (val, one(W), zero(W), zero(W)))
+    return ECDF{T,W,interpolate}(sorted_vals)
 end
 
 minimum(ecdf::ECDF) = first(ecdf.sorted_values)[1]
