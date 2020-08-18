@@ -32,7 +32,7 @@ end
 
 import StatsBase: direct_sample!, alias_sample!
 
-n = 10^5
+n = 10^6
 wv = weights([0.2, 0.8, 0.4, 0.6])
 
 a = direct_sample!(4:7, wv, zeros(Int, n, 3))
