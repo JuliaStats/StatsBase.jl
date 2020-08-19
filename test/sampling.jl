@@ -1,5 +1,5 @@
 using StatsBase
-using Test, Random
+using Test, Random, StableRNGs
 
 Random.seed!(1234)
 
@@ -78,12 +78,12 @@ test_rng_use(sample, 1:10, 10)
 
 @testset "sampling pairs" begin
 
-    rng = Random.MersenneTwister(1)
+    rng = StableRNG(1)
 
-    @test samplepair(rng, 2)  ===  (1, 2)
-    @test samplepair(rng, 10) === (8, 2)
+    @test samplepair(rng, 2)  ===  (2, 1)
+    @test samplepair(rng, 10) === (5, 6)
 
-    @test samplepair(rng, [3, 4, 2, 6, 8]) === (2, 6)
+    @test samplepair(rng, [3, 4, 2, 6, 8]) === (3, 8)
     @test samplepair(rng, [1, 2])          === (1, 2)
 end
 
