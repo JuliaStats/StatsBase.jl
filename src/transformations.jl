@@ -108,6 +108,10 @@ julia> StatsBase.transform(dt, X)
 """
 function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
              dims::Union{Integer,Nothing}=nothing, center::Bool=true, scale::Bool=true)
+    if dims === nothing
+        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        dims = 2
+    end
     if dims == 1
         n, l = size(X)
         n >= 2 || error("X must contain at least two rows.")
@@ -115,9 +119,6 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
     elseif dims == 2
         l, n = size(X)
         n >= 2 || error("X must contain at least two columns.")
-        m, s = mean_and_std(X, 2)
-    elseif dims === nothing
-        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
         m, s = mean_and_std(X, 2)
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
