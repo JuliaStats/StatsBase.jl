@@ -129,10 +129,8 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
 end
 
 function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
-             dims::Union{Integer,Nothing}=nothing, center::Bool=true, scale::Bool=true)
-    if dims == nothing
-        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
-    elseif dims != 1
+             dims::Integer=1, center::Bool=true, scale::Bool=true)
+    if dims != 1
         throw(DomainError(dims, "fit only accepts dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
@@ -268,12 +266,13 @@ julia> StatsBase.transform(dt, X)
 """
 function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
              dims::Union{Integer,Nothing}=nothing, unit::Bool=true)
+    if dims === nothing
+        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
+        dims = 2
+    end
     if dims == 1
         l, tmin, tmax = _compute_extrema(X)
     elseif dims == 2
-        l, tmin, tmax = _compute_extrema(X')
-    elseif dims == nothing
-        Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
         l, tmin, tmax = _compute_extrema(X')
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
@@ -302,7 +301,7 @@ function _compute_extrema(X::AbstractMatrix{<:Real})
 end
 
 function fit(::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
-             dims::Union{Integer,Nothing}=nothing, unit::Bool=true)
+             dims::Integer=1, unit::Bool=true)
     if dims != 1
         throw(DomainError(dims, "fit only accept dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
