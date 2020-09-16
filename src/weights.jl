@@ -289,6 +289,11 @@ end
     UnitWeights{T}(length(i))
 end
 
+function getindex(wv::UnitWeights{T}, kr::AbstractVector{Bool})
+   length(wv) == length(kr) || throw(DimensionMismatch())
+   UnitWeights{T}(count(kr))
+end
+
 Base.getindex(wv::UnitWeights{T}, ::Colon) where {T} = UnitWeights{T}(wv.len)
 
 """
