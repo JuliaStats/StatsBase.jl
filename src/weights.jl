@@ -289,7 +289,7 @@ end
     UnitWeights{T}(length(i))
 end
 
-function getindex(wv::UnitWeights{T}, kr::AbstractVector{Bool})
+function getindex(wv::UnitWeights{T}, kr::AbstractArray{Bool}) where T
    length(wv) == length(kr) || throw(DimensionMismatch())
    UnitWeights{T}(count(kr))
 end
