@@ -275,7 +275,7 @@ All weight elements are identically one.
 sum(wv::UnitWeights{T}) where T = convert(T, length(wv))
 isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
-size(wv::UnitWeights) = Tuple(length(wv))
+size(wv::UnitWeights) = tuple(length(wv))
 
 Base.convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
