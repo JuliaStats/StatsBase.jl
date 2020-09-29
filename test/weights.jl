@@ -112,6 +112,7 @@ end
     @test isequal(wv, uweights(3))
     @test wv != fweights(fill(1.0, 3))
     @test wv == uweights(3)
+    @test wv[[true, false, false]] == uweights(Float64, 1)
 end
 
 ## wsum
