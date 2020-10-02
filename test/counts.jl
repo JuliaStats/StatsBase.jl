@@ -105,10 +105,31 @@ cm = Dict{Int, Int}()
 StatsBase.addcounts_dict!(cm,xx)
 @test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
 
+# test countmap for general iterators
 cm = countmap(x, weights(w))
-@test cm["a"] == 5.5
-@test cm["b"] == 4.5
-@test cm["c"] == 3.5
+cm_itr= countmap(skipmissing(x), weights(w))
+cm_itr2 = countmap(skipmissing(x), skipmissing(w))
+for c in (cm, cm_itr, cm_itr2)
+    @test c["a"] == 5.5
+    @test c["b"] == 4.5
+    @test c["c"] == 3.5
+end
+
+xx_missing = skipmissing([missing, "b", "a", "a", "b", "c"])
+cm_missing = countmap(xx_missing)
+
+@test cm_missing["a"] == 2
+@test cm_missing["b"] == 2
+@test cm_missing["c"] == 1
+
+w_missing = [0.5, 0.5, 0.5, 0.5, 1]
+cm_missing2 = countmap(xx_missing, w_missing)
+cm_missing3 = countmap(xx_missing, skipmissing(w_missing))
+for c in (cm_missing2, cm_missing3)
+    @test c["a"] == 1
+    @test c["b"] == 1
+    @test c["c"] == 1
+end
 
 @test cm == countmap(x, w)
 

@@ -255,7 +255,7 @@ raw counts.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
+function addcounts!(cm::Dict{T}, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
@@ -269,7 +269,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
 end
 
 """Dict-based addcounts method"""
-function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
+function addcounts_dict!(cm::Dict{T}, x) where T
     for v in x
         index = ht_keyindex2!(cm, v)
         if index > 0
@@ -388,6 +388,9 @@ of occurrences.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
+countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :dict)
+countmap(x, wv::AbstractVector{W}) where {W<:Real} = addcounts!(Dict{eltype(x),W}(), collect(x), wv)
+countmap(x, wv) = countmap(collect(x), collect(wv))
 
 
 """
