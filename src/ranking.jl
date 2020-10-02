@@ -64,17 +64,14 @@ function _competerank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
         v = x[p1]
         rks[p1] = k = 1
 
-        i = 2
-        while i <= n
+        for i in 2:n
             pi = p[i]
             xi = x[pi]
-            if xi == v
-                rks[pi] = k
-            else
-                rks[pi] = k = i
+            if xi != v
                 v = xi
+                k = i
             end
-            i += 1
+            rks[pi] = k
         end
     end
 
@@ -105,17 +102,14 @@ function _denserank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
         v = x[p1]
         rks[p1] = k = 1
 
-        i = 2
-        while i <= n
+        for i in 2:n
             pi = p[i]
             xi = x[pi]
-            if xi == v
-                rks[pi] = k
-            else
-                rks[pi] = (k += 1)
+            if xi != v
                 v = xi
+                k += 1
             end
-            i += 1
+            rks[pi] = k
         end
     end
 
@@ -145,8 +139,7 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
         v = x[p[1]]
 
         s = 1  # starting index of current range
-        e = 2  # pass-by-end index of current range
-        while e <= n
+        for e in 2:n # e is pass-by-end index of current range
             cx = x[p[e]]
             if cx != v
                 # fill average rank to s : e-1
@@ -158,10 +151,9 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
                 s = e
                 v = cx
             end
-            e += 1
         end
 
-        # the last range (e == n+1)
+        # the last range
         ar = (s + n) / 2
         for i = s : n
             rks[p[i]] = ar
