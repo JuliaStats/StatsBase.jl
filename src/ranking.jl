@@ -45,9 +45,9 @@ end
     ordinalrank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
 Return the [ordinal ranking](https://en.wikipedia.org/wiki/Ranking#Ordinal_ranking_.28.221234.22_ranking.29)
-("1234" ranking) of an array. Supports the same keyword arguments as `sort(x; sortkwargs...)`
-function. All items in `x` are given distinct, successive ranks based on their
-position in `sort(x; sortkwargs...)`.
+("1234" ranking) of an array. Supports the same keyword arguments as the `sort` function.
+All items in `x` are given distinct, successive ranks based on their position
+in the sorted vector.
 Missing values are assigned rank `missing`.
 """
 ordinalrank(x::AbstractArray; sortkwargs...) =
@@ -82,9 +82,9 @@ end
     competerank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
 Return the [standard competition ranking](http://en.wikipedia.org/wiki/Ranking#Standard_competition_ranking_.28.221224.22_ranking.29)
-("1224" ranking) of an array. Supports the same keyword arguments as `sort(x)` function.
-Items that compare equal are given the same rank, then a gap is left
-in the rankings the size of the number of tied items - 1.
+("1224" ranking) of an array. Supports the same keyword arguments as the `sort` function.
+Equal (*"tied"*) items are given the same rank, and the next rank comes after a gap
+that is equal to the number of tied items - 1.
 Missing values are assigned rank `missing`.
 """
 competerank(x::AbstractArray; sortkwargs...) =
@@ -119,8 +119,8 @@ end
     denserank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
 Return the [dense ranking](http://en.wikipedia.org/wiki/Ranking#Dense_ranking_.28.221223.22_ranking.29)
-("1223" ranking) of an array. Supports the same keyword arguments as `sort(x)` function.
-Items that compare equal receive the same ranking, and the next subsequent rank is
+("1223" ranking) of an array. Supports the same keyword arguments as the `sort` function.
+Equal items receive the same rank, and the next subsequent rank is
 assigned with no gap.
 Missing values are assigned rank `missing`.
 """
@@ -160,15 +160,14 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
     return rks
 end
 
-# order (aka. rank), resolving ties using the mean rank
 """
     tiedrank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
 Return the [tied ranking](http://en.wikipedia.org/wiki/Ranking#Fractional_ranking_.28.221_2.5_2.5_4.22_ranking.29),
 also called fractional or "1 2.5 2.5 4" ranking,
-of an array. Supports the same keyword arguments as `sort(x)` function.
-Items that compare equal receive the mean of the
-rankings they would have been assigned under ordinal ranking.
+of an array. Supports the same keyword arguments as the `sort` function.
+Equal (*"tied"*) items receive the mean of the ranks they would
+have been assigned under the ordinal ranking (see [`ordinalrank`](@ref)).
 Missing values are assigned rank `missing`.
 """
 tiedrank(x::AbstractArray; sortkwargs...) =
