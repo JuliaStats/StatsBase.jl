@@ -102,8 +102,10 @@ StatsBase.addcounts_radixsort!(cm,xx2)
 
 # testing the Dict-based addcounts
 cm = Dict{Int, Int}()
+cm_itr = Dict{Int, Int}()
 StatsBase.addcounts_dict!(cm,xx)
-@test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+StatsBase.addcounts_dict!(cm_itr,skipmissing(xx))
+@test cm_itr == cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
 
 # test countmap for general iterators
 cm = countmap(x, weights(w))
