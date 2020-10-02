@@ -108,8 +108,7 @@ StatsBase.addcounts_dict!(cm,xx)
 # test countmap for general iterators
 cm = countmap(x, weights(w))
 cm_itr= countmap(skipmissing(x), weights(w))
-cm_itr2 = countmap(skipmissing(x), skipmissing(w))
-for c in (cm, cm_itr, cm_itr2)
+for c in (cm, cm_itr)
     @test c["a"] == 5.5
     @test c["b"] == 4.5
     @test c["c"] == 3.5
@@ -124,12 +123,9 @@ cm_missing = countmap(xx_missing)
 
 w_missing = [0.5, 0.5, 0.5, 0.5, 1]
 cm_missing2 = countmap(xx_missing, w_missing)
-cm_missing3 = countmap(xx_missing, skipmissing(w_missing))
-for c in (cm_missing2, cm_missing3)
-    @test c["a"] == 1
-    @test c["b"] == 1
-    @test c["c"] == 1
-end
+@test cm_missing2["a"] == 1
+@test cm_missing2["b"] == 1
+@test cm_missing2["c"] == 1
 
 @test cm == countmap(x, w)
 

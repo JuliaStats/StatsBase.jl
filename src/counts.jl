@@ -390,7 +390,6 @@ countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(),
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :dict)
 countmap(x, wv::AbstractVector{W}) where {W<:Real} = addcounts!(Dict{eltype(x),W}(), collect(x), wv)
-countmap(x, wv) = countmap(collect(x), collect(wv))
 
 
 """
