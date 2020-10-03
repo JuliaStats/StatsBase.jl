@@ -257,7 +257,7 @@ raw counts.
 """
 addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x)
 # manual dispatch for `x` being iterator
-function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :auto) where T
+function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
