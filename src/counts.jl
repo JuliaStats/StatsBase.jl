@@ -289,12 +289,13 @@ end
 # faster results and less memory usage. However we still wish to enable others
 # to write generic algorithms, therefore the methods below still accept the 
 # `alg` argument but it is ignored.
-function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + length(x) - sumx
     cm
 end
+_addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored) = _addcounts!(Bool, cm, collect(x); alg = alg)
 
 function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
@@ -394,9 +395,8 @@ of occurrences.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
-countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
+countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
 """
