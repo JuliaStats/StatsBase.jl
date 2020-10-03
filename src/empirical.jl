@@ -11,6 +11,13 @@ weighttype(ecdf::ECDF) = weighttype(typeof(ecdf))
 isinterpolating(::Type{<:ECDF{<:Any, <:Any, I}}) where I = I
 isinterpolating(ecdf::ECDF) = isinterpolating(typeof(ecdf))
 
+function Base.show(io::IO, e::ECDF)
+    print(io, typeof(e))
+    print(io, "(")
+    print(io, length(e.sorted_values))
+    println(io, " values)")
+end
+
 function (ecdf::ECDF)(x::Real)
     isnan(x) && return NaN
     pos = searchsortedlast(ecdf.sorted_values, x, by=first)
