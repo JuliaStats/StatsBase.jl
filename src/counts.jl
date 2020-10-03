@@ -288,7 +288,7 @@ end
 # faster results and less memory usage. However we still wish to enable others
 # to write generic algorithms, therefore the methods below still accept the 
 # `alg` argument but it is ignored.
-function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + length(x) - sumx
