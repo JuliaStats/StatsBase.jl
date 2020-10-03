@@ -1,13 +1,32 @@
 # Empirical estimation of CDF and PDF
 
-## Empirical CDF
+"""
+Empirical Cumulative Distribution Function (ECDF).
 
+Represents ECDF constructed from random variable samples by [`ecdf`](@ref).
+
+# Type parameters
+* `T`: the type of random variable values
+* `W`: the type of sample weights and CDF values
+* `I`: boolean indicating whether to interpolate
+  the CDF between neighboring samples (continuous distribution)
+  or not (discrete distribution)
+"""
 struct ECDF{T <: Real, W <: Real, I}
+    # sorted random variable values and associated probabilities.
+    # The tuple provides:
+    #  - `x[i]` (value of random variable)
+    #  - `ECDF(x[i])`
+    #  - `1/(x[i] - x[i-1])`
+    #  - `ECDF(x[i]) - ECDF(x[i-1])` (the weight of `x[i]`)
     sorted_values::Vector{Tuple{T, W, W, W}}
 end
 
+# type of value weights and CDF values
 weighttype(::Type{<:ECDF{<:Any, W}}) where W = W
 weighttype(ecdf::ECDF) = weighttype(typeof(ecdf))
+
+# whether to interpolate between the neighboring ECDF values
 isinterpolating(::Type{<:ECDF{<:Any, <:Any, I}}) where I = I
 isinterpolating(ecdf::ECDF) = isinterpolating(typeof(ecdf))
 
@@ -18,6 +37,7 @@ function Base.show(io::IO, e::ECDF)
     println(io, " values)")
 end
 
+# calculate ECDF at given point
 function (ecdf::ECDF)(x::Real)
     isnan(x) && return NaN
     pos = searchsortedlast(ecdf.sorted_values, x, by=first)
@@ -31,7 +51,7 @@ function (ecdf::ECDF)(x::Real)
 end
 
 # broadcasts ecdf() over an array
-# caching the previous calculated value
+# caches the last calculated value
 function Base.Broadcast.broadcasted(ecdf::ECDF, v::AbstractArray)
     res = similar(v, weighttype(ecdf))
     @inbounds for i in eachindex(v)
@@ -41,16 +61,36 @@ function Base.Broadcast.broadcasted(ecdf::ECDF, v::AbstractArray)
 end
 
 """
-    ecdf(X; weights::AbstractWeights)
+    ecdf(X::RealVector; weights::AbstractWeights=nothing, interpolate::Bool=false) -> ECDF
 
-Return an empirical cumulative distribution function (ECDF) based on a vector of samples
-given in `X`. Optionally providing `weights` returns a weighted ECDF.
+Construct an *empirical cumulative distribution function* (ECDF) based on a vector of samples (`X`).
+Returns a callable [`ECDF`](@ref) object.
 
-Note: this function that returns a callable composite type, which can then be applied to
-evaluate CDF values on other samples.
+# Example
 
-`extrema`, `minimum`, and `maximum` are supported to for obtaining the range over which
-function is inside the interval ``(0,1)``; the function is defined for the whole real line.
+```jldoctest
+julia> using StatsBase
+
+julia> X = 1:15
+1:15
+
+julia> xcdf = ecdf(X)
+ECDF{Int64,Float64,false}(15 values)
+
+julia> xcdf(9)
+0.6
+```
+
+## Keyword arguments
+* `weights`: optional weights for each `X` sample
+* `interpolate`: when enabled, `ECDF(y)` will linearly interpolate the cumulative density between
+  the neighboring `X` samples (``x_i \\leq y < x_{i+1}``),
+  otherwise (by default) `ECDF(x[i])` is returned
+
+## Notes
+The returned function is defined for the whole real line.
+Use [`extrema`](@ref), [`minimum`](@ref), and [`maximum`](@ref) to obtain the range
+over which the ECDF is inside the interval ``(0, 1)``.
 """
 function ecdf(X::RealVector;
               weights::Union{Nothing, RealVector}=nothing,
