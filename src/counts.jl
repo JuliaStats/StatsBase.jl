@@ -295,7 +295,7 @@ function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg =
     cm
 end
 
-function _addcounts!(::Type{T}, cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
 
     @inbounds for xi in x
