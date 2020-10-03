@@ -351,8 +351,12 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     # It seems that sort is inferred in Julia 0.7.
     return _addcounts_radix_sort_loop!(cm, sx)
 end
-# general iterator form
-addcounts_radixsort!(cm::Dict{T}, x) where T = addcounts_radixsort!(cm, collect(x))
+
+# fall-back for `x` an iterator
+function addcounts_radixsort!(cm::Dict{T}, x) where T 
+    sx = sort!(collect(x), alg = RadixSort)
+    return _addcounts_radix_sort_loop!(cm, sx)
+end
 
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
