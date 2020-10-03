@@ -394,8 +394,15 @@ of occurrences.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
-countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :auto)
-
+# fall-back for iterator `x`
+function countmap(x)
+    if eltype(x) <: Union{Bool, UInt8, UInt16, Int8, Int16}
+        # faster `addcounts!` specialized
+        addcounts!(Dict{eltype(x),Int}(), collect(x); alg = :auto)
+    else
+        addcounts!(Dict{eltype(x),Int}(), x; alg = :auto)
+    end
+end
 
 """
     proportionmap(x)
