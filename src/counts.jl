@@ -255,7 +255,8 @@ raw counts.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x)
+addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
+
 # manual dispatch for `x` being iterator
 function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
