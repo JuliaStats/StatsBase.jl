@@ -360,7 +360,6 @@ function addcounts_radixsort!(cm::Dict{T}, x) where T
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
-
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
