@@ -318,8 +318,7 @@ const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
                                      Float32, Float64}
 
 "Can the type be safely sorted by radixsort"
-radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
-radixsort_safe(::Type) = false
+radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     last_sx = sx[1]
@@ -352,6 +351,9 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     # It seems that sort is inferred in Julia 0.7.
     return _addcounts_radix_sort_loop!(cm, sx)
 end
+# general iterator form
+addcounts_radixsort!(cm::Dict{T}, x) where T = addcounts_radixsort!(cm, collect(x))
+
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
@@ -388,7 +390,7 @@ of occurrences.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
-countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :dict)
+countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :auto)
 countmap(x, wv::AbstractVector{W}) where {W<:Real} = addcounts!(Dict{eltype(x),W}(), collect(x), wv)
 
 
