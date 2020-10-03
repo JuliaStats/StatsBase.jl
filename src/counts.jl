@@ -255,10 +255,12 @@ raw counts.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-function addcounts!(cm::Dict, x; alg = :auto)
+addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x)
+# manual dispatch for `x` being iterator
+function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
-    if radixsort_safe(eltype(x)) && (alg == :auto || alg == :radixsort)
+    if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
         addcounts_radixsort!(cm, x)
     elseif alg == :radixsort
         throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
@@ -286,14 +288,14 @@ end
 # faster results and less memory usage. However we still wish to enable others
 # to write generic algorithms, therefore the methods below still accept the 
 # `alg` argument but it is ignored.
-function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + length(x) - sumx
     cm
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+function _addcounts!(::Type{T}, cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
 
     @inbounds for xi in x
@@ -394,15 +396,8 @@ of occurrences.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
-# fall-back for iterator `x`
-function countmap(x)
-    if eltype(x) <: Union{Bool, UInt8, UInt16, Int8, Int16}
-        # faster `addcounts!` specialized
-        addcounts!(Dict{eltype(x),Int}(), collect(x); alg = :auto)
-    else
-        addcounts!(Dict{eltype(x),Int}(), x; alg = :auto)
-    end
-end
+countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :auto)
+
 
 """
     proportionmap(x)
