@@ -395,7 +395,7 @@ of occurrences.
 """
 countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
-countmap(x) = addcounts!(Dict{eltype(x),Int}(), x; alg = :auto)
+countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
 
 
 """
