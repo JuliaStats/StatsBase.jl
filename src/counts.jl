@@ -295,7 +295,19 @@ function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg =
     cm[false] = get(cm, false, 0) + length(x) - sumx
     cm
 end
-_addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored) = _addcounts!(Bool, cm, collect(x); alg = alg)
+
+#speailized for `Bool` iterator
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
+    sumx = 0
+    len = 0
+    for i in x
+        sumx += i
+        len += 1
+    end
+    cm[true] = get(cm, true, 0) + sumx
+    cm[false] = get(cm, false, 0) + len - sumx
+    cm
+end
 
 function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
