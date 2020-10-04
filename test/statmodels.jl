@@ -30,7 +30,11 @@ m = rand(3,4)
 
 @test sprint(show, StatsBase.PValue(1.0)) == "1.0000"
 @test sprint(show, StatsBase.PValue(1e-1)) == "0.1000"
-@test sprint(show, StatsBase.PValue(1e-5)) == "<1e-4"
+if VERSION > v"1.6.0-DEV"
+    @test sprint(show, StatsBase.PValue(1e-5)) == "<1e-04"
+else
+    @test sprint(show, StatsBase.PValue(1e-5)) == "<1e-4"
+end
 @test sprint(show, StatsBase.PValue(NaN)) == "NaN"
 @test_throws ErrorException StatsBase.PValue(-0.1)
 @test_throws ErrorException StatsBase.PValue(1.1)
