@@ -296,7 +296,7 @@ function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg =
     cm
 end
 
-#speailized for `Bool` iterator
+# specialized for `Bool` iterator
 function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
     sumx = 0
     len = 0
