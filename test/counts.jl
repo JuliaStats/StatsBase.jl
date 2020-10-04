@@ -90,6 +90,17 @@ pm = proportionmap(x)
 xx = repeat([6, 1, 3, 1], outer=100_000)
 cm = countmap(xx)
 @test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+#with iterator
+xx_missing = skipmissing(xx)
+cm_missing = countmap(xx_missing)
+@test cm_missing isa Dict{Int, Int}
+@test cm_missing == cm
+
+cm_any_itr = countmap((i for i in xx)) 
+@test cm_any_itr[1] == 200_000
+@test cm_any_itr[3] == 100_000
+@test cm_any_itr[6] == 100_000
+@test cm_any_itr isa Dict{Any,Int} #no knowledge about type
 
 # testing the radixsort-based addcounts
 xx = repeat([6, 1, 3, 1], outer=100_000)
@@ -99,6 +110,12 @@ StatsBase.addcounts_radixsort!(cm,xx)
 xx2 = repeat([7, 1, 3, 1], outer=100_000)
 StatsBase.addcounts_radixsort!(cm,xx2)
 @test cm == Dict(1 => 400_000, 3 => 200_000, 6 => 100_000, 7 => 100_000)
+# with iterator
+cm_missing = Dict{Int, Int}()
+StatsBase.addcounts_radixsort!(cm_missing,skipmissing(xx))
+@test cm_missing == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+StatsBase.addcounts_radixsort!(cm_missing,skipmissing(xx2))
+@test cm_missing == Dict(1 => 400_000, 3 => 200_000, 6 => 100_000, 7 => 100_000)
 
 # testing the Dict-based addcounts
 cm = Dict{Int, Int}()
@@ -106,19 +123,12 @@ cm_itr = Dict{Int, Int}()
 StatsBase.addcounts_dict!(cm,xx)
 StatsBase.addcounts_dict!(cm_itr,skipmissing(xx))
 @test cm_itr == cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+@test cm_itr isa Dict{Int, Int}
 
-# test countmap for general iterators
 cm = countmap(x, weights(w))
 @test cm["a"] == 5.5
 @test cm["b"] == 4.5
 @test cm["c"] == 3.5
-
-xx_missing = skipmissing([missing, "b", "a", "a", "b", "c"])
-cm_missing = countmap(xx_missing)
-
-@test cm_missing["a"] == 2
-@test cm_missing["b"] == 2
-@test cm_missing["c"] == 1
 
 @test cm == countmap(x, w)
 
@@ -129,12 +139,16 @@ pm = proportionmap(x, weights(w))
 
 # testing small bits type
 bx = [true, false, true, true, false]
-@test countmap(skipmissing(bx)) == countmap(bx) == Dict(true => 3, false => 2)
+cm_bx_missing = countmap(skipmissing(bx))
+@test cm_bx_missing == countmap(bx) == Dict(true => 3, false => 2)
+@test cm_bx_missing isa Dict{Bool, Int}
 
 for T in [UInt8, UInt16, Int8, Int16]
     tx = T[typemin(T), 8, typemax(T), 19, 8]
     tx_missing = skipmissing(T[typemin(T), 8, typemax(T), 19, 8])
-    @test countmap(tx) == countmap(tx_missing) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
+    cm_tx_missing = countmap(tx_missing)
+    @test cm_tx_missing == countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
+    @test cm_tx_missing isa Dict{T, Int}
 end
 
 @testset "views" begin
