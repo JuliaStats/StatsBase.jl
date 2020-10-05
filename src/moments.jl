@@ -151,12 +151,12 @@ std(v::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
 
 ##### Fused statistics
 """
-    mean_and_var(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, var)
+    mean_and_var(x, [dim]; corrected=true) -> (mean, var)
 
 Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
 `dim` can be specified as a tuple to compute statistics over these dimensions.
-A weighting vector `w` can be specified to weight the estimates.
-Finally, bias correction is be applied to the variance calculation if `corrected=true`.
+Finally, bias correction is be applied to the variance calculation if
+`corrected=true` (default is `true` consistent with `Statistics.var(x)`).
 See [`var`](@ref) documentation for more details.
 """
 function mean_and_var(x; corrected::Bool=true)
@@ -164,15 +164,43 @@ function mean_and_var(x; corrected::Bool=true)
     v = varm(x, m; corrected=corrected)
     m, v
 end
+function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
+    m = mean(x, dims = dim)
+    v = varm(x, m, dims = dim, corrected=corrected)
+    m, v
+end
+
 
 """
-    mean_and_std(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, std)
+    mean_and_var(x, w::AbstractWeights, [dim]; corrected=false) -> (mean, var)
 
 Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
 `dim` can be specified as a tuple to compute statistics over these dimensions.
 A weighting vector `w` can be specified to weight the estimates.
+Finally, bias correction is be applied to the variance calculation if
+`corrected=true`  (default is `false` consistent with `StatsBase.var(x,w)`).
+See [`var`](@ref) documentation for more details.
+"""
+function mean_and_var(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
+    m = mean(x, w)
+    v = varm(x, w, m; corrected=depcheck(:mean_and_var, corrected))
+    m, v
+end
+
+function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
+                      corrected::DepBool=nothing)
+    m = mean(x, w, dims=dims)
+    v = varm(x, w, m, dims; corrected=depcheck(:mean_and_var, corrected))
+    m, v
+end
+
+"""
+    mean_and_std(x, [dim]; corrected=true) -> (mean, std)
+
+Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
+`dim` can be specified as a tuple to compute statistics over these dimensions.
 Finally, bias correction is applied to the
-standard deviation calculation if `corrected=true`.
+standard deviation calculation if `corrected=true` (default is `true` consistent with `Statistics.std(x)`).
 See [`std`](@ref) documentation for more details.
 """
 function mean_and_std(x; corrected::Bool=true)
@@ -181,36 +209,28 @@ function mean_and_std(x; corrected::Bool=true)
     m, s
 end
 
-function mean_and_var(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
-    m = mean(x, w)
-    v = varm(x, w, m; corrected=depcheck(:mean_and_var, corrected))
-    m, v
-end
-function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
-    m = mean(x, w)
-    s = stdm(x, w, m; corrected=depcheck(:mean_and_std, corrected))
-    m, s
-end
-
-
-function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(x, dims = dim)
-    v = varm(x, m, dims = dim, corrected=corrected)
-    m, v
-end
 function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims = dim)
     s = stdm(x, m, dim; corrected=corrected)
     m, s
 end
 
+"""
+    mean_and_std(x, w::AbstractWeights, [dim]; corrected=false) -> (mean, std)
 
-function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
-                      corrected::DepBool=nothing)
-    m = mean(x, w, dims=dims)
-    v = varm(x, w, m, dims; corrected=depcheck(:mean_and_var, corrected))
-    m, v
+Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
+`dim` can be specified as a tuple to compute statistics over these dimensions.
+A weighting vector `w` can be specified to weight the estimates.
+Finally, bias correction is applied to the
+standard deviation calculation if `corrected=true` (default is false consistent with `StatsBase.std(x,w)`).
+See [`std`](@ref) documentation for more details.
+"""
+function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
+    m = mean(x, w)
+    s = stdm(x, w, m; corrected=depcheck(:mean_and_std, corrected))
+    m, s
 end
+
 function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
