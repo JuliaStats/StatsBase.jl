@@ -17,8 +17,8 @@ struct ECDF{T <: Real, W <: Real, I}
     # The tuple provides:
     #  - `x[i]` (value of random variable)
     #  - `ECDF(x[i])`
-    #  - `1/(x[i] - x[i-1])`
-    #  - `ECDF(x[i]) - ECDF(x[i-1])` (the weight of `x[i]`)
+    #  - `1/(x[i+1] - x[i])`
+    #  - `ECDF(x[i+1]) - ECDF(x[i])` (the weight of `x[i+1]`)
     sorted_values::Vector{Tuple{T, W, W, W}}
 end
 
