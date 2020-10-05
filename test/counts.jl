@@ -90,9 +90,9 @@ pm = proportionmap(x)
 xx = repeat([6, 1, 3, 1], outer=100_000)
 cm = countmap(xx)
 @test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
-#with iterator
-xx_missing = skipmissing(xx)
-cm_missing = countmap(xx_missing)
+
+# with iterator
+cm_missing = countmap(skipmissing(xx))
 @test cm_missing isa Dict{Int, Int}
 @test cm_missing == cm
 
