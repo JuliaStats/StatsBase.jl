@@ -1,6 +1,12 @@
 using StatsBase
 using Test
 
+function showstring(obj)
+    iobuf = IOBuffer()
+    show(iobuf, obj)
+    return String(take!(iobuf))
+end
+
 @testset "ECDF" begin
     x = randn(10000000)
     fnecdf = ecdf(x)
@@ -10,12 +16,14 @@ using Test
     @test fnecdf(y) ≈ map(fnecdf, y)
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == extrema(x)
     fnecdf = ecdf([0.5])
+    @test showstring(fnecdf) == "ECDF{Float64,Float64,false}(1 values)\n"
     @test fnecdf(0.5) == 1.0
     @test fnecdf([zeros(5000); ones(5000)]) == [zeros(5000); ones(5000)]
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 0.5)
     @test isnan(ecdf([1,2,3])(NaN))
     @test_throws ArgumentError ecdf([1, NaN])
     fnecdf = ecdf(Int[])
+    @test showstring(fnecdf) == "ECDF{$Int,Float64,false}(0 values)\n"
     @test fnecdf.([0, 1, 2, 3]) == [0.0, 0.0, 0.0, 0.0]
 end
 
@@ -40,6 +48,7 @@ end
     @test extrema(fnecdf) == (minimum(fnecdf), maximum(fnecdf)) == (0.5, 1.0)
 
     fnecdfi = ecdf([1.0, 0.5], weights=weights([3, 1]), interpolate=true)
+    @test showstring(fnecdfi) == "ECDF{Float64,Float64,true}(2 values)\n"
     @test fnecdfi.([0.0, 0.5, 0.75, 1.0, 2.0]) == [0.0, 0.25, 0.625, 1.0, 1.0]
     @test fnecdfi(0.75) == 0.625
     @test extrema(fnecdfi) == (minimum(fnecdfi), maximum(fnecdfi)) == (0.5, 1.0)
