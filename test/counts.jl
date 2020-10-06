@@ -80,6 +80,13 @@ cm = countmap(x)
 @test cm["a"] == 3
 @test cm["b"] == 2
 @test cm["c"] == 1
+
+# iterator, non-radixsort
+cm_missing = countmap(skipmissing(x))
+cm_itr = countmap((i for i in x))
+@test cm_missing == cm
+@test cm_itr == cm
+
 pm = proportionmap(x)
 @test pm["a"] ≈ (1/2)
 @test pm["b"] ≈ (1/3)
