@@ -23,7 +23,6 @@ end
 function _rank(f!, x::AbstractArray{>: Missing}, R::Type=Int; sortkwargs...)
     inds = findall(!ismissing, vec(x))
     isempty(inds) && return missings(R, size(x))
-    T = nonmissingtype(eltype(x))
     xv = disallowmissing(view(vec(x), inds))
     ordv = sortperm(xv; sortkwargs...)
     rks = missings(R, size(x))
