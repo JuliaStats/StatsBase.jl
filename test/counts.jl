@@ -83,9 +83,10 @@ cm = countmap(x)
 
 # iterator, non-radixsort
 cm_missing = countmap(skipmissing(x))
-cm_itr = countmap((i for i in x))
-@test cm_missing == cm
-@test cm_itr == cm
+cm_any_itr = countmap((i for i in x))
+@test cm_missing == cm_any_itr == cm
+@test cm_missing isa Dict{String, Int}
+@test cm_any_itr isa Dict{String, Int}
 
 pm = proportionmap(x)
 @test pm["a"] ≈ (1/2)
