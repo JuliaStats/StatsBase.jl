@@ -255,7 +255,9 @@ raw counts.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
+addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
+
+function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
@@ -269,7 +271,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
 end
 
 """Dict-based addcounts method"""
-function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
+function addcounts_dict!(cm::Dict{T}, x) where T
     for v in x
         index = ht_keyindex2!(cm, v)
         if index > 0
@@ -286,14 +288,27 @@ end
 # faster results and less memory usage. However we still wish to enable others
 # to write generic algorithms, therefore the methods below still accept the 
 # `alg` argument but it is ignored.
-function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + length(x) - sumx
     cm
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+# specialized for `Bool` iterator
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
+    sumx = 0
+    len = 0
+    for i in x
+        sumx += i
+        len += 1
+    end
+    cm[true] = get(cm, true, 0) + sumx
+    cm[false] = get(cm, false, 0) + len - sumx
+    cm
+end
+
+function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
 
     @inbounds for xi in x
@@ -318,8 +333,7 @@ const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
                                      Float32, Float64}
 
 "Can the type be safely sorted by radixsort"
-radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
-radixsort_safe(::Type) = false
+radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     last_sx = sx[1]
@@ -350,6 +364,12 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     # Delegate the loop to a separate function since sort might not
     # be inferred in Julia 0.6 after SortingAlgorithms is loaded.
     # It seems that sort is inferred in Julia 0.7.
+    return _addcounts_radix_sort_loop!(cm, sx)
+end
+
+# fall-back for `x` an iterator
+function addcounts_radixsort!(cm::Dict{T}, x) where T 
+    sx = sort!(collect(x), alg = RadixSort)
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
@@ -386,7 +406,7 @@ of occurrences.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
+countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 
