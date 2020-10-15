@@ -123,6 +123,10 @@ Compute the Pearson correlation matrix of `X` along the dimension
 cor(x::AbstractMatrix, w::AbstractWeights, dims::Int=1) =
     corm(x, mean(x, w, dims=dims), w, dims)
 
+function mean_and_cov(x::AbstractVector; corrected::Bool=true)
+    m = mean(x)
+    return m, covm(x, m, corrected=corrected)
+end
 function mean_and_cov(x::AbstractMatrix, dims::Int=1; corrected::Bool=true)
     m = mean(x, dims=dims)
     return m, covm(x, m, dims, corrected=corrected)
@@ -131,11 +135,6 @@ function mean_and_cov(x::AbstractMatrix, wv::AbstractWeights, dims::Int=1;
                       corrected::DepBool=nothing)
     m = mean(x, wv, dims=dims)
     return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, corrected))
-end
-
-function mean_and_cov(x::AbstractVector; corrected::Bool=true)
-    m = mean(x)
-    return m, covm(x, m, corrected=corrected)
 end
 
 """

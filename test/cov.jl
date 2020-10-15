@@ -137,7 +137,6 @@ sparse_array = sprandn(3, 8, 0.2)
             cor1 = cor(X, wv1, 1)
             cor2 = cor(X, wv2, 2)
 
-
             @testset "cov2cor" begin
                 @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ₙ cor(X, dims = 1)
                 @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ₙ cor(X, dims = 2)
