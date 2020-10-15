@@ -122,7 +122,7 @@ sparse_array = sprandn(3, 8, 0.2)
             @test m == mean(X, wv2, dims=2)
             @test C ≈ cov(X, wv2, 2, corrected=false)
 
-            v = collect(eachcol(X))
+            v = [X[:,i] for i in axes(X,2)]
             (m, C) = mean_and_cov(v; corrected=false)
             @test m == mean(v)
             @test C ≈ cov(v, corrected=false)
