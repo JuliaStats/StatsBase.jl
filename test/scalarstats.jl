@@ -44,10 +44,23 @@ using Statistics
 @test modes(skipmissing([1, missing, missing, 3, 2, 2, missing])) == [2]
 @test sort(modes(skipmissing([1, missing, 3, 3, 2, 2, missing]))) == [2, 3]
 
+d1 = [1, 2, 3, 3, 4, 5, 5, 3]
+d2 = ['a', 'b', 'c', 'c', 'd', 'e', 'e', 'c']
+wv = weights([0.1:0.1:0.7..., 0.1])
+@test mode(d1) == 3
+@test mode(d2) == 'c'
+@test mode(d1, wv) == 5
+@test mode(d2, wv) == 'e'
+@test modes(d1[1:end-1], weights(ones(7))) == [3, 5]
+
 @test_throws ArgumentError mode(Int[])
 @test_throws ArgumentError modes(Int[])
 @test_throws ArgumentError mode(Any[])
 @test_throws ArgumentError modes(Any[])
+@test_throws ArgumentError mode([], weights(Float64[]))
+@test_throws ArgumentError modes([], weights(Float64[]))
+@test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.3]))
+@test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
 ## zscores
 

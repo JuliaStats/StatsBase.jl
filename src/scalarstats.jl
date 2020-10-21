@@ -158,6 +158,49 @@ function modes(a)
     return [x for (x, c) in cnts if c == mc]
 end
 
+# Weighted mode of arbitrary vectors of values
+function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    length(a) == length(wv) || throw(ArgumentError(
+        "data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"
+    ))
+
+    # Iterate through the data
+    mv = first(a)
+    mw = first(wv)
+    weights = Dict{eltype(a), T}()
+    for (x, w) in zip(a, wv)
+        _w = get!(weights, x, zero(T)) + w
+        if _w > mw
+            mv = x
+            mw = _w
+        end
+        weights[x] = _w
+    end
+
+    return mv
+end
+
+function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    length(a) == length(wv) || throw(ArgumentError(
+        "data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"
+    ))
+
+    # Iterate through the data
+    mw = first(wv)
+    weights = Dict{eltype(a), T}()
+    for (x, w) in zip(a, wv)
+        _w = get!(weights, x, zero(T)) + w
+        if _w > mw
+            mw = _w
+        end
+        weights[x] = _w
+    end
+
+    # find values corresponding to maximum counts
+    return [x for (x, w) in weights if w == mw]
+end
 
 #############################
 #
