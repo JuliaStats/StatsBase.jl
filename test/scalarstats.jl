@@ -51,7 +51,7 @@ wv = weights([0.1:0.1:0.7..., 0.1])
 @test mode(d2) == 'c'
 @test mode(d1, wv) == 5
 @test mode(d2, wv) == 'e'
-@test modes(d1[1:end-1], weights(ones(7))) == [3, 5]
+@test sort(modes(d1[1:end-1], weights(ones(7)))) == [3, 5]
 
 @test_throws ArgumentError mode(Int[])
 @test_throws ArgumentError modes(Int[])
