@@ -431,6 +431,7 @@ struct PValue
         new(v)
     end
 end
+PValue(p::PValue) = p
 
 function show(io::IO, pv::PValue)
     v = pv.v
