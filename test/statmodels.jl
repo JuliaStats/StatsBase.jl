@@ -39,7 +39,7 @@ end
 @test sprint(show, PValue(NaN)) == "NaN"
 @test_throws ErrorException PValue(-0.1)
 @test_throws ErrorException PValue(1.1)
-@test PValue(PValue(PValue(0.05))) == PValue(0.05)
+@test PValue(PValue(0.05)) === PValue(0.05)
 
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 
