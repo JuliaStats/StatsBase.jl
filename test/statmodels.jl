@@ -1,4 +1,5 @@
 using StatsBase
+using StatsBase: PValue
 using Test, Random
 
 v1 = [1.45666, -23.14, 1.56734e-13]
@@ -28,16 +29,17 @@ m = rand(3,4)
 [3]  0.344454  0.179574   0.242208  0.4531
 ──────────────────────────────────────────"""
 
-@test sprint(show, StatsBase.PValue(1.0)) == "1.0000"
-@test sprint(show, StatsBase.PValue(1e-1)) == "0.1000"
+@test sprint(show, PValue(1.0)) == "1.0000"
+@test sprint(show, PValue(1e-1)) == "0.1000"
 if VERSION > v"1.6.0-DEV"
-    @test sprint(show, StatsBase.PValue(1e-5)) == "<1e-04"
+    @test sprint(show, PValue(1e-5)) == "<1e-04"
 else
-    @test sprint(show, StatsBase.PValue(1e-5)) == "<1e-4"
+    @test sprint(show, PValue(1e-5)) == "<1e-4"
 end
-@test sprint(show, StatsBase.PValue(NaN)) == "NaN"
-@test_throws ErrorException StatsBase.PValue(-0.1)
-@test_throws ErrorException StatsBase.PValue(1.1)
+@test sprint(show, PValue(NaN)) == "NaN"
+@test_throws ErrorException PValue(-0.1)
+@test_throws ErrorException PValue(1.1)
+@test PValue(PValue(0.05)) === PValue(0.05)
 
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 
