@@ -538,6 +538,15 @@ set to zero.
 Base.zero(h::Histogram{T,N,E}) where {T,N,E} =
     Histogram{T,N,E}(deepcopy(h.edges), zero(h.weights), h.closed, h.isdensity)
 
+"""
+    empty!(h::Histogram)
+
+Set all the elements of h.weights to zero.
+"""
+function Base.empty!(h::Histogram)
+    h.weights .= zero(eltype(h.weights))
+    h
+end
 
 """
     merge!(target::Histogram, others::Histogram...)
