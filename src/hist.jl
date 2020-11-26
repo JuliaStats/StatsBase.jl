@@ -96,6 +96,9 @@ function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
             len += one(F)
         end
     end
+    if lo==hi && !isinteger(hi)
+        divisor = zero(F)
+    end
     Base.floatrange(start,step,len,divisor)
 end
 
