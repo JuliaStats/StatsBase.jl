@@ -204,7 +204,6 @@ function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
     m, s
 end
 
-
 function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
