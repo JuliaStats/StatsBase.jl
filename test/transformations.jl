@@ -4,23 +4,19 @@ using Statistics
 using CUDA
 using Test
 
-CUDA.allowscalar(false)
-
-@warn "CUDA related method definitions included only in test script"
-include("cuda.jl")
-
-@testset "Transformations on $device" for device in (:cpu, :gpu)
-    if device==:gpu
+# TODO Remove GPU testing
+@testset "Transformations on $device_name" for device_name in (:cpu, :gpu)
+    if device_name==:gpu
         if !CUDA.functional(true)
             @test_broken "GPU not functional - transformations not tested on GPU"
            continue
         end
     end
 
-    to_device = device == :cpu ? identity : cu
+    device = device_name == :cpu ? identity : cu
 
     # matrix
-    X = rand(5, 8) |> to_device
+    X = rand(5, 8) |> device
     X_ = copy(X)
 
     t = fit(ZScoreTransform, X, dims=1, center=false, scale=false)
@@ -125,11 +121,7 @@ include("cuda.jl")
     @test Y ≈ X_
 
     # vector
-    if device == :gpu
-        @test_broken "vector-valued transformations on GPU"
-        continue
-    end
-    X = rand(10) |> to_device
+    X = rand(10) |> device
     X_ = copy(X)
 
     t = fit(ZScoreTransform, X, dims=1, center=false, scale=false)

@@ -133,11 +133,23 @@ function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
         throw(DomainError(dims, "fit only accepts dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
-    T = eltype(X)
-    m, s = mean_and_std(X)
-    return ZScoreTransform(1, dims, (center ? [m] : zeros(T, 0)),
-                                    (scale ? [s] : zeros(T, 0)))
+    return fit(ZScoreTransform, reshape(X, :, 1);dims=dims, center=center, scale=scale)
 end
+
+# The following implementation yield the error when called with `CuArray`s:
+# ERROR: fatal error in type inference (type bound)
+# function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
+#              dims::Integer=1, center::Bool=true, scale::Bool=true)
+#     if dims != 1
+#         throw(DomainError(dims, "fit only accepts dims=1 over a vector. Try fit(t, x, dims=1)."))
+#     end
+
+#     m, s = mean_and_std(X)
+#     T = typeof(m)
+#     return ZScoreTransform(1, dims, (center ? [m] : similar(X, T, 0)),
+#                                     (scale ? [s] : similar(X, T, 0)))
+# end
+
 
 function transform!(y::AbstractMatrix{<:Real}, t::ZScoreTransform, x::AbstractMatrix{<:Real})
     if t.dims == 1
