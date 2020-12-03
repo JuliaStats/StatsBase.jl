@@ -389,9 +389,10 @@ end
 
 """
     countmap(x; alg = :auto)
+    countmap(x::AbstractVector, w::AbstractVector{<:Real}; alg = :auto)
 
 Return a dictionary mapping each unique value in `x` to its number
-of occurrences.
+of occurrences. A vector of weights `w` can be provided when `x` is a vector.
 
 - `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
                      `:radixsort`, otherwise use `:dict`.
