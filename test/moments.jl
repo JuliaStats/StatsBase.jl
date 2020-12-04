@@ -103,7 +103,7 @@ expected_std = sqrt.(expected_var)
     end
 end
 
-x = rand(5, 6)    
+x = rand(5, 6)
 w1 = [0.57, 5.10, 0.91, 1.72, 0.0]
 w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
