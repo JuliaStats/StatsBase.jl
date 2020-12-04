@@ -47,10 +47,11 @@ end
 # compute mode, given the range of integer values
 """
     mode(a, [r])
+    mode(a, wv)
 
 Return the mode (most common number) of an array, optionally
-over a specified range `r`. If several modes exist, the first
-one (in order of appearance) is returned.
+over a specified range `r` or weighted via a vector `wv`.
+If several modes exist, the first one (in order of appearance) is returned.
 """
 function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
@@ -75,9 +76,10 @@ end
 
 """
     modes(a, [r])::Vector
+    modes(a, wv)::Vector
 
 Return all modes (most common numbers) of an array, optionally over a
-specified range `r`.
+specified range `r` or weighted via vector `wv`.
 """
 function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     r0 = r[1]
