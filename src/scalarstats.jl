@@ -47,7 +47,7 @@ end
 # compute mode, given the range of integer values
 """
     mode(a, [r])
-    mode(a, wv)
+    mode(a::AbstractArray, wv::AbstractArray{<: Real})
 
 Return the mode (most common number) of an array, optionally
 over a specified range `r` or weighted via a vector `wv`.
@@ -76,7 +76,7 @@ end
 
 """
     modes(a, [r])::Vector
-    modes(a, wv)::Vector
+    mode(a::AbstractArray, wv::AbstractArray{<: Real})::Vector
 
 Return all modes (most common numbers) of an array, optionally over a
 specified range `r` or weighted via vector `wv`.
@@ -163,9 +163,8 @@ end
 # Weighted mode of arbitrary vectors of values
 function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
-    length(a) == length(wv) || throw(ArgumentError(
-        "data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"
-    ))
+    length(a) == length(wv) ||
+        throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
 
     # Iterate through the data
     mv = first(a)
@@ -185,9 +184,8 @@ end
 
 function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
-    length(a) == length(wv) || throw(ArgumentError(
-        "data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"
-    ))
+    length(a) == length(wv) ||
+        throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
 
     # Iterate through the data
     mw = first(wv)
