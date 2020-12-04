@@ -2,29 +2,10 @@ using StatsBase
 import StatsBase: transform, reconstruct, transform!, reconstruct!
 using Statistics
 using Test
-cuda_available = try
-    using StatsBase.CUDA
-    true
-catch
-    @warn "CUDA not available - transformations not tested on GPU"
-    false
-end
 
-devices = [:cpu]
-if cuda_available
-    if CUDA.functional(true)
-        push!(devices, :gpu)
-    else
-        @warn "GPU not functional - transformations not tested on GPU"
-    end
-end
-
-@testset "Transformations on $device" for device in devices
+@testset "Transformations" begin
     # matrix
     X = rand(5, 8)
-    if device == :gpu
-        X = cu(X)
-    end
     X_ = copy(X)
 
     t = fit(ZScoreTransform, X, dims=1, center=false, scale=false)
@@ -130,10 +111,6 @@ end
 
     # vector
     X = rand(10)
-    if device == :gpu
-        X = cu(X)
-    end
-
     X_ = copy(X)
 
     t = fit(ZScoreTransform, X, dims=1, center=false, scale=false)

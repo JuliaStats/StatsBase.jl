@@ -266,33 +266,12 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
         dims = 2
     end
-    if dims == 1
-        l, tmin, tmax = _compute_extrema(X)
-    elseif dims == 2
-        l, tmin, tmax = _compute_extrema(X')
-    else
-        throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
-    end
-
+    dims ∈ [1,2] || throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
+    tmin_tmax = extrema(X; dims=dims)
+    tmin, tmax = [vec(getindex.(tmin_tmax, i)) for i in 1:2]
     @inbounds @. tmax = 1 / (tmax - tmin)
-
+    l = length(tmin)
     return UnitRangeTransform(l, dims, unit, tmin, tmax)
-end
-
-function _compute_extrema(X::AbstractMatrix{<:Real})
-    n, l = size(X)
-    tmin = X[1, :]
-    tmax = X[1, :]
-    for j = 1:l
-        @inbounds for i = 2:n
-            if X[i, j] < tmin[j]
-                tmin[j] = X[i, j]
-            elseif X[i, j] > tmax[j]
-                tmax[j] = X[i, j]
-            end
-        end
-    end
-    return l, tmin, tmax
 end
 
 function fit(::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
@@ -300,10 +279,9 @@ function fit(::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
     if dims != 1
         throw(DomainError(dims, "fit only accept dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
-
-    l, tmin, tmax = _compute_extrema(reshape(X, :, 1))
+    tmin, tmax = extrema(X)
     tmax = 1 / (tmax - tmin)
-    return UnitRangeTransform(1, dims, unit, vec(tmin), vec(tmax))
+    return UnitRangeTransform(1, dims, unit, [tmin], [tmax])
 end
 
 function transform!(y::AbstractMatrix{<:Real}, t::UnitRangeTransform, x::AbstractMatrix{<:Real})

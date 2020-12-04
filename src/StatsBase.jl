@@ -8,7 +8,7 @@ import DataAPI: describe
 import DataStructures: heapify!, heappop!, percolate_down!
 using SortingAlgorithms
 using Missings
-using Requires
+
 using Statistics
 using LinearAlgebra
 using Random
@@ -214,24 +214,6 @@ export
     AbstractDataTransform, # the type to represent a abstract data transformation
     ZScoreTransform,       # the type to represent a z-score data transformation
     UnitRangeTransform     # the type to represent a 0-1 data transformation
-
-function __init__()
-    @require CUDA="052768ef-5323-5732-b1bb-66c8b64840ba" begin
-        using .CUDA
-        function _compute_extrema(X::Union{CuMatrix{<:Real},Adjoint{T,CuMatrix{T}} where T<:Real})
-            l = size(X,2)
-            tmin = vec(minimum(X, dims=1))
-            tmax = vec(maximum(X, dims=1))
-            return l, tmin, tmax
-        end
-        # TODO Remove varm/stdm definitions once this PR has been merged: https://github.com/JuliaGPU/CUDA.jl/pull/583
-        Statistics.varm(A::CuArray{<:Real}, m::AbstractArray{<:Real}; dims, corrected::Bool=true) =
-            sum((A .- m).^2, dims=dims)/(prod(size(A)[[dims...]])::Int-corrected)
-    
-        Statistics.stdm(A::CuArray{<:Real}, m::AbstractArray{<:Real}, dim::Int; corrected::Bool=true) =
-            sqrt.(varm(A,m;dims=dim,corrected=corrected))
-    end
-end
 
 # source files
 
