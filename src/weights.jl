@@ -13,7 +13,7 @@ macro weights(name)
             values::V
             sum::S
         end
-        $(esc(name))(vs) = $(esc(name))(vs, sum(vs))
+        $(esc(name))(values::AbstractVector{<:Real}) = $(esc(name))(values, sum(values))
     end
 end
 
