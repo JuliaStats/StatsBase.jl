@@ -46,12 +46,13 @@ using Statistics
 
 d1 = [1, 2, 3, 3, 4, 5, 5, 3]
 d2 = ['a', 'b', 'c', 'c', 'd', 'e', 'e', 'c']
-wv = weights([0.1:0.1:0.7..., 0.1])
+wv = weights([0.1:0.1:0.7; 0.1])
 @test mode(d1) == 3
 @test mode(d2) == 'c'
 @test mode(d1, wv) == 5
 @test mode(d2, wv) == 'e'
 @test sort(modes(d1[1:end-1], weights(ones(7)))) == [3, 5]
+@test sort(modes(d1, weights([.9, .1, .1, .1, .9, .1, .1, .1]))) == [1, 4]
 
 @test_throws ArgumentError mode(Int[])
 @test_throws ArgumentError modes(Int[])
