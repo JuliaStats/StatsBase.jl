@@ -47,10 +47,11 @@ end
 # compute mode, given the range of integer values
 """
     mode(a, [r])
+    mode(a::AbstractArray, wv::AbstractWeights)
 
 Return the mode (most common number) of an array, optionally
-over a specified range `r`. If several modes exist, the first
-one (in order of appearance) is returned.
+over a specified range `r` or weighted via a vector `wv`.
+If several modes exist, the first one (in order of appearance) is returned.
 """
 function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
@@ -75,9 +76,10 @@ end
 
 """
     modes(a, [r])::Vector
+    mode(a::AbstractArray, wv::AbstractWeights)::Vector
 
 Return all modes (most common numbers) of an array, optionally over a
-specified range `r`.
+specified range `r` or weighted via vector `wv`.
 """
 function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     r0 = r[1]
@@ -158,6 +160,47 @@ function modes(a)
     return [x for (x, c) in cnts if c == mc]
 end
 
+# Weighted mode of arbitrary vectors of values
+function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    length(a) == length(wv) ||
+        throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
+
+    # Iterate through the data
+    mv = first(a)
+    mw = first(wv)
+    weights = Dict{eltype(a), T}()
+    for (x, w) in zip(a, wv)
+        _w = get!(weights, x, zero(T)) + w
+        if _w > mw
+            mv = x
+            mw = _w
+        end
+        weights[x] = _w
+    end
+
+    return mv
+end
+
+function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    length(a) == length(wv) ||
+        throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
+
+    # Iterate through the data
+    mw = first(wv)
+    weights = Dict{eltype(a), T}()
+    for (x, w) in zip(a, wv)
+        _w = get!(weights, x, zero(T)) + w
+        if _w > mw
+            mw = _w
+        end
+        weights[x] = _w
+    end
+
+    # find values corresponding to maximum counts
+    return [x for (x, w) in weights if w == mw]
+end
 
 #############################
 #
