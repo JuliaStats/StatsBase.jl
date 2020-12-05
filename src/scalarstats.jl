@@ -47,7 +47,7 @@ end
 # compute mode, given the range of integer values
 """
     mode(a, [r])
-    mode(a::AbstractArray, wv::AbstractArray{<: Real})
+    mode(a::AbstractArray, wv::AbstractWeights)
 
 Return the mode (most common number) of an array, optionally
 over a specified range `r` or weighted via a vector `wv`.
@@ -76,7 +76,7 @@ end
 
 """
     modes(a, [r])::Vector
-    mode(a::AbstractArray, wv::AbstractArray{<: Real})::Vector
+    mode(a::AbstractArray, wv::AbstractWeights)::Vector
 
 Return all modes (most common numbers) of an array, optionally over a
 specified range `r` or weighted via vector `wv`.
