@@ -266,7 +266,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
         dims = 2
     end
-    dims ∈ [1,2] || throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
+    dims ∈ (1,2) || throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     tmin_tmax = extrema(X; dims=dims)
     tmin, tmax = (vec(getindex.(tmin_tmax, i)) for i in 1:2)
     @. tmax = 1 / (tmax - tmin)
