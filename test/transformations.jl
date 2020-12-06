@@ -13,10 +13,10 @@ using Test
     @test isa(t, AbstractDataTransform)
     @test isempty(t.mean)
     @test isempty(t.scale)
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -28,7 +28,7 @@ using Test
     @test Y ≈ X ./ std(X, dims=1)
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -40,7 +40,7 @@ using Test
     @test Y ≈ X .- mean(X, dims=1)
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -53,7 +53,7 @@ using Test
     @test reconstruct(t, Y) ≈ X
     @test Y ≈ standardize(ZScoreTransform, X, dims=1)
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -66,7 +66,7 @@ using Test
     @test reconstruct(t, Y) ≈ X
     @test Y ≈ standardize(ZScoreTransform, X, dims=2)
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -78,7 +78,7 @@ using Test
     @test Y ≈ X ./ (maximum(X, dims=1) .- minimum(X, dims=1))
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -92,7 +92,7 @@ using Test
     @test reconstruct(t, Y) ≈ X
     @test Y ≈ standardize(UnitRangeTransform, X, dims=1)
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -105,7 +105,7 @@ using Test
     @test Y ≈ (X .- minimum(X, dims=2)) ./ (maximum(X, dims=2) .- minimum(X, dims=2))
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -118,7 +118,7 @@ using Test
     @test transform(t, X) ≈ Y
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -129,7 +129,7 @@ using Test
     @test transform(t, X) ≈ Y
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -140,7 +140,7 @@ using Test
     @test transform(t, X) ≈ Y
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -152,7 +152,7 @@ using Test
     @test reconstruct(t, Y) ≈ X
     @test Y ≈ standardize(ZScoreTransform, X, dims=1)
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -163,7 +163,7 @@ using Test
     @test transform(t, X) ≈ Y
     @test reconstruct(t, Y) ≈ X
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
@@ -175,7 +175,7 @@ using Test
     @test reconstruct(t, Y) ≈ X
     @test Y ≈ standardize(UnitRangeTransform, X, dims=1, unit=false)
     @test transform!(t, X) === X
-    @test X == Y
+    @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
