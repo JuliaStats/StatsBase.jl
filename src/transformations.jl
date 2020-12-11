@@ -267,18 +267,18 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
         dims = 2
     end
     dims ∈ (1, 2) || throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
-    tmin, tmax = _compute_extrema(X; dims=dims)
+    tmin, tmax = _compute_extrema(X, dims)
     @. tmax = 1 / (tmax - tmin)
     l = length(tmin)
     return UnitRangeTransform(l, dims, unit, tmin, tmax)
 end
 
-function _compute_extrema(X; dims)
-    otherdims = dims==1 ? 2 : 1
-    l = size(X, otherdims)
+function _compute_extrema(X, dims)
+    dims==2 && return _compute_extrema(X', 1)
+    l = size(X, 2)
     tmin, tmax = (similar(X, l) for _ in 1:2)
-    for (i, x) in enumerate(eachslice(X; dims=otherdims))
-        tmin[i], tmax[i] = extrema(x)
+    for i in 1:l
+        @inbounds tmin[i], tmax[i] = extrema(@view(X[:, i]))
     end
     return tmin, tmax
 end
