@@ -276,7 +276,8 @@ end
 function _compute_extrema(X, dims)
     dims == 2 && return _compute_extrema(X', 1)
     l = size(X, 2)
-    tmin, tmax = (similar(X, l) for _ in 1:2)
+    tmin = similar(X, l)
+    tmax = similar(X, l)
     for i in 1:l
         @inbounds tmin[i], tmax[i] = extrema(@view(X[:, i]))
     end
