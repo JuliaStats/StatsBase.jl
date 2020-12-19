@@ -274,7 +274,7 @@ function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
 end
 
 function _compute_extrema(X, dims)
-    dims==2 && return _compute_extrema(X', 1)
+    dims == 2 && return _compute_extrema(X', 1)
     l = size(X, 2)
     tmin, tmax = (similar(X, l) for _ in 1:2)
     for i in 1:l
