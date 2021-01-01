@@ -7,4 +7,5 @@ levelsmap
 indexmap
 indicatormat
 StatsBase.midpoints
+pairwise
 ```

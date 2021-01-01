@@ -162,6 +162,7 @@ export
     levelsmap,      # construct a map from n unique elements to [1, ..., n]
     findat,         # find the position within a for elements in b
     indicatormat,   # construct indicator matrix
+    pairwise,       # pairwise application of functions
 
     # statistical models
     CoefTable,
@@ -232,6 +233,7 @@ include("signalcorr.jl")
 include("partialcor.jl")
 include("empirical.jl")
 include("hist.jl")
+include("pairwise.jl")
 include("misc.jl")
 
 include("sampling.jl")
