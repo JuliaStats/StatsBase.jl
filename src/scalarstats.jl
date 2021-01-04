@@ -317,7 +317,7 @@ function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constan
     # Knowing the eltype allows allocating a single array able to hold both original values
     # and differences from the center, instead of two arrays
     S = isconcretetype(T) ? promote_type(T, typeof(middle(zero(T)))) : T
-    x2 = x isa AbstractArray ? LinearAlgebra.copy_oftype(x, S) : collect(S, x)
+    x2 = x isa AbstractArray ? copyto!(similar(x, S), x) : collect(S, x)
     c = center === nothing ? median!(x2) : center
     if isconcretetype(T)
         x2 .= abs.(x2 .- c)
