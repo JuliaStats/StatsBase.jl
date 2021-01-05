@@ -19,8 +19,12 @@ coefnames(model::StatisticalModel) = error("coefnames is not defined for $(typeo
 """
     coeftable(model::StatisticalModel; level::Real=0.95)
 
-Return a table of class `CoefTable` with coefficients and related statistics.
+Return a table with coefficients and related statistics of the model.
 `level` determines the level for confidence intervals (by default, 95%).
+
+The returned `CoefTable` object implements the
+[Tables.jl](https://github.com/JuliaData/Tables.jl/) interface, and can be
+converted e.g. to a `DataFrame` via `using DataFrames; DataFrame(coeftable(model))`.
 """
 coeftable(model::StatisticalModel) = error("coeftable is not defined for $(typeof(model)).")
 
@@ -422,15 +426,21 @@ end
 
 Base.length(ct::CoefTable) = length(ct.cols[1])
 function Base.eltype(ct::CoefTable)
-    nmtype = isempty(ct.rownms) ? String : eltype(ct.rownms)
-    NamedTuple{(Symbol("Name"), Symbol.(ct.colnms)...),
-               Tuple{nmtype, eltype.(ct.cols)...}}
+    names = isempty(ct.rownms) ?
+        tuple(Symbol.(ct.colnms)...) :
+        tuple(Symbol("Name"), Symbol.(ct.colnms)...)
+    types = isempty(ct.rownms) ?
+        Tuple{eltype.(ct.cols)...} :
+        Tuple{eltype(ct.rownms), eltype.(ct.cols)...}
+    NamedTuple{names, types}
 end
 
 function Base.iterate(ct::CoefTable, i::Integer=1)
     if i in 1:length(ct)
-        nm = isempty(ct.rownms) ? string('[', i, ']') : ct.rownms[i]
-        nt = eltype(ct)((nm, getindex.(ct.cols, Ref(i))...))
+        cols = getindex.(ct.cols, Ref(i))
+        nt = isempty(ct.rownms) ?
+            eltype(ct)(tuple(cols...)) :
+            eltype(ct)(tuple(ct.rownms[i], cols...))
         (nt, i+1)
     else
         nothing

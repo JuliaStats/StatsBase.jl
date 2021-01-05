@@ -41,14 +41,14 @@ ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
 ──────────────────────────────────────────"""
 @test length(ct) === 3
 @test eltype(ct) ==
-NamedTuple{(:Name, :Estimate, :Stderror, :df, :p),
-           Tuple{String,Float64,Float64,Float64,Float64}}
+    NamedTuple{(:Estimate, :Stderror, :df, :p),
+               Tuple{Float64,Float64,Float64,Float64}}
 @test collect(ct) == [
-    (Name = "[1]", Estimate = 0.11258244478647295, Stderror = 0.05664544616214151,
+    (Estimate = 0.11258244478647295, Stderror = 0.05664544616214151,
      df = 0.38181274408522614, p = 0.8197779704008801)
-    (Name = "[2]", Estimate = 0.36831406658084287, Stderror = 0.12078054506961555,
+    (Estimate = 0.36831406658084287, Stderror = 0.12078054506961555,
      df = 0.8151038332483567, p = 0.6699313951612162)
-    (Name = "[3]", Estimate = 0.3444540231363058, Stderror = 0.17957407667101322,
+    (Estimate = 0.3444540231363058, Stderror = 0.17957407667101322,
      df = 0.2422083248151139, p = 0.4530583319523316)
 ]
 
