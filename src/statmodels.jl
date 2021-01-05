@@ -420,6 +420,23 @@ mutable struct CoefTable
     end
 end
 
+Base.length(ct::CoefTable) = length(ct.cols[1])
+function Base.eltype(ct::CoefTable)
+    nmtype = isempty(ct.rownms) ? String : eltype(ct.rownms)
+    NamedTuple{(Symbol("Name"), Symbol.(ct.colnms)...),
+               Tuple{nmtype, eltype.(ct.cols)...}}
+end
+
+function Base.iterate(ct::CoefTable, i::Integer=1)
+    if i in 1:length(ct)
+        nm = isempty(ct.rownms) ? string('[', i, ']') : ct.rownms[i]
+        nt = eltype(ct)((nm, getindex.(ct.cols, Ref(i))...))
+        (nt, i+1)
+    else
+        nothing
+    end
+end
+
 """
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
