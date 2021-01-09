@@ -77,23 +77,33 @@ function _pairwise!(::Val{:listwise}, res::AbstractMatrix, f, x, y, symmetric::B
 end
 
 function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmissing}
-    inds = keys(first(x))
     if symmetric && x !== y
         throw(ArgumentError("symmetric=true only makes sense passing " *
                             "a single set of variables (x === y)"))
-    end
-    for xi in x
-        keys(xi) == inds ||
-            throw(ArgumentError("All input vectors must have the same indices"))
-    end
-    for yi in y
-        keys(yi) == inds ||
-            throw(ArgumentError("All input vectors must have the same indices"))
     end
     x′ = x isa Union{AbstractArray, Tuple, NamedTuple} ? x : collect(x)
     y′ = y isa Union{AbstractArray, Tuple, NamedTuple} ? y : collect(y)
     m = length(x)
     n = length(y)
+
+    if m > 1
+        indsx = keys(first(x′))
+        for i in 2:m
+            keys(x′[i]) == indsx ||
+                throw(ArgumentError("All input vectors must have the same indices"))
+        end
+    end
+    if n > 1
+        indsy = keys(first(y′))
+        for j in 2:n
+            keys(y′[j]) == indsy ||
+                throw(ArgumentError("All input vectors must have the same indices"))
+        end
+    end
+    if m > 1 && n > 1
+        indsx == indsy ||
+            throw(ArgumentError("All input vectors must have the same indices"))
+    end
 
     T = Core.Compiler.return_type(f, Tuple{eltype(x′), eltype(y′)})
     Tsm = Core.Compiler.return_type((x, y) -> f(disallowmissing(x), disallowmissing(y)),
@@ -101,16 +111,16 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
 
     if skipmissing === :none
         res = Matrix{T}(undef, m, n)
-        _pairwise!(Val(:none), res, f, x′, y′, symmetric)
-    elseif skipmissing === :pairwise
+    elseif skipmissing in (:pairwise, :listwise)
         res = Matrix{Tsm}(undef, m, n)
-        _pairwise!(Val(:pairwise), res, f, x′, y′, symmetric)
-    elseif skipmissing === :listwise
-        res = Matrix{Tsm}(undef, m, n)
-        _pairwise!(Val(:listwise), res, f, x′, y′, symmetric)
     else
         throw(ArgumentError("skipmissing must be one of :none, :pairwise or :listwise"))
     end
+
+    # Preserve inferred element type
+    isempty(res) && return res
+
+    _pairwise!(Val(skipmissing), res, f, x′, y′, symmetric)
 
     # identity.(res) lets broadcasting compute a concrete element type
     # TODO: using promote_type rather than typejoin (which broadcast uses) would make sense

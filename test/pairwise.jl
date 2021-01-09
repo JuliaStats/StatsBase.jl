@@ -34,6 +34,22 @@ arbitrary_fun(x, y) = cor(x, y)
         @inferred pairwise(f, x, y)
 
         @test_throws ArgumentError pairwise(f, [Int[]], [Int[]])
+
+        res = pairwise(f, [], [])
+        @test size(res) == (0, 0)
+        @test res isa Matrix{Any}
+
+        res = pairwise(f, Vector{Int}[], Vector{Int}[])
+        @test size(res) == (0, 0)
+        @test res isa Matrix{Float64}
+
+        res = pairwise(f, [[1, 2]], Vector{Int}[])
+        @test size(res) == (1, 0)
+        @test res isa Matrix{Float64}
+
+        res = pairwise(f, Vector{Int}[], [[1, 2], [2, 3]])
+        @test size(res) == (0, 2)
+        @test res isa Matrix{Float64}
     end
 
     @testset "missing values handling interface" begin
