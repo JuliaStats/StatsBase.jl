@@ -163,6 +163,7 @@ export
     findat,         # find the position within a for elements in b
     indicatormat,   # construct indicator matrix
     pairwise,       # pairwise application of functions
+    pairwise!,      # pairwise! application of functions
 
     # statistical models
     CoefTable,

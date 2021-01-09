@@ -9,7 +9,7 @@ Random.seed!(1)
 # to avoid using specialized method
 arbitrary_fun(x, y) = cor(x, y)
 
-@testset "pairwise with $f" for f in (arbitrary_fun, cor, cov)
+@testset "pairwise and pairwise! with $f" for f in (arbitrary_fun, cor, cov)
     @testset "basic interface" begin
         x = [rand(10) for _ in 1:4]
         y = [rand(Float32, 10) for _ in 1:5]
@@ -18,38 +18,59 @@ arbitrary_fun(x, y) = cor(x, y)
 
         res = @inferred pairwise(f, x, y)
         @test res isa Matrix{Float64}
-        @test res == [f(xi, yi) for xi in x, yi in y]
+        res2 = zeros(Float64, size(res))
+        @test pairwise!(f, res2, x, y) === res2
+        @test res == res2 == [f(xi, yi) for xi in x, yi in y]
 
         res = pairwise(f, y, z)
         @test res isa Matrix{Float32}
-        @test res == [f(yi, zi) for yi in y, zi in z]
+        res2 = zeros(Float32, size(res))
+        @test pairwise!(f, res2, y, z) === res2
+        @test res == res2 == [f(yi, zi) for yi in y, zi in z]
 
         res = pairwise(f, Any[[1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]])
         @test res isa Matrix{AbstractFloat}
-        @test res == [f(xi, yi) for xi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]),
-                                    yi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0])]
-        @test typeof.(res) == [Float64 Float64
-                               Float64 Float32]
+        res2 = zeros(AbstractFloat, size(res))
+        @test pairwise!(f, res2, Any[[1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]]) === res2
+        @test res == res2 ==
+            [f(xi, yi) for xi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]),
+                           yi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0])]
+        @test typeof.(res) == typeof.(res2) == [Float64 Float64
+                                                Float64 Float32]
 
         @inferred pairwise(f, x, y)
 
         @test_throws ArgumentError pairwise(f, [Int[]], [Int[]])
+        @test_throws ArgumentError pairwise!(f, zeros(1, 1), [Int[]], [Int[]])
 
         res = pairwise(f, [], [])
         @test size(res) == (0, 0)
         @test res isa Matrix{Any}
+        res2 = zeros(0, 0)
+        @test pairwise!(f, res2, [], []) === res2
 
         res = pairwise(f, Vector{Int}[], Vector{Int}[])
         @test size(res) == (0, 0)
         @test res isa Matrix{Float64}
+        res2 = zeros(0, 0)
+        @test pairwise!(f, res2, Vector{Int}[], Vector{Int}[]) === res2
 
         res = pairwise(f, [[1, 2]], Vector{Int}[])
         @test size(res) == (1, 0)
         @test res isa Matrix{Float64}
+        res2 = zeros(1, 0)
+        @test pairwise!(f, res2, [[1, 2]], Vector{Int}[]) === res2
 
         res = pairwise(f, Vector{Int}[], [[1, 2], [2, 3]])
         @test size(res) == (0, 2)
         @test res isa Matrix{Float64}
+        res2 = zeros(0, 2)
+        @test pairwise!(f, res2, [], [[1, 2], [2, 3]]) === res2
+
+        @test_throws DimensionMismatch pairwise!(f, zeros(1, 2), x, y)
+        @test_throws DimensionMismatch pairwise!(f, zeros(1, 2), [], [])
+        @test_throws DimensionMismatch pairwise!(f, zeros(0, 0),
+                                                 [], [[1, 2], [2, 3]])
     end
 
     @testset "missing values handling interface" begin
@@ -59,15 +80,23 @@ arbitrary_fun(x, y) = cor(x, y)
 
         res = pairwise(f, xm, ym)
         @test res isa Matrix{Missing}
-        @test res ≅ [missing for xi in xm, yi in ym]
+        res2 = zeros(Union{Float64, Missing}, size(res))
+        @test pairwise!(f, res2, xm, ym) === res2
+        @test res ≅ res2 ≅ [missing for xi in xm, yi in ym]
 
         res = pairwise(f, xm, ym, skipmissing=:pairwise)
         @test res isa Matrix{Float64}
+        res2 = zeros(Union{Float64, Missing}, size(res))
+        @test pairwise!(f, res2, xm, ym, skipmissing=:pairwise) === res2
+        @test res ≅ res2
         @test isapprox(res, [f(collect.(skipmissings(xi, yi))...) for xi in xm, yi in ym],
                        rtol=1e-6)
 
         res = pairwise(f, ym, zm, skipmissing=:pairwise)
         @test res isa Matrix{Float32}
+        res2 = zeros(Union{Float32, Missing}, size(res))
+        @test pairwise!(f, res2, ym, zm, skipmissing=:pairwise) === res2
+        @test res ≅ res2
         @test isapprox(res, [f(collect.(skipmissings(yi, zi))...) for yi in ym, zi in zm],
                        rtol=1e-6)
 
@@ -76,6 +105,9 @@ arbitrary_fun(x, y) = cor(x, y)
                         [xm; ym])
         res = pairwise(f, xm, ym, skipmissing=:listwise)
         @test res isa Matrix{Float64}
+        res2 = zeros(Union{Float64, Missing}, size(res))
+        @test pairwise!(f, res2, xm, ym, skipmissing=:listwise) === res2
+        @test res ≅ res2
         @test isapprox(res, [f(view(xi, nminds), view(yi, nminds)) for xi in xm, yi in ym],
                        rtol=1e-6)
 
@@ -98,6 +130,9 @@ arbitrary_fun(x, y) = cor(x, y)
         end
 
         @test_throws ArgumentError pairwise(f, xm, ym, skipmissing=:something)
+        @test_throws ArgumentError pairwise!(f, zeros(Union{Float64, Missing},
+                                                      length(xm), length(ym)), xm, ym,
+                                             skipmissing=:something)
 
         # variable with only missings
         xm = [fill(missing, 10), rand(10)]
@@ -105,11 +140,17 @@ arbitrary_fun(x, y) = cor(x, y)
 
         res = pairwise(f, xm, ym)
         @test res isa Matrix{Union{Float64, Missing}}
-        @test res ≅ [f(xi, yi) for xi in xm, yi in ym]
+        res2 = zeros(Union{Float64, Missing}, size(res))
+        @test pairwise!(f, res2, xm, ym) === res2
+        @test res ≅ res2 ≅ [f(xi, yi) for xi in xm, yi in ym]
 
         if VERSION >= v"1.5" # Fails with UndefVarError on Julia 1.0
             @test_throws ArgumentError pairwise(f, xm, ym, skipmissing=:pairwise)
             @test_throws ArgumentError pairwise(f, xm, ym, skipmissing=:listwise)
+
+            res = zeros(Union{Float64, Missing}, length(xm), length(ym))
+            @test_throws ArgumentError pairwise!(f, res, xm, ym, skipmissing=:pairwise)
+            @test_throws ArgumentError pairwise!(f, res, xm, ym, skipmissing=:listwise)
         end
     end
 
