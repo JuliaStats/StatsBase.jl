@@ -132,8 +132,9 @@ of vectors in iterators `x` and `y`. Rows correspond to
 vectors in `x` and columns to vectors in `y`. If `y` is omitted then a
 square matrix crossing `x` with itself is returned.
 
-As a special case, if `f` is `cor`, diagonal cells are set to one even in
-the presence `missing`, `NaN` or `Inf` entries.
+As a special case, if `f` is `cor`, diagonal cells for which vectors
+from `x` and `y` are identical (according to `===`) are set to one even
+in the presence `missing`, `NaN` or `Inf` entries.
 
 # Keyword arguments
 - `symmetric::Bool=false`: If `true`, `f` is only called to compute
