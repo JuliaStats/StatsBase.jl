@@ -139,15 +139,14 @@ in the presence `missing`, `NaN` or `Inf` entries.
 # Keyword arguments
 - `symmetric::Bool=false`: If `true`, `f` is only called to compute
   for the lower triangle of the matrix, and these values are copied
-  to fill the upper triangle. Only possible when `y` is omitted.
-  This is automatically set to `true` when `f` is `cor` or `cov`.
+  to fill the upper triangle. Only allowed when `y` is omitted.
+  Defaults to `true` when `f` is `cor` or `cov`.
 - `skipmissing::Symbol=:none`: If `:none` (the default), missing values
   in input vectors are passed to `f` without any modification.
   Use `:pairwise` to skip entries with a `missing` value in either
   of the two vectors passed to `f` for a given pair of vectors in `x` and `y`.
   Use `:listwise` to skip entries with a `missing` value in any of the
-  vectors in `x` or `y`; note that this is likely to drop a large part of
-  entries.
+  vectors in `x` or `y`; note that this might drop a large part of entries.
 """
 pairwise(f, x, y=x; symmetric::Bool=false, skipmissing::Symbol=:none) =
     _pairwise(Val(skipmissing), f, x, y, symmetric)
