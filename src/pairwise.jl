@@ -5,10 +5,8 @@ function _pairwise!(::Val{:none}, res::AbstractMatrix, f, x, y, symmetric::Bool)
 
         # For performance, diagonal is special-cased
         if f === cor && i == j && x[i] === y[j]
-            # If the type isn't concrete, 1 may not be converted to the right type
-            # and the final matrix will have an abstract eltype
-            # (missings are propagated via the second branch, but NaNs are ignored)
-            res[i, j] = isconcretetype(eltype(res)) ? 1 : one(f(x[i], y[j]))
+            # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
+            res[i, j] = float(cor(x[i]))
         else
             res[i, j] = f(x[i], y[j])
         end
@@ -134,9 +132,8 @@ of vectors in iterators `x` and `y`. Rows correspond to
 vectors in `x` and columns to vectors in `y`. If `y` is omitted then a
 square matrix crossing `x` with itself is returned.
 
-As a special case, if `f` is `cor`, diagonal cells are set to 1 even in
-the presence `NaN` or `Inf` entries (but `missing` is propagated unless
-`skipmissing` is different from `:none`).
+As a special case, if `f` is `cor`, diagonal cells are set to one even in
+the presence `missing`, `NaN` or `Inf` entries.
 
 # Keyword arguments
 - `symmetric::Bool=false`: If `true`, `f` is only called to compute

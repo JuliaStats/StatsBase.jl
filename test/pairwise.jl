@@ -132,11 +132,11 @@ arbitrary_fun(x, y) = cor(x, y)
         @test res ≅ [1.0 NaN
                      NaN 1.0]
 
-        # missings are propagated even for the diagonal
+        # missings are ignored for the diagonal
         res = pairwise(cor, [[1, 2, 7], [1, 5, missing]])
         @test res isa Matrix{Union{Float64, Missing}}
         @test res ≅ [1.0 missing
-                     missing missing]
+                     missing 1.0]
 
         for sm in (:pairwise, :listwise)
             res = pairwise(cor, [[1, 2, NaN, 4], [1, 5, 5, missing]], skipmissing=sm)
