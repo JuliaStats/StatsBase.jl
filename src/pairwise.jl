@@ -1,17 +1,17 @@
 function _pairwise!(::Val{:none}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
-    m, n = size(dest)
-    @inbounds for j in 1:n, i in 1:m
+    @inbounds for (i, xi) in enumerate(x), (j, yj) in enumerate(y)
         symmetric && i > j && continue
 
         # For performance, diagonal is special-cased
-        if f === cor && i == j && x[i] === y[j]
+        if f === cor && i == j && xi === yj
             # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
-            dest[i, j] = float(cor(x[i]))
+            dest[i, j] = float(cor(xi))
         else
-            dest[i, j] = f(x[i], y[j])
+            dest[i, j] = f(xi, yj)
         end
     end
     if symmetric
+        m, n = size(dest)
         @inbounds for j in 1:n, i in (j+1):m
             dest[i, j] = dest[j, i]
         end
@@ -48,14 +48,13 @@ end
 
 function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
     check_vectors(x, y, :pairwise)
-    m, n = size(dest)
-    @inbounds for j in 1:n
-        ynminds = .!ismissing.(y[j])
-        @inbounds for i in 1:m
+    @inbounds for (j, yj) in enumerate(y)
+        ynminds = .!ismissing.(yj)
+        @inbounds for (i, xi) in enumerate(x)
             symmetric && i > j && continue
 
-            if x[i] === y[j]
-                ynm = view(y[j], ynminds)
+            if xi === yj
+                ynm = view(yj, ynminds)
                 # For performance, diagonal is special-cased
                 if f === cor && i == j
                     # If the type isn't concrete, 1 may not be converted to the right type
@@ -66,14 +65,15 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::
                     dest[i, j] = f(ynm, ynm)
                 end
             else
-                nminds = .!ismissing.(x[i]) .& ynminds
-                xnm = view(x[i], nminds)
-                ynm = view(y[j], nminds)
+                nminds = .!ismissing.(xi) .& ynminds
+                xnm = view(xi, nminds)
+                ynm = view(yj, nminds)
                 dest[i, j] = f(xnm, ynm)
             end
         end
     end
     if symmetric
+        m, n = size(dest)
         @inbounds for j in 1:n, i in (j+1):m
             dest[i, j] = dest[j, i]
         end
@@ -84,13 +84,13 @@ end
 function _pairwise!(::Val{:listwise}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
     check_vectors(x, y, :listwise)
     m, n = size(dest)
-    nminds = .!ismissing.(x[1])
-    @inbounds for i in 2:m
-        nminds .&= .!ismissing.(x[i])
+    nminds = .!ismissing.(first(x))
+    @inbounds for xi in Iterators.drop(x, 1)
+        nminds .&= .!ismissing.(xi)
     end
     if x !== y
-        @inbounds for j in 1:n
-            nminds .&= .!ismissing.(y[j])
+        @inbounds for yj in y
+            nminds .&= .!ismissing.(yj)
         end
     end
 
