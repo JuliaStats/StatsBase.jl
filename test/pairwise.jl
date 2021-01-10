@@ -158,8 +158,15 @@ arbitrary_fun(x, y) = cor(x, y)
         x = (v for v in [rand(10) for _ in 1:4])
         y = (v for v in [rand(10) for _ in 1:4])
 
-        @test pairwise(f, x, y) == pairwise(f, collect(x), collect(y))
-        @test pairwise(f, x) == pairwise(f, collect(x))
+        res = @inferred pairwise(f, x, y)
+        res2 = zeros(size(res))
+        @test pairwise!(f, res2, x, y) === res2
+        @test res == res2 == pairwise(f, collect(x), collect(y))
+
+        res = @inferred(pairwise(f, x))
+        res2 = zeros(size(res))
+        @test pairwise!(f, res2, x) === res2
+        @test res == res2 == pairwise(f, collect(x))
     end
 
     @testset "non-vector entries" begin
@@ -178,16 +185,28 @@ arbitrary_fun(x, y) = cor(x, y)
 
     @testset "two-argument method" begin
         x = [rand(10) for _ in 1:4]
-        @test pairwise(f, x) == pairwise(f, x, x)
+        res = pairwise(f, x)
+        res2 = zeros(size(res))
+        @test pairwise!(f, res2, x) === res2
+        @test res == res2 == pairwise(f, x, x)
     end
 
     @testset "symmetric" begin
         x = [rand(10) for _ in 1:4]
         y = [rand(10) for _ in 1:4]
+
         @test pairwise(f, x, x, symmetric=true) ==
             pairwise(f, x, symmetric=true) ==
             Symmetric(pairwise(f, x, x), :U)
+
+        res = zeros(4, 4)
+        res2 = zeros(4, 4)
+        @test pairwise!(f, res, x, x, symmetric=true) === res
+        @test pairwise!(f, res2, x, symmetric=true) === res2
+        @test res == res2 == Symmetric(pairwise(f, x, x), :U)
+
         @test_throws ArgumentError pairwise(f, x, y, symmetric=true)
+        @test_throws ArgumentError pairwise!(f, res, x, y, symmetric=true)
     end
 
     @testset "cor corner cases" begin
@@ -213,7 +232,7 @@ arbitrary_fun(x, y) = cor(x, y)
             res = pairwise(cor, [[1, 2, NaN, 4], [1, 5, 5, missing]], skipmissing=sm)
             @test res isa Matrix{Float64}
             @test res ≅ [1.0 NaN
-                        NaN 1.0]
+                         NaN 1.0]
         end
     end
 end
