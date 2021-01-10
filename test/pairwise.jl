@@ -170,8 +170,8 @@ arbitrary_fun(x, y) = cor(x, y)
     end
 
     @testset "non-vector entries" begin
-        x = (Iterators.map(exp, v) for v in [rand(10) for _ in 1:4])
-        y = (Iterators.map(exp, v) for v in [rand(10) for _ in 1:4])
+        x = (Iterators.drop(v, 1) for v in [rand(10) for _ in 1:4])
+        y = (Iterators.drop(v, 1) for v in [rand(10) for _ in 1:4])
 
         @test pairwise((x, y) -> f(collect(x), collect(y)), x, y) ==
             [f(collect(xi), collect(yi)) for xi in x, yi in y]
