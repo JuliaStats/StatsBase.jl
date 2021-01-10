@@ -1,22 +1,22 @@
-function _pairwise!(::Val{:none}, f, res::AbstractMatrix, x, y, symmetric::Bool)
-    m, n = size(res)
+function _pairwise!(::Val{:none}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
+    m, n = size(dest)
     @inbounds for j in 1:n, i in 1:m
         symmetric && i > j && continue
 
         # For performance, diagonal is special-cased
         if f === cor && i == j && x[i] === y[j]
             # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
-            res[i, j] = float(cor(x[i]))
+            dest[i, j] = float(cor(x[i]))
         else
-            res[i, j] = f(x[i], y[j])
+            dest[i, j] = f(x[i], y[j])
         end
     end
     if symmetric
         @inbounds for j in 1:n, i in (j+1):m
-            res[i, j] = res[j, i]
+            dest[i, j] = dest[j, i]
         end
     end
-    return res
+    return dest
 end
 
 function check_vectors(x, y, skipmissing::Symbol)
@@ -46,9 +46,9 @@ function check_vectors(x, y, skipmissing::Symbol)
     end
 end
 
-function _pairwise!(::Val{:pairwise}, f, res::AbstractMatrix, x, y, symmetric::Bool)
+function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
     check_vectors(x, y, :pairwise)
-    m, n = size(res)
+    m, n = size(dest)
     @inbounds for j in 1:n
         ynminds = .!ismissing.(y[j])
         @inbounds for i in 1:m
@@ -61,29 +61,29 @@ function _pairwise!(::Val{:pairwise}, f, res::AbstractMatrix, x, y, symmetric::B
                     # If the type isn't concrete, 1 may not be converted to the right type
                     # and the final matrix will have an abstract eltype
                     # (missings and NaNs are ignored)
-                    res[i, j] = isconcretetype(eltype(res)) ? 1 : one(f(ynm, ynm))
+                    dest[i, j] = isconcretetype(eltype(dest)) ? 1 : one(f(ynm, ynm))
                 else
-                    res[i, j] = f(ynm, ynm)
+                    dest[i, j] = f(ynm, ynm)
                 end
             else
                 nminds = .!ismissing.(x[i]) .& ynminds
                 xnm = view(x[i], nminds)
                 ynm = view(y[j], nminds)
-                res[i, j] = f(xnm, ynm)
+                dest[i, j] = f(xnm, ynm)
             end
         end
     end
     if symmetric
         @inbounds for j in 1:n, i in (j+1):m
-            res[i, j] = res[j, i]
+            dest[i, j] = dest[j, i]
         end
     end
-    return res
+    return dest
 end
 
-function _pairwise!(::Val{:listwise}, f, res::AbstractMatrix, x, y, symmetric::Bool)
+function _pairwise!(::Val{:listwise}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
     check_vectors(x, y, :listwise)
-    m, n = size(res)
+    m, n = size(dest)
     nminds = .!ismissing.(x[1])
     @inbounds for i in 2:m
         nminds .&= .!ismissing.(x[i])
@@ -99,7 +99,7 @@ function _pairwise!(::Val{:listwise}, f, res::AbstractMatrix, x, y, symmetric::B
     # TODO: check whether wrapping views in a custom array type which asserts
     # that entries cannot be `missing` (similar to `skipmissing`)
     # could offer better performance
-    return _pairwise!(Val(:none), f, res,
+    return _pairwise!(Val(:none), f, dest,
                       [view(xi, nminds′) for xi in x],
                       [view(yi, nminds′) for yi in y],
                       symmetric)
@@ -135,27 +135,27 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
                                      Tuple{eltype(x′), eltype(y′)})
 
     if skipmissing === :none
-        res = Matrix{T}(undef, m, n)
+        dest = Matrix{T}(undef, m, n)
     elseif skipmissing in (:pairwise, :listwise)
-        res = Matrix{Tsm}(undef, m, n)
+        dest = Matrix{Tsm}(undef, m, n)
     else
         throw(ArgumentError("skipmissing must be one of :none, :pairwise or :listwise"))
     end
 
-    # Preserve inferred element type
-    isempty(res) && return res
+    # Pdesterve inferred element type
+    isempty(dest) && return dest
 
-    _pairwise!(f, res, x′, y′, symmetric=symmetric, skipmissing=skipmissing)
+    _pairwise!(f, dest, x′, y′, symmetric=symmetric, skipmissing=skipmissing)
 
-    # identity.(res) lets broadcasting compute a concrete element type
+    # identity.(dest) lets broadcasting compute a concrete element type
     # TODO: using promote_type rather than typejoin (which broadcast uses) would make sense
-    # Once identity.(res) is inferred automatically (JuliaLang/julia#30485),
+    # Once identity.(dest) is inferred automatically (JuliaLang/julia#30485),
     # the assertion can be removed
     @static if VERSION >= v"1.6.0-DEV"
         U = Base.Broadcast.promote_typejoin_union(Union{T, Tsm})
-        return (isconcretetype(eltype(res)) ? res : identity.(res))::Matrix{<:U}
+        return (isconcretetype(eltype(dest)) ? dest : identity.(dest))::Matrix{<:U}
     else
-        return (isconcretetype(eltype(res)) ? res : identity.(res))
+        return (isconcretetype(eltype(dest)) ? dest : identity.(dest))
     end
 end
 
