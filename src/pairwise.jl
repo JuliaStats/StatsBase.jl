@@ -185,6 +185,37 @@ in the presence `missing`, `NaN` or `Inf` entries.
   Use `:listwise` to skip entries with a `missing` value in any of the
   vectors in `x` or `y`; note that this might drop a large part of entries.
   Only allowed when entries in `x` and `y` are vectors.
+
+# Examples
+```jldoctest
+julia> dest = zeros(3, 3);
+
+julia> x = [1 3 7
+            2 5 6
+            3 8 4
+            4 6 2];
+
+julia> pairwise!(cor, dest, eachcol(x));
+
+julia> dest
+3×3 Matrix{Float64}:
+  1.0        0.744208  -0.989778
+  0.744208   1.0       -0.68605
+ -0.989778  -0.68605    1.0
+
+julia> y = [1 3 missing
+            2 5 6
+            3 missing 2
+            4 6 2];
+
+julia> pairwise!(cor, dest, eachcol(y), skipmissing=:pairwise);
+
+julia> dest
+3×3 Matrix{Float64}:
+  1.0        0.928571  -0.866025
+  0.928571   1.0       -1.0
+ -0.866025  -1.0        1.0
+```
 """
 function pairwise!(f, dest::AbstractMatrix, x, y=x;
                    symmetric::Bool=false, skipmissing::Symbol=:none)
@@ -235,6 +266,31 @@ in the presence `missing`, `NaN` or `Inf` entries.
   Use `:listwise` to skip entries with a `missing` value in any of the
   vectors in `x` or `y`; note that this might drop a large part of entries.
   Only allowed when entries in `x` and `y` are vectors.
+
+# Examples
+```jldoctest
+julia> x = [1 3 7
+            2 5 6
+            3 8 4
+            4 6 2];
+
+julia> pairwise(cor, eachcol(x))
+3×3 Matrix{Float64}:
+  1.0        0.744208  -0.989778
+  0.744208   1.0       -0.68605
+ -0.989778  -0.68605    1.0
+
+julia> y = [1 3 missing
+            2 5 6
+            3 missing 2
+            4 6 2];
+
+julia> pairwise(cor, eachcol(y), skipmissing=:pairwise)
+3×3 Matrix{Float64}:
+  1.0        0.928571  -0.866025
+  0.928571   1.0       -1.0
+ -0.866025  -1.0        1.0
+```
 """
 function pairwise(f, x, y=x; symmetric::Bool=false, skipmissing::Symbol=:none)
     if symmetric && x !== y
