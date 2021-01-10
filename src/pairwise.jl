@@ -1,6 +1,6 @@
 function _pairwise!(::Val{:none}, f, res::AbstractMatrix, x, y, symmetric::Bool)
     m, n = size(res)
-    for j in 1:n, i in 1:m
+    @inbounds for j in 1:n, i in 1:m
         symmetric && i > j && continue
 
         # For performance, diagonal is special-cased
@@ -12,7 +12,7 @@ function _pairwise!(::Val{:none}, f, res::AbstractMatrix, x, y, symmetric::Bool)
         end
     end
     if symmetric
-        for j in 1:n, i in (j+1):m
+        @inbounds for j in 1:n, i in (j+1):m
             res[i, j] = res[j, i]
         end
     end
@@ -21,9 +21,9 @@ end
 
 function _pairwise!(::Val{:pairwise}, f, res::AbstractMatrix, x, y, symmetric::Bool)
     m, n = size(res)
-    for j in 1:n
+    @inbounds for j in 1:n
         ynminds = .!ismissing.(y[j])
-        for i in 1:m
+        @inbounds for i in 1:m
             symmetric && i > j && continue
 
             if x[i] === y[j]
@@ -46,7 +46,7 @@ function _pairwise!(::Val{:pairwise}, f, res::AbstractMatrix, x, y, symmetric::B
         end
     end
     if symmetric
-        for j in 1:n, i in (j+1):m
+        @inbounds for j in 1:n, i in (j+1):m
             res[i, j] = res[j, i]
         end
     end
@@ -56,11 +56,11 @@ end
 function _pairwise!(::Val{:listwise}, f, res::AbstractMatrix, x, y, symmetric::Bool)
     m, n = size(res)
     nminds = .!ismissing.(x[1])
-    for i in 2:m
+    @inbounds for i in 2:m
         nminds .&= .!ismissing.(x[i])
     end
     if x !== y
-        for j in 1:n
+        @inbounds for j in 1:n
             nminds .&= .!ismissing.(y[j])
         end
     end
