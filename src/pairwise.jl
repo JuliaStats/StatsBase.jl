@@ -19,7 +19,35 @@ function _pairwise!(::Val{:none}, f, res::AbstractMatrix, x, y, symmetric::Bool)
     return res
 end
 
+function check_vectors(x, y, skipmissing::Symbol)
+    m = length(x)
+    n = length(y)
+    if !(all(xi -> xi isa AbstractVector, x) && all(yi -> yi isa AbstractVector, x))
+        throw(ArgumentError("All entries in x and y must be vectors " *
+                            "when skipmissing=:$skipmissing"))
+    end
+    if m > 1
+        indsx = keys(first(x))
+        for i in 2:m
+            keys(x[i]) == indsx ||
+                throw(ArgumentError("All input vectors must have the same indices"))
+        end
+    end
+    if n > 1
+        indsy = keys(first(y))
+        for j in 2:n
+            keys(y[j]) == indsy ||
+                throw(ArgumentError("All input vectors must have the same indices"))
+        end
+    end
+    if m > 1 && n > 1
+        indsx == indsy ||
+            throw(ArgumentError("All input vectors must have the same indices"))
+    end
+end
+
 function _pairwise!(::Val{:pairwise}, f, res::AbstractMatrix, x, y, symmetric::Bool)
+    check_vectors(x, y, :pairwise)
     m, n = size(res)
     @inbounds for j in 1:n
         ynminds = .!ismissing.(y[j])
@@ -54,6 +82,7 @@ function _pairwise!(::Val{:pairwise}, f, res::AbstractMatrix, x, y, symmetric::B
 end
 
 function _pairwise!(::Val{:listwise}, f, res::AbstractMatrix, x, y, symmetric::Bool)
+    check_vectors(x, y, :listwise)
     m, n = size(res)
     nminds = .!ismissing.(x[1])
     @inbounds for i in 2:m
@@ -86,25 +115,6 @@ function _pairwise!(f, dest::AbstractMatrix, x, y;
     y′ = y isa Union{AbstractArray, Tuple, NamedTuple} ? y : collect(y)
     m = length(x′)
     n = length(y′)
-
-    if m > 1
-        indsx = keys(first(x′))
-        for i in 2:m
-            keys(x′[i]) == indsx ||
-                throw(ArgumentError("All input vectors must have the same indices"))
-        end
-    end
-    if n > 1
-        indsy = keys(first(y′))
-        for j in 2:n
-            keys(y′[j]) == indsy ||
-                throw(ArgumentError("All input vectors must have the same indices"))
-        end
-    end
-    if m > 1 && n > 1
-        indsx == indsy ||
-            throw(ArgumentError("All input vectors must have the same indices"))
-    end
 
     size(dest) != (m, n) &&
         throw(DimensionMismatch("dest has dimensions $(size(dest)) but expected ($m, $n)"))
@@ -154,12 +164,12 @@ end
               symmetric::Bool=false, skipmissing::Symbol=:none)
 
 Store in matrix `dest` the result of applying `f` to all possible pairs
-of vectors in iterators `x` and `y`, and return it. Rows correspond to
-vectors in `x` and columns to vectors in `y`, and `dest` must therefore
+of entries in iterators `x` and `y`, and return it. Rows correspond to
+entries in `x` and columns to entries in `y`, and `dest` must therefore
 be of size `length(x) × length(y)`.
 If `y` is omitted then `x` is crossed with itself.
 
-As a special case, if `f` is `cor`, diagonal cells for which vectors
+As a special case, if `f` is `cor`, diagonal cells for which entries
 from `x` and `y` are identical (according to `===`) are set to one even
 in the presence `missing`, `NaN` or `Inf` entries.
 
@@ -169,11 +179,12 @@ in the presence `missing`, `NaN` or `Inf` entries.
   to fill the upper triangle. Only allowed when `y` is omitted.
   Defaults to `true` when `f` is `cor` or `cov`.
 - `skipmissing::Symbol=:none`: If `:none` (the default), missing values
-  in input vectors are passed to `f` without any modification.
+  in inputs are passed to `f` without any modification.
   Use `:pairwise` to skip entries with a `missing` value in either
   of the two vectors passed to `f` for a given pair of vectors in `x` and `y`.
   Use `:listwise` to skip entries with a `missing` value in any of the
   vectors in `x` or `y`; note that this might drop a large part of entries.
+  Only allowed when entries in `x` and `y` are vectors.
 """
 function pairwise!(f, dest::AbstractMatrix, x, y=x;
                    symmetric::Bool=false, skipmissing::Symbol=:none)
@@ -204,11 +215,11 @@ pairwise!(::typeof(cov), dest::AbstractMatrix, x;
              symmetric::Bool=false, skipmissing::Symbol=:none)
 
 Return a matrix holding the result of applying `f` to all possible pairs
-of vectors in iterators `x` and `y`. Rows correspond to
-vectors in `x` and columns to vectors in `y`. If `y` is omitted then a
+of entries in iterators `x` and `y`. Rows correspond to
+entries in `x` and columns to entries in `y`. If `y` is omitted then a
 square matrix crossing `x` with itself is returned.
 
-As a special case, if `f` is `cor`, diagonal cells for which vectors
+As a special case, if `f` is `cor`, diagonal cells for which entries
 from `x` and `y` are identical (according to `===`) are set to one even
 in the presence `missing`, `NaN` or `Inf` entries.
 
@@ -218,11 +229,12 @@ in the presence `missing`, `NaN` or `Inf` entries.
   to fill the upper triangle. Only allowed when `y` is omitted.
   Defaults to `true` when `f` is `cor` or `cov`.
 - `skipmissing::Symbol=:none`: If `:none` (the default), missing values
-  in input vectors are passed to `f` without any modification.
+  in inputs are passed to `f` without any modification.
   Use `:pairwise` to skip entries with a `missing` value in either
   of the two vectors passed to `f` for a given pair of vectors in `x` and `y`.
   Use `:listwise` to skip entries with a `missing` value in any of the
   vectors in `x` or `y`; note that this might drop a large part of entries.
+  Only allowed when entries in `x` and `y` are vectors.
 """
 function pairwise(f, x, y=x; symmetric::Bool=false, skipmissing::Symbol=:none)
     if symmetric && x !== y

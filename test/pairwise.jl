@@ -162,6 +162,20 @@ arbitrary_fun(x, y) = cor(x, y)
         @test pairwise(f, x) == pairwise(f, collect(x))
     end
 
+    @testset "non-vector entries" begin
+        x = (Iterators.map(exp, v) for v in [rand(10) for _ in 1:4])
+        y = (Iterators.map(exp, v) for v in [rand(10) for _ in 1:4])
+
+        @test pairwise((x, y) -> f(collect(x), collect(y)), x, y) ==
+            [f(collect(xi), collect(yi)) for xi in x, yi in y]
+        @test pairwise((x, y) -> f(collect(x), collect(y)), x) ==
+            [f(collect(xi1), collect(xi2)) for xi1 in x, xi2 in x]
+        @test_throws ArgumentError pairwise((x, y) -> f(collect(x), collect(y)), x, y,
+                                            skipmissing=:pairwise)
+        @test_throws ArgumentError pairwise((x, y) -> f(collect(x), collect(y)), x, y,
+                                            skipmissing=:listwise)
+    end
+
     @testset "two-argument method" begin
         x = [rand(10) for _ in 1:4]
         @test pairwise(f, x) == pairwise(f, x, x)
