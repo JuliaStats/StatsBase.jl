@@ -3,7 +3,7 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix, x, y, symmetric::Bool
         symmetric && i > j && continue
 
         # For performance, diagonal is special-cased
-        if f === cor && i == j && xi === yj
+        if f === cor && eltype(dest) !== Union{} && i == j && xi === yj
             # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
             dest[i, j] = float(cor(xi))
         else
@@ -56,11 +56,9 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::
             if xi === yj
                 ynm = view(yj, ynminds)
                 # For performance, diagonal is special-cased
-                if f === cor && i == j
-                    # If the type isn't concrete, 1 may not be converted to the right type
-                    # and the final matrix will have an abstract eltype
-                    # (missings and NaNs are ignored)
-                    dest[i, j] = isconcretetype(eltype(dest)) ? 1 : one(f(ynm, ynm))
+                if f === cor && eltype(dest) !== Union{} && i == j
+                    # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
+                    dest[i, j] = float(cor(xi))
                 else
                     dest[i, j] = f(ynm, ynm)
                 end
