@@ -22,7 +22,7 @@ end
 function check_vectors(x, y, skipmissing::Symbol)
     m = length(x)
     n = length(y)
-    if !(all(xi -> xi isa AbstractVector, x) && all(yi -> yi isa AbstractVector, x))
+    if !(all(xi -> xi isa AbstractVector, x) && all(yi -> yi isa AbstractVector, y))
         throw(ArgumentError("All entries in x and y must be vectors " *
                             "when skipmissing=:$skipmissing"))
     end

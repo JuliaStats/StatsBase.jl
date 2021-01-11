@@ -151,6 +151,12 @@ arbitrary_fun(x, y) = cor(x, y)
             @test_throws ArgumentError pairwise!(f, res, xm, ym, skipmissing=:pairwise)
             @test_throws ArgumentError pairwise!(f, res, xm, ym, skipmissing=:listwise)
         end
+
+        for sm in (:pairwise, :listwise)
+            @test_throws ArgumentError pairwise(f, [[1, 2]], [1], skipmissing=sm)
+            @test_throws ArgumentError pairwise(f, [1], [[1, 2]], skipmissing=sm)
+            @test_throws ArgumentError pairwise(f, [1], [1], skipmissing=sm)
+        end
     end
 
     @testset "iterators" begin
