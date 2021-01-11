@@ -188,6 +188,8 @@ in the presence `missing`, `NaN` or `Inf` entries.
 
 # Examples
 ```jldoctest
+julia> using StatsBase, Statistics
+
 julia> dest = zeros(3, 3);
 
 julia> x = [1 3 7
@@ -269,6 +271,8 @@ in the presence `missing`, `NaN` or `Inf` entries.
 
 # Examples
 ```jldoctest
+julia> using StatsBase, Statistics
+
 julia> x = [1 3 7
             2 5 6
             3 8 4
