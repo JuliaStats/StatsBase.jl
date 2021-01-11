@@ -140,20 +140,19 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
         throw(ArgumentError("skipmissing must be one of :none, :pairwise or :listwise"))
     end
 
-    # Pdesterve inferred element type
+    # Preserve inferred element type
     isempty(dest) && return dest
 
     _pairwise!(f, dest, x′, y′, symmetric=symmetric, skipmissing=skipmissing)
 
-    # identity.(dest) lets broadcasting compute a concrete element type
-    # TODO: using promote_type rather than typejoin (which broadcast uses) would make sense
-    # Once identity.(dest) is inferred automatically (JuliaLang/julia#30485),
-    # the assertion can be removed
-    @static if VERSION >= v"1.6.0-DEV"
-        U = Base.Broadcast.promote_typejoin_union(Union{T, Tsm})
-        return (isconcretetype(eltype(dest)) ? dest : identity.(dest))::Matrix{<:U}
+    if isconcretetype(eltype(dest))
+        return dest
     else
-        return (isconcretetype(eltype(dest)) ? dest : identity.(dest))
+        # Final eltype depends on actual contents (consistent with map and broadcast)
+        U = mapreduce(typeof, promote_type, dest)
+        # V is inferred (contrary to U), but it only gives an upper bound for U
+        V = promote_type(T, Tsm)
+        return convert(Matrix{U}, dest)::Matrix{<:V}
     end
 end
 

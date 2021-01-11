@@ -29,14 +29,13 @@ arbitrary_fun(x, y) = cor(x, y)
         @test res == res2 == [f(yi, zi) for yi in y, zi in z]
 
         res = pairwise(f, Any[[1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]])
-        @test res isa Matrix{AbstractFloat}
+        @test res isa Matrix{Float64}
         res2 = zeros(AbstractFloat, size(res))
         @test pairwise!(f, res2, Any[[1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]]) === res2
         @test res == res2 ==
             [f(xi, yi) for xi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]),
                            yi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0])]
-        @test typeof.(res) == typeof.(res2) == [Float64 Float64
-                                                Float64 Float32]
+        @test res isa Matrix{Float64}
 
         @inferred pairwise(f, x, y)
 
