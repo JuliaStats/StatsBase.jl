@@ -231,21 +231,25 @@ arbitrary_fun(x, y) = cor(x, y)
         @test res isa Matrix{Union{Float64, Missing}}
         @test res ≅ [1.0 missing
                      missing 1.0]
-        # except when eltype is Missing
-        res = pairwise(cor, [[missing, missing, missing],
-                             [missing, missing, missing]])
-        @test res isa Matrix{Missing}
-        @test res ≅ [missing missing
-                     missing missing]
+        if VERSION >= v"1.5"
+            # except when eltype is Missing
+            res = pairwise(cor, [[missing, missing, missing],
+                                 [missing, missing, missing]])
+            @test res isa Matrix{Missing}
+            @test res ≅ [missing missing
+                         missing missing]
+        end
 
         for sm in (:pairwise, :listwise)
             res = pairwise(cor, [[1, 2, NaN, 4], [1, 5, 5, missing]], skipmissing=sm)
             @test res isa Matrix{Float64}
             @test res ≅ [1.0 NaN
                          NaN 1.0]
-            @test_throws ArgumentError pairwise(cor, [[missing, missing, missing],
-                                                      [missing, missing, missing]],
-                                                skipmissing=sm)
+            if VERSION >= v"1.5"
+                @test_throws ArgumentError pairwise(cor, [[missing, missing, missing],
+                                                          [missing, missing, missing]],
+                                                    skipmissing=sm)
+            end
         end
     end
 end
