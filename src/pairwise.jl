@@ -226,20 +226,6 @@ function pairwise!(f, dest::AbstractMatrix, x, y=x;
     return _pairwise!(f, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
 end
 
-# cov(x) is faster than cov(x, x)
-pairwise!(::typeof(cov), dest::AbstractMatrix, x, y;
-          symmetric::Bool=false, skipmissing::Symbol=:none) =
-    pairwise!((x, y) -> x === y ? cov(x) : cov(x, y), dest, x, y,
-              symmetric=symmetric, skipmissing=skipmissing)
-
-pairwise!(::typeof(cor), dest::AbstractMatrix, x;
-          symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise!(cor, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
-
-pairwise!(::typeof(cov), dest::AbstractMatrix, x;
-         symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise!(cov, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
-
 """
     pairwise(f, x[, y];
              symmetric::Bool=false, skipmissing::Symbol=:none)
@@ -303,12 +289,25 @@ function pairwise(f, x, y=x; symmetric::Bool=false, skipmissing::Symbol=:none)
 end
 
 # cov(x) is faster than cov(x, x)
+_cov(x, y) = x === y ? cov(x) : cov(x, y)
+
+pairwise!(::typeof(cov), dest::AbstractMatrix, x, y;
+          symmetric::Bool=false, skipmissing::Symbol=:none) =
+    pairwise!(_cov, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
+
 pairwise(::typeof(cov), x, y; symmetric::Bool=false, skipmissing::Symbol=:none) =
-    pairwise((x, y) -> x === y ? cov(x) : cov(x, y), x, y,
-             symmetric=symmetric, skipmissing=skipmissing)
+    pairwise(_cov, x, y, symmetric=symmetric, skipmissing=skipmissing)
+
+pairwise!(::typeof(cov), dest::AbstractMatrix, x;
+         symmetric::Bool=true, skipmissing::Symbol=:none) =
+    pairwise!(_cov, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
+
+pairwise(::typeof(cov), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
+    pairwise(_cov, x, x, symmetric=symmetric, skipmissing=skipmissing)
+
+pairwise!(::typeof(cor), dest::AbstractMatrix, x;
+          symmetric::Bool=true, skipmissing::Symbol=:none) =
+    pairwise!(cor, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
 
 pairwise(::typeof(cor), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
     pairwise(cor, x, x, symmetric=symmetric, skipmissing=skipmissing)
-
-pairwise(::typeof(cov), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise(cov, x, x, symmetric=symmetric, skipmissing=skipmissing)
