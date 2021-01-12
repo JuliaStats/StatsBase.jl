@@ -660,7 +660,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     R = typeof(m)
     n = length(a)
     ns = length(s)
-    qs = if m == 0 || n == 0
+    qs = if n == 0
         R[NaN, NaN, NaN, NaN, NaN]
     elseif T >: Missing
         quantile!(s, [0.00, 0.25, 0.50, 0.75, 1.00])
