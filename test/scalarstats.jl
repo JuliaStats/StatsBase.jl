@@ -217,3 +217,31 @@ s = summarystats(1:5)
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
+
+# Issue #631
+s = summarystats([-2, -1, 0, 1, 2, missing])
+@test isa(s, StatsBase.SummaryStats)
+@test s.min == -2.0
+@test s.max == 2.0
+@test s.mean   ≈ 0.0
+@test s.median ≈ 0.0
+@test s.q25    ≈ -1.0
+@test s.q75    ≈ +1.0
+
+# Issue #631
+s = summarystats(zeros(10))
+@test isa(s, StatsBase.SummaryStats)
+@test s.min == 0.0
+@test s.max == 0.0
+@test s.mean   ≈ 0.0
+@test s.median ≈ 0.0
+@test s.q25    ≈ 0.0
+@test s.q75    ≈ 0.0
+
+# Issue #631
+s = summarystats(Union{Float64,Missing}[missing, missing])
+@test isa(s, StatsBase.SummaryStats)
+@test s.nobs == 2
+@test s.nmiss == 2
+@test isnan(s.mean)
+@test isnan(s.median)
