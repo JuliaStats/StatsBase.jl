@@ -26,6 +26,8 @@ c22 = corspearman(x2, x2)
 
 # corkendall
 
+@test_throws ErrorException("Vectors must have same length") corkendall([1,2,3,4],[1,2,3])
+
 @test corkendall(x1, y) == -1 / sqrt(90)
 @test corkendall(x2, y) == -1 / sqrt(72)
 @test corkendall(X, y) == [-1 / sqrt(90), -1 / sqrt(72)]
