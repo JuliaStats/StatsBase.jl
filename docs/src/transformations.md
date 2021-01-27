@@ -3,37 +3,44 @@
 In general, data transformations change raw feature vectors into
 a representation that is more suitable for various estimators.
 
-## Standardization
+## Standardization a.k.a Z-score Normalization
 
-**Standardization** of dataset is a common requirement for many machine
-learning techniques. These techniques might perform poorly if the individual
-features do not more or less look like standard normally distributed data.
+**Standardization**, also known as Z-score normalization, is a common requirement
+for many machine learning techniques. These techniques might perform poorly
+if the individual features do not more or less look like standard normally
+distributed data.
 
 Standardization transforms data points into corresponding standard scores
-by removing mean and scaling to unit variance.
+by subtracting mean and scaling to unit variance.
 
-The **standard score** is the signed number of standard deviations by which
-the value of an observation or data point is above the mean value of what
-is being observed or measured.
+The **standard score**, also known as Z-score, is the signed number of
+standard deviations by which the value of an observation or data point
+is above the mean value of what is being observed or measured.
 
-Standardization can be performed using `fit(ZScoreTransform, ...)`.
+Standardization can be performed using `t = fit(ZScoreTransform, ...)`
+followed by `StatsBase.transform(t, ...)` or `StatsBase.transform!(t, ...)`.
+`standardize(ZScoreTransform, ...)` is a shorthand to perform both operations
+in a single call.
 
 ```@docs
 fit(::Type{ZScoreTransform}, X::AbstractArray{<:Real,2}; center::Bool=true, scale::Bool=true)
 ```
 
-## Unit range normalization
+## Unit Range Normalization
 
-**Unit range normalization** is an alternative data transformation which scales features
-to lie in the interval `[0; 1]`.
+**Unit range normalization**, also known as min-max scaling, is an alternative
+data transformation which scales features to lie in the interval `[0; 1]`.
 
-Unit range normalization can be performed using `fit(UnitRangeTransform, ...)`.
+Unit range normalization can be performed using `t = fit(UnitRangeTransform, ...)`
+followed by `StatsBase.transform(t, ...)` or `StatsBase.transform!(t, ...)`.
+`standardize(UnitRangeTransform, ...)` is a shorthand to perform both operations
+in a single call.
 
 ```@docs
 fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,2}; unit::Bool=true)
 ```
 
-## Additional methods
+## Additional Methods
 ```@docs
 StatsBase.transform
 StatsBase.transform!
