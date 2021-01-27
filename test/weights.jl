@@ -239,6 +239,7 @@ a = reshape(1.0:27.0, 3, 3, 3)
 @testset "Sum $f" for f in weight_funcs
     @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
+    @test sum([1 + 2im, 2 + 3im], f([1.0, 0.5])) ≈ 2 + 3.5im
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
         @test sum(a, f(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
@@ -250,6 +251,7 @@ end
 @testset "Mean $f" for f in weight_funcs
     @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
     @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
+    @test mean([1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ 2 + 3im
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
         @test mean(a, f(wt), dims=1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)/sum(wt)
