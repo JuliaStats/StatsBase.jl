@@ -26,8 +26,6 @@ c22 = corspearman(x2, x2)
 
 # corkendall
 
-# corkendall
-
 @test corkendall(x1, y) == -1 / sqrt(90)
 @test corkendall(x2, y) == -1 / sqrt(72)
 @test corkendall(X, y) == [-1 / sqrt(90), -1 / sqrt(72)]
@@ -84,4 +82,3 @@ w = repeat(z, n)
 @test corkendall(w, w)   == [1 0 1 / 3; 0 1 0;1 / 3 0 1]
 @test corkendall(w[:,1], w) == [1 0 1 / 3]
 @test corkendall(w, w[:,1]) == [1;0;1 / 3]
-
