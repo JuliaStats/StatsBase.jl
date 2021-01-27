@@ -39,7 +39,7 @@ corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, dims=1); cor(Z, Z))
 function corkendall!(x::RealVector, y::RealVector, permx=sortperm(x))
     if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
-    if n ≠ length(y) error("Vectors must have same length") end
+    if n != length(y) error("Vectors must have same length") end
 
     # Initial sorting
     x[:] = x[permx]
@@ -49,7 +49,7 @@ function corkendall!(x::RealVector, y::RealVector, permx=sortperm(x))
     # ntiesx, ntiesy, ndoubleties are floats to avoid overflows on 32bit
     ntiesx, ntiesy, ndoubleties, k, nswaps = 0.0, 0.0, 0.0, 0, 0
 
-    @inbounds for i ∈ 2:n
+    @inbounds for i = 2:n
         if x[i - 1] == x[i]
             k += 1
         elseif k > 0
@@ -84,7 +84,7 @@ function countties(x::AbstractVector, lo::Integer, hi::Integer)
     # avoid overflows on 32 bit by using floats
     thistiecount, result = 0.0, 0.0
     (lo < 1 || hi > length(x)) && error("Bounds error")
-    @inbounds for i ∈ (lo + 1):hi
+    @inbounds for i = (lo + 1):hi
         if x[i] == x[i - 1]
             thistiecount += 1.0
         elseif thistiecount > 0
@@ -114,9 +114,9 @@ corkendall(x::RealVector, Y::RealMatrix) = (n = size(Y, 2); permx = sortperm(x);
 function corkendall(X::RealMatrix)
     n = size(X, 2)
     C = ones(float(eltype(X)), n, n)# avoids dependency on LinearAlgebra
-    @inbounds for j ∈ 2:n
+    @inbounds for j = 2:n
         permx = sortperm(X[:,j])
-        for i ∈ 1:j - 1
+        for i = 1:j - 1
             C[j,i] = corkendall!(X[:,j], X[:,i], permx)
             C[i,j] = C[j,i]
         end
@@ -128,9 +128,9 @@ function corkendall(X::RealMatrix, Y::RealMatrix)
     nr = size(X, 2)
     nc = size(Y, 2)
     C = zeros(float(eltype(X)), nr, nc)
-    @inbounds for j ∈ 1:nr
+    @inbounds for j = 1:nr
         permx = sortperm(X[:,j])
-        for i ∈ 1:nc
+        for i = 1:nc
             C[j,i] = corkendall!(X[:,j], Y[:,i], permx)
         end
     end
