@@ -36,7 +36,7 @@ corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, dims=1); cor(Z, Z))
 # Knight, William R. “A Computer Method for Calculating Kendall's Tau with Ungrouped Data.”
 # Journal of the American Statistical Association, vol. 61, no. 314, 1966, pp. 436–439.
 # JSTOR, www.jstor.org/stable/2282833.
-function corkendall!(x::RealVector, y::RealVector, permx=sortperm(x))
+function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integer}=sortperm(x))
     if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
