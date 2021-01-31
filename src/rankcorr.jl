@@ -42,8 +42,8 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
     if n != length(y) error("Vectors must have same length") end
 
     # Initial sorting
-    x[:] = x[permx]
-    y[:] = y[permx]
+    permute!(x, permx)
+    permute!(y, permx)
 
     npairs = float(n) * (n - 1) / 2
     # ntiesx, ntiesy, ndoubleties are floats to avoid overflows on 32bit
