@@ -44,10 +44,11 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
     # Initial sorting
     permute!(x, permx)
     permute!(y, permx)
-
-    npairs = float(n) * (n - 1) / 2
-    # ntiesx, ntiesy, ndoubleties are floats to avoid overflows on 32bit
-    ntiesx, ntiesy, ndoubleties, k, nswaps = widen(0), widen(0), widen(0), widen(0), widen(0)
+    
+    # Use widen to avoid overflows on both 32bit and 64bit
+    npairs = widen(n) * (n - 1) / 2
+    ntiesx, ntiesy, ndoubleties, nswaps = widen(0), widen(0), widen(0), widen(0)
+    k = 0
 
     @inbounds for i = 2:n
         if x[i - 1] == x[i]
@@ -81,7 +82,7 @@ end
 Return the number of ties within `x[lo:hi]`. Assumes `x` is sorted. 
 """
 function countties(x::AbstractVector, lo::Integer, hi::Integer)
-    # avoid overflows on both 32 & 64 bit by using widen
+    # Use widen to avoid overflows on both 32bit and 64bit
     thistiecount, result = widen(0), widen(0)
     (lo < 1 || hi > length(x)) && error("Bounds error")
     @inbounds for i = (lo + 1):hi
@@ -113,7 +114,7 @@ corkendall(x::RealVector, Y::RealMatrix) = (n = size(Y, 2); permx = sortperm(x);
 
 function corkendall(X::RealMatrix)
     n = size(X, 2)
-    C = ones(float(eltype(X)), n, n)# avoids dependency on LinearAlgebra
+    C = ones(float(eltype(X)), n, n)# Avoids dependency on LinearAlgebra
     @inbounds for j = 2:n
         permx = sortperm(X[:,j])
         for i = 1:j - 1
@@ -152,8 +153,8 @@ This method is a copy-paste-edit of sort! in base/sort.jl (the method specialise
 but amended to return the bubblesort distance.
 """
 function msort!(v::AbstractVector, lo::Integer, hi::Integer, t=similar(v, 0))
-    # avoid overflow errors (if length(v)> 2^16) on 32 bit by using float
-    nswaps = 0.0
+    # Avoid overflow errors by using widen.
+    nswaps = widen(0)
     @inbounds if lo < hi
         hi - lo <= SMALL_THRESHOLD && return isort!(v, lo, hi)
 
