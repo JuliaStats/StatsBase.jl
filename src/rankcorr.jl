@@ -78,7 +78,7 @@ end
 """
     countties(x::RealVector, lo::Integer, hi::Integer)
 
-Assumes `x` is sorted. Returns the number of ties within `x[lo:hi]`.
+Return the number of ties within `x[lo:hi]`. Assumes `x` is sorted. 
 """
 function countties(x::AbstractVector, lo::Integer, hi::Integer)
     # avoid overflows on 32 bit by using floats
