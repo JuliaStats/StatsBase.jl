@@ -76,7 +76,7 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
 end
 
 """
-    countties(x::RealVector,lo::Int64,hi::Int64)
+    countties(x::RealVector, lo::Integer, hi::Integer)
 
 Assumes `x` is sorted. Returns the number of ties within `x[lo:hi]`.
 """
