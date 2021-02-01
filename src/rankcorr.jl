@@ -133,8 +133,7 @@ Return the number of ties within `x[lo:hi]`. Assumes `x` is sorted.
 function countties(x::AbstractVector, lo::Integer, hi::Integer)
     # Use of widen below prevents possible overflow errors when
     # length(x) exceeds 2^16 (32 bit) or 2^32 (64 bit)
-    w0 = widen(0)
-    thistiecount, result = w0, w0
+    thistiecount = result = widen(0)
     checkbounds(x, lo:hi)
     @inbounds for i = (lo + 1):hi
         if x[i] == x[i - 1]
