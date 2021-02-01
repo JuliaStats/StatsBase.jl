@@ -23,45 +23,60 @@ c22 = corspearman(x2, x2)
 @test corspearman(X, X) ≈ [c11 c12; c12 c22]
 @test corspearman(X)    ≈ [c11 c12; c12 c22]
 
-
 # corkendall
 
+#Check error, handling of NaN, Inf etc
 @test_throws ErrorException("Vectors must have same length") corkendall([1,2,3,4], [1,2,3])
 @test isnan(corkendall([1,2], [3,NaN]))
 @test isnan(corkendall([1,1,1], [1,2,3]))
+@test corkendall([-Inf,-0.0,Inf],[1,2,3]) == 1.0
 
+#Test, with exact equality, some known results. 
+#RealVector,RealVector
 @test corkendall(x1, y) == -1/sqrt(90)
 @test corkendall(x2, y) == -1/sqrt(72)
+#RealMatrix,RealVector
 @test corkendall(X, y)  == [-1/sqrt(90), -1/sqrt(72)]
+#RealVector, RealMatrix
 @test corkendall(y, X)  == [-1/sqrt(90) -1/sqrt(72)]
 
-n = 100_000
+#n = 78_000 tests for overflow errors on 32 bit. Testing for overflow errors on 64bit would require n be too large for practicality
+#This also tests merge_sort! since n is (much) greater than SMALL_THRESHOLD.
+n = 78_000
+#Test with many repeats
 @test corkendall(repeat(x1, n), repeat(y, n)) ≈ -1/sqrt(90)
 @test corkendall(repeat(x2, n), repeat(y, n)) ≈ -1/sqrt(72)
 @test corkendall(repeat(X, n), repeat(y, n))  ≈ [-1/sqrt(90), -1/sqrt(72)]
 @test corkendall(repeat(y, n), repeat(X, n))  ≈ [-1/sqrt(90) -1/sqrt(72)]
+@test corkendall(repeat([0,1,1,0], n), repeat([1,0,1,0], n)) == 0.0
+
+#Test with no repeats, note testing for exact equality
+@test corkendall(collect(1:n), collect(1:n))          == 1.0
+@test corkendall(collect(1:n), reverse(collect(1:n))) == -1.0
+
+#All elements identical should yield NaN
+@test isnan(corkendall(repeat([1], n), collect(1:n)))
 
 c11 = corkendall(x1, x1)
 c12 = corkendall(x1, x2)
 c22 = corkendall(x2, x2)
 
+#RealMatrix,RealMatrix
+@test corkendall(X, X) ≈ [c11 c12; c12 c22]
+#RealMatrix
+@test corkendall(X)    ≈ [c11 c12; c12 c22]
+
 @test c11 == 1.0
 @test c22 == 1.0
 @test c12 == 3/sqrt(20)
 
-@test corkendall(X, X) ≈ [c11 c12; c12 c22]
-@test corkendall(X)    ≈ [c11 c12; c12 c22]
+#Finished testing for overflow, so redefine n for speedier tests
+n = 100
 
 @test corkendall(repeat(X, n), repeat(X, n)) ≈ [c11 c12; c12 c22]
 @test corkendall(repeat(X, n))               ≈ [c11 c12; c12 c22]
 
-@test corkendall(collect(1:n), collect(1:n))          == 1.0
-@test corkendall(collect(1:n), reverse(collect(1:n))) == -1.0
-
-@test isnan(corkendall(repeat([1], n), collect(1:n)))
-
-@test corkendall(repeat([0,1,1,0], n), repeat([1,0,1,0], n)) == 0.0
-
+#All eight three-element permutations
 z = [1  1  1;
      1  1  2;
      1  2  2;
