@@ -64,7 +64,7 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
         end
     end
     if k > 0
-        sort!(view(y, ((n - k):n)))
+        sort!(view(y, (n - k):n))
         ntiesx += div(widen(k) * (k + 1), 2)
         ndoubleties += countties(y,  n - k, n)
     end
