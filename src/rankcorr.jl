@@ -57,7 +57,7 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
             # Sort the corresponding chunk of y, so the rows of hcat(x,y) are 
             # sorted first on x, then (where x values are tied) on y. Hence 
             # double ties can be counted by calling countties.
-            sort!(view(y, (i - k - 1):(i - 1)))  # Can't use wide integers here
+            sort!(view(y, (i - k - 1):(i - 1)))
             ntiesx += div(widen(k) * (k + 1), 2) # Must use wide integers here
             ndoubleties += countties(y,  i - k - 1, i - 1)
             k = 0
