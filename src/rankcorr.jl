@@ -158,12 +158,12 @@ const SMALL_THRESHOLD = 64
 # merge_sort! copied from Julia Base
 # (commit 28330a2fef4d9d149ba0fd3ffa06347b50067647, dated 20 Sep 2020)
 """
-    merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t=similar(v, 0))    
+    merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t::AbstractVector=similar(v, 0))    
 
 Mutates `v` by sorting elements `x[lo:hi]` using the merge sort algorithm. 
 This method is a copy-paste-edit of sort! in base/sort.jl, amended to return the bubblesort distance.
 """
-function merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t=similar(v, 0))
+function merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t::AbstractVector=similar(v, 0))
     # Use of widen below prevents possible overflow errors when
     # length(v) exceeds 2^16 (32 bit) or 2^32 (64 bit)
     nswaps = widen(0)
