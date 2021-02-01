@@ -99,7 +99,7 @@ end
 
 function corkendall(X::RealMatrix)
     n = size(X, 2)
-    C = Matrix{float(eltype(X))}(I, n, n)
+    C = Matrix{Float64}(I, n, n)
     for j = 2:n
         permx = sortperm(X[:,j])
         for i = 1:j - 1
@@ -113,7 +113,7 @@ end
 function corkendall(X::RealMatrix, Y::RealMatrix)
     nr = size(X, 2)
     nc = size(Y, 2)
-    C = Matrix{float(eltype(X))}(undef, nr, nc)
+    C = Matrix{Float64}(undef, nr, nc)
     for j = 1:nr
         permx = sortperm(X[:,j])
         for i = 1:nc
@@ -140,7 +140,7 @@ function countties(x::AbstractVector, lo::Integer, hi::Integer)
             thistiecount += 1
         elseif thistiecount > 0
             result += div(thistiecount * (thistiecount + 1), 2)
-            thistiecount = w0
+            thistiecount = widen(0)
         end
     end
 
