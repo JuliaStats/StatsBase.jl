@@ -47,7 +47,7 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
     
     # Use widen to avoid overflows on both 32bit and 64bit
     npairs = div(widen(n) * (n - 1), 2)
-    ntiesx, ndoubleties, nswaps = widen(0), widen(0), widen(0)
+    ntiesx = ndoubleties = nswaps = widen(0)
     k = 0
 
     @inbounds for i = 2:n
