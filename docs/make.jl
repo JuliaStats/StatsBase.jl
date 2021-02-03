@@ -27,5 +27,6 @@ makedocs(
 )
 
 deploydocs(
-    repo = "github.com/JuliaStats/StatsBase.jl.git"
+    repo = "github.com/JuliaStats/StatsBase.jl.git",
+    push_preview = true
 )
