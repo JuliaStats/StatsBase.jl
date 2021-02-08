@@ -1,13 +1,13 @@
 # Rank-based correlations
-# 
+#
 # - Spearman's correlation
 # - Kendall's correlation
-# 
+#
 
 #######################################
-# 
+#
 #   Spearman correlation
-# 
+#
 #######################################
 
 """
