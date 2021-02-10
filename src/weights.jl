@@ -357,8 +357,9 @@ Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
 Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
 """
-wsum(v::AbstractVector, w::AbstractVector) = dot(w, v)
-wsum(v::AbstractArray, w::AbstractVector) = dot(w, vec(v))
+wsum(v::AbstractVector, w::AbstractVector) = sum(Base.Broadcast.instantiate(Base.Broadcast.Broadcasted(*, (v, w))))
+wsum(v::AbstractVector{<:Number}, w::AbstractVector{<:Number}) = dot(w, v)
+wsum(v::AbstractArray{<:Number}, w::AbstractVector{<:Number}) = dot(w, vec(v))
 wsum(v::AbstractArray, w::AbstractVector, dims::Colon) = wsum(v, w)
 
 ## wsum along dimension
