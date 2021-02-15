@@ -134,6 +134,9 @@ for f in (corspearman, corkendall)
      end
      @test isequal(f(Xnan, Ynan),
                    [f(Xnan[:,i], Ynan[:,j]) for i in axes(Xnan, 2), j in axes(Ynan, 2)])
+     @test isequal(f(Xnan),
+                   [i == j ? 1.0 : f(Xnan[:,i], Xnan[:,j])
+                    for i in axes(Xnan, 2), j in axes(Xnan, 2)])
 end
 
 
