@@ -174,8 +174,9 @@ matrices or vectors.
 corkendall(x::RealVector, y::RealVector) = corkendall!(copy(x), copy(y))
 
 function corkendall(X::RealMatrix, y::RealVector)
+    n = size(X, 2)
     permy = sortperm(y)
-    return([corkendall!(copy(y), X[:,i], permy) for i in 1:size(X, 2)])
+    return(reshape([corkendall!(copy(y), X[:,i], permy) for i in 1:n], n, 1))
 end
 
 function corkendall(x::RealVector, Y::RealMatrix)

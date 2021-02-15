@@ -40,7 +40,7 @@ c22 = corspearman(x2, x2)
 @test corkendall(x1, y) == -1/sqrt(90)
 @test corkendall(x2, y) == -1/sqrt(72)
 # RealMatrix, RealVector
-@test corkendall(X, y)  == [-1/sqrt(90), -1/sqrt(72)]
+@test corkendall(X, y)  == [-1/sqrt(90) -1/sqrt(72)]'
 # RealVector, RealMatrix
 @test corkendall(y, X)  == [-1/sqrt(90) -1/sqrt(72)]
 
@@ -94,19 +94,19 @@ z = [1  1  1;
 @test corkendall(z)         == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z, z)      == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z[:,1], z) == [1 0 1/3]
-@test corkendall(z, z[:,1]) == [1; 0; 1/3]
+@test corkendall(z, z[:,1]) == [1 0 1/3]'
 
 z = float(z)
 @test corkendall(z)         == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z, z)      == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z[:,1], z) == [1 0 1/3]
-@test corkendall(z, z[:,1]) == [1; 0; 1/3]
+@test corkendall(z, z[:,1]) == [1 0 1/3]'
 
 w = repeat(z, n)
 @test corkendall(w)         == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(w, w)      == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(w[:,1], w) == [1 0 1/3]
-@test corkendall(w, w[:,1]) == [1; 0; 1/3]
+@test corkendall(w, w[:,1]) == [1 0 1/3]'
 
 StatsBase.midpoint(1,10)        == 5
 StatsBase.midpoint(1,widen(10)) == 5
@@ -126,12 +126,19 @@ for f in (corspearman, corkendall)
      @test isequal(f([1 NaN; NaN 4]), [1 NaN; NaN 1])
      @test all(isnan, f([1 NaN; NaN 4], [1 NaN; NaN 4]))
      @test all(isnan, f([1 NaN; NaN 4], [NaN 1; NaN 4]))
+     for k in 1:2
+          @test isequal(f(Xnan[:,k], Ynan),
+                        [f(Xnan[:,k], Ynan[:,j]) for i in 1:1, j in axes(Ynan, 2)])
+          @test isequal(f(Xnan, Ynan[:,k]),
+                        [f(Xnan[:,i], Ynan[:,k]) for i in axes(Xnan, 2), j in 1:1])
+     end
      @test isequal(f(Xnan, Ynan),
                    [f(Xnan[:,i], Ynan[:,j]) for i in axes(Xnan, 2), j in axes(Ynan, 2)])
 end
 
 
 # Wrong dimensions
+
 for f in (corspearman, corkendall)
      @test_throws DimensionMismatch f([1], [1, 2])
      @test_throws DimensionMismatch f([1], [1 2; 3 4])
