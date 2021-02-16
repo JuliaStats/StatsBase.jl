@@ -132,6 +132,13 @@ deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
 cov2cor(C::AbstractMatrix, s::AbstractArray) = cov2cor!(copy(C), s)
 
 """
+     cov2cor(C)
+
+ Compute the correlation matrix from the covariance matrix `C`. Use `StatsBase.cov2cor!` for an in-place version.
+ """
+ cov2cor(C::AbstractMatrix) = cov2cor!(copy(C))
+
+"""
     cor2cov(C, s)
 
 Compute the covariance matrix from the correlation matrix `C` and a vector of standard
