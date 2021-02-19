@@ -122,8 +122,6 @@ weight_funcs = (weights, aweights, fweights, pweights)
             @testset "cov2cor" begin
                 @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
                 @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                @test cov2cor(cov(X, dims = 1)) ≈ cor(X, dims = 1)
-                @test cov2cor(cov(X, dims = 2)) ≈ cor(X, dims = 2)
                 @test cov2cor(cov1, std1) ≈ cor1
                 @test cov2cor(cov2, std2) ≈ cor2
                 @test cov2cor(cov1) ≈ cor1
