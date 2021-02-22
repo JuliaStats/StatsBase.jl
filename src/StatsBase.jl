@@ -39,10 +39,6 @@ export
     uweights,           # construct an UnitWeights vector
     wsum,               # weighted sum with vector as second argument
     wsum!,              # weighted sum across dimensions with provided storage
-    wmean,              # weighted mean
-    wmean!,             # weighted mean across dimensions with provided storage
-    wmedian,            # weighted median
-    wquantile,          # weighted quantile
 
     ## moments
     skewness,       # (standardized) skewness
