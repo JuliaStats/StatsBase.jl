@@ -126,7 +126,7 @@ end
 function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integer}=sortperm(x))
     if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
-    n == length(y) || throw(DimensionMismatch("vectors must have same length"))
+    if n != length(y) error("Vectors must have same length") end
 
     # Initial sorting
     permute!(x, permx)
@@ -174,9 +174,8 @@ matrices or vectors.
 corkendall(x::RealVector, y::RealVector) = corkendall!(copy(x), copy(y))
 
 function corkendall(X::RealMatrix, y::RealVector)
-    n = size(X, 2)
     permy = sortperm(y)
-    return(reshape([corkendall!(copy(y), X[:,i], permy) for i in 1:n], n, 1))
+    return([corkendall!(copy(y), X[:,i], permy) for i in 1:size(X, 2)])
 end
 
 function corkendall(x::RealVector, Y::RealMatrix)
