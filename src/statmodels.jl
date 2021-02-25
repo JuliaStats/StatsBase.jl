@@ -277,7 +277,7 @@ Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
-`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``. 
+`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``.
 In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept), ``D`` is the deviance of the model,
 ``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
@@ -319,7 +319,7 @@ response(model::RegressionModel) = error("response is not defined for $(typeof(m
 
 """
     responsename(model::RegressionModel)
-    
+
 Return the name of the model response (a.k.a. the dependent variable).
 """
 responsename(model::RegressionModel) = error("responsename is not defined for $(typeof(model)).")
@@ -516,6 +516,56 @@ function show(io::IO, ct::CoefTable)
         i != size(mat, 1) && println(io)
     end
     print(io, '\n', repeat('─', totwidth))
+    nothing
+end
+
+function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
+    cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
+    nc = length(cols)
+    nr = length(cols[1])
+    if length(rownms) == 0
+        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
+    end
+    mat = [j == 1 ? NoQuote(rownms[i]) :
+           j-1 == ct.pvalcol ? PValue(cols[j-1][i]) :
+           j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
+           cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
+           for i in 1:nr, j in 1:nc+1]
+    # Code inspired by print_matrix in Base
+    io = IOContext(io, :compact=>true, :limit=>false)
+    A = Base.alignment(io, mat, 1:size(mat, 1), 1:size(mat, 2),
+                       typemax(Int), typemax(Int), 3)
+    nmswidths = pushfirst!(length.(colnms), 0)
+    A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
+         for i in 1:length(A)]
+    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
+
+    #   is non breaking space, which means
+    # that we can use the padding logic from the plaintext show method
+    # and get markdown that looks as nice visually as it will render
+    # note that we use left-alignment for all columns besides the stats
+    # because Markdown doesn't have a native "align on decimal"
+
+    print(io, "|", " "^sum(A[1]))
+    for j in 1:length(colnms)
+        print(io, "  |", lpad(colnms[j], sum(A[j+1])))
+    end
+
+    println(io, "  |")
+    print(io, "|",rpad(":", sum(A[1])+2,'-'))
+    for j in 1:length(colnms)
+        _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
+        print(io, "|", _pad(":", sum(A[j+1])+2,'-'))
+    end
+    println(io, "|")
+
+    for i in 1:size(mat, 1)
+        print(io, "| ")
+        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), " | ")
+        print(io, " |")
+        i != size(mat, 1) && println(io)
+    end
+
     nothing
 end
 
