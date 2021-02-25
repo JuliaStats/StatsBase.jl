@@ -13,9 +13,7 @@ function _check_randparams(rks, x, p)
 end
 
 # ranking helper function: calls sortperm(x) and then ranking method f!
-function _rank(f!, x::AbstractArray{T}, R::Type=Int; sortkwargs...) where {T}
-    any(v -> v isa Number && isnan(v), x) &&
-        throw(ArgumentError("ranks not defined in the presence of NaN"))
+function _rank(f!, x::AbstractArray, R::Type=Int; sortkwargs...)
     rks = similar(x, R)
     ord = reshape(sortperm(vec(x); sortkwargs...), size(x))
     return f!(rks, x, ord)
@@ -23,8 +21,6 @@ end
 
 # ranking helper function for arrays with missing values
 function _rank(f!, x::AbstractArray{>: Missing}, R::Type=Int; sortkwargs...)
-    any(v -> v isa Number && isnan(v), x) &&
-        throw(ArgumentError("ranks not defined in the presence of NaN"))
     inds = findall(!ismissing, vec(x))
     isempty(inds) && return missings(R, size(x))
     xv = disallowmissing(view(vec(x), inds))
