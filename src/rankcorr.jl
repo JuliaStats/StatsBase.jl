@@ -65,12 +65,10 @@ end
 function corspearman(X::RealMatrix)
     n = size(X, 2)
     C = Matrix{Float64}(I, n, n)
-    anynan = Vector{Union{Bool, Missing}}(missing, n)
+    anynan = Vector{Bool}(undef, n)
     for j = 1:n
         Xj = view(X, :, j)
-        if ismissing(anynan[j])
-            anynan[j] = any(isnan, Xj)
-        end
+        anynan[j] = any(isnan, Xj)
         if anynan[j]
             C[:,j] .= NaN
             C[j,:] .= NaN
@@ -80,9 +78,6 @@ function corspearman(X::RealMatrix)
         Xjrank = tiedrank(Xj)
         for i = 1:(j-1)
             Xi = view(X, :, i)
-            if ismissing(anynan[i])
-                anynan[j] = any(isnan, Xi)
-            end
             if anynan[i]
                 C[i,j] = C[j,i] = NaN
             else
