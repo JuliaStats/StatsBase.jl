@@ -17,14 +17,103 @@ Compute Spearman's rank correlation coefficient. If `x` and `y` are vectors, the
 output is a float, otherwise it's a matrix corresponding to the pairwise correlations
 of the columns of `x` and `y`.
 """
-corspearman(x::RealVector, y::RealVector) = cor(tiedrank(x), tiedrank(y))
+function corspearman(x::RealVector, y::RealVector)
+    n = length(x)
+    n == length(y) || throw(DimensionMismatch("vectors must have same length"))
+    (any(isnan, x) || any(isnan, y)) && return NaN
+    return cor(tiedrank(x), tiedrank(y))
+end
 
-corspearman(X::RealMatrix, Y::RealMatrix) =
-    cor(mapslices(tiedrank, X, dims=1), mapslices(tiedrank, Y, dims=1))
-corspearman(X::RealMatrix, y::RealVector) = cor(mapslices(tiedrank, X, dims=1), tiedrank(y))
-corspearman(x::RealVector, Y::RealMatrix) = cor(tiedrank(x), mapslices(tiedrank, Y, dims=1))
+function corspearman(X::RealMatrix, y::RealVector)
+    size(X, 1) == length(y) ||
+        throw(DimensionMismatch("X and y have inconsistent dimensions"))
+    n = size(X, 2)
+    C = Matrix{Float64}(I, n, 1)
+    any(isnan, y) && return fill!(C, NaN)
+    yrank = tiedrank(y)
+    for j = 1:n
+        Xj = view(X, :, j)
+        if any(isnan, Xj)
+            C[j,1] = NaN
+        else
+            Xjrank = tiedrank(Xj)
+            C[j,1] = cor(Xjrank, yrank)
+        end
+    end
+    return C
+end
 
-corspearman(X::RealMatrix) = (Z = mapslices(tiedrank, X, dims=1); cor(Z, Z))
+function corspearman(x::RealVector, Y::RealMatrix)
+    size(Y, 1) == length(x) ||
+        throw(DimensionMismatch("x and Y have inconsistent dimensions"))
+    n = size(Y, 2)
+    C = Matrix{Float64}(I, 1, n)
+    any(isnan, x) && return fill!(C, NaN)
+    xrank = tiedrank(x)
+    for j = 1:n
+        Yj = view(Y, :, j)
+        if any(isnan, Yj)
+            C[1,j] = NaN
+        else
+            Yjrank = tiedrank(Yj)
+            C[1,j] = cor(xrank, Yjrank)
+        end
+    end
+    return C
+end
+
+function corspearman(X::RealMatrix)
+    n = size(X, 2)
+    C = Matrix{Float64}(I, n, n)
+    anynan = Vector{Bool}(undef, n)
+    for j = 1:n
+        Xj = view(X, :, j)
+        anynan[j] = any(isnan, Xj)
+        if anynan[j]
+            C[:,j] .= NaN
+            C[j,:] .= NaN
+            C[j,j] = 1
+            continue
+        end
+        Xjrank = tiedrank(Xj)
+        for i = 1:(j-1)
+            Xi = view(X, :, i)
+            if anynan[i]
+                C[i,j] = C[j,i] = NaN
+            else
+                Xirank = tiedrank(Xi)
+                C[i,j] = C[j,i] = cor(Xjrank, Xirank)
+            end
+        end
+    end
+    return C
+end
+
+function corspearman(X::RealMatrix, Y::RealMatrix)
+    size(X, 1) == size(Y, 1) ||
+        throw(ArgumentError("number of columns in each array must match"))
+    nr = size(X, 2)
+    nc = size(Y, 2)
+    C = Matrix{Float64}(undef, nr, nc)
+    for j = 1:nr
+        Xj = view(X, :, j)
+        if any(isnan, Xj)
+            C[j,:] .= NaN
+            continue
+        end
+        Xjrank = tiedrank(Xj)
+        for i = 1:nc
+            Yi = view(Y, :, i)
+            if any(isnan, Yi)
+                C[j,i] = NaN
+            else
+                Yirank = tiedrank(Yi)
+                C[j,i] = cor(Xjrank, Yirank)
+            end
+        end
+    end
+    return C
+end
 
 
 #######################################
@@ -44,7 +133,7 @@ function corkendall!(x::RealVector, y::RealVector, permx::AbstractVector{<:Integ
     # Initial sorting
     permute!(x, permx)
     permute!(y, permx)
-    
+
     # Use widen to avoid overflows on both 32bit and 64bit
     npairs = div(widen(n) * (n - 1), 2)
     ntiesx = ndoubleties = nswaps = widen(0)

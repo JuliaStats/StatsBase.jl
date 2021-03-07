@@ -2,10 +2,11 @@ using StatsBase
 using Test
 
 X = Float64[1 0; 2 1; 3 0; 4 1; 5 10]
+Y = Float64[5 5 6; 3 4 1; 4 0 4; 2 6 1; 5 7 10]
 
 x1 = X[:,1]
 x2 = X[:,2]
-y = [5, 3, 4, 2, 5]
+y = Y[:,1]
 
 # corspearman
 
@@ -22,6 +23,9 @@ c22 = corspearman(x2, x2)
 @test c22 ≈ 1.0
 @test corspearman(X, X) ≈ [c11 c12; c12 c22]
 @test corspearman(X)    ≈ [c11 c12; c12 c22]
+
+@test corspearman(X, Y) ==
+     [corspearman(X[:,i], Y[:,j]) for i in axes(X, 2), j in axes(Y, 2)]
 
 # corkendall
 
@@ -106,3 +110,52 @@ w = repeat(z, n)
 
 StatsBase.midpoint(1,10)        == 5
 StatsBase.midpoint(1,widen(10)) == 5
+
+
+# NaN handling
+
+Xnan = copy(X)
+Xnan[1,1] = NaN
+Ynan = copy(Y)
+Ynan[2,1] = NaN
+
+for f in (corspearman, corkendall)
+     @test isnan(f([1.0, NaN, 2.0], [2.0, 1.0, 3.4]))
+     @test all(isnan, f([1.0, NaN], [1 2; 3 4]))
+     @test all(isnan, f([1 2; 3 4], [1.0, NaN]))
+     @test isequal(f([1 NaN; NaN 4]), [1 NaN; NaN 1])
+     @test all(isnan, f([1 NaN; NaN 4], [1 NaN; NaN 4]))
+     @test all(isnan, f([1 NaN; NaN 4], [NaN 1; NaN 4]))
+
+     @test isequal(f(Xnan, Ynan),
+                   [f(Xnan[:,i], Ynan[:,j]) for i in axes(Xnan, 2), j in axes(Ynan, 2)])
+     @test isequal(f(Xnan),
+                   [i == j ? 1.0 : f(Xnan[:,i], Xnan[:,j])
+                    for i in axes(Xnan, 2), j in axes(Xnan, 2)])
+     for k in 1:2
+          @test isequal(f(Xnan[:,k], Ynan),
+                        [f(Xnan[:,k], Ynan[:,j]) for i in 1:1, j in axes(Ynan, 2)])
+          # TODO: fix corkendall (PR#659)
+          if f === corspearman
+               @test isequal(f(Xnan, Ynan[:,k]),
+                             [f(Xnan[:,i], Ynan[:,k]) for i in axes(Xnan, 2), j in 1:1])
+          else
+               @test isequal(f(Xnan, Ynan[:,k]),
+                             [f(Xnan[:,i], Ynan[:,k]) for i in axes(Xnan, 2)])
+          end
+     end
+end
+
+
+# Wrong dimensions
+
+@test_throws DimensionMismatch corspearman([1], [1, 2])
+@test_throws DimensionMismatch corspearman([1], [1 2; 3 4])
+@test_throws DimensionMismatch corspearman([1 2; 3 4], [1])
+@test_throws ArgumentError corspearman([1 2; 3 4: 4 6], [1 2; 3 4])
+
+# TODO: fix corkendall to match corspearman (PR#659)
+@test_throws ErrorException corkendall([1], [1, 2])
+@test_throws ErrorException corkendall([1], [1 2; 3 4])
+@test_throws ErrorException corkendall([1 2; 3 4], [1])
+@test_throws ArgumentError corkendall([1 2; 3 4: 4 6], [1 2; 3 4])
