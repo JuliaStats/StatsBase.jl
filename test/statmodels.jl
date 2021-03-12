@@ -66,6 +66,8 @@ end
 @test isless(PValue(0.01), 0.05)
 @test isless(PValue(0.01), NaN) == isless(0.01, NaN)
 @test (PValue(0.01) < NaN) == (0.01 < NaN)
+@test isequal(PValue(0.01), NaN) == isequal(0.01, NaN)
+@test (PValue(0.01) == NaN) == (0.01 == NaN)
 @test isequal(PValue(0.05), 0.05)
 @test isapprox(PValue(0.05), 0.05)
 @test PValue(0.05) <= 0.05
@@ -85,7 +87,7 @@ end
 @test PValue(Rational(1,3)) == PValue(Rational(1,3))
 @test PValue(Rational(1,3)) ≈ PValue(1/3)
 @test Rational(1,3) == PValue(Rational(1,3))
-@test Rational(1,3) ≈ PValue(1/3)
+@test Rational(1,3) ≈ PValue(1/3) atol=0.01
 @test PValue(Rational(1,3)) isa Real
 
 @test sprint(show, TestStat(1e-1)) == "0.10"
@@ -95,6 +97,8 @@ end
 @test isless(TestStat(0.01), 0.05)
 @test isless(TestStat(0.01), NaN) == isless(0.01, NaN)
 @test (TestStat(0.01) < NaN) == (0.01 < NaN)
+@test isequal(TestStat(0.01), NaN) == isequal(0.01, NaN)
+@test (TestStat(0.01) == NaN) == (0.01 == NaN)
 @test isequal(TestStat(0.05), 0.05)
 @test isapprox(TestStat(0.05), 0.05)
 @test TestStat(0.05) <= 0.05
@@ -116,7 +120,7 @@ end
 @test Rational(1,3) == TestStat(Rational(1,3))
 @test Rational(1,3) ≈ TestStat(1/3)
 @test TestStat(Rational(1,3)) isa Real
-
+@test TestStat(π) ≈ 3.14 atol=0.01
 
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 

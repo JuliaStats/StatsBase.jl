@@ -460,19 +460,6 @@ struct PValue <: Real
 end
 PValue(p::PValue) = p
 
-float(p::PValue) = float(p.v)
-
-for op in [:(==), :≈, :<, :≤, :>, :≥, :(isless)] # isless and < to place nice with NaN
-    @eval begin
-        Base.$op(p::PValue, y::Real) = $op(p.v, y)
-        Base.$op(y::Real, p::PValue) = $op(y, p.v)
-        Base.$op(p1::PValue, p2::PValue) = $op(p1.v, p2.v)
-    end
-end
-
-# necessary to avoid a method ambiguity with isless(::PValue, NaN)
-Base.isless(p::PValue, y::AbstractFloat) = isless(p.v, y)
-
 function show(io::IO, pv::PValue)
     v = pv.v
     if isnan(v)
@@ -492,18 +479,28 @@ end
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
 TestStat(x::TestStat) = x
 
-float(x::TestStat) = float(x.v)
+float(x::Union{TestStat, PValue}) = float(x.v)
 
-for op in [:(==), :≈, :<, :≤, :>, :≥, :(isless)] # isless and < to place nice with NaN
+for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to place nice with NaN
     @eval begin
-        Base.$op(x::TestStat, y::Real) = $op(x.v, y)
-        Base.$op(y::Real, x::TestStat) = $op(y, x.v)
-        Base.$op(x1::TestStat, x2::TestStat) = $op(x1.v, x2.v)
+        Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
+        Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
+        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}) = $op(x1.v, x2.v)
     end
 end
 
 # necessary to avoid a method ambiguity with isless(::TestStat, NaN)
-Base.isless(x::TestStat, y::AbstractFloat) = isless(x.v, y)
+Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
+Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
+
+for op in [:≈, :(isapprox)]
+    @eval begin
+        Base.$op(x::Union{TestStat, PValue}, y::Real; kwargs...) = $op(x.v, y; kwargs...)
+        Base.$op(y::Real, x::Union{TestStat, PValue}; kwargs...) = $op(y, x.v; kwargs...)
+        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = $op(x1.v, x2.v; kwargs...)
+    end
+end
+
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
