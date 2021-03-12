@@ -509,7 +509,7 @@ function show(io::IO, ct::CoefTable)
         rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
     mat = [j == 1 ? NoQuote(rownms[i]) :
-           j-1 == ct.pvalcol ? PValue(cols[j-1][i]) :
+           j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
            j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
            cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
            for i in 1:nr, j in 1:nc+1]
