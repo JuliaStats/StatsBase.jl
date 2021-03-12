@@ -1,5 +1,5 @@
 using StatsBase
-using StatsBase: PValue
+using StatsBase: PValue, TestStat
 using Test, Random
 
 v1 = [1.45666, -23.14, 1.56734e-13]
