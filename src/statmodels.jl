@@ -462,11 +462,16 @@ PValue(p::PValue) = p
 
 float(p::PValue) = float(p.v)
 
-for op in [Symbol("=="), :≈, :<, :≤, :>, :≥]
+for op in [:(==), :≈, :<, :≤, :>, :≥, :(isless)] # isless and < to place nice with NaN
     @eval begin
         Base.$op(p::PValue, y::Real) = $op(p.v, y)
+        Base.$op(y::Real, p::PValue) = $op(y, p.v)
+        Base.$op(p1::PValue, p2::PValue) = $op(p1.v, p2.v)
     end
 end
+
+# necessary to avoid a method ambiguity with isless(::PValue, NaN)
+Base.isless(p::PValue, y::AbstractFloat) = isless(p.v, y)
 
 function show(io::IO, pv::PValue)
     v = pv.v
@@ -485,14 +490,20 @@ struct TestStat <: Real
 end
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
+TestStat(x::TestStat) = x
 
 float(x::TestStat) = float(x.v)
 
-for op in [Symbol("=="), :≈, :<, :≤, :>, :≥]
+for op in [:(==), :≈, :<, :≤, :>, :≥, :(isless)] # isless and < to place nice with NaN
     @eval begin
         Base.$op(x::TestStat, y::Real) = $op(x.v, y)
+        Base.$op(y::Real, x::TestStat) = $op(y, x.v)
+        Base.$op(x1::TestStat, x2::TestStat) = $op(x1.v, x2.v)
     end
 end
+
+# necessary to avoid a method ambiguity with isless(::TestStat, NaN)
+Base.isless(x::TestStat, y::AbstractFloat) = isless(x.v, y)
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
