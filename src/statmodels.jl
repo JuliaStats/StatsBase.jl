@@ -550,10 +550,10 @@ function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
     end
 
     println(io, "  |")
-    print(io, '|',rpad(":", sum(A[1])+2,'-'))
+    print(io, '|', rpad(':', sum(A[1])+2, '-'))
     for j in 1:length(colnms)
         _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
-        print(io, '|', _pad(':', sum(A[j+1])+2,'-'))
+        print(io, '|', _pad(':', sum(A[j+1])+2, '-'))
     end
     println(io, '|')
 
