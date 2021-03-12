@@ -493,13 +493,10 @@ end
 Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
 Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
 
-for op in [:≈, :(isapprox)]
-    @eval begin
-        Base.$op(x::Union{TestStat, PValue}, y::Real; kwargs...) = $op(x.v, y; kwargs...)
-        Base.$op(y::Real, x::Union{TestStat, PValue}; kwargs...) = $op(y, x.v; kwargs...)
-        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = $op(x1.v, x2.v; kwargs...)
-    end
-end
+
+Base.isapprox(x::Union{TestStat, PValue}, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
+Base.isapprox(y::Real, x::Union{TestStat, PValue}; kwargs...) = isapprox(y, x.v; kwargs...)
+Base.isapprox(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = isapprox(x1.v, x2.v; kwargs...)
 
 
 """Wrap a string so that show omits quotes"""
