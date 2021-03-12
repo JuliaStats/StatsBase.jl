@@ -540,24 +540,22 @@ function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
          for i in 1:length(A)]
     totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
 
-    #   is non breaking space, which means
-    # that we can use the padding logic from the plaintext show method
-    # and get markdown that looks as nice visually as it will render
-    # note that we use left-alignment for all columns besides the stats
-    # because Markdown doesn't have a native "align on decimal"
+    # not using Markdown stdlib here because that won't give us nice decimal
+    # alignment (even if that is lost when rendering to HTML, it's still nice
+    # when looking at the markdown itself)
 
-    print(io, "|", " "^sum(A[1]))
+    print(io, '|', ' '^sum(A[1]))
     for j in 1:length(colnms)
         print(io, "  |", lpad(colnms[j], sum(A[j+1])))
     end
 
     println(io, "  |")
-    print(io, "|",rpad(":", sum(A[1])+2,'-'))
+    print(io, '|',rpad(":", sum(A[1])+2,'-'))
     for j in 1:length(colnms)
         _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
-        print(io, "|", _pad(":", sum(A[j+1])+2,'-'))
+        print(io, '|', _pad(':', sum(A[j+1])+2,'-'))
     end
-    println(io, "|")
+    println(io, '|')
 
     for i in 1:size(mat, 1)
         print(io, "| ")
