@@ -66,6 +66,10 @@ end
 @test isless(PValue(0.01), 0.05)
 @test isless(PValue(0.01), NaN) == isless(0.01, NaN)
 @test (PValue(0.01) < NaN) == (0.01 < NaN)
+@test isless(NaN, PValue(0.01)) == isless(NaN, 0.01)
+@test (NaN < PValue(0.01)) == (NaN < 0.01)
+@test isequal(NaN, PValue(0.01)) == isequal(NaN, 0.01)
+@test (NaN == PValue(0.01)) == (NaN == 0.01)
 @test isequal(PValue(0.01), NaN) == isequal(0.01, NaN)
 @test (PValue(0.01) == NaN) == (0.01 == NaN)
 @test isequal(PValue(0.05), 0.05)
@@ -97,9 +101,14 @@ end
 @test isless(TestStat(0.01), 0.05)
 @test isless(TestStat(0.01), NaN) == isless(0.01, NaN)
 @test (TestStat(0.01) < NaN) == (0.01 < NaN)
+@test isless(NaN, TestStat(0.01)) == isless(NaN, 0.01)
+@test (NaN < TestStat(0.01)) == (NaN < 0.01)
 @test isequal(TestStat(0.01), NaN) == isequal(0.01, NaN)
 @test (TestStat(0.01) == NaN) == (0.01 == NaN)
+@test isequal(NaN, TestStat(0.01)) == isequal(NaN, 0.01)
+@test (NaN == TestStat(0.01)) == (NaN == 0.01)
 @test isequal(TestStat(0.05), 0.05)
+
 @test isapprox(TestStat(0.05), 0.05)
 @test TestStat(0.05) <= 0.05
 @test TestStat(0.1) > 0.05

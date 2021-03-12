@@ -491,6 +491,8 @@ end
 
 # necessary to avoid a method ambiguity with isless(::TestStat, NaN)
 Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
+Base.isless(y::AbstractFloat, x::Union{TestStat, PValue},) = isless(y, x.v)
+Base.isequal(y::AbstractFloat, x::Union{TestStat, PValue}) = isequal(y, x.v)
 Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
 
 
