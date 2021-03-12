@@ -74,6 +74,9 @@ end
 @test PValue(Rational(1,3)) == Rational(1,3)
 @test PValue(Rational(1,3)) ≈ 1/3
 
+@test sprint(show, TestStat(1e-1)) == "0.10"
+@test sprint(show, TestStat(1e-5)) == "0.00"
+@test sprint(show, TestStat(π)) == "3.14"
 @test isless(TestStat(0.01), 0.05)
 @test isequal(TestStat(0.05), 0.05)
 @test isapprox(TestStat(0.05), 0.05)
