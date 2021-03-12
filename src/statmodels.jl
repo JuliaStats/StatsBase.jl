@@ -277,7 +277,7 @@ Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
-`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``. 
+`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``.
 In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept), ``D`` is the deviance of the model,
 ``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
@@ -319,7 +319,7 @@ response(model::RegressionModel) = error("response is not defined for $(typeof(m
 
 """
     responsename(model::RegressionModel)
-    
+
 Return the name of the model response (a.k.a. the dependent variable).
 """
 responsename(model::RegressionModel) = error("responsename is not defined for $(typeof(model)).")
@@ -451,7 +451,7 @@ end
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
 """
-struct PValue
+struct PValue <: Real
     v::Real
     function PValue(v::Real)
         0 <= v <= 1 || isnan(v) || error("p-values must be in [0; 1]")

@@ -73,6 +73,7 @@ end
 @test float(PValue(Rational(1,3))) == float(1/3)
 @test PValue(Rational(1,3)) == Rational(1,3)
 @test PValue(Rational(1,3)) ≈ 1/3
+@test PValue(Rational(1,3)) isa Real
 
 @test sprint(show, TestStat(1e-1)) == "0.10"
 @test sprint(show, TestStat(1e-5)) == "0.00"
@@ -86,6 +87,8 @@ end
 # exact equality should hold here since it's the exact same atomic operations
 @test float(TestStat(π)) == float(π)
 @test TestStat(π) ≈ float(π)
+@test TestStat(π) isa Real
+
 
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 
