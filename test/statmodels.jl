@@ -63,6 +63,26 @@ end
 @test_throws ErrorException PValue(-0.1)
 @test_throws ErrorException PValue(1.1)
 @test PValue(PValue(0.05)) === PValue(0.05)
+@test isless(PValue(0.01), 0.05)
+@test isequal(PValue(0.05), 0.05)
+@test isapprox(PValue(0.05), 0.05)
+@test PValue(0.05) <= 0.05
+@test PValue(0.1) > 0.05
+@test PValue(0.1) >= 0.05
+# exact equality should hold here since it's the exact same atomic operations
+@test float(PValue(Rational(1,3))) == float(1/3)
+@test PValue(Rational(1,3)) == Rational(1,3)
+@test PValue(Rational(1,3)) ≈ 1/3
+
+@test isless(TestStat(0.01), 0.05)
+@test isequal(TestStat(0.05), 0.05)
+@test isapprox(TestStat(0.05), 0.05)
+@test TestStat(0.05) <= 0.05
+@test TestStat(0.1) > 0.05
+@test TestStat(0.1) >= 0.05
+# exact equality should hold here since it's the exact same atomic operations
+@test float(TestStat(π)) == float(π)
+@test TestStat(π) ≈ float(π)
 
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 

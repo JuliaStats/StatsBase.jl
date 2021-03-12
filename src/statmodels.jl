@@ -460,6 +460,14 @@ struct PValue
 end
 PValue(p::PValue) = p
 
+float(p::PValue) = float(p.v)
+
+for op in [Symbol("=="), :≈, :<, :≤, :>, :≥]
+    @eval begin
+        Base.$op(p::PValue, y::Real) = $op(p.v, y)
+    end
+end
+
 function show(io::IO, pv::PValue)
     v = pv.v
     if isnan(v)
@@ -477,6 +485,14 @@ struct TestStat <: Real
 end
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
+
+float(x::TestStat) = float(x.v)
+
+for op in [Symbol("=="), :≈, :<, :≤, :>, :≥]
+    @eval begin
+        Base.$op(x::TestStat, y::Real) = $op(x.v, y)
+    end
+end
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
