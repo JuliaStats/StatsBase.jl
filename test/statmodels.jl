@@ -72,6 +72,8 @@ end
 @test (NaN == PValue(0.01)) == (NaN == 0.01)
 @test isequal(PValue(0.01), NaN) == isequal(0.01, NaN)
 @test (PValue(0.01) == NaN) == (0.01 == NaN)
+@test isequal(PValue(NaN), NaN) == isequal(NaN, NaN)
+@test (PValue(NaN) == NaN) == (NaN == NaN)
 @test isequal(PValue(0.05), 0.05)
 @test isapprox(PValue(0.05), 0.05)
 @test PValue(0.05) <= 0.05
@@ -107,8 +109,9 @@ end
 @test (TestStat(0.01) == NaN) == (0.01 == NaN)
 @test isequal(NaN, TestStat(0.01)) == isequal(NaN, 0.01)
 @test (NaN == TestStat(0.01)) == (NaN == 0.01)
+@test isequal(PValue(NaN), NaN) == isequal(NaN, NaN)
+@test (PValue(NaN) == NaN) == (NaN == NaN)
 @test isequal(TestStat(0.05), 0.05)
-
 @test isapprox(TestStat(0.05), 0.05)
 @test TestStat(0.05) <= 0.05
 @test TestStat(0.1) > 0.05
