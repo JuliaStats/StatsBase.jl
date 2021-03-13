@@ -277,7 +277,7 @@ Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
-`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``. 
+`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``.
 In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept), ``D`` is the deviance of the model,
 ``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
@@ -319,7 +319,7 @@ response(model::RegressionModel) = error("response is not defined for $(typeof(m
 
 """
     responsename(model::RegressionModel)
-    
+
 Return the name of the model response (a.k.a. the dependent variable).
 """
 responsename(model::RegressionModel) = error("responsename is not defined for $(typeof(model)).")
@@ -451,7 +451,7 @@ end
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
 """
-struct PValue
+struct PValue <: Real
     v::Real
     function PValue(v::Real)
         0 <= v <= 1 || isnan(v) || error("p-values must be in [0; 1]")
@@ -477,6 +477,29 @@ struct TestStat <: Real
 end
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
+TestStat(x::TestStat) = x
+
+float(x::Union{TestStat, PValue}) = float(x.v)
+
+for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to place nice with NaN
+    @eval begin
+        Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
+        Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
+        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}) = $op(x1.v, x2.v)
+    end
+end
+
+# necessary to avoid a method ambiguity with isless(::TestStat, NaN)
+Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
+Base.isless(y::AbstractFloat, x::Union{TestStat, PValue},) = isless(y, x.v)
+Base.isequal(y::AbstractFloat, x::Union{TestStat, PValue}) = isequal(y, x.v)
+Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
+
+
+Base.isapprox(x::Union{TestStat, PValue}, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
+Base.isapprox(y::Real, x::Union{TestStat, PValue}; kwargs...) = isapprox(y, x.v; kwargs...)
+Base.isapprox(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = isapprox(x1.v, x2.v; kwargs...)
+
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
@@ -493,7 +516,7 @@ function show(io::IO, ct::CoefTable)
         rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
     mat = [j == 1 ? NoQuote(rownms[i]) :
-           j-1 == ct.pvalcol ? PValue(cols[j-1][i]) :
+           j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
            j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
            cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
            for i in 1:nr, j in 1:nc+1]
