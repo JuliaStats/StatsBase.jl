@@ -62,74 +62,32 @@ end
 @test sprint(show, PValue(NaN)) == "NaN"
 @test_throws ErrorException PValue(-0.1)
 @test_throws ErrorException PValue(1.1)
-@test PValue(PValue(0.05)) === PValue(0.05)
-@test isless(PValue(0.01), 0.05)
-@test isless(PValue(0.01), NaN) == isless(0.01, NaN)
-@test (PValue(0.01) < NaN) == (0.01 < NaN)
-@test isless(NaN, PValue(0.01)) == isless(NaN, 0.01)
-@test (NaN < PValue(0.01)) == (NaN < 0.01)
-@test isequal(NaN, PValue(0.01)) == isequal(NaN, 0.01)
-@test (NaN == PValue(0.01)) == (NaN == 0.01)
-@test isequal(PValue(0.01), NaN) == isequal(0.01, NaN)
-@test (PValue(0.01) == NaN) == (0.01 == NaN)
-@test isequal(PValue(0.05), 0.05)
-@test isapprox(PValue(0.05), 0.05)
-@test PValue(0.05) <= 0.05
-@test PValue(0.1) > 0.05
-@test PValue(0.1) >= PValue(0.05)
-@test PValue(0.05) <= PValue(0.05)
-@test PValue(0.1) > PValue(0.05)
-@test PValue(0.1) >= PValue(0.05)
-@test 0.1 >= PValue(0.05)
-@test 0.05 <= PValue(0.05)
-@test 0.1 > PValue(0.05)
-@test 0.1 >= PValue(0.05)
-# exact equality should hold here since it's the exact same atomic operations
-@test float(PValue(Rational(1,3))) == float(1/3)
-@test PValue(Rational(1,3)) == Rational(1,3)
-@test PValue(Rational(1,3)) ≈ 1/3
-@test PValue(Rational(1,3)) == PValue(Rational(1,3))
-@test PValue(Rational(1,3)) ≈ PValue(1/3)
-@test Rational(1,3) == PValue(Rational(1,3))
-@test Rational(1,3) ≈ PValue(1/3) atol=0.01
-@test PValue(Rational(1,3)) isa Real
 
+@test sprint(show, TestStat(NaN)) == "NaN"
 @test sprint(show, TestStat(1e-1)) == "0.10"
 @test sprint(show, TestStat(1e-5)) == "0.00"
 @test sprint(show, TestStat(π)) == "3.14"
-@test TestStat(TestStat(0.05)) === TestStat(0.05)
-@test isless(TestStat(0.01), 0.05)
-@test isless(TestStat(0.01), NaN) == isless(0.01, NaN)
-@test (TestStat(0.01) < NaN) == (0.01 < NaN)
-@test isless(NaN, TestStat(0.01)) == isless(NaN, 0.01)
-@test (NaN < TestStat(0.01)) == (NaN < 0.01)
-@test isequal(TestStat(0.01), NaN) == isequal(0.01, NaN)
-@test (TestStat(0.01) == NaN) == (0.01 == NaN)
-@test isequal(NaN, TestStat(0.01)) == isequal(NaN, 0.01)
-@test (NaN == TestStat(0.01)) == (NaN == 0.01)
-@test isequal(TestStat(0.05), 0.05)
 
-@test isapprox(TestStat(0.05), 0.05)
-@test TestStat(0.05) <= 0.05
-@test TestStat(0.1) > 0.05
-@test TestStat(0.1) >= TestStat(0.05)
-@test TestStat(0.05) <= TestStat(0.05)
-@test TestStat(0.1) > TestStat(0.05)
-@test TestStat(0.1) >= TestStat(0.05)
-@test 0.1 >= TestStat(0.05)
-@test 0.05 <= TestStat(0.05)
-@test 0.1 > TestStat(0.05)
-@test 0.1 >= TestStat(0.05)
-# exact equality should hold here since it's the exact same atomic operations
-@test float(TestStat(Rational(1,3))) == float(1/3)
-@test TestStat(Rational(1,3)) == Rational(1,3)
-@test TestStat(Rational(1,3)) ≈ 1/3
-@test TestStat(Rational(1,3)) == TestStat(Rational(1,3))
-@test TestStat(Rational(1,3)) ≈ TestStat(1/3)
-@test Rational(1,3) == TestStat(Rational(1,3))
-@test Rational(1,3) ≈ TestStat(1/3)
-@test TestStat(Rational(1,3)) isa Real
-@test TestStat(π) ≈ 3.14 atol=0.01
+@testset "Union{PValue, TestStat} is Real" begin
+    vals = [0.0, Rational(1,3), NaN]
+    for T in [PValue, TestStat],
+        f in (==, <, ≤, >, ≥, isless, isequal),
+        lhs in vals, rhs in vals
+        # make sure that T behaves like a Real,
+        # regardless of whether it's on the LHS, RHS or both
+        @test f(T(lhs), T(rhs)) == f(lhs, rhs)
+        @test f(lhs, T(rhs)) == f(lhs, rhs)
+        @test f(T(lhs), rhs) == f(lhs, rhs)
+    end
+
+    # the (approximate) equality operators get a bit more attention
+    for T in [PValue, TestStat]
+        @test T(Rational(1,3)) ≈ T(1/3)
+        @test Rational(1,3) ≈ T(1/3) atol=0.01
+        @test T(Rational(1,3)) isa Real
+        @test T(T(0.05)) === T(0.05)
+    end
+end
 
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 
