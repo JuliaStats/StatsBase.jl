@@ -546,12 +546,12 @@ function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
     # alignment (even if that is lost when rendering to HTML, it's still nice
     # when looking at the markdown itself)
 
-    print(io, '|', ' '^sum(A[1]))
+    print(io, '|', ' '^(sum(A[1])+1))
     for j in 1:length(colnms)
-        print(io, "  |", lpad(colnms[j], sum(A[j+1])))
+        print(io, " | ", lpad(colnms[j], sum(A[j+1])))
     end
 
-    println(io, "  |")
+    println(io, " |")
     print(io, '|', rpad(':', sum(A[1])+2, '-'))
     for j in 1:length(colnms)
         _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
