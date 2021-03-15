@@ -543,6 +543,54 @@ function show(io::IO, ct::CoefTable)
     nothing
 end
 
+function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
+    cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
+    nc = length(cols)
+    nr = length(cols[1])
+    if length(rownms) == 0
+        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
+    end
+    mat = [j == 1 ? NoQuote(rownms[i]) :
+           j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
+           j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
+           cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
+           for i in 1:nr, j in 1:nc+1]
+    # Code inspired by print_matrix in Base
+    io = IOContext(io, :compact=>true, :limit=>false)
+    A = Base.alignment(io, mat, 1:size(mat, 1), 1:size(mat, 2),
+                       typemax(Int), typemax(Int), 3)
+    nmswidths = pushfirst!(length.(colnms), 0)
+    A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
+         for i in 1:length(A)]
+    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
+
+    # not using Markdown stdlib here because that won't give us nice decimal
+    # alignment (even if that is lost when rendering to HTML, it's still nice
+    # when looking at the markdown itself)
+
+    print(io, '|', ' '^(sum(A[1])+1))
+    for j in 1:length(colnms)
+        print(io, " | ", lpad(colnms[j], sum(A[j+1])))
+    end
+
+    println(io, " |")
+    print(io, '|', rpad(':', sum(A[1])+2, '-'))
+    for j in 1:length(colnms)
+        _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
+        print(io, '|', _pad(':', sum(A[j+1])+2, '-'))
+    end
+    println(io, '|')
+
+    for i in 1:size(mat, 1)
+        print(io, "| ")
+        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), " | ")
+        print(io, " |")
+        i != size(mat, 1) && println(io)
+    end
+
+    nothing
+end
+
 """
     ConvergenceException(iters::Int, lastchange::Real=NaN, tol::Real=NaN)
 

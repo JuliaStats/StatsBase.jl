@@ -10,6 +10,10 @@ v5 = [0.12, 0.3467, 1.345e-16]
 ct = CoefTable(Any[v1, v2, v3, v4, v5],
                ["Estimate", "Comments", "df", "t", "p"],
                ["x1", "x2", "x3"], 5, 4)
+ct_noname = CoefTable(Any[v1, v2, v3, v4, v5],
+                      ["Estimate", "Comments", "df", "t", "p"],
+                      [], 5, 4)
+
 @test sprint(show, ct) == """
 ───────────────────────────────────────────────
          Estimate  Comments  df       t       p
@@ -18,6 +22,30 @@ x1    1.45666         Good    1  -12.56  0.1200
 x2  -23.14            Great  56    0.13  0.3467
 x3    1.56734e-13     Bad     2    0.00  <1e-15
 ───────────────────────────────────────────────"""
+
+@test sprint(show, ct_noname) == """
+────────────────────────────────────────────────
+          Estimate  Comments  df       t       p
+────────────────────────────────────────────────
+[1]    1.45666         Good    1  -12.56  0.1200
+[2]  -23.14            Great  56    0.13  0.3467
+[3]    1.56734e-13     Bad     2    0.00  <1e-15
+────────────────────────────────────────────────"""
+
+@test sprint(show, MIME"text/markdown"(), ct) == """
+|    |      Estimate | Comments | df |      t |      p |
+|:---|--------------:|---------:|---:|-------:|:-------|
+| x1 |   1.45666     |    Good  |  1 | -12.56 | 0.1200 |
+| x2 | -23.14        |    Great | 56 |   0.13 | 0.3467 |
+| x3 |   1.56734e-13 |    Bad   |  2 |   0.00 | <1e-15 |"""
+
+@test sprint(show, MIME"text/markdown"(), ct_noname) == """
+|     |      Estimate | Comments | df |      t |      p |
+|:----|--------------:|---------:|---:|-------:|:-------|
+| [1] |   1.45666     |    Good  |  1 | -12.56 | 0.1200 |
+| [2] | -23.14        |    Great | 56 |   0.13 | 0.3467 |
+| [3] |   1.56734e-13 |    Bad   |  2 |   0.00 | <1e-15 |"""
+
 @test length(ct) === 3
 @test eltype(ct) ==
     NamedTuple{(:Name, :Estimate, :Comments, :df, :t, :p),
