@@ -86,8 +86,8 @@ end
         @test Rational(1,3) ≈ T(1/3) atol=0.01
         @test T(Rational(1,3)) isa Real
         @test T(T(0.05)) === T(0.05)
-        @test hash(T(0.05)) === hash(0.05)
-        @test hash(T(0.05), UInt(42)) === hash(0.05, UInt(42))
+        @test hash(T(0.05)) == hash(0.05)
+        @test hash(T(0.05), UInt(42)) == hash(0.05, UInt(42))
     end
 end
 
