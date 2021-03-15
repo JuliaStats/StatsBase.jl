@@ -451,11 +451,11 @@ end
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
 """
-struct PValue <: Real
-    v::Real
-    function PValue(v::Real)
+struct PValue{T<:Real} <: Real
+    v::T
+    function PValue(v::S) where {S<:Real}
         0 <= v <= 1 || isnan(v) || error("p-values must be in [0; 1]")
-        new(v)
+        new{S}(S(v))
     end
 end
 PValue(p::PValue) = p
@@ -472,8 +472,8 @@ function show(io::IO, pv::PValue)
 end
 
 """Show a test statistic using 2 decimal digits"""
-struct TestStat <: Real
-    v::Real
+struct TestStat{T<:Real} <: Real
+    v::T
 end
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
@@ -481,25 +481,37 @@ TestStat(x::TestStat) = x
 
 float(x::Union{TestStat, PValue}) = float(x.v)
 
-for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to place nice with NaN
-    @eval begin
-        Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
-        Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
-        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}) = $op(x1.v, x2.v)
-    end
-end
+Base.promote_type(::Type{PValue{S}}, ::T) where {S, T<:Real} = promote_type(S, T)
+Base.promote_type(::T, ::Type{PValue{S}}) where {S, T<:Real} = promote_type(S, T)
+Base.promote_type(::Type{PValue{S}}, ::Type{PValue{T}}) where {S, T} = promote_type(S, T)
+Base.convert(T::Type{<:Number}, x::PValue{<:Real}) = T(x.v)
 
-Base.hash(x::Union{TestStat, PValue}, h::UInt) = hash(x.v, h)
 
-# necessary to avoid a method ambiguity with isless(::TestStat, NaN)
-Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
-Base.isless(y::AbstractFloat, x::Union{TestStat, PValue},) = isless(y, x.v)
-Base.isequal(y::AbstractFloat, x::Union{TestStat, PValue}) = isequal(y, x.v)
-Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
+Base.promote_type(::Type{TestStat{S}}, ::T) where {S, T<:Real} = promote_type(S, T)
+Base.promote_type(::T, ::Type{TestStat{S}}) where {S, T<:Real} = promote_type(S, T)
+Base.promote_type(::Type{TestStat{S}}, ::Type{TestStat{T}}) where {S, T} = promote_type(S, T)
+Base.convert(T::Type{<:Number}, x::TestStat{<:Real}) = T(x.v)
 
-Base.isapprox(x::Union{TestStat, PValue}, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
-Base.isapprox(y::Real, x::Union{TestStat, PValue}; kwargs...) = isapprox(y, x.v; kwargs...)
-Base.isapprox(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = isapprox(x1.v, x2.v; kwargs...)
+
+# for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to place nice with NaN
+#     @eval begin
+#         Base.$op(x::PorTestStat, y::Real) = $op(x.v, y)
+#         Base.$op(y::Real, x::PorTestStat) = $op(y, x.v)
+#         Base.$op(x1::PorTestStat, x2::PorTestStat) = $op(x1.v, x2.v)
+#     end
+# end
+
+# Base.hash(x::PorTestStat, h::UInt) = hash(x.v, h)
+
+# # necessary to avoid a method ambiguity with isless(::TestStat, NaN)
+# Base.isless(x::PorTestStat, y::AbstractFloat) = isless(x.v, y)
+# Base.isless(y::AbstractFloat, x::PorTestStat,) = isless(y, x.v)
+# Base.isequal(y::AbstractFloat, x::PorTestStat) = isequal(y, x.v)
+# Base.isequal(x::PorTestStat, y::AbstractFloat) = isequal(x.v, y)
+
+# Base.isapprox(x::PorTestStat, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
+# Base.isapprox(y::Real, x::PorTestStat; kwargs...) = isapprox(y, x.v; kwargs...)
+# Base.isapprox(x1::PorTestStat, x2::PorTestStat; kwargs...) = isapprox(x1.v, x2.v; kwargs...)
 
 
 """Wrap a string so that show omits quotes"""
