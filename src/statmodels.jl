@@ -542,8 +542,6 @@ function show(io::IO, ct::CoefTable)
     nothing
 end
 
-show(mime::MIME"text/markdown", ct::CoefTable) = show(Base.stdout, mime, ct)
-
 function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
     cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
     nc = length(cols)
