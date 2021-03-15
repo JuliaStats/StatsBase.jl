@@ -489,12 +489,13 @@ for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to p
     end
 end
 
+Base.hash(x::Union{TestStat, PValue}, h::UInt) = hash(x.v, h)
+
 # necessary to avoid a method ambiguity with isless(::TestStat, NaN)
 Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
 Base.isless(y::AbstractFloat, x::Union{TestStat, PValue},) = isless(y, x.v)
 Base.isequal(y::AbstractFloat, x::Union{TestStat, PValue}) = isequal(y, x.v)
 Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
-
 
 Base.isapprox(x::Union{TestStat, PValue}, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
 Base.isapprox(y::Real, x::Union{TestStat, PValue}; kwargs...) = isapprox(y, x.v; kwargs...)
