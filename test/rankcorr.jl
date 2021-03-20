@@ -35,14 +35,14 @@ c22 = corspearman(x2, x2)
 @test isnan(corkendall([1,1,1], [1,2,3]))
 @test corkendall([-Inf,-0.0,Inf],[1,2,3]) == 1.0
 
-# Test, with exact equality, some known results. 
+# Test, with exact equality, some known results.
 # RealVector, RealVector
 @test corkendall(x1, y) == -1/sqrt(90)
 @test corkendall(x2, y) == -1/sqrt(72)
 # RealMatrix, RealVector
-@test corkendall(X, y)  == [-1/sqrt(90), -1/sqrt(72)]
+@test corkendall(X, y) == reshape([-1/sqrt(90), -1/sqrt(72)], 2, 1)
 # RealVector, RealMatrix
-@test corkendall(y, X)  == [-1/sqrt(90) -1/sqrt(72)]
+@test corkendall(y, X) == [-1/sqrt(90) -1/sqrt(72)]
 
 # n = 78_000 tests for overflow errors on 32 bit
 # Testing for overflow errors on 64bit would require n be too large for practicality
@@ -94,19 +94,19 @@ z = [1  1  1;
 @test corkendall(z)         == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z, z)      == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z[:,1], z) == [1 0 1/3]
-@test corkendall(z, z[:,1]) == [1; 0; 1/3]
+@test corkendall(z, z[:,1]) == reshape([1; 0; 1/3], 3, 1)
 
 z = float(z)
 @test corkendall(z)         == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z, z)      == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(z[:,1], z) == [1 0 1/3]
-@test corkendall(z, z[:,1]) == [1; 0; 1/3]
+@test corkendall(z, z[:,1]) == reshape([1; 0; 1/3], 3, 1)
 
 w = repeat(z, n)
 @test corkendall(w)         == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(w, w)      == [1 0 1/3; 0 1 0; 1/3 0 1]
 @test corkendall(w[:,1], w) == [1 0 1/3]
-@test corkendall(w, w[:,1]) == [1; 0; 1/3]
+@test corkendall(w, w[:,1]) == reshape([1; 0; 1/3], 3, 1)
 
 StatsBase.midpoint(1,10)        == 5
 StatsBase.midpoint(1,widen(10)) == 5
@@ -120,30 +120,26 @@ Ynan = copy(Y)
 Ynan[2,1] = NaN
 
 for f in (corspearman, corkendall)
-     @test isnan(f([1.0, NaN, 2.0], [2.0, 1.0, 3.4]))
-     @test all(isnan, f([1.0, NaN], [1 2; 3 4]))
-     @test all(isnan, f([1 2; 3 4], [1.0, NaN]))
-     @test isequal(f([1 NaN; NaN 4]), [1 NaN; NaN 1])
-     @test all(isnan, f([1 NaN; NaN 4], [1 NaN; NaN 4]))
-     @test all(isnan, f([1 NaN; NaN 4], [NaN 1; NaN 4]))
+    @test isnan(f([1.0, NaN, 2.0], [2.0, 1.0, 3.4]))
+    @test all(isnan, f([1.0, NaN], [1 2; 3 4]))
+    @test all(isnan, f([1 2; 3 4], [1.0, NaN]))
+    @test isequal(f([1 NaN; NaN 4]), [1 NaN; NaN 1])
+    @test all(isnan, f([1 NaN; NaN 4], [1 NaN; NaN 4]))
+    @test all(isnan, f([1 NaN; NaN 4], [NaN 1; NaN 4]))
 
-     @test isequal(f(Xnan, Ynan),
-                   [f(Xnan[:,i], Ynan[:,j]) for i in axes(Xnan, 2), j in axes(Ynan, 2)])
-     @test isequal(f(Xnan),
-                   [i == j ? 1.0 : f(Xnan[:,i], Xnan[:,j])
-                    for i in axes(Xnan, 2), j in axes(Xnan, 2)])
-     for k in 1:2
-          @test isequal(f(Xnan[:,k], Ynan),
-                        [f(Xnan[:,k], Ynan[:,j]) for i in 1:1, j in axes(Ynan, 2)])
-          # TODO: fix corkendall (PR#659)
-          if f === corspearman
-               @test isequal(f(Xnan, Ynan[:,k]),
-                             [f(Xnan[:,i], Ynan[:,k]) for i in axes(Xnan, 2), j in 1:1])
-          else
-               @test isequal(f(Xnan, Ynan[:,k]),
-                             [f(Xnan[:,i], Ynan[:,k]) for i in axes(Xnan, 2)])
-          end
-     end
+    @test isequal(f(Xnan, Ynan),
+                [f(Xnan[:,i], Ynan[:,j]) for i in axes(Xnan, 2), j in axes(Ynan, 2)])
+    @test isequal(f(Xnan),
+                [i == j ? 1.0 : f(Xnan[:,i], Xnan[:,j])
+                for i in axes(Xnan, 2), j in axes(Xnan, 2)])
+    for k in 1:2
+        # RealVector, RealMatrix
+        @test isequal(f(Xnan[:,k], Ynan),
+                    [f(Xnan[:,k], Ynan[:,j]) for i in 1:1, j in axes(Ynan, 2)])
+        # RealMatrix, RealVector
+        @test isequal(f(Xnan, Ynan[:,k]),
+                    [f(Xnan[:,i], Ynan[:,k]) for i in axes(Xnan, 2), j in 1:1])
+    end
 end
 
 
