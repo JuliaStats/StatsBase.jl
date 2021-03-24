@@ -572,13 +572,13 @@ direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
 function direct_sample_ordered!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
     n, k = length(a), length(x)
     if isexact(n, eltype(x))
-        sort!(direct_sample!(rng, Base.OneTo(n), wv, x), by=real)
+        sort!(sample!(rng, Base.OneTo(n), wv, x, replace=true, ordered=false), by=real)
         for i = 1:k
             x[i] = a[Int(x[i])]
         end
     else
         indices = Array{Int}(undef, k)
-        sort!(direct_sample!(rng, Base.OneTo(n), wv, indices))
+        sort!(sample!(rng, Base.OneTo(n), wv, indices, replace=true, ordered=false))
         for i = 1:k
             x[i] = a[indices[i]]
         end
@@ -587,7 +587,7 @@ function direct_sample_ordered!(rng::AbstractRNG, a::AbstractArray, wv::Abstract
 end
 
 direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, wv::AbstractWeights, x::AbstractArray{<:Real}) =
-    sort!(direct_sample!(rng, a, wv, x), rev=step(a)<0)
+    sort!(sample!(rng, a, wv, x, replace=true, ordered=false), rev=step(a)<0)
 
 function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
                            a::AbstractVector{Float64},
