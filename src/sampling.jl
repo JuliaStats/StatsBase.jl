@@ -42,6 +42,39 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 end
 direct_sample!(a::AbstractArray, x::AbstractArray) = direct_sample!(Random.GLOBAL_RNG, a, x)
 
+# check whether we can use T to store indices 1:n exactly
+for T in unique([Int,Int64,UInt64,Int128,UInt128])
+    @eval isexact(n, ::Type{$T}) = true
+end
+isexact(n, ::Type{T}) where {T<:Integer} = n ≤ typemax(T)
+isexact(n, ::Type{BigInt}) = false # bigint is too expensive
+for T in (Float32, Float64)
+    @eval isexact(n, ::Type{$T}) = n ≤ maxintfloat($T)
+end
+isexact(n, ::Type{Complex{T}}) where {T} = isexact(n, T)
+isexact(n, ::Type{Rational{T}}) where {T} = isexact(n, T)
+isexact(n, T) = false
+
+function direct_sample_ordered!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    n, k = length(a), length(x)
+    if isexact(n, eltype(x))
+        sort!(direct_sample!(rng, Base.OneTo(n), x), by=real)
+        for i = 1:k
+            x[i] = a[Int(x[i])]
+        end
+    else
+        indices = Array{Int}(undef, k)
+        sort!(direct_sample!(rng, Base.OneTo(n), indices))
+        for i = 1:k
+            x[i] = a[indices[i]]
+        end
+    end
+    return x
+end
+
+direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, x::AbstractArray) =
+    sort!(direct_sample!(rng, a, x), rev=step(a)<0)
+
 ### draw a pair of distinct integers in [1:n]
 
 """
@@ -410,7 +443,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
 
     if replace  # with replacement
         if ordered
-            sort!(direct_sample!(rng, a, x))
+            direct_sample_ordered!(rng, a, x)
         else
             direct_sample!(rng, a, x)
         end
@@ -535,6 +568,26 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray,
 end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
+
+function direct_sample_ordered!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+    n, k = length(a), length(x)
+    if isexact(n, eltype(x))
+        sort!(direct_sample!(rng, Base.OneTo(n), wv, x), by=real)
+        for i = 1:k
+            x[i] = a[Int(x[i])]
+        end
+    else
+        indices = Array{Int}(undef, k)
+        sort!(direct_sample!(rng, Base.OneTo(n), wv, indices))
+        for i = 1:k
+            x[i] = a[indices[i]]
+        end
+    end
+    return x
+end
+
+direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, wv::AbstractWeights, x::AbstractArray) =
+    sort!(direct_sample!(rng, a, wv, x), rev=step(a)<0)
 
 function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
                            a::AbstractVector{Float64},
@@ -841,7 +894,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
 
     if replace
         if ordered
-            sort!(direct_sample!(rng, a, wv, x))
+            direct_sample_ordered!(rng, a, wv, x)
         else
             if n < 40
                 direct_sample!(rng, a, wv, x)
