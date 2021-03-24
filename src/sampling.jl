@@ -72,7 +72,7 @@ function direct_sample_ordered!(rng::AbstractRNG, a::AbstractArray, x::AbstractA
     return x
 end
 
-direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, x::AbstractArray) =
+direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, x::AbstractArray{<:Real}) =
     sort!(direct_sample!(rng, a, x), rev=step(a)<0)
 
 ### draw a pair of distinct integers in [1:n]
@@ -586,7 +586,7 @@ function direct_sample_ordered!(rng::AbstractRNG, a::AbstractArray, wv::Abstract
     return x
 end
 
-direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, wv::AbstractWeights, x::AbstractArray) =
+direct_sample_ordered!(rng::AbstractRNG, a::AbstractRange, wv::AbstractWeights, x::AbstractArray{<:Real}) =
     sort!(direct_sample!(rng, a, wv, x), rev=step(a)<0)
 
 function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
