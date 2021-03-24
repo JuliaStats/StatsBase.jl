@@ -43,7 +43,7 @@ end
 direct_sample!(a::AbstractArray, x::AbstractArray) = direct_sample!(Random.GLOBAL_RNG, a, x)
 
 # check whether we can use T to store indices 1:n exactly
-for T in unique([Int,Int64,UInt64,Int128,UInt128])
+for T in unique!([Int,Int64,UInt64,Int128,UInt128])
     @eval isexact(n, ::Type{$T}) = true
 end
 isexact(n, ::Type{T}) where {T<:Integer} = n ≤ typemax(T)
