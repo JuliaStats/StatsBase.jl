@@ -244,3 +244,6 @@ test_same(replace=true, ordered=true)
 test_same(replace=false, ordered=true)
 test_same(replace=true, ordered=false)
 test_same(replace=false, ordered=false)
+
+@test_throws DomainError sample(pweights([NaN, 0]))
+@test_throws DomainError sample!([], pweights([Inf, 0]), [])
