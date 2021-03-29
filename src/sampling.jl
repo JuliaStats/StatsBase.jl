@@ -864,8 +864,9 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
     end
     return x
 end
-sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
-    sample!(Random.GLOBAL_RNG, a, wv, x)
+sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
+        replace::Bool=true, ordered::Bool=false) =
+    sample!(Random.GLOBAL_RNG, a, wv, x; replace=replace, ordered=ordered)
 
 sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, n::Integer;
        replace::Bool=true, ordered::Bool=false) where {T} =
