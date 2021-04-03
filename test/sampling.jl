@@ -222,3 +222,23 @@ Random.seed!(1);
 @test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
 @test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]
+
+
+#### check that sample and sample! do the same thing
+function test_same(;kws...)
+    wv = Weights(rand(20))
+    Random.seed!(1)
+    x1 = sample(1:20, wv, 10; kws...)
+    Random.seed!(1)
+    x2 = zeros(Int, 10)
+    sample!(1:20, wv, x2; kws...)
+    @test x1 == x2
+end
+
+test_same()
+test_same(replace=true)
+test_same(replace=false)
+test_same(replace=true, ordered=true)
+test_same(replace=false, ordered=true)
+test_same(replace=true, ordered=false)
+test_same(replace=false, ordered=false)
