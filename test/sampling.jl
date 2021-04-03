@@ -27,19 +27,19 @@ end
 
 #### sample with replacement
 
-function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false, rev::Bool=false)
     vmin, vmax = vrgn
     (amin, amax) = extrema(a)
     @test vmin <= amin <= amax <= vmax
     n = vmax - vmin + 1
     p0 = fill(1/n, n)
     if ordered
-        @test issorted(a)
+        @test issorted(a; rev=rev)
         if ptol > 0
             @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         end
     else
-        @test !issorted(a)
+        @test !issorted(a; rev=rev)
         ncols = size(a,2)
         if ncols == 1
             @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
@@ -68,11 +68,15 @@ test_rng_use(direct_sample!, 1:10, zeros(Int, 6))
 a = sample(3:12, n)
 check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
-a = sample(3:12, n; ordered=true)
-check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
+for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
+    r = rev ? reverse(3:12) : (3:12)
+    r = T===Int ? r : T.(r)
+    aa = Int.(sample(r, n; ordered=true))
+    check_sample_wrep(aa, (3, 12), 5.0e-3; ordered=true, rev=rev)
 
-a = sample(3:12, 10; ordered=true)
-check_sample_wrep(a, (3, 12), 0; ordered=true)
+    aa = Int.(sample(r, 10; ordered=true))
+    check_sample_wrep(aa, (3, 12), 0; ordered=true, rev=rev)
+end
 
 test_rng_use(sample, 1:10, 10)
 
@@ -91,7 +95,7 @@ test_rng_use(samplepair, 1000)
 
 #### sample without replacement
 
-function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false, rev::Bool=false)
     # each column of a for one run
 
     vmin, vmax = vrgn
@@ -103,7 +107,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
         aj = view(a,:,j)
         @assert allunique(aj)
         if ordered
-            @assert issorted(aj)
+            @assert issorted(aj, rev=rev)
         end
     end
 
@@ -178,6 +182,9 @@ check_sample_norep(a, (3, 12), 0; ordered=false)
 a = sample(3:12, 5; replace=false, ordered=true)
 check_sample_norep(a, (3, 12), 0; ordered=true)
 
+a = sample(reverse(3:12), 5; replace=false, ordered=true)
+check_sample_norep(a, (3, 12), 0; ordered=true, rev=true)
+
 # tests of multidimensional sampling
 
 a = sample(3:12, (2, 2); replace=false)
@@ -214,4 +221,4 @@ Random.seed!(1);
 
 @test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
-@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]
+@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [2 3; 1 4]
