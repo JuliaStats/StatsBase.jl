@@ -221,4 +221,4 @@ Random.seed!(1);
 
 @test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
-@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [2 3; 1 4]
+@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]

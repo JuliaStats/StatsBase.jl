@@ -868,11 +868,17 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         threshold = pq[1].first
         X = threshold * randexp(rng)
     end
-
-    # fill output array with items from final queue
-    ordered && sort!(pq, by=last)
-    @inbounds for i in 1:k
-        x[i] = a[pq[i].second]
+    if ordered
+        # fill output array with items sorted as in a
+        sort!(pq, by=last)
+        @inbounds for i in 1:k
+            x[i] = a[pq[i].second]
+        end
+    else
+        # fill output array with items in descending order
+        @inbounds for i in k:-1:1
+            x[i] = a[heappop!(pq).second]
+        end
     end
     return x
 end
