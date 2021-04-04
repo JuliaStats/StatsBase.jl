@@ -8,4 +8,5 @@ indexmap
 indicatormat
 StatsBase.midpoints
 pairwise
+pairwise!
 ```
