@@ -5,7 +5,8 @@ Random.seed!(1234)
 
 #### weighted sample with replacement
 
-function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false, rev::Bool=false)
+function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real;
+                            ordered::Bool=false, rev::Bool=false)
     K = length(wv)
     (vmin, vmax) = vrgn
     (amin, amax) = extrema(a)
