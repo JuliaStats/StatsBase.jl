@@ -825,7 +825,8 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(k \\log(k) \\lo
 processing time to draw ``k`` elements. It consumes ``O(k \\log(n / k))`` random numbers.
 """
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                                         wv::AbstractWeights, x::AbstractArray; ordered::Bool=false)
+                                         wv::AbstractWeights, x::AbstractArray;
+                                         ordered::Bool=false)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
