@@ -52,6 +52,8 @@ for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64
     r = T===Int ? r : T.(r)
     aa = Int.(sample(r, wv, n; ordered=true))
     check_wsample_wrep(aa, (4, 7), wv, 5.0e-3; ordered=true, rev=rev)
+    aa = Int.(sample(r, wv, 10; ordered=true))
+    check_wsample_wrep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
 end
 
 
