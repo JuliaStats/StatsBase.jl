@@ -54,7 +54,7 @@ storeindices(n, k, ::Type{T}) where {T<:Base.HWNumber}  = _storeindices(n, k, T)
 storeindices(n, k, T) = false
 
 # order results of a sampler that does not order automatically
-function sample_ordered!(sampler!::F, rng::AbstractRNG, a::AbstractArray, x::AbstractArray) where {F}
+function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n, k = length(a), length(x)
     if storeindices(n, k, eltype(x))
         sort!(sampler!(rng, Base.OneTo(n), x), by=real, lt=<)
@@ -72,11 +72,11 @@ function sample_ordered!(sampler!::F, rng::AbstractRNG, a::AbstractArray, x::Abs
 end
 
 # special case of a range (or any sorted array) can be done more efficiently
-sample_ordered!(sampler!::F, rng::AbstractRNG, a::AbstractRange, x::AbstractArray) where {F} =
+sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractRange, x::AbstractArray) =
     sort!(sampler!(rng, a, x), rev=step(a)<0)
 
 # weighted case:
-sample_ordered!(sampler!::F, rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray) where {F} =
+sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     sample_ordered!(rng, a, x) do rng, a, x
         sampler!(rng, a, wv, x)
     end
