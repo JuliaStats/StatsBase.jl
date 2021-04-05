@@ -57,7 +57,8 @@ end
 
 #### weighted sampling without replacement
 
-function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false, rev::Bool=false)
+function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real;
+                             ordered::Bool=false, rev::Bool=false)
     # each column of a for one run
 
     vmin, vmax = vrgn
