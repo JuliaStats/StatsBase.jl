@@ -64,7 +64,7 @@ function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::Abstra
     else
         indices = Array{Int}(undef, k)
         sort!(sampler!(rng, Base.OneTo(n), indices))
-        for i = 1:k
+        @inbounds for i = 1:k
             x[i] = a[indices[i]]
         end
     end
