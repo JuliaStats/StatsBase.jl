@@ -42,21 +42,22 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 end
 direct_sample!(a::AbstractArray, x::AbstractArray) = direct_sample!(Random.GLOBAL_RNG, a, x)
 
-# check whether we can use T to store indices 1:n exactly
-isexact(n, ::Type{T}) where {T<:Integer} = n ≤ typemax(T)
-isexact(n, ::Type{BigInt}) = false # bigint is too expensive
-for T in (Float32, Float64)
-    @eval isexact(n, ::Type{$T}) = n ≤ maxintfloat($T)
-end
-isexact(n, ::Type{Complex{T}}) where {T} = isexact(n, T)
-isexact(n, ::Type{Rational{T}}) where {T} = isexact(n, T)
-isexact(n, T) = false
+# check whether we can use T to store indices 1:n exactly, and
+# use some heuristics to decide whether it is beneficial for k samples
+# (true for a subset of hardware-supported numeric types)
+_storeindices(n, k, ::Type{T}) where {T<:Integer} = n ≤ typemax(T)
+_storeindices(n, k, ::Type{T}) where {T<:Union{Float32,Float64}} = k < 22 && n ≤ maxintfloat(T)
+_storeindices(n, k, ::Type{Complex{T}}) where {T} = _storeindices(n, k, T)
+_storeindices(n, k, ::Type{Rational{T}}) where {T} = k < 16 && _storeindices(n, k, T)
+_storeindices(n, k, T) = false
+storeindices(n, k, ::Type{T}) where {T<:Base.HWNumber}  = _storeindices(n, k, T)
+storeindices(n, k, T) = false
 
 # order results of a sampler that does not order automatically
 function sample_ordered!(sampler!::F, rng::AbstractRNG, a::AbstractArray, x::AbstractArray) where {F}
     n, k = length(a), length(x)
-    if isexact(n, eltype(x))
-        sort!(sampler!(rng, Base.OneTo(n), x), by=real)
+    if storeindices(n, k, eltype(x))
+        sort!(sampler!(rng, Base.OneTo(n), x), by=real, lt=<)
         for i = 1:k
             x[i] = a[Int(x[i])]
         end
