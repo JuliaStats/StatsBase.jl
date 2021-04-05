@@ -883,7 +883,8 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     end
     return x
 end
-efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray; ordered::Bool=false) =
+efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
+                                ordered::Bool=false) =
     efraimidis_aexpj_wsample_norep!(Random.GLOBAL_RNG, a, wv, x; ordered=ordered)
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
