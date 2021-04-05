@@ -56,6 +56,9 @@ storeindices(n, k, T) = false
 # order results of a sampler that does not order automatically
 function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     n, k = length(a), length(x)
+    # todo: if eltype(x) <: Real && eltype(a) <: Real,
+    #       in some cases it might be faster to check
+    #       issorted(a) to see if we can just sort x
     if storeindices(n, k, eltype(x))
         sort!(sampler!(rng, Base.OneTo(n), x), by=real, lt=<)
         @inbounds for i = 1:k
@@ -71,7 +74,7 @@ function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::Abstra
     return x
 end
 
-# special case of a range (or any sorted array) can be done more efficiently
+# special case of a range can be done more efficiently
 sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractRange, x::AbstractArray) =
     sort!(sampler!(rng, a, x), rev=step(a)<0)
 
