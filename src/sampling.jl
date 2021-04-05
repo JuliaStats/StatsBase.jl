@@ -444,6 +444,7 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    1 == firstindex(a) == firstindex(x) || throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     k = length(x)
     k == 0 && return x
@@ -887,6 +888,7 @@ efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstra
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) || throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     k = length(x)
 
