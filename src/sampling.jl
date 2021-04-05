@@ -58,7 +58,7 @@ function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::Abstra
     n, k = length(a), length(x)
     if storeindices(n, k, eltype(x))
         sort!(sampler!(rng, Base.OneTo(n), x), by=real, lt=<)
-        for i = 1:k
+        @inbounds for i = 1:k
             x[i] = a[Int(x[i])]
         end
     else
