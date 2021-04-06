@@ -36,16 +36,6 @@ Compute confidence intervals for coefficients, with confidence level `level` (by
 confint(model::StatisticalModel) = error("confint is not defined for $(typeof(model)).")
 
 """
-    cooksdistance(model::StatisticalModel)
-
-Compute [Cook's distance](https://en.wikipedia.org/wiki/Cook%27s_distance)
-for each observation in linear model `obj`, giving an estimate of the influence
-of each data point.
-Currently only implemented for LinearModel models without weights.
-"""
-cooksdistance(model::StatisticalModel) = error("cooksdistance is not defined for $(typeof(model)).")
-
-"""
     deviance(model::StatisticalModel)
 
 Return the deviance of the model relative to a reference, which is usually when applicable
@@ -362,6 +352,15 @@ crossmodelmatrix(model::RegressionModel) = (x = modelmatrix(model); Symmetric(x'
 Return the diagonal of the projection matrix of the model.
 """
 leverage(model::RegressionModel) = error("leverage is not defined for $(typeof(model)).")
+
+"""
+    cooksdistance(model::RegressionModel)
+
+Compute [Cook's distance](https://en.wikipedia.org/wiki/Cook%27s_distance)
+for each observation in linear model `model`, giving an estimate of the influence
+of each data point.
+"""
+cooksdistance(model::RegressionModel) = error("cooksdistance is not defined for $(typeof(model)).")
 
 """
     residuals(model::RegressionModel)
