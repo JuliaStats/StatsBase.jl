@@ -43,7 +43,7 @@ for each observation in linear model `obj`, giving an estimate of the influence
 of each data point.
 Currently only implemented for LinearModel models without weights.
 """
-function cooksdistance(model::StatisticalModel) = error("cooksdistance is not defined for $(typeof(model)).")
+cooksdistance(model::StatisticalModel) = error("cooksdistance is not defined for $(typeof(model)).")
 
 """
     deviance(model::StatisticalModel)
