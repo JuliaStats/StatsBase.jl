@@ -79,7 +79,8 @@ sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractRange, x::AbstractArray) 
     sort!(sampler!(rng, a, x), rev=step(a)<0)
 
 # weighted case:
-sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
+sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray,
+                wv::AbstractWeights, x::AbstractArray) =
     sample_ordered!(rng, a, x) do rng, a, x
         sampler!(rng, a, wv, x)
     end
