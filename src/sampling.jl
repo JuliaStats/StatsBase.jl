@@ -891,7 +891,8 @@ efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstra
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
-    1 == firstindex(a) == firstindex(wv) == firstindex(x) || throw(ArgumentError("non 1-based arrays are not supported"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     k = length(x)
 
