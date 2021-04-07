@@ -78,6 +78,8 @@ for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64
     check_sample_wrep(aa, (3, 12), 0; ordered=true, rev=rev)
 end
 
+@test StatsBase._storeindices(1, 1, BigFloat) == StatsBase._storeindices(1, 1, BigFloat) == false
+
 test_rng_use(sample, 1:10, 10)
 
 @testset "sampling pairs" begin
