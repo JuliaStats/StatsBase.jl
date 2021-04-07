@@ -354,6 +354,15 @@ Return the diagonal of the projection matrix of the model.
 leverage(model::RegressionModel) = error("leverage is not defined for $(typeof(model)).")
 
 """
+    cooksdistance(model::RegressionModel)
+
+Compute [Cook's distance](https://en.wikipedia.org/wiki/Cook%27s_distance)
+for each observation in linear model `model`, giving an estimate of the influence
+of each data point.
+"""
+cooksdistance(model::RegressionModel) = error("cooksdistance is not defined for $(typeof(model)).")
+
+"""
     residuals(model::RegressionModel)
 
 Return the residuals of the model.
