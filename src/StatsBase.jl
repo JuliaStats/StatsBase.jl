@@ -172,6 +172,7 @@ export
     coefnames,
     coeftable,
     confint,
+    cooksdistance,
     crossmodelmatrix,
     deviance,
     dof,
