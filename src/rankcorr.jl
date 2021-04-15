@@ -91,7 +91,7 @@ end
 
 function corspearman(X::RealMatrix, Y::RealMatrix)
     size(X, 1) == size(Y, 1) ||
-        throw(ArgumentError("number of columns in each array must match"))
+        throw(ArgumentError("number of rows in each array must match"))
     nr = size(X, 2)
     nc = size(Y, 2)
     C = Matrix{Float64}(undef, nr, nc)
