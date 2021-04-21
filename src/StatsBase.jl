@@ -193,6 +193,7 @@ export
     nobs,
     nulldeviance,
     nullloglikelihood,
+    pointwiseloglikelihood,
     rss,
     score,
     stderror,
