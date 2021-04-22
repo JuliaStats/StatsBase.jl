@@ -310,7 +310,7 @@ julia> uweights(3)
  1
  1
  1
- 
+
 julia> uweights(Float64, 3)
 3-element UnitWeights{Float64}:
  1.0
@@ -716,6 +716,74 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     end
     return out
 end
+
+function quantile_v2(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
+    # checks
+    isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
+    isempty(p) && throw(ArgumentError("empty quantile array"))
+    all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
+
+    w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
+    length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
+        "got $(length(v)) and $(length(w))"))
+    for x in w.values
+        isnan(x) && throw(ArgumentError("weight vector cannot contain NaN entries"))
+        x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
+    end
+
+    isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) &&
+        throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" *
+                            "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
+
+    # remove zeros weights and sort
+    wsum = sum(w)
+    nz = .!iszero.(w)
+    vw = sort!(collect(zip(view(v, nz), view(w, nz))))
+    N = length(vw)
+
+    # prepare percentiles
+    ppermute = sortperm(p)
+    p = p[ppermute]
+
+    # prepare out vector
+    out = Vector{typeof(zero(V)/1)}(undef, length(p))
+    fill!(out, vw[end][1])
+
+    @inbounds for x in v
+        isnan(x) && return fill!(out, x)
+    end
+
+    # loop on quantiles
+    Sk, Skold = zero(W), zero(W)
+    vk, vkold = zero(V), zero(V)
+    k = 0
+
+    w1 = vw[1][2]
+    for i in 1:length(p)
+        if isa(w, FrequencyWeights)
+            h = p[i] * (wsum - 1) + 1
+        else
+            h = p[i] * wsum
+        end
+        while Sk <= h
+            k += 1
+            if k > N
+               # out was initialized with maximum v
+               return out
+            end
+            Skold, vkold = Sk, vk
+            vk, wk = vw[k]
+            Sk += wk
+        end
+        if isa(w, FrequencyWeights)
+            out[ppermute[i]] = vkold + min(h - Skold, 1) * (vk - vkold)
+        else
+            out[ppermute[i]] = vk
+        end
+    end
+    return out
+end
+
 
 function quantile(v::RealVector, w::UnitWeights, p::RealVector)
     length(v) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
