@@ -77,22 +77,24 @@ nullloglikelihood(model::StatisticalModel) =
     error("nullloglikelihood is not defined for $(typeof(model)).")
 
 """
-    pointwiseloglikelihood(model::StatisticalModel)
+    loglikelihood(model::StatisticalModel, ::Colon)
 
 Return a vector of each observation's contribution to the log-likelihood of the model.
+In other words, this is the vector of the pointwise log-likelihood contributions.
 
-In general, `sum(pointwiseloglikehood(model)) == loglikelihood(model)`.
+
+In general, `sum(loglikehood(model, :)) == loglikelihood(model)`.
 """
-pointwiseloglikelihood(model::StatisticalModel) =
-    error("pointwiseloglikelihood(model::StatisticalModel) is not defined for $(typeof(model)).")
+loglikelihood(model::StatisticalModel, ::Colon) =
+    error("loglikelihood(model::StatisticalModel, ::Colon) is not defined for $(typeof(model)).")
 
 """
-    pointwiseloglikelihood(model::StatisticalModel, observation)
+    loglikelihood(model::StatisticalModel, observation)
 
 Return the log-likelihood of `observation` contribution under `model`.
 """
-pointwiseloglikelihood(model::StatisticalModel, observation) =
-    error("pointwiseloglikelihood(model::StatisticalModel, observation) is not defined for $(typeof(model)).")
+loglikelihood(model::StatisticalModel, observation) =
+    error("loglikelihood(model::StatisticalModel, observation) is not defined for $(typeof(model)).")
 
 """
     score(model::StatisticalModel)
