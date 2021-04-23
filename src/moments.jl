@@ -42,7 +42,7 @@ function var(v::RealArray, w::AbstractWeights; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
 
-    if mean == nothing
+    if mean === nothing
         varm(v, w, Statistics.mean(v, w); corrected=corrected)
     else
         varm(v, w, mean; corrected=corrected)
@@ -82,17 +82,17 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
     end
 end
 
-function varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
-                   corrected::DepBool=nothing)
+function varm(A::RealArray{T}, w::AbstractWeights, M::RealArray, dim::Int;
+                   corrected::DepBool=nothing) where T
     corrected = depcheck(:varm, corrected)
-    varm!(similar(A, Float64, Base.reduced_indices(axes(A), dim)), A, w, M,
+    varm!(similar(A, promote_type(T, eltype(w)), Base.reduced_indices(axes(A), dim)), A, w, M,
                dim; corrected=corrected)
 end
 
-function var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
-                  corrected::DepBool=nothing)
+function var(A::RealArray{T}, w::AbstractWeights, dim::Int; mean=nothing,
+                  corrected::DepBool=nothing) where T
     corrected = depcheck(:var, corrected)
-    var!(similar(A, Float64, Base.reduced_indices(axes(A), dim)), A, w, dim;
+    var!(similar(A, promote_type(T, eltype(w)), Base.reduced_indices(axes(A), dim)), A, w, dim;
          mean=mean, corrected=corrected)
 end
 
@@ -221,9 +221,9 @@ end
 
 
 ##### General central moment
-function _moment2(v::RealArray, m::Real; corrected=false)
+function _moment2(v::RealArray{T}, m::Real; corrected=false) where T
     n = length(v)
-    s = 0.0
+    s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z
@@ -231,9 +231,9 @@ function _moment2(v::RealArray, m::Real; corrected=false)
     varcorrection(n, corrected) * s
 end
 
-function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
+function _moment2(v::RealArray{T}, wv::AbstractWeights, m::Real; corrected=false) where T
     n = length(v)
-    s = 0.0
+    s = zero(promote_type(T, eltype(wv)))
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z) * wv[i]
@@ -242,9 +242,9 @@ function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
     varcorrection(wv, corrected) * s
 end
 
-function _moment3(v::RealArray, m::Real)
+function _moment3(v::RealArray{T}, m::Real) where T
     n = length(v)
-    s = 0.0
+    s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z * z
@@ -252,9 +252,9 @@ function _moment3(v::RealArray, m::Real)
     s / n
 end
 
-function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
+function _moment3(v::RealArray{T}, wv::AbstractWeights, m::Real; corrected=false) where T
     n = length(v)
-    s = 0.0
+    s = zero(promote_type(T, eltype(wv)))
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * wv[i]
@@ -262,9 +262,9 @@ function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
     s / sum(wv)
 end
 
-function _moment4(v::RealArray, m::Real)
+function _moment4(v::RealArray{T}, m::Real) where T
     n = length(v)
-    s = 0.0
+    s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
         s += abs2(z * z)
@@ -272,9 +272,9 @@ function _moment4(v::RealArray, m::Real)
     s / n
 end
 
-function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
+function _moment4(v::RealArray{T}, wv::AbstractWeights, m::Real; corrected=false) where T
     n = length(v)
-    s = 0.0
+    s = zero(promote_type(T, eltype(wv)))
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * wv[i]
@@ -282,9 +282,9 @@ function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
     s / sum(wv)
 end
 
-function _momentk(v::RealArray, k::Int, m::Real)
+function _momentk(v::RealArray{T}, k::Int, m::Real) where T
     n = length(v)
-    s = 0.0
+    s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
         s += (z ^ k)
@@ -292,9 +292,9 @@ function _momentk(v::RealArray, k::Int, m::Real)
     s / n
 end
 
-function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
+function _momentk(v::RealArray{T}, k::Int, wv::AbstractWeights, m::Real) where T
     n = length(v)
-    s = 0.0
+    s = zero(promote_type(T, eltype(wv)))
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * wv[i]
@@ -339,10 +339,10 @@ end
 Compute the standardized skewness of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function skewness(v::RealArray, m::Real)
+function skewness(v::RealArray{T}, m::Real) where T
     n = length(v)
-    cm2 = 0.0   # empirical 2nd centered moment (variance)
-    cm3 = 0.0   # empirical 3rd centered moment
+    cm2 = zero(T)   # empirical 2nd centered moment (variance)
+    cm3 = zero(T)   # empirical 3rd centered moment
     for i = 1:n
         @inbounds z = v[i] - m
         z2 = z * z
@@ -355,11 +355,11 @@ function skewness(v::RealArray, m::Real)
     return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
 end
 
-function skewness(v::RealArray, wv::AbstractWeights, m::Real)
+function skewness(v::RealArray{T}, wv::AbstractWeights, m::Real) where T
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    cm2 = 0.0   # empirical 2nd centered moment (variance)
-    cm3 = 0.0   # empirical 3rd centered moment
+    cm2 = zero(T)   # empirical 2nd centered moment (variance)
+    cm3 = zero(T)   # empirical 3rd centered moment
 
     @inbounds for i = 1:n
         x_i = v[i]
@@ -386,10 +386,10 @@ skewness(v::RealArray, wv::AbstractWeights) = skewness(v, wv, mean(v, wv))
 Compute the excess kurtosis of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function kurtosis(v::RealArray, m::Real)
+function kurtosis(v::RealArray{T}, m::Real) where T
     n = length(v)
-    cm2 = 0.0  # empirical 2nd centered moment (variance)
-    cm4 = 0.0  # empirical 4th centered moment
+    cm2 = zero(T)  # empirical 2nd centered moment (variance)
+    cm4 = zero(T)  # empirical 4th centered moment
     for i = 1:n
         @inbounds z = v[i] - m
         z2 = z * z
@@ -398,14 +398,14 @@ function kurtosis(v::RealArray, m::Real)
     end
     cm4 /= n
     cm2 /= n
-    return (cm4 / (cm2 * cm2)) - 3.0
+    return (cm4 / (cm2 * cm2)) - 3 * one(T)
 end
 
-function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
+function kurtosis(v::RealArray{T}, wv::AbstractWeights, m::Real) where T
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    cm2 = 0.0  # empirical 2nd centered moment (variance)
-    cm4 = 0.0  # empirical 4th centered moment
+    cm2 = zero(T)  # empirical 2nd centered moment (variance)
+    cm4 = zero(T)  # empirical 4th centered moment
 
     @inbounds for i = 1 : n
         x_i = v[i]
@@ -419,7 +419,7 @@ function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
     sw = sum(wv)
     cm4 /= sw
     cm2 /= sw
-    return (cm4 / (cm2 * cm2)) - 3.0
+    return (cm4 / (cm2 * cm2)) - 3 * one(T)
 end
 
 kurtosis(v::RealArray) = kurtosis(v, mean(v))
