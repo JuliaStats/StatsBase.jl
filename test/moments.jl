@@ -294,5 +294,4 @@ end
     end
 end
 
-
 end # @testset "StatsBase.Moments"
