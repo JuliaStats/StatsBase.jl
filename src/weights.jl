@@ -717,6 +717,16 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
+#found here, https://en.wikipedia.org/wiki/Quantile_regression#Sample_quantile.
+
+"""
+quantile_v2(v, w::AbstractWeights, p)
+
+For equal weights, this implementation is consistent with the description
+found here, https://en.wikipedia.org/wiki/Quantile_regression#Sample_quantile.
+We minimize ∑ᵢ wᵢ * ρₚ(vᵢ - p), where ρₚ is the tilted absolute
+value function described in the link.
+"""
 function quantile_v2(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
@@ -731,12 +741,7 @@ function quantile_v2(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) whe
         x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
     end
 
-    isa(w, FrequencyWeights) && !(eltype(w) <: Integer) && any(!isinteger, w) &&
-        throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" *
-                            "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
-
     # remove zeros weights and sort
-    wsum = sum(w)
     nz = .!iszero.(w)
     vw = sort!(collect(zip(view(v, nz), view(w, nz))))
     N = length(vw)
@@ -746,44 +751,33 @@ function quantile_v2(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) whe
     p = p[ppermute]
 
     # prepare out vector
-    out = Vector{typeof(zero(V)/1)}(undef, length(p))
-    fill!(out, vw[end][1])
+    out = fill(vw[end][1], length(p))
 
     @inbounds for x in v
         isnan(x) && return fill!(out, x)
     end
 
     # loop on quantiles
-    Sk, Skold = zero(W), zero(W)
-    vk, vkold = zero(V), zero(V)
+    Sk = zero(W)
+    vk = zero(V)
     k = 0
 
     w1 = vw[1][2]
     for i in 1:length(p)
-        if isa(w, FrequencyWeights)
-            h = p[i] * (wsum - 1) + 1
-        else
-            h = p[i] * wsum
-        end
-        while Sk <= h
+        h = p[i] * w.sum
+        while Sk < h
             k += 1
             if k > N
                # out was initialized with maximum v
                return out
             end
-            Skold, vkold = Sk, vk
             vk, wk = vw[k]
             Sk += wk
         end
-        if isa(w, FrequencyWeights)
-            out[ppermute[i]] = vkold + min(h - Skold, 1) * (vk - vkold)
-        else
-            out[ppermute[i]] = vk
-        end
+        out[ppermute[i]] = vk
     end
     return out
 end
-
 
 function quantile(v::RealVector, w::UnitWeights, p::RealVector)
     length(v) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
