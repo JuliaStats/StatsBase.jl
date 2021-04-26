@@ -82,7 +82,6 @@ nullloglikelihood(model::StatisticalModel) =
 Return a vector of each observation's contribution to the log-likelihood of the model.
 In other words, this is the vector of the pointwise log-likelihood contributions.
 
-
 In general, `sum(loglikehood(model, :)) == loglikelihood(model)`.
 """
 loglikelihood(model::StatisticalModel, ::Colon) =
@@ -91,7 +90,7 @@ loglikelihood(model::StatisticalModel, ::Colon) =
 """
     loglikelihood(model::StatisticalModel, observation)
 
-Return the log-likelihood of `observation` contribution under `model`.
+Return the contribution of `observation` to the log-likelihood of `model`.
 """
 loglikelihood(model::StatisticalModel, observation) =
     error("loglikelihood(model::StatisticalModel, observation) is not defined for $(typeof(model)).")
