@@ -85,7 +85,7 @@ end
 function varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
                    corrected::DepBool=nothing)
     corrected = depcheck(:varm, corrected)
-    T = promote_type(promote_type(eltype(A), eltype(w)), eltype(M))
+    T = promote_type(eltype(A), eltype(w), eltype(M))
     varm!(similar(A, T, Base.reduced_indices(axes(A), dim)), A, w, M,
                dim; corrected=corrected)
 end
@@ -236,7 +236,7 @@ end
 
 function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
     n = length(v)
-    T = promote_type(promote_type(eltype(v), eltype(wv)), typeof(m))
+    T = promote_type(eltype(v), eltype(wv), typeof(m))
     s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
@@ -259,7 +259,7 @@ end
 
 function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
-    T = promote_type(promote_type(eltype(v), eltype(wv)), typeof(m))
+    T = promote_type(eltype(v), eltype(wv), typeof(m))
     s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
@@ -281,7 +281,7 @@ end
 
 function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
-    T = promote_type(promote_type(eltype(v), eltype(wv)), typeof(m))
+    T = promote_type(eltype(v), eltype(wv), typeof(m))
     s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
@@ -303,7 +303,7 @@ end
 
 function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
     n = length(v)
-    T = promote_type(promote_type(eltype(v), eltype(wv)), typeof(m))
+    T = promote_type(eltype(v), eltype(wv), typeof(m))
     s = zero(T)
     for i = 1:n
         @inbounds z = v[i] - m
@@ -369,7 +369,7 @@ end
 function skewness(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    T = promote_type(promote_type(eltype(v), eltype(wv)), typeof(m))
+    T = promote_type(eltype(v), eltype(wv), typeof(m))
     cm2 = zero(T)   # empirical 2nd centered moment (variance)
     cm3 = zero(T)   # empirical 3rd centered moment
 
@@ -417,7 +417,7 @@ end
 function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    T = promote_type(promote_type(eltype(v), eltype(wv)), typeof(m))
+    T = promote_type(eltype(v), eltype(wv), typeof(m))
     cm2 = zero(T)  # empirical 2nd centered moment (variance)
     cm4 = zero(T)  # empirical 4th centered moment
 
