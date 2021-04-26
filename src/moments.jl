@@ -225,8 +225,7 @@ end
 ##### General central moment
 function _moment2(v::RealArray, m::Real; corrected=false)
     n = length(v)
-    T = promote_type(eltype(v), typeof(m))
-    s = zero(T)
+    s = zero(eltype(v)) - zero(m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z
@@ -236,8 +235,7 @@ end
 
 function _moment2(v::RealArray, wv::AbstractWeights, m::Real; corrected=false)
     n = length(v)
-    T = promote_type(eltype(v), eltype(wv), typeof(m))
-    s = zero(T)
+    s = zero(eltype(wv))  * (zero(eltype(v)) - zero(m))^2
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z) * wv[i]
@@ -248,8 +246,7 @@ end
 
 function _moment3(v::RealArray, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), typeof(m))
-    s = zero(T)
+    s = zero(eltype(v)) - zero(m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z * z
@@ -259,8 +256,7 @@ end
 
 function _moment3(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), eltype(wv), typeof(m))
-    s = zero(T)
+    s = zero(eltype(wv))  * (zero(eltype(v)) - zero(m))^2
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * wv[i]
@@ -270,8 +266,7 @@ end
 
 function _moment4(v::RealArray, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), typeof(m))
-    s = zero(T)
+    s = zero(eltype(v)) - zero(m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += abs2(z * z)
@@ -281,8 +276,7 @@ end
 
 function _moment4(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), eltype(wv), typeof(m))
-    s = zero(T)
+    s = zero(eltype(wv))  * (zero(eltype(v)) - zero(m))^2
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * wv[i]
@@ -292,8 +286,7 @@ end
 
 function _momentk(v::RealArray, k::Int, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), typeof(m))
-    s = zero(T)
+    s = zero(eltype(v)) - zero(m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += (z ^ k)
@@ -303,8 +296,7 @@ end
 
 function _momentk(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), eltype(wv), typeof(m))
-    s = zero(T)
+    s = zero(eltype(wv))  * (zero(eltype(v)) - zero(m))^2
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * wv[i]
