@@ -77,6 +77,25 @@ nullloglikelihood(model::StatisticalModel) =
     error("nullloglikelihood is not defined for $(typeof(model)).")
 
 """
+    loglikelihood(model::StatisticalModel, ::Colon)
+
+Return a vector of each observation's contribution to the log-likelihood of the model.
+In other words, this is the vector of the pointwise log-likelihood contributions.
+
+In general, `sum(loglikehood(model, :)) == loglikelihood(model)`.
+"""
+loglikelihood(model::StatisticalModel, ::Colon) =
+    error("loglikelihood(model::StatisticalModel, ::Colon) is not defined for $(typeof(model)).")
+
+"""
+    loglikelihood(model::StatisticalModel, observation)
+
+Return the contribution of `observation` to the log-likelihood of `model`.
+"""
+loglikelihood(model::StatisticalModel, observation) =
+    error("loglikelihood(model::StatisticalModel, observation) is not defined for $(typeof(model)).")
+
+"""
     score(model::StatisticalModel)
 
 Return the score of the model, that is the gradient of the
