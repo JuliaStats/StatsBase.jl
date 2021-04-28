@@ -633,7 +633,7 @@ end
 """
     quantile(v, w::AbstractWeights, p)
 
-Compute the weighted quantiles of a vector `v` at a specified set of probability
+For mle = false (default), compute the weighted quantiles of a vector `v` at a specified set of probability
 values `p`, using weights given by a weight vector `w` (of type `AbstractWeights`).
 Weights must not be negative. The weights and data vectors must have the same length.
 `NaN` is returned if `x` contains any `NaN` values. An error is raised if `w` contains
@@ -649,8 +649,14 @@ observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}`
 is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} - v_k)``
 with  ``\\gamma = (h - S_k)/(S_{k+1} - S_k)``. In particular, when all weights are equal,
 the function returns the same result as the unweighted `quantile`.
+
+For mle = true, this implementation is consistent with the description
+found here, https://en.wikipedia.org/wiki/Quantile_regression#Sample_quantile,
+and is appropriate for applications such as weighted MLE for Laplace distributions.
+We minimize ∑ᵢ wᵢ * ρₚ(vᵢ - p), where ρₚ is the tilted absolute
+value function described in the link.
 """
-function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
+function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector; mle=false) where {V,W<:Real}
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
@@ -669,10 +675,8 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
                             "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
 
     # remove zeros weights and sort
-    wsum = sum(w)
     nz = .!iszero.(w)
     vw = sort!(collect(zip(view(v, nz), view(w, nz))))
-    N = length(vw)
 
     # prepare percentiles
     ppermute = sortperm(p)
@@ -686,23 +690,34 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
         isnan(x) && return fill!(out, x)
     end
 
-    # loop on quantiles
+    if mle
+        mle_sample_quantile!(vw, w, p, ppermute, out)
+    else
+        base_sample_quantile!(vw, w, p, ppermute, out)
+    end
+
+    return out
+end
+
+function base_sample_quantile!(vw::Vector{Tuple{V,W}}, w, p, ppermute, out) where {V,W <: Real}
+     # loop on quantiles
     Sk, Skold = zero(W), zero(W)
     vk, vkold = zero(V), zero(V)
     k = 0
+    N = length(vw)
 
     w1 = vw[1][2]
     for i in 1:length(p)
         if isa(w, FrequencyWeights)
-            h = p[i] * (wsum - 1) + 1
+            h = p[i] * (w.sum - 1) + 1
         else
-            h = p[i] * (wsum - w1) + w1
+            h = p[i] * (w.sum - w1) + w1
         end
         while Sk <= h
             k += 1
             if k > N
                # out was initialized with maximum v
-               return out
+               return
             end
             Skold, vkold = Sk, vk
             vk, wk = vw[k]
@@ -714,62 +729,22 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
             out[ppermute[i]] = vkold + (h - Skold) / (Sk - Skold) * (vk - vkold)
         end
     end
-    return out
 end
 
-#found here, https://en.wikipedia.org/wiki/Quantile_regression#Sample_quantile.
-
-"""
-quantile_v2(v, w::AbstractWeights, p)
-
-For equal weights, this implementation is consistent with the description
-found here, https://en.wikipedia.org/wiki/Quantile_regression#Sample_quantile.
-We minimize ∑ᵢ wᵢ * ρₚ(vᵢ - p), where ρₚ is the tilted absolute
-value function described in the link.
-"""
-function quantile_v2(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
-    # checks
-    isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
-    isempty(p) && throw(ArgumentError("empty quantile array"))
-    all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
-
-    w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
-    length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
-        "got $(length(v)) and $(length(w))"))
-    for x in w.values
-        isnan(x) && throw(ArgumentError("weight vector cannot contain NaN entries"))
-        x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
-    end
-
-    # remove zeros weights and sort
-    nz = .!iszero.(w)
-    vw = sort!(collect(zip(view(v, nz), view(w, nz))))
-    N = length(vw)
-
-    # prepare percentiles
-    ppermute = sortperm(p)
-    p = p[ppermute]
-
-    # prepare out vector
-    out = fill(vw[end][1], length(p))
-
-    @inbounds for x in v
-        isnan(x) && return fill!(out, x)
-    end
-
+function mle_sample_quantile!(vw::Vector{Tuple{V,W}}, w, p, ppermute, out) where {V,W <: Real}
     # loop on quantiles
     Sk = zero(W)
     vk = zero(V)
     k = 0
+    N = length(vw)
 
-    w1 = vw[1][2]
     for i in 1:length(p)
         h = p[i] * w.sum
         while Sk < h
             k += 1
             if k > N
                # out was initialized with maximum v
-               return out
+               return
             end
             vk, wk = vw[k]
             Sk += wk
