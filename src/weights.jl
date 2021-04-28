@@ -751,7 +751,6 @@ function mle_sample_quantile!(vw::Vector{Tuple{V,W}}, w, p, ppermute, out) where
         end
         out[ppermute[i]] = vk
     end
-    return out
 end
 
 function quantile(v::RealVector, w::UnitWeights, p::RealVector)
