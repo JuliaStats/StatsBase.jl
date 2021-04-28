@@ -65,7 +65,7 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
     if mean == 0
         varm!(R, A, w, Base.reducedim_initarray(A, dims, 0, eltype(R)), dims;
                    corrected=corrected)
-    elseif mean == nothing
+    elseif mean === nothing
         varm!(R, A, w, Statistics.mean(A, w, dims=dims), dims; corrected=corrected)
     else
         # check size of mean
@@ -85,7 +85,8 @@ end
 function varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
                    corrected::DepBool=nothing)
     corrected = depcheck(:varm, corrected)
-    T = promote_type(eltype(A), eltype(w), eltype(M))
+    TA, TM, Tw = eltype(A), eltype(M), eltype(w)
+    T = typeof( (zero(Tw) * (zero(TA) - zero(TM)))^2 )
     varm!(similar(A, T, Base.reduced_indices(axes(A), dim)), A, w, M,
                dim; corrected=corrected)
 end
@@ -93,9 +94,13 @@ end
 function var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, corrected)
-    T = promote_type(eltype(A), eltype(w))
+    # doing this here instead of in var!
+    # allows better type stability for the returned array
+    M = Statistics.mean(A, w, dims=dim)
+    TA, TM, Tw = eltype(A), eltype(M), eltype(w)
+    T = typeof( (zero(Tw) * (zero(TA) - zero(TM)))^2 )
     var!(similar(A, T, Base.reduced_indices(axes(A), dim)), A, w, dim;
-         mean=mean, corrected=corrected)
+         mean=M, corrected=corrected)
 end
 
 ## std
