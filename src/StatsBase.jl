@@ -40,10 +40,6 @@ export
     uweights,           # construct an UnitWeights vector
     wsum,               # weighted sum with vector as second argument
     wsum!,              # weighted sum across dimensions with provided storage
-    wmean,              # weighted mean
-    wmean!,             # weighted mean across dimensions with provided storage
-    wmedian,            # weighted median
-    wquantile,          # weighted quantile
 
     ## moments
     skewness,       # (standardized) skewness
@@ -161,7 +157,6 @@ export
     inverse_rle,    # inverse run-length encoding
     indexmap,       # construct a map from element to index
     levelsmap,      # construct a map from n unique elements to [1, ..., n]
-    findat,         # find the position within a for elements in b
     indicatormat,   # construct indicator matrix
     pairwise,       # pairwise application of functions
     pairwise!,      # pairwise! application of functions
@@ -180,6 +175,7 @@ export
     coefnames,
     coeftable,
     confint,
+    cooksdistance,
     crossmodelmatrix,
     deviance,
     dof,

@@ -38,6 +38,7 @@ crossmodelmatrix
 dof_residual
 fitted
 leverage
+cooksdistance
 meanresponse
 modelmatrix
 response

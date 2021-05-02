@@ -317,7 +317,7 @@ function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constan
     # Knowing the eltype allows allocating a single array able to hold both original values
     # and differences from the center, instead of two arrays
     S = isconcretetype(T) ? promote_type(T, typeof(middle(zero(T)))) : T
-    x2 = x isa AbstractArray ? LinearAlgebra.copy_oftype(x, S) : collect(S, x)
+    x2 = x isa AbstractArray ? copyto!(similar(x, S), x) : collect(S, x)
     c = center === nothing ? median!(x2) : center
     if isconcretetype(T)
         x2 .= abs.(x2 .- c)
@@ -660,7 +660,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     R = typeof(m)
     n = length(a)
     ns = length(s)
-    qs = if m == 0 || n == 0
+    qs = if ns == 0
         R[NaN, NaN, NaN, NaN, NaN]
     elseif T >: Missing
         quantile!(s, [0.00, 0.25, 0.50, 0.75, 1.00])

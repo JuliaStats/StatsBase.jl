@@ -19,8 +19,12 @@ coefnames(model::StatisticalModel) = error("coefnames is not defined for $(typeo
 """
     coeftable(model::StatisticalModel; level::Real=0.95)
 
-Return a table of class `CoefTable` with coefficients and related statistics.
+Return a table with coefficients and related statistics of the model.
 `level` determines the level for confidence intervals (by default, 95%).
+
+The returned `CoefTable` object implements the
+[Tables.jl](https://github.com/JuliaData/Tables.jl/) interface, and can be
+converted e.g. to a `DataFrame` via `using DataFrames; DataFrame(coeftable(model))`.
 """
 coeftable(model::StatisticalModel) = error("coeftable is not defined for $(typeof(model)).")
 
@@ -71,6 +75,25 @@ This is usually the model containing only the intercept.
 """
 nullloglikelihood(model::StatisticalModel) =
     error("nullloglikelihood is not defined for $(typeof(model)).")
+
+"""
+    loglikelihood(model::StatisticalModel, ::Colon)
+
+Return a vector of each observation's contribution to the log-likelihood of the model.
+In other words, this is the vector of the pointwise log-likelihood contributions.
+
+In general, `sum(loglikehood(model, :)) == loglikelihood(model)`.
+"""
+loglikelihood(model::StatisticalModel, ::Colon) =
+    error("loglikelihood(model::StatisticalModel, ::Colon) is not defined for $(typeof(model)).")
+
+"""
+    loglikelihood(model::StatisticalModel, observation)
+
+Return the contribution of `observation` to the log-likelihood of `model`.
+"""
+loglikelihood(model::StatisticalModel, observation) =
+    error("loglikelihood(model::StatisticalModel, observation) is not defined for $(typeof(model)).")
 
 """
     score(model::StatisticalModel)
@@ -273,7 +296,7 @@ Adjusted pseudo-coefficient of determination (adjusted pseudo R-squared).
 
 For nonlinear models, one of the several pseudo R² definitions must be chosen via `variant`.
 The only currently supported variants are `:MacFadden`, defined as ``1 - (\\log (L) - k)/\\log (L0)`` and
-`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``. 
+`:devianceratio`, defined as ``1 - (D/(n-k))/(D_0/(n-1))``.
 In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null model
 (the model including only the intercept), ``D`` is the deviance of the model,
 ``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
@@ -315,7 +338,7 @@ response(model::RegressionModel) = error("response is not defined for $(typeof(m
 
 """
     responsename(model::RegressionModel)
-    
+
 Return the name of the model response (a.k.a. the dependent variable).
 """
 responsename(model::RegressionModel) = error("responsename is not defined for $(typeof(model)).")
@@ -348,6 +371,15 @@ crossmodelmatrix(model::RegressionModel) = (x = modelmatrix(model); Symmetric(x'
 Return the diagonal of the projection matrix of the model.
 """
 leverage(model::RegressionModel) = error("leverage is not defined for $(typeof(model)).")
+
+"""
+    cooksdistance(model::RegressionModel)
+
+Compute [Cook's distance](https://en.wikipedia.org/wiki/Cook%27s_distance)
+for each observation in linear model `model`, giving an estimate of the influence
+of each data point.
+"""
+cooksdistance(model::RegressionModel) = error("cooksdistance is not defined for $(typeof(model)).")
 
 """
     residuals(model::RegressionModel)
@@ -420,11 +452,34 @@ mutable struct CoefTable
     end
 end
 
+Base.length(ct::CoefTable) = length(ct.cols[1])
+function Base.eltype(ct::CoefTable)
+    names = isempty(ct.rownms) ?
+        tuple(Symbol.(ct.colnms)...) :
+        tuple(Symbol("Name"), Symbol.(ct.colnms)...)
+    types = isempty(ct.rownms) ?
+        Tuple{eltype.(ct.cols)...} :
+        Tuple{eltype(ct.rownms), eltype.(ct.cols)...}
+    NamedTuple{names, types}
+end
+
+function Base.iterate(ct::CoefTable, i::Integer=1)
+    if i in 1:length(ct)
+        cols = getindex.(ct.cols, Ref(i))
+        nt = isempty(ct.rownms) ?
+            eltype(ct)(tuple(cols...)) :
+            eltype(ct)(tuple(ct.rownms[i], cols...))
+        (nt, i+1)
+    else
+        nothing
+    end
+end
+
 """
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
 """
-struct PValue
+struct PValue <: Real
     v::Real
     function PValue(v::Real)
         0 <= v <= 1 || isnan(v) || error("p-values must be in [0; 1]")
@@ -450,6 +505,30 @@ struct TestStat <: Real
 end
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
+TestStat(x::TestStat) = x
+
+float(x::Union{TestStat, PValue}) = float(x.v)
+
+for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to place nice with NaN
+    @eval begin
+        Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
+        Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
+        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}) = $op(x1.v, x2.v)
+    end
+end
+
+Base.hash(x::Union{TestStat, PValue}, h::UInt) = hash(x.v, h)
+
+# necessary to avoid a method ambiguity with isless(::TestStat, NaN)
+Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
+Base.isless(y::AbstractFloat, x::Union{TestStat, PValue},) = isless(y, x.v)
+Base.isequal(y::AbstractFloat, x::Union{TestStat, PValue}) = isequal(y, x.v)
+Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
+
+Base.isapprox(x::Union{TestStat, PValue}, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
+Base.isapprox(y::Real, x::Union{TestStat, PValue}; kwargs...) = isapprox(y, x.v; kwargs...)
+Base.isapprox(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = isapprox(x1.v, x2.v; kwargs...)
+
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
@@ -466,7 +545,7 @@ function show(io::IO, ct::CoefTable)
         rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
     mat = [j == 1 ? NoQuote(rownms[i]) :
-           j-1 == ct.pvalcol ? PValue(cols[j-1][i]) :
+           j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
            j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
            cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
            for i in 1:nr, j in 1:nc+1]
@@ -489,6 +568,54 @@ function show(io::IO, ct::CoefTable)
         i != size(mat, 1) && println(io)
     end
     print(io, '\n', repeat('─', totwidth))
+    nothing
+end
+
+function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
+    cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
+    nc = length(cols)
+    nr = length(cols[1])
+    if length(rownms) == 0
+        rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
+    end
+    mat = [j == 1 ? NoQuote(rownms[i]) :
+           j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
+           j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
+           cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
+           for i in 1:nr, j in 1:nc+1]
+    # Code inspired by print_matrix in Base
+    io = IOContext(io, :compact=>true, :limit=>false)
+    A = Base.alignment(io, mat, 1:size(mat, 1), 1:size(mat, 2),
+                       typemax(Int), typemax(Int), 3)
+    nmswidths = pushfirst!(length.(colnms), 0)
+    A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
+         for i in 1:length(A)]
+    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
+
+    # not using Markdown stdlib here because that won't give us nice decimal
+    # alignment (even if that is lost when rendering to HTML, it's still nice
+    # when looking at the markdown itself)
+
+    print(io, '|', ' '^(sum(A[1])+1))
+    for j in 1:length(colnms)
+        print(io, " | ", lpad(colnms[j], sum(A[j+1])))
+    end
+
+    println(io, " |")
+    print(io, '|', rpad(':', sum(A[1])+2, '-'))
+    for j in 1:length(colnms)
+        _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
+        print(io, '|', _pad(':', sum(A[j+1])+2, '-'))
+    end
+    println(io, '|')
+
+    for i in 1:size(mat, 1)
+        print(io, "| ")
+        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), " | ")
+        print(io, " |")
+        i != size(mat, 1) && println(io)
+    end
+
     nothing
 end
 

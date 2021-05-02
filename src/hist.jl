@@ -461,7 +461,7 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 if mode == :pdf || mode == :density
                     # Divide weights by bin volume, for :pdf also divide by sum of weights
                     SumT = norm_type(h)
-                    vs_0 = (mode == :pdf) ? sum(SumT(x) for x in weights) : one(SumT)
+                    vs_0 = (mode == :pdf) ? sum(SumT, weights) : one(SumT)
                     @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
                         (@nref $N weights i) /= $(Symbol("vs_$N"))
                         for A in aux_weights
