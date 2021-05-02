@@ -19,6 +19,7 @@ import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
                    cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
                    median, middle
+import StatsAPI: pairwise, pairwise!
 
     ## tackle compatibility issues
 
@@ -157,6 +158,8 @@ export
     indexmap,       # construct a map from element to index
     levelsmap,      # construct a map from n unique elements to [1, ..., n]
     indicatormat,   # construct indicator matrix
+    pairwise,       # pairwise application of functions
+    pairwise!,      # pairwise! application of functions
 
     # statistical models
     CoefTable,
@@ -228,6 +231,7 @@ include("signalcorr.jl")
 include("partialcor.jl")
 include("empirical.jl")
 include("hist.jl")
+include("pairwise.jl")
 include("misc.jl")
 
 include("sampling.jl")
