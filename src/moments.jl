@@ -348,9 +348,9 @@ specifying a weighting vector `wv` and a center `m`.
 """
 function skewness(v::RealArray, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), typeof(m))
-    cm2 = zero(T)   # empirical 2nd centered moment (variance)
-    cm3 = zero(T)   # empirical 3rd centered moment
+    T = typeof( zero(eltype(v)) - zero(m) )
+    cm2 = zero(T)^2   # empirical 2nd centered moment (variance)
+    cm3 = zero(T)^3   # empirical 3rd centered moment
     for i = 1:n
         @inbounds z = v[i] - m
         z2 = z * z
@@ -366,9 +366,9 @@ end
 function skewness(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    T = promote_type(eltype(v), eltype(wv), typeof(m))
-    cm2 = zero(T)   # empirical 2nd centered moment (variance)
-    cm3 = zero(T)   # empirical 3rd centered moment
+    T = typeof(zero(eltype(v)) - zero(m))
+    cm2 = zero(eltype(wv)) * zero(T)^2   # empirical 2nd centered moment (variance)
+    cm3 = zero(eltype(wv)) * zero(T)^3   # empirical 3rd centered moment
 
     @inbounds for i = 1:n
         x_i = v[i]
@@ -397,9 +397,9 @@ specifying a weighting vector `wv` and a center `m`.
 """
 function kurtosis(v::RealArray, m::Real)
     n = length(v)
-    T = promote_type(eltype(v), typeof(m))
-    cm2 = zero(T)  # empirical 2nd centered moment (variance)
-    cm4 = zero(T)  # empirical 4th centered moment
+    T = typeof( zero(eltype(v)) - zero(m) )
+    cm2 = zero(T)^2  # empirical 2nd centered moment (variance)
+    cm4 = zero(T)^4  # empirical 4th centered moment
     for i = 1:n
         @inbounds z = v[i] - m
         z2 = z * z
@@ -414,9 +414,9 @@ end
 function kurtosis(v::RealArray, wv::AbstractWeights, m::Real)
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    T = promote_type(eltype(v), eltype(wv), typeof(m))
-    cm2 = zero(T)  # empirical 2nd centered moment (variance)
-    cm4 = zero(T)  # empirical 4th centered moment
+    T = typeof(zero(eltype(v)) - zero(m))
+    cm2 = zero(eltype(wv)) * zero(T)^2   # empirical 2nd centered moment (variance)
+    cm4 = zero(eltype(wv)) * zero(T)^4   # empirical 4th centered moment
 
     @inbounds for i = 1 : n
         x_i = v[i]
