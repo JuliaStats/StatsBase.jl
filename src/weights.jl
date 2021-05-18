@@ -611,6 +611,8 @@ weighted mean along dimension `dims`.
 
 # Examples
 ```julia
+n = 20
+x = rand(n)
 w = rand(n)
 mean(x, weights(w))
 ```
