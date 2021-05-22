@@ -210,6 +210,16 @@ end
     @test h.isdensity == h2.isdensity
 end
 
+@testset "Histogram empty" begin
+    h = fit(Histogram, (rand(100), rand(100)))
+    h2 = empty!(deepcopy(h))
+    @test all(x -> x≈0, h2.weights)
+    @test !(h.weights === h2.weights)
+    @test h.edges == h2.edges
+    @test h.closed == h2.closed
+    @test h.isdensity == h2.isdensity
+end
+
 
 @testset "Histogram merge" begin
     histograms = [fit(Histogram, (rand(100), 10 * rand(100)), (0:0.1:1, 0:1:10)) for _ in 1:10]
