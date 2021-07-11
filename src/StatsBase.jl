@@ -205,6 +205,8 @@ export
     residuals,
     r2,
     r²,
+    vif,
+    viftable,
 
     ConvergenceException,
 

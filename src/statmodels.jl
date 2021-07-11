@@ -423,6 +423,29 @@ Return all parameters of a model.
 params(model) = error("params is not defined for $(typeof(model))")
 function params! end
 
+"""
+    vif(model, param)
+
+Return the variance inflation factor for a parameter in a model.
+
+The [variance inflation factor (VIF)](https://en.wikipedia.org/wiki/Variance_inflation_factor) measures
+the increase in the variance of a parameter's estimate in a model with multiple parameters relative to
+the variance in of a paremeter's estimate in a model containing only that parameter.
+"""
+vif(model::StatisticalModel, param) =
+    error("vif(model::StatisticalModel, param) is not defined for $(typeof(model)).")
+
+
+"""
+    viftable(model)
+
+Return the variance inflation factor for all parameters in a model as a `CoefTable`.
+
+See also [`vif`](@ref)
+"""
+viftable(model::StatisticalModel) =
+    error("viftable(model::StatisticalModel) is not defined for $(typeof(model)).")
+
 ## coefficient tables with specialized show method
 
 mutable struct CoefTable
