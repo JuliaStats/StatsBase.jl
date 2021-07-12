@@ -129,3 +129,6 @@ end
 
 err = @test_throws ArgumentError ConvergenceException(10,.1,.2)
 @test err.value.msg == "Change must be greater than tol."
+
+@test_throws MethodError vif()
+@test_throws MethodError viftable()
