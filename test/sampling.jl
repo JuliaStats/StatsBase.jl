@@ -219,11 +219,14 @@ wv = Weights([zeros(5); 1:4; -1])
 @test_throws ErrorException sample(a, wv, 1, replace=false)
 
 #### weighted sampling with dimension
-Random.seed!(1);
 
-@test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
+# shape
+@test size(sample([1, 2], Weights([1, 1]), (2,2))) == (2, 2)
+# weights respected; this works because of the 0-weight
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
-@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]
+wm =  sample(collect(1:4), Weights(1:4), (2,2), replace=false)
+@test size(wm) == (2, 2) # correct shape
+@test length(Set(wm)) == 4 # no duplicates in elements
 
 
 #### check that sample and sample! do the same thing
