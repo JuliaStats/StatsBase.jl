@@ -25,20 +25,8 @@ rather than the raw counts.
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     # add counts of integers from x to r
 
-    k = length(levels)
-    length(r) == k || throw(DimensionMismatch())
-
-    m0 = levels[1]
-    m1 = levels[end]
-    b = m0 - 1
-
-    @inbounds for i in 1 : length(x)
-        xi = x[i]
-        if m0 <= xi <= m1
-            r[xi - b] += 1
-        end
-    end
-    return r
+    wv = uweights(length(x))
+    return addcounts!(r, x, levels, wv)
 end
 
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
