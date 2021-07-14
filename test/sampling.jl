@@ -220,8 +220,6 @@ wv = Weights([zeros(5); 1:4; -1])
 
 #### weighted sampling with dimension
 
-# shape
-@test size(sample([1, 2], Weights([1, 1]), (2,2))) == (2, 2)
 # weights respected; this works because of the 0-weight
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
 wm =  sample(collect(1:4), Weights(1:4), (2,2), replace=false)
