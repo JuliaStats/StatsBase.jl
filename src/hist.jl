@@ -234,6 +234,15 @@ binindex(h::Histogram{T,N}, xs::NTuple{N,Real}) where {T,N} =
     end
 end
 
+@inline function _edge_binindex(edge::AbstractRange, closed::Symbol, x::Real)
+    n = if closed == :right
+        ceil(Int, (x-first(edge)) / step(edge))
+    else
+        n = round(Int, (x - first(edge)) / step(edge) + 1)
+        x < edge[n] ? n - 1 : n
+    end
+    clamp(n, 1, length(edge))
+end
 
 binvolume(h::AbstractHistogram{T,1}, binidx::Integer) where {T} = binvolume(h, (binidx,))
 binvolume(::Type{V}, h::AbstractHistogram{T,1}, binidx::Integer) where {V,T} = binvolume(V, h, (binidx,))
