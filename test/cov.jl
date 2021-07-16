@@ -1,13 +1,26 @@
 using StatsBase
 using LinearAlgebra, Random, Test
+using SparseArrays
 
 struct EmptyCovarianceEstimator <: CovarianceEstimator end
 
+struct WrappedArray{T,N,A} <: AbstractArray{T,N}
+    a::A
+    WrappedArray(a::AbstractArray{T,N}) where {T,N} = new{T,N,typeof(a)}(a)
+end
+Base.size(w::WrappedArray) = size(w.a)
+Base.getindex(w::WrappedArray{T,N}, I::Vararg{Int, N}) where {T,N} = getindex(w.a, I...)
+Base.setindex!(w::WrappedArray{T,N}, v, I::Vararg{Int, N}) where {T,N} = setindex!(w.a, v, I...)
+
+≈ₙ(x,y) = isapprox(x, y; nans=true)
+
 @testset "StatsBase.Covariance" begin
 weight_funcs = (weights, aweights, fweights, pweights)
+array = randn(3, 8)
+wrapped_array = WrappedArray(array)
+sparse_array = sprandn(3, 8, 0.2)
 
-@testset "$f" for f in weight_funcs
-    X = randn(3, 8)
+@testset "$f,$(typeof(X))" for f in weight_funcs, X in (array, wrapped_array, sparse_array)
 
     Z1 = X .- mean(X, dims = 1)
     Z2 = X .- mean(X, dims = 2)
@@ -87,27 +100,32 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=false)
             @test m == mean(X, dims=1)
-            @test C == cov(X, dims=1, corrected=false)
+            @test C ≈ cov(X, dims=1, corrected=false)
 
             (m, C) = mean_and_cov(X, 1; corrected=false)
             @test m == mean(X, dims=1)
-            @test C == cov(X, dims=1, corrected = false)
+            @test C ≈ cov(X, dims=1, corrected = false)
 
             (m, C) = mean_and_cov(X, 2; corrected=false)
             @test m == mean(X, dims=2)
-            @test C == cov(X, dims=2, corrected = false)
+            @test C ≈ cov(X, dims=2, corrected = false)
 
             (m, C) = mean_and_cov(X, wv1; corrected=false)
             @test m == mean(X, wv1, dims=1)
-            @test C == cov(X, wv1, 1, corrected=false)
+            @test C ≈ cov(X, wv1, 1, corrected=false)
 
             (m, C) = mean_and_cov(X, wv1, 1; corrected=false)
             @test m == mean(X, wv1, dims=1)
-            @test C == cov(X, wv1, 1, corrected=false)
+            @test C ≈ cov(X, wv1, 1, corrected=false)
 
             (m, C) = mean_and_cov(X, wv2, 2; corrected=false)
             @test m == mean(X, wv2, dims=2)
-            @test C == cov(X, wv2, 2, corrected=false)
+            @test C ≈ cov(X, wv2, 2, corrected=false)
+
+            v = [X[:,i] for i in axes(X,2)]
+            (m, C) = mean_and_cov(v; corrected=false)
+            @test m == mean(v)
+            @test C ≈ cov(v, corrected=false)
         end
         @testset "Conversions" begin
             std1 = std(X, wv1, 1; corrected=false)
@@ -120,10 +138,10 @@ weight_funcs = (weights, aweights, fweights, pweights)
             cor2 = cor(X, wv2, 2)
 
             @testset "cov2cor" begin
-                @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
-                @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                @test cov2cor(cov1, std1) ≈ cor1
-                @test cov2cor(cov2, std2) ≈ cor2
+                @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ₙ cor(X, dims = 1)
+                @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ₙ cor(X, dims = 2)
+                @test cov2cor(cov1, std1) ≈ₙ cor1
+                @test cov2cor(cov2, std2) ≈ₙ cor2
             end
             @testset "cor2cov" begin
                 @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
@@ -158,30 +176,30 @@ weight_funcs = (weights, aweights, fweights, pweights)
         @testset "Mean and covariance" begin
             (m, C) = mean_and_cov(X; corrected=true)
             @test m == mean(X, dims=1)
-            @test C == cov(X, dims=1, corrected = true)
+            @test C ≈ cov(X, dims=1, corrected = true)
 
             (m, C) = mean_and_cov(X, 1; corrected=true)
             @test m == mean(X, dims=1)
-            @test C == cov(X, dims=1, corrected = true)
+            @test C ≈ cov(X, dims=1, corrected = true)
 
             (m, C) = mean_and_cov(X, 2; corrected=true)
             @test m == mean(X, dims=2)
-            @test C == cov(X, dims=2, corrected = true)
+            @test C ≈ cov(X, dims=2, corrected = true)
 
             if isa(wv1, Weights)
                 @test_throws ArgumentError mean_and_cov(X, wv1; corrected=true)
             else
                 (m, C) = mean_and_cov(X, wv1; corrected=true)
                 @test m == mean(X, wv1, dims=1)
-                @test C == cov(X, wv1, 1; corrected=true)
+                @test C ≈ cov(X, wv1, 1; corrected=true)
 
                 (m, C) = mean_and_cov(X, wv1, 1; corrected=true)
                 @test m == mean(X, wv1, dims=1)
-                @test C == cov(X, wv1, 1; corrected=true)
+                @test C ≈ cov(X, wv1, 1; corrected=true)
 
                 (m, C) = mean_and_cov(X, wv2, 2; corrected=true)
                 @test m == mean(X, wv2, dims=2)
-                @test C == cov(X, wv2, 2; corrected=true)
+                @test C ≈ cov(X, wv2, 2; corrected=true)
             end
         end
         @testset "Conversions" begin
@@ -196,25 +214,26 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 cor2 = cor(X, wv2, 2)
 
                 @testset "cov2cor" begin
-                    @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
-                    @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                    @test cov2cor(cov1, std1) ≈ cor1
-                    @test cov2cor(cov2, std2) ≈ cor2
+                    @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ₙ cor(X, dims = 1)
+                    @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ₙ cor(X, dims = 2)
+                    @test cov2cor(cov1, std1) ≈ₙ cor1
+                    @test cov2cor(cov2, std2) ≈ₙ cor2
                 end
 
                 @testset "cov2cor!" begin
                     tmp_cov1 = copy(cov1)
-                    @test !(tmp_cov1 ≈ cor1)
+                    @test !(tmp_cov1 ≈ₙ cor1)
                     StatsBase.cov2cor!(tmp_cov1, std1)
-                    @test tmp_cov1 ≈ cor1
+                    @test tmp_cov1 ≈ₙ cor1
 
                     tmp_cov2 = copy(cov2)
-                    @test !(tmp_cov2 ≈ cor2)
+                    @test !(tmp_cov2 ≈ₙ cor2)
                     StatsBase.cov2cor!(tmp_cov2, std2)
-                    @test tmp_cov2 ≈ cor2
+                    @test tmp_cov2 ≈ₙ cor2
                 end
 
                 @testset "cor2cov" begin
+
                     @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
                     @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
                     @test cor2cov(cor1, std1) ≈ cov1
@@ -237,8 +256,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     end
 
     @testset "Correlation" begin
-        @test cor(X, f(ones(3)), 1) ≈ cor(X, dims = 1)
-        @test cor(X, f(ones(8)), 2) ≈ cor(X, dims = 2)
+        @test cor(X, f(ones(3)), 1) ≈ₙ cor(X, dims = 1)
+        @test cor(X, f(ones(8)), 2) ≈ₙ cor(X, dims = 2)
 
         cov1 = cov(X, wv1, 1; corrected=false)
         std1 = std(X, wv1, 1; corrected=false)
@@ -247,8 +266,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
         expected_cor1 = StatsBase.cov2cor!(cov1, std1)
         expected_cor2 = StatsBase.cov2cor!(cov2, std2)
 
-        @test cor(X, wv1, 1) ≈ expected_cor1
-        @test cor(X, wv2, 2) ≈ expected_cor2
+        @test cor(X, wv1, 1) ≈ₙ expected_cor1
+        @test cor(X, wv2, 2) ≈ₙ expected_cor2
     end
 
     @testset "Abstract covariance estimation" begin
