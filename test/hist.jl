@@ -224,4 +224,16 @@ end
     @test StatsBase.midpoints(range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
 end
 
+@testset "mean" begin
+    h = Histogram([-2, 0, 2], [1.,0], :left, true)
+    @inferred mean(h)
+    @test mean(h) isa Float64
+    @test mean(h) ≈ -1
+    h = Histogram(Float32[-2, 0, 20], Float32[0,1.], :left, true)
+    @test mean(h) isa Float32
+    @test mean(h) ≈ 10
+    h = Histogram([1,2],[123])
+    @test_throws ArgumentError mean(h)
+end
+
 end # @testset "StatsBase.Histogram"
