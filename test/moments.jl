@@ -1,4 +1,5 @@
 using StatsBase
+using Statistics
 using Test
 
 @testset "StatsBase.Moments" begin
@@ -276,6 +277,21 @@ end
     @test moment(x, 3, w) ≈ sum((x2 .- 4).^3) / 5
     @test moment(x, 4, w) ≈ sum((x2 .- 4).^4) / 5
     @test moment(x, 5, w) ≈ sum((x2 .- 4).^5) / 5
+end
+
+@testset "Preservation of eltypes in moments" begin
+    xs = Float16[1, 2, 3, 4, 5];
+    ws = AnalyticWeights(Float16[1, 1, 1, 1, 1]);
+    @test typeof(std(xs)) === Float16
+    @test typeof(var(xs)) === Float16
+    @test typeof(mean(xs, ws)) === Float16
+    @test typeof(std(xs, ws)) === Float16
+    @test typeof(var(xs, ws)) === Float16
+    @test typeof(skewness(xs, ws)) === Float16
+    @test typeof(kurtosis(xs, ws)) === Float16
+    for i in 1:5
+        @test typeof(moment(xs, i, ws)) === Float16
+    end
 end
 
 end # @testset "StatsBase.Moments"
