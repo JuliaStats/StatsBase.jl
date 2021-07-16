@@ -1,5 +1,6 @@
 using Base.Cartesian
 
+import Base: +, -, *, /
 import Base: show, ==, push!, append!, float
 import LinearAlgebra: norm, normalize, normalize!
 
@@ -122,6 +123,9 @@ The `Histogram` type represents data that has been tabulated into intervals
 (known as *bins*) along the real line, or in higher dimensions, over a real space.
 Histograms can be fitted to data using the `fit` method.
 
+`Histogram`s support `+`, `-`, `*` and `/` with other `Histogram`s (when bins are the same)
+and with `Real`s, which will change the weights of each bin.
+
 # Fields
 * edges: An iterator that contains the boundaries of the bins in each dimension.
 * weights: An array that contains the weight of each bin.
@@ -219,6 +223,11 @@ function show(io::IO, h::AbstractHistogram)
 end
 
 (==)(h1::Histogram,h2::Histogram) = (==)(h1.edges,h2.edges) && (==)(h1.weights,h2.weights) && (==)(h1.closed,h2.closed) && (==)(h1.isdensity,h2.isdensity)
+for op in (:+, :-, :*, :/)
+    @eval ($op)(h1::Histogram,h2::Histogram) = 
+        (==)(h1.edges,h2.edges) ? Histogram(h1.edges, broadcast($op, h1.weights, h2.weights)) : throw(DimensionMismatch("The bins of the two histograms don't match"))
+    @eval ($op)(h1::Histogram,n::Real) = Histogram(h1.edges, broadcast($op, h1.weights, n))
+end
 
 
 binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]
