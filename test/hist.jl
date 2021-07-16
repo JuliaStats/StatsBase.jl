@@ -40,6 +40,7 @@ end
     @test sum(fit(Histogram,[1,2,3]).weights) == 3
     @test fit(Histogram,Int[]).weights == Int[]
     @test fit(Histogram,[1]).weights == [1]
+    @test fit(Histogram,[1.23, 1.23]).weights == [2]
     @test fit(Histogram,[1,2,3],[0,2,4]) == Histogram([0,2,4],[1,2], :left)
     @test fit(Histogram,[1,2,3],[0,2,4]) != Histogram([0,2,4],[1,1], :left)
     @test fit(Histogram,[1,2,3],0:2:4) == Histogram(0:2:4,[1,2], :left)
