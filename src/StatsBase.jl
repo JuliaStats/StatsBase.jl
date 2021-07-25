@@ -212,7 +212,11 @@ export
     standardize,
     AbstractDataTransform, # the type to represent a abstract data transformation
     ZScoreTransform,       # the type to represent a z-score data transformation
-    UnitRangeTransform     # the type to represent a 0-1 data transformation
+    UnitRangeTransform,    # the type to represent a 0-1 data transformation
+
+    # Reliability
+    Reliability,           # the type to represent reliability scores
+    alpha                  # function to compute Crombach's alpha
 
 # source files
 
@@ -232,6 +236,7 @@ include("partialcor.jl")
 include("empirical.jl")
 include("hist.jl")
 include("pairwise.jl")
+include("reliability.jl")
 include("misc.jl")
 
 include("sampling.jl")
