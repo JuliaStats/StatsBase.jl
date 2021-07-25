@@ -63,7 +63,7 @@ item 4: 0.783
 function crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
     alpha = _crombach_alpha(covmatrix)
     k = size(covmatrix, 2)
-    dropped = Vector{Pair{Int64, Float64}}(undef, k)
+    dropped = Vector{Pair{Int, Float64}}(undef, k)
     @simd for i ∈ 1:k
         reduced_covmatrix = covmatrix[1:end .!= i, 1:end .!= i]
         @inbounds dropped[i] = Pair{Int64, Float64}(i, _crombach_alpha(reduced_covmatrix))
