@@ -216,7 +216,7 @@ export
 
     # Reliability
     Reliability,           # the type to represent reliability scores
-    alpha                  # function to compute Crombach's alpha
+    crombach_alpha                  # function to compute Crombach's alpha
 
 # source files
 
