@@ -2,7 +2,7 @@ using LinearAlgebra: Diagonal
 
 struct Reliability
     alpha::Float64
-    dropped::Vector{Pair{Int64, Float64}}
+    dropped::Vector{Pair{Int, Float64}}
 end
 
 function Base.show(io::IO, x::Reliability)
