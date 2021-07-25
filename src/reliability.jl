@@ -39,7 +39,7 @@ covariances.
 Returns a `Reliability` object that holds:
 
 * `alpha`: the reliability score for all items, i.e. columns, in `comatrix`; and
-* `dropped`: reliability score if a specific item, i.e. column, is dropped from `comatrix`.
+* `dropped`: A `Vector{Pair{item, score}}` reliability scores if a specific item, i.e. column, is dropped from `comatrix`.
 
 # Example
 ```jldoctest
