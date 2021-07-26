@@ -16,7 +16,7 @@ function Base.show(io::IO, x::Reliability)
 end
 
 """
-    crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
+    crombach_alpha(covmatrix::AbstractMatrix{<:Real})
 
 Calculate Crombach's alpha (1951) from a covariance matrix `covmatrix` according to
 the Wikipedia formula (https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
