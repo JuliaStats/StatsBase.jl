@@ -1,4 +1,4 @@
-using LinearAlgebra: Diagonal, isposdef
+using LinearAlgebra: isposdef
 
 struct Reliability{T <: Real}
     alpha::T
