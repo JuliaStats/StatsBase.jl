@@ -8,6 +8,7 @@ using LinearAlgebra, Random, Test
              6 6 12 6;
              6 6 6 13]
     reliability_X = crombach_alpha(cov_X)
+    @test reliability_bigfloat isa Reliability{Float64}
     @test reliability_X.alpha ≈ 0.8135593220338981
     @test reliability_X.dropped[1].second ≈ 0.75
     @test reliability_X.dropped[2].second ≈ 0.7605633802816901
