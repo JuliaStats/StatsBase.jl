@@ -16,7 +16,7 @@ using LinearAlgebra, Random, Test
     @test reliability_X.dropped[4].second ≈ 0.782608695652174
 
     # testing Rational
-    cov_rational = 1 .// cov_X
+    cov_rational = cov_X .// 1
     reliability_rational = crombach_alpha(cov_X)
     @test reliability_bigfloat isa Reliability{Rational{Int}}
     @test reliability_rational.alpha == 48 // 59
