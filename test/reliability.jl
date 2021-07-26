@@ -26,6 +26,7 @@ using LinearAlgebra, Random, Test
     # testing BigFloat
     cov_bigfloat = BigFloat.(cov_X)
     reliability_bigfloat = crombach_alpha(cov_X)
+    @test reliability_bigfloat isa Reliability{BigFloat}
     @test reliability_bigfloat.alpha ≈ 0.8135593220338981
     @test reliability_bigfloat.dropped[1].second ≈ 0.75
     @test reliability_bigfloat.dropped[2].second ≈ 0.7605633802816901
