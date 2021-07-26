@@ -14,15 +14,6 @@ function Base.show(io::IO, x::Reliability)
     end
 end
 
-function _crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
-    @assert isposdef(covmatrix) "Covariance matrix is not positive definite!"
-    k = size(covmatrix, 2)
-    @assert k > 1 "Covariance matrix has only one columnn!"
-    σ = sum(covmatrix)
-    ρ = k / (k - 1) * (1 - sum(i -> covmatrix[i, i], 1:k)/ σ)
-    return ρ
-end
-
 """
     crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
 
@@ -61,11 +52,26 @@ item 4: 0.783
 ```
 """
 function crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
-    alpha = _crombach_alpha(covmatrix)
+    isposdef(covmatrix) || throw(ArgumentError("Covariance matrix is not positive definite!"))
     k = size(covmatrix, 2)
-    dropped = Vector{Pair{Int, AbstractFloat}}(undef, k)
-    for i ∈ 1:k
-        dropped[i] = Pair{Int, AbstractFloat}(i, _crombach_alpha(covmatrix[1:end .!= i, 1:end .!= i]))
+    k > 1  || throw(ArgumentError("Covariance matrix has only one columnn!"))
+    v = vec(sum(covmatrix, dims=1))
+    σ = sum(v)
+    for i in axes(v, 1)
+        v[i] -= covmatrix[i, i]
+    end
+    σ_diag = sum(i -> covmatrix[i, i], 1:k)
+
+    alpha = k / (k - 1) * (1 - σ_diag / σ)
+    if k > 2
+        dropped = Vector{Pair{Int, AbstractFloat}}(undef, k)
+        for i ∈ 1:k
+            dropped[i] = i => (k - 1) / (k - 2) * (1 - (σ_diag - covmatrix[i,i]) / (σ - 2*v[i] - covmatrix[i,i]))
+        end
+    else
+        # if k = 2 do not produce dropped; this has to be also
+        # correctly handled in show
+        dropped = Pair{Int, AbstractFloat}[]
     end
     return Reliability(alpha, dropped)
 end
