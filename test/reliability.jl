@@ -8,7 +8,7 @@ using LinearAlgebra, Random, Test
              6 6 12 6;
              6 6 6 13]
     reliability_X = crombach_alpha(cov_X)
-    @test reliability_bigfloat isa Reliability{Float64}
+    @test reliability_X isa Reliability{Float64}
     @test reliability_X.alpha ≈ 0.8135593220338981
     @test reliability_X.dropped[1].second ≈ 0.75
     @test reliability_X.dropped[2].second ≈ 0.7605633802816901
@@ -17,8 +17,8 @@ using LinearAlgebra, Random, Test
 
     # testing Rational
     cov_rational = cov_X .// 1
-    reliability_rational = crombach_alpha(cov_X)
-    @test reliability_bigfloat isa Reliability{Rational{Int}}
+    reliability_rational = crombach_alpha(cov_rational)
+    @test reliability_rational isa Reliability{Rational{Int}}
     @test reliability_rational.alpha == 48 // 59
     @test reliability_rational.dropped[1].second == 3 // 4
     @test reliability_rational.dropped[2].second == 54 // 71
@@ -27,7 +27,7 @@ using LinearAlgebra, Random, Test
 
     # testing BigFloat
     cov_bigfloat = BigFloat.(cov_X)
-    reliability_bigfloat = crombach_alpha(cov_X)
+    reliability_bigfloat = crombach_alpha(cov_bigfloat)
     @test reliability_bigfloat isa Reliability{BigFloat}
     @test reliability_bigfloat.alpha ≈ 0.8135593220338981
     @test reliability_bigfloat.dropped[1].second ≈ 0.75
@@ -42,4 +42,19 @@ using LinearAlgebra, Random, Test
     reliability_k2 = crombach_alpha(cov_k2)
     @test reliability_k2.alpha ≈ 0.7272727272727273
     @test isempty(reliability_k2.dropped)
+
+    # testing Base.show
+    reliability_X = crombach_alpha(cov_X)
+    io = IOBuffer()
+    show(io, reliability_X)
+    str = String(take!(io))
+    @test str == """
+        Reliability for all items: 0.8136
+
+        Reliability if an item is dropped:
+        item 1: 0.75
+        item 2: 0.7606
+        item 3: 0.7714
+        item 4: 0.7826
+        """
 end # @testset "StatsBase.Reliability"
