@@ -43,13 +43,13 @@ julia> cov_X = [10 6 6 6;
                 6 6 6 13];
 
 julia> crombach_alpha(cov_X)
-Reliability for all items: 0.814
+Reliability for all items: 0.8136
 
 Reliability if an item is dropped:
 item 1: 0.75
-item 2: 0.761
-item 3: 0.771
-item 4: 0.783
+item 2: 0.7606
+item 3: 0.7714
+item 4: 0.7836
 ```
 """
 function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
