@@ -65,8 +65,7 @@ function crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
     k = size(covmatrix, 2)
     dropped = Vector{Pair{Int, AbstractFloat}}(undef, k)
     for i ∈ 1:k
-        reduced_covmatrix = covmatrix[1:end .!= i, 1:end .!= i]
-        dropped[i] = Pair{Int, AbstractFloat}(i, _crombach_alpha(reduced_covmatrix))
+        dropped[i] = Pair{Int, AbstractFloat}(i, _crombach_alpha(covmatrix[1:end .!= i, 1:end .!= i]))
     end
     return Reliability(alpha, dropped)
 end
