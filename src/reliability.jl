@@ -63,7 +63,7 @@ function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
     end
     σ_diag = sum(i -> covmatrix[i, i], 1:k)
 
-    alpha = k / (k - 1) * (1 - σ_diag / σ)
+    alpha = k * (1 - σ_diag / σ) / (k - 1)
     if k > 2
         dropped = Vector{Pair{Int, typeof(alpha)}}(undef, k)
         for i ∈ 1:k
