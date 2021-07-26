@@ -1,8 +1,8 @@
 using LinearAlgebra: Diagonal, isposdef
 
-struct Reliability
-    alpha::AbstractFloat
-    dropped::Vector{Pair{Int, AbstractFloat}}
+struct Reliability{T <: Real}
+    alpha::T
+    dropped::Vector{Pair{Int, T}}
 end
 
 function Base.show(io::IO, x::Reliability)
