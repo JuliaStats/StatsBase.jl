@@ -67,7 +67,7 @@ function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
     if k > 2
         dropped = Vector{Pair{Int, typeof(alpha)}}(undef, k)
         for i ∈ 1:k
-            dropped[i] = i => (k - 1) / (k - 2) * (1 - (σ_diag - covmatrix[i,i]) / (σ - 2*v[i] - covmatrix[i,i]))
+            dropped[i] = i => (k - 1) * (1 - (σ_diag - covmatrix[i,i]) / (σ - 2*v[i] - covmatrix[i,i])) / (k - 2)
         end
     else
         # if k = 2 do not produce dropped; this has to be also
