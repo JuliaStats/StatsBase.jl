@@ -7,6 +7,7 @@ end
 
 function Base.show(io::IO, x::Reliability)
     println(io, "Reliability for all items: $(round(x.alpha; digits=4))")
+    isempty(x.dropped) && return
     println(io, "")
     println(io, "Reliability if an item is dropped:")
     for i ∈ x.dropped
