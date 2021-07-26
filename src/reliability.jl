@@ -1,8 +1,8 @@
-using LinearAlgebra: Diagonal
+using LinearAlgebra: Diagonal, isposdef
 
 struct Reliability
-    alpha::Float64
-    dropped::Vector{Pair{Int, Float64}}
+    alpha::AbstractFloat
+    dropped::Vector{Pair{Int, AbstractFloat}}
 end
 
 function Base.show(io::IO, x::Reliability)
@@ -15,10 +15,11 @@ function Base.show(io::IO, x::Reliability)
 end
 
 function _crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
+    @assert isposdef(covmatrix) "Covariance matrix is not positive definite!"
     k = size(covmatrix, 2)
+    @assert k > 1 "Covariance matrix has only one columnn!"
     σ = sum(covmatrix)
-    σ_ij = sum(covmatrix - Diagonal(covmatrix)) / (k * (k - 1))
-    ρ = k^2 * σ_ij / σ
+    ρ = k / (k - 1) * (1 - sum(i -> covmatrix[i, i], 1:k)/ σ)
     return ρ
 end
 
@@ -29,17 +30,16 @@ Calculate Crombach's alpha (1951) from a covariance matrix `covmatrix` according
 the Wikipedia formula (https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
 
 ```math
-\\rho = \\frac{k^2 \\bar{sigma}_{ij}}{\\sigma^2_X}
+\\rho = \\frac{k}{k-1} (1 - \\frac{\\sum^k_{i=1} \\sigma^2_i}{\\sigma^2_X})
 ```
 
-where k is the number of items, i.e. columns; σᵢⱼ denote the average of
-the inter-item covariances; and  σ²ₓ consists of item variances and inter-item
-covariances.
+where k is the number of items, i.e. columns; σᵢ denotes item variance;
+and σ²ₓ consists of item variances and inter-item covariances.
 
 Returns a `Reliability` object that holds:
 
 * `alpha`: the reliability score for all items, i.e. columns, in `comatrix`; and
-* `dropped`: A `Vector{Pair{item, score}}` reliability scores if a specific item, i.e. column, is dropped from `comatrix`.
+* `dropped`: A `Vector{Pair{item, score}}` reliability scores if a specific item, i.e. column/row, is dropped from `comatrix`.
 
 # Example
 ```jldoctest
@@ -63,10 +63,10 @@ item 4: 0.783
 function crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
     alpha = _crombach_alpha(covmatrix)
     k = size(covmatrix, 2)
-    dropped = Vector{Pair{Int, Float64}}(undef, k)
-    @simd for i ∈ 1:k
+    dropped = Vector{Pair{Int, AbstractFloat}}(undef, k)
+    for i ∈ 1:k
         reduced_covmatrix = covmatrix[1:end .!= i, 1:end .!= i]
-        @inbounds dropped[i] = Pair{Int64, Float64}(i, _crombach_alpha(reduced_covmatrix))
+        dropped[i] = Pair{Int, AbstractFloat}(i, _crombach_alpha(reduced_covmatrix))
     end
     return Reliability(alpha, dropped)
 end
