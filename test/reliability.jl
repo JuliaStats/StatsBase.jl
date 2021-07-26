@@ -17,11 +17,11 @@ using LinearAlgebra, Random, Test
     # testing Rational
     cov_rational = 1 .// cov_X
     reliability_rational = crombach_alpha(cov_X)
-    @test reliability_rational.alpha ≈ 0.8135593220338981
-    @test reliability_rational.dropped[1].second ≈ 0.75
-    @test reliability_rational.dropped[2].second ≈ 0.7605633802816901
-    @test reliability_rational.dropped[3].second ≈ 0.7714285714285715
-    @test reliability_rational.dropped[4].second ≈ 0.782608695652174
+    @test reliability_rational.alpha == 48 // 59
+    @test reliability_rational.dropped[1].second == 3 // 4
+    @test reliability_rational.dropped[2].second == 54 // 71
+    @test reliability_rational.dropped[3].second == 27 // 35
+    @test reliability_rational.dropped[4].second == 18 // 23
 
     # testing BigFloat
     cov_bigfloat = BigFloat.(cov_X)
