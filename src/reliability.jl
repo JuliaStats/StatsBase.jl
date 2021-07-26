@@ -52,7 +52,7 @@ item 3: 0.771
 item 4: 0.783
 ```
 """
-function crombach_alpha(covmatrix::AbstractMatrix{T}) where T <: Real
+function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
     isposdef(covmatrix) || throw(ArgumentError("Covariance matrix is not positive definite!"))
     k = size(covmatrix, 2)
     k > 1  || throw(ArgumentError("Covariance matrix has only one columnn!"))
