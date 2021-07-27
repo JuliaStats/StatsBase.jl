@@ -96,7 +96,7 @@ function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
             len += one(F)
         end
     end
-    Base.floatrange(start,step,len,divisor)
+    Base.floatrange(start,step,Int(len),divisor)
 end
 
 histrange(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) where {N} =
