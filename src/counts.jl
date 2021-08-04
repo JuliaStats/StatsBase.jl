@@ -336,6 +336,9 @@ const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
 radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
+    if isempty(sx)
+      return cm
+    end
     last_sx = sx[1]
     tmpcount = get(cm, last_sx, 0) + 1
 

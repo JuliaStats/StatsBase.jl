@@ -108,6 +108,9 @@ cm_any_itr = countmap((i for i in xx))
 @test cm_any_itr isa Dict{Any,Int} # no knowledge about type
 @test cm_missing == cm
 
+# with empty array
+@test countmap(Int[]) == Dict{Int, Int}()
+
 # testing the radixsort-based addcounts
 xx = repeat([6, 1, 3, 1], outer=100_000)
 cm = Dict{Int, Int}()
