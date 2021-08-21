@@ -11,6 +11,7 @@ using Missings
 
 using Statistics
 using LinearAlgebra
+import LinearAlgebra: isposdef
 using Random
 using Printf
 using SparseArrays
@@ -216,7 +217,7 @@ export
 
     # Reliability
     Reliability,           # the type to represent reliability scores
-    crombach_alpha         # function to compute Crombach's alpha
+    crombachalpha         # function to compute Crombach's alpha
 
 # source files
 

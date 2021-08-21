@@ -1,8 +1,6 @@
-using LinearAlgebra: isposdef
-
 struct Reliability{T <: Real}
     alpha::T
-    dropped::Vector{Pair{Int, T}}
+    dropped::Vector{T}
 end
 
 function Base.show(io::IO, x::Reliability)
@@ -10,13 +8,13 @@ function Base.show(io::IO, x::Reliability)
     isempty(x.dropped) && return
     println(io, "")
     println(io, "Reliability if an item is dropped:")
-    for i ∈ x.dropped
-        @printf(io, "item %i: %.4f\n, i.first, i.second")
+    for (idx, val) in enumerate(x.dropped)
+        @printf(io, "item %i: %.4f\n", idx, val)
     end
 end
 
 """
-    crombach_alpha(covmatrix::AbstractMatrix{<:Real})
+    crombachalpha(covmatrix::AbstractMatrix{<:Real})
 
 Calculate Crombach's alpha (1951) from a covariance matrix `covmatrix` according to
 the [formula](https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
@@ -43,20 +41,20 @@ julia> cov_X = [10 6 6 6;
                 6 6 12 6;
                 6 6 6 13];
 
-julia> crombach_alpha(cov_X)
+julia> crombachalpha(cov_X)
 Reliability for all items: 0.8136
 
 Reliability if an item is dropped:
-item 1: 0.75
+item 1: 0.7500
 item 2: 0.7606
 item 3: 0.7714
 item 4: 0.7836
 ```
 """
-function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
+function crombachalpha(covmatrix::AbstractMatrix{<:Real})
     isposdef(covmatrix) || throw(ArgumentError("Covariance matrix must be positive definite."))
     k = size(covmatrix, 2)
-    k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
+    k >= 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
     v = vec(sum(covmatrix, dims=1))
     σ = sum(v)
     for i in axes(v, 1)
@@ -66,14 +64,14 @@ function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
 
     alpha = k * (1 - σ_diag / σ) / (k - 1)
     if k > 2
-        dropped = Vector{Pair{Int, typeof(alpha)}}(undef, k)
-        for i ∈ 1:k
-            dropped[i] = i => (k - 1) * (1 - (σ_diag - covmatrix[i,i]) / (σ - 2*v[i] - covmatrix[i,i])) / (k - 2)
+        dropped = Vector{typeof(alpha)}(undef, k)
+        for i in eachindex(dropped)
+            dropped[i] = (k - 1) * (1 - (σ_diag - covmatrix[i,i]) / (σ - 2*v[i] - covmatrix[i,i])) / (k - 2)
         end
     else
         # if k = 2 do not produce dropped; this has to be also
         # correctly handled in show
-        dropped = Pair{Int, AbstractFloat}[]
+        dropped = Vector{typeof(alpha)}()
     end
     return Reliability(alpha, dropped)
 end
