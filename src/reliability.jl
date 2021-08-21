@@ -1,12 +1,12 @@
-struct Reliability{T <: Real}
+struct CronbachAlpha{T <: Real}
     alpha::T
     dropped::Vector{T}
 end
 
-function Base.show(io::IO, x::Reliability)
+function Base.show(io::IO, x::CronbachAlpha)
     @printf(io, "Reliability for all items: %.4f", x.alpha)
     isempty(x.dropped) && return
-    println(io, "")
+    println(io, "\n")
     println(io, "Reliability if an item is dropped:")
     for (idx, val) in enumerate(x.dropped)
         @printf(io, "item %i: %.4f\n", idx, val)
@@ -14,9 +14,9 @@ function Base.show(io::IO, x::Reliability)
 end
 
 """
-    crombachalpha(covmatrix::AbstractMatrix{<:Real})
+    cronbachalpha(covmatrix::AbstractMatrix{<:Real})
 
-Calculate Crombach's alpha (1951) from a covariance matrix `covmatrix` according to
+Calculate cronbach's alpha (1951) from a covariance matrix `covmatrix` according to
 the [formula](https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
 
 ```math
@@ -26,7 +26,7 @@ the [formula](https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
 where ``k`` is the number of items, i.e. columns; ``\\sigma_i`` denotes item variance;
 and ``\\sigma^2_i`` consists of item variances and inter-item covariances.
 
-Returns a `Reliability` object that holds:
+Returns a `CronbachAlpha` object that holds:
 
 * `alpha`: the reliability score for all items, i.e. columns, in `covmatrix`; and
 * `dropped`: A vector giving reliability scores if a specific item,
@@ -41,7 +41,7 @@ julia> cov_X = [10 6 6 6;
                 6 6 12 6;
                 6 6 6 13];
 
-julia> crombachalpha(cov_X)
+julia> cronbachalpha(cov_X)
 Reliability for all items: 0.8136
 
 Reliability if an item is dropped:
@@ -51,7 +51,7 @@ item 3: 0.7714
 item 4: 0.7836
 ```
 """
-function crombachalpha(covmatrix::AbstractMatrix{<:Real})
+function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
     isposdef(covmatrix) || throw(ArgumentError("Covariance matrix must be positive definite."))
     k = size(covmatrix, 2)
     k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
@@ -65,11 +65,11 @@ function crombachalpha(covmatrix::AbstractMatrix{<:Real})
     alpha = k * (1 - σ_diag / σ) / (k - 1)
     if k > 2
         dropped = typeof(alpha)[(k - 1) * (1 - (σ_diag - covmatrix[i, i]) / (σ - 2*v[i] - covmatrix[i, i])) / (k - 2)
-                                for i in eachindex(dropped)]
+                                for i in 1:k]
     else
         # if k = 2 do not produce dropped; this has to be also
         # correctly handled in show
         dropped = Vector{typeof(alpha)}()
     end
-    return Reliability(alpha, dropped)
+    return CronbachAlpha(alpha, dropped)
 end
