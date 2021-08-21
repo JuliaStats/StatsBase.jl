@@ -11,7 +11,6 @@ using Missings
 
 using Statistics
 using LinearAlgebra
-import LinearAlgebra: isposdef
 using Random
 using Printf
 using SparseArrays

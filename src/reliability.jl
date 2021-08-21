@@ -29,7 +29,7 @@ and ``\\sigma^2_i`` consists of item variances and inter-item covariances.
 Returns a `Reliability` object that holds:
 
 * `alpha`: the reliability score for all items, i.e. columns, in `covmatrix`; and
-* `dropped`: A `Vector{Pair{item, score}}` giving reliability scores if a specific item,
+* `dropped`: A vector giving reliability scores if a specific item,
   i.e. column, is dropped from `covmatrix`.
 
 # Example
@@ -54,7 +54,7 @@ item 4: 0.7836
 function crombachalpha(covmatrix::AbstractMatrix{<:Real})
     isposdef(covmatrix) || throw(ArgumentError("Covariance matrix must be positive definite."))
     k = size(covmatrix, 2)
-    k >= 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
+    k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
     v = vec(sum(covmatrix, dims=1))
     σ = sum(v)
     for i in axes(v, 1)
@@ -64,10 +64,8 @@ function crombachalpha(covmatrix::AbstractMatrix{<:Real})
 
     alpha = k * (1 - σ_diag / σ) / (k - 1)
     if k > 2
-        dropped = Vector{typeof(alpha)}(undef, k)
-        for i in eachindex(dropped)
-            dropped[i] = (k - 1) * (1 - (σ_diag - covmatrix[i,i]) / (σ - 2*v[i] - covmatrix[i,i])) / (k - 2)
-        end
+        dropped = typeof(alpha)[(k - 1) * (1 - (σ_diag - covmatrix[i, i]) / (σ - 2*v[i] - covmatrix[i, i])) / (k - 2)
+                                for i in eachindex(dropped)]
     else
         # if k = 2 do not produce dropped; this has to be also
         # correctly handled in show
