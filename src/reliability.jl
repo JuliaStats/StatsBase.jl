@@ -6,12 +6,12 @@ struct Reliability{T <: Real}
 end
 
 function Base.show(io::IO, x::Reliability)
-    println(io, "Reliability for all items: $(round(x.alpha; digits=4))")
+    @printf(io, "Reliability for all items: %.4f", x.alpha)
     isempty(x.dropped) && return
     println(io, "")
     println(io, "Reliability if an item is dropped:")
     for i ∈ x.dropped
-        println(io, "item $(i.first): $(round(i.second; digits=4))")
+        @printf(io, "item %i: %.4f\n, i.first, i.second")
     end
 end
 
@@ -19,19 +19,20 @@ end
     crombach_alpha(covmatrix::AbstractMatrix{<:Real})
 
 Calculate Crombach's alpha (1951) from a covariance matrix `covmatrix` according to
-the Wikipedia formula (https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
+the [formula](https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
 
 ```math
 \\rho = \\frac{k}{k-1} (1 - \\frac{\\sum^k_{i=1} \\sigma^2_i}{\\sigma^2_X})
 ```
 
-where k is the number of items, i.e. columns; σᵢ denotes item variance;
-and σ²ₓ consists of item variances and inter-item covariances.
+where ``k`` is the number of items, i.e. columns; ``\\sigma_i`` denotes item variance;
+and ``\\sigma^2_i`` consists of item variances and inter-item covariances.
 
 Returns a `Reliability` object that holds:
 
-* `alpha`: the reliability score for all items, i.e. columns, in `comatrix`; and
-* `dropped`: A `Vector{Pair{item, score}}` reliability scores if a specific item, i.e. column/row, is dropped from `comatrix`.
+* `alpha`: the reliability score for all items, i.e. columns, in `covmatrix`; and
+* `dropped`: A `Vector{Pair{item, score}}` giving reliability scores if a specific item,
+  i.e. column, is dropped from `covmatrix`.
 
 # Example
 ```jldoctest
@@ -53,9 +54,9 @@ item 4: 0.7836
 ```
 """
 function crombach_alpha(covmatrix::AbstractMatrix{<:Real})
-    isposdef(covmatrix) || throw(ArgumentError("Covariance matrix is not positive definite!"))
+    isposdef(covmatrix) || throw(ArgumentError("Covariance matrix must be positive definite."))
     k = size(covmatrix, 2)
-    k > 1  || throw(ArgumentError("Covariance matrix has only one columnn!"))
+    k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
     v = vec(sum(covmatrix, dims=1))
     σ = sum(v)
     for i in axes(v, 1)
