@@ -215,8 +215,8 @@ export
     UnitRangeTransform,    # the type to represent a 0-1 data transformation
 
     # Reliability
-    Reliability,           # the type to represent reliability scores
-    cronbachalpha         # function to compute cronbach's alpha
+    CronbachAlpha,        # the type to represent Cronbach's alpha scores
+    cronbachalpha         # function to compute Cronbach's alpha scores
 
 # source files
 
