@@ -4,10 +4,9 @@ struct CronbachAlpha{T <: Real}
 end
 
 function Base.show(io::IO, x::CronbachAlpha)
-    @printf(io, "Reliability for all items: %.4f", x.alpha)
+    @printf(io, "Cronbach's alpha for all items: %.4f\n", x.alpha)
     isempty(x.dropped) && return
-    println(io, "\n")
-    println(io, "Reliability if an item is dropped:")
+    println(io, "\nCronbach's alpha if an item is dropped:")
     for (idx, val) in enumerate(x.dropped)
         @printf(io, "item %i: %.4f\n", idx, val)
     end
@@ -28,8 +27,8 @@ and ``\\sigma^2_i`` consists of item variances and inter-item covariances.
 
 Returns a `CronbachAlpha` object that holds:
 
-* `alpha`: the reliability score for all items, i.e. columns, in `covmatrix`; and
-* `dropped`: a vector giving reliability scores if a specific item,
+* `alpha`: the Cronbach's alpha score for all items, i.e. columns, in `covmatrix`; and
+* `dropped`: a vector giving Cronbach's alpha scores if a specific item,
   i.e. column, is dropped from `covmatrix`.
 
 # Example
@@ -42,9 +41,9 @@ julia> cov_X = [10 6 6 6;
                 6 6 6 13];
 
 julia> cronbachalpha(cov_X)
-Reliability for all items: 0.8136
+Cronbach's alpha for all items: 0.8136
 
-Reliability if an item is dropped:
+Cronbach's alpha if an item is dropped:
 item 1: 0.7500
 item 2: 0.7606
 item 3: 0.7714

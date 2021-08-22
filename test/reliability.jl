@@ -1,7 +1,7 @@
 using StatsBase
 using LinearAlgebra, Random, Test
 
-@testset "StatsBase.Reliability" begin
+@testset "StatsBase.CronbachAlpha" begin
     # basic vanilla test
     cov_X = [10 6 6 6;
              6 11 6 6;
@@ -63,9 +63,8 @@ using LinearAlgebra, Random, Test
     show(io, cronbach_X)
     str = String(take!(io))
     @test str == """
-        Reliability for all items: 0.8136
-
-        Reliability if an item is dropped:
+        Cronbach's alpha for all items: 0.8136\n
+        Cronbach's alpha if an item is dropped:
         item 1: 0.7500
         item 2: 0.7606
         item 3: 0.7714
@@ -75,6 +74,6 @@ using LinearAlgebra, Random, Test
     io = IOBuffer()
     show(io, cronbach_k2)
     str = String(take!(io))
-    @test str == "Reliability for all items: 0.7273"
+    @test str == "Cronbach's alpha for all items: 0.7273\n"
 
-end # @testset "StatsBase.Reliability"
+end # @testset "StatsBase.CronbachAlpha"
