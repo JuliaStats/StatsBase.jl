@@ -63,7 +63,8 @@ using LinearAlgebra, Random, Test
     show(io, cronbach_X)
     str = String(take!(io))
     @test str == """
-        Reliability for all items: 0.8136\n
+        Reliability for all items: 0.8136
+
         Reliability if an item is dropped:
         item 1: 0.7500
         item 2: 0.7606

@@ -16,7 +16,7 @@ end
 """
     cronbachalpha(covmatrix::AbstractMatrix{<:Real})
 
-Calculate cronbach's alpha (1951) from a covariance matrix `covmatrix` according to
+Calculate Cronbach's alpha (1951) from a covariance matrix `covmatrix` according to
 the [formula](https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
 
 ```math
@@ -29,7 +29,7 @@ and ``\\sigma^2_i`` consists of item variances and inter-item covariances.
 Returns a `CronbachAlpha` object that holds:
 
 * `alpha`: the reliability score for all items, i.e. columns, in `covmatrix`; and
-* `dropped`: A vector giving reliability scores if a specific item,
+* `dropped`: a vector giving reliability scores if a specific item,
   i.e. column, is dropped from `covmatrix`.
 
 # Example
