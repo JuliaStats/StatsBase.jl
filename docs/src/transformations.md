@@ -40,11 +40,17 @@ in a single call.
 fit(::Type{UnitRangeTransform}, X::AbstractArray{<:Real,2}; unit::Bool=true)
 ```
 
-## Additional Methods
+## Methods
 ```@docs
 StatsBase.transform
 StatsBase.transform!
 StatsBase.reconstruct
 StatsBase.reconstruct!
 standardize
+```
+
+## Types
+```@docs
+UnitRangeTransform
+ZScoreTransform
 ```

@@ -54,7 +54,7 @@ w = uweights(Float64, 3)
 
 ### `Weights`
 
-The `Weights` type describes a generic weights vector which does not support all operations possible for `FrequencyWeights`, `AnalyticWeights` and `ProbabilityWeights`.
+The `Weights` type describes a generic weights vector which does not support all operations possible for `FrequencyWeights`, `AnalyticWeights`, `ProbabilityWeights` and `UnitWeights`.
 
 ```julia
 w = Weights([1., 2., 3.])
@@ -142,10 +142,12 @@ The following constructors are provided:
 AnalyticWeights
 FrequencyWeights
 ProbabilityWeights
+UnitWeights
 Weights
 aweights
 fweights
 pweights
 eweights
+uweights
 weights
 ```

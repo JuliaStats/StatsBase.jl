@@ -10,7 +10,6 @@ makedocs(
     modules = [StatsBase],
     pages = ["index.md",
              "weights.md",
-             "means.md",
              "scalarstats.md",
              "robust.md",
              "deviation.md",
@@ -23,7 +22,9 @@ makedocs(
              "multivariate.md",
              "misc.md",
              "statmodels.md",
-             "transformations.md"]
+             "transformations.md"],
+    strict=true,
+    checkdocs=:exports
 )
 
 deploydocs(

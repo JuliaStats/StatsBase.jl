@@ -2,6 +2,27 @@
 
 The package implements functions for computing various statistics over an array of scalar real numbers.
 
+## Weighted sum and mean
+
+```@docs
+sum
+sum!
+wsum
+wsum!
+mean
+mean!
+```
+
+## Means
+
+The package provides functions to compute means of different kinds.
+
+```@docs
+geomean
+harmmean
+genmean
+```
+
 ## Moments
 
 ```@docs
@@ -21,6 +42,7 @@ span
 variation
 sem
 mad
+mad!
 ```
 
 ## Z-scores
