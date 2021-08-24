@@ -214,7 +214,7 @@ export
     ZScoreTransform,       # the type to represent a z-score data transformation
     UnitRangeTransform,    # the type to represent a 0-1 data transformation
 
-    # Reliability
+    # reliability
     CronbachAlpha,        # the type to represent Cronbach's alpha scores
     cronbachalpha         # function to compute Cronbach's alpha scores
 

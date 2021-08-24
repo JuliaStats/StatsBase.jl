@@ -47,7 +47,7 @@ Cronbach's alpha if an item is dropped:
 item 1: 0.7500
 item 2: 0.7606
 item 3: 0.7714
-item 4: 0.7836
+item 4: 0.7826
 ```
 """
 function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
