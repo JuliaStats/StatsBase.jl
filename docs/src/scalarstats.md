@@ -62,3 +62,9 @@ modes
 summarystats
 describe
 ```
+
+## Reliability Measures
+
+```@docs
+cronbachalpha
+```
