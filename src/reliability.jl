@@ -19,11 +19,11 @@ Calculate Cronbach's alpha (1951) from a covariance matrix `covmatrix` according
 the [formula](https://en.wikipedia.org/wiki/Cronbach%27s_alpha):
 
 ```math
-\\rho = \\frac{k}{k-1} (1 - \\frac{\\sum^k_{i=1} \\sigma^2_i}{\\sigma^2_X})
+\\rho = \\frac{k}{k-1} (1 - \\frac{\\sum^k_{i=1} \\sigma^2_i}{\\sum_{i=1}^k \\sum_{j=1}^k \\sigma_{ij}})
 ```
 
-where ``k`` is the number of items, i.e. columns; ``\\sigma_i`` denotes item variance;
-and ``\\sigma^2_i`` consists of item variances and inter-item covariances.
+where ``k`` is the number of items, i.e. columns, ``\\sigma_i^2`` the item variance,
+and ``\\sigma_{ij}`` the inter-item covariance.
 
 Returns a `CronbachAlpha` object that holds:
 
