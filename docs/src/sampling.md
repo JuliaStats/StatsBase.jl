@@ -7,6 +7,8 @@ The package provides functions for sampling from a given population (with or wit
 ```@docs
 sample
 sample!
+wsample
+wsample!
 ```
 
 ## Algorithms

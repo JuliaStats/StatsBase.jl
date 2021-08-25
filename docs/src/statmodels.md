@@ -24,6 +24,7 @@ loglikelihood
 mss
 nobs
 nulldeviance
+nullloglikelihood
 r2
 rss
 score
@@ -46,4 +47,9 @@ responsename
 predict
 predict!
 residuals
+```
+
+An exception type is provided to signal convergence failures during model estimation:
+```@docs
+ConvergenceException
 ```

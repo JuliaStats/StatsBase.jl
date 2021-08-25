@@ -126,7 +126,7 @@ it will be dense (default).
 julia> using StatsBase
 
 julia> indicatormat([1 2 2], 2)
-2×3 Array{Bool,2}:
+2×3 Matrix{Bool}:
  1  0  0
  0  1  1
 ```

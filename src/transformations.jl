@@ -93,15 +93,15 @@ and return a `ZScoreTransform` transformation object.
 julia> using StatsBase
 
 julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
-2×3 Array{Float64,2}:
+2×3 Matrix{Float64}:
  0.0  -0.5  0.5
  0.0   1.0  2.0
 
 julia> dt = fit(ZScoreTransform, X, dims=2)
-ZScoreTransform{Float64}(2, 2, [0.0, 1.0], [0.5, 1.0])
+ZScoreTransform{Float64, Vector{Float64}}(2, 2, [0.0, 1.0], [0.5, 1.0])
 
 julia> StatsBase.transform(dt, X)
-2×3 Array{Float64,2}:
+2×3 Matrix{Float64}:
   0.0  -1.0  1.0
  -1.0   0.0  1.0
 ```
@@ -247,15 +247,15 @@ and return a `UnitRangeTransform` transformation object.
 julia> using StatsBase
 
 julia> X = [0.0 -0.5 0.5; 0.0 1.0 2.0]
-2×3 Array{Float64,2}:
+2×3 Matrix{Float64}:
  0.0  -0.5  0.5
  0.0   1.0  2.0
 
 julia> dt = fit(UnitRangeTransform, X, dims=2)
-UnitRangeTransform{Float64}(2, 2, true, [-0.5, 0.0], [1.0, 0.5])
+UnitRangeTransform{Float64, Vector{Float64}}(2, 2, true, [-0.5, 0.0], [1.0, 0.5])
 
 julia> StatsBase.transform(dt, X)
-2×3 Array{Float64,2}:
+2×3 Matrix{Float64}:
  0.5  0.0  1.0
  0.0  0.5  1.0
 ```
@@ -353,12 +353,12 @@ end
 julia> using StatsBase
 
 julia> standardize(ZScoreTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0], dims=2)
-2×3 Array{Float64,2}:
+2×3 Matrix{Float64}:
   0.0  -1.0  1.0
  -1.0   0.0  1.0
 
 julia> standardize(UnitRangeTransform, [0.0 -0.5 0.5; 0.0 1.0 2.0], dims=2)
-2×3 Array{Float64,2}:
+2×3 Matrix{Float64}:
  0.5  0.0  1.0
  0.0  0.5  1.0
 ```

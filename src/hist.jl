@@ -137,7 +137,7 @@ Histograms can be fitted to data using the `fit` method.
 julia> using StatsBase
 
 julia> fit(Histogram, [2.],  1:3, closed=:left)
-Histogram{Int64,1,Tuple{UnitRange{Int64}}}
+Histogram{Int64, 1, Tuple{UnitRange{Int64}}}
 edges:
   1:3
 weights: [0, 1]
@@ -145,7 +145,7 @@ closed: left
 isdensity: false
 
 julia> fit(Histogram, [2.],  1:3, closed=:right)
-Histogram{Int64,1,Tuple{UnitRange{Int64}}}
+Histogram{Int64, 1, Tuple{UnitRange{Int64}}}
 edges:
   1:3
 weights: [1, 0]
