@@ -1,4 +1,4 @@
-module StatsBase
+module StatsBase #
 
 import Base: length, size, isempty, values, sum, show, maximum, minimum, extrema
 import Base.Cartesian: @nloops, @nref, @nextract
