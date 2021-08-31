@@ -90,7 +90,7 @@ counts(x::IntegerArray, wv::AbstractWeights) = counts(x, span(x), wv)
     proportions(x, levels=span(x), [wv::AbstractWeights])
 
 Return the proportion of values in the range `levels` that occur in `x`.
-Equivalent to `counts(x, levels) / length(x)`. If a weighting vector `wv`
+Equivalent to `counts(x, levels) .* inv(length(x))`. If a weighting vector `wv`
 is specified, the sum of the weights is used rather than the raw counts.
 """
 proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
