@@ -154,12 +154,16 @@ it = (xᵢ for xᵢ in x)
 
 ##### entropy
 
-@test entropy([0.5, 0.5])      ≈ 0.6931471805599453
-@test entropy([0.2, 0.3, 0.5]) ≈ 1.0296530140645737
+@test @inferred(entropy([0.5, 0.5]))      ≈ 0.6931471805599453
+@test @inferred(entropy([1//2, 1//2]))    ≈ 0.6931471805599453
+@test @inferred(entropy([0.5f0, 0.5f0])) isa Float32
+@test @inferred(entropy([0.2, 0.3, 0.5])) ≈ 1.0296530140645737
+@test iszero(@inferred(entropy([0, 1])))
+@test iszero(@inferred(entropy([0.0, 1.0])))
 
-@test entropy([0.5, 0.5],2)       ≈ 1.0
-@test entropy([0.2, 0.3, 0.5], 2) ≈ 1.4854752972273344
-@test entropy([1.0, 0.0]) ≈ 0.0
+@test @inferred(entropy([0.5, 0.5], 2))      ≈ 1.0
+@test @inferred(entropy([1//2, 1//2], 2))    ≈ 1.0
+@test @inferred(entropy([0.2, 0.3, 0.5], 2)) ≈ 1.4854752972273344
 
 ##### Renyi entropies
 # Generate a random probability distribution
@@ -200,12 +204,20 @@ scale = rand()
 @test renyientropy(udist * scale, order) ≈ renyientropy(udist, order) - log(scale)
 
 ##### Cross entropy
-@test crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3])    ≈ 1.1176681825904018
-@test crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) ≈ 1.6124543443825532
+@test @inferred(crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 1.1176681825904018
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 1.1176681825904018
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0])) isa Float32
+@test @inferred(crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 1.6124543443825532
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 1.6124543443825532
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
 
 ##### KL divergence
-@test kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3])    ≈ 0.08801516852582819
-@test kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) ≈ 0.12697904715521868
+@test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 0.08801516852582819
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 0.08801516852582819
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0])) isa Float32
+@test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 0.12697904715521868
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 0.12697904715521868
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
 
 ##### summarystats
 
