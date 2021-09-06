@@ -90,12 +90,12 @@ counts(x::IntegerArray, wv::AbstractWeights) = counts(x, span(x), wv)
     proportions(x, levels=span(x), [wv::AbstractWeights])
 
 Return the proportion of values in the range `levels` that occur in `x`.
-Equivalent to `counts(x, levels) .* inv(length(x))`. If a weighting vector `wv`
+Equivalent to `counts(x, levels) / length(x)`. If a weighting vector `wv`
 is specified, the sum of the weights is used rather than the raw counts.
 """
-proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
+proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) / length(x)
 proportions(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
-    counts(x, levels, wv) .* inv(sum(wv))
+    counts(x, levels, wv) / sum(wv)
 
 """
     proportions(x, k::Integer, [wv::AbstractWeights])
@@ -196,9 +196,9 @@ counts(x::IntegerArray, y::IntegerArray) = counts(x, y, (span(x), span(y)))
 counts(x::IntegerArray, y::IntegerArray, wv::AbstractWeights) = counts(x, y, (span(x), span(y)), wv)
 
 proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}) =
-    counts(x, y, levels) .* inv(length(x))
+    counts(x, y, levels) / length(x)
 proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}, wv::AbstractWeights) =
-    counts(x, y, levels, wv) .* inv(sum(wv))
+    counts(x, y, levels, wv) / sum(wv)
 
 proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) =
     proportions(x, y, (1:ks[1], 1:ks[2]))
