@@ -1,4 +1,4 @@
-# StatsBase.jl Documentation
+# Getting Started
 
 ```@meta
 CurrentModule = StatsBase
@@ -10,7 +10,7 @@ end
 
 *StatsBase.jl* is a Julia package that provides basic support for statistics. Particularly, it implements a variety of statistics-related functions, such as scalar statistics, high-order moment computation, counting, ranking, covariances, sampling, and empirical density estimation.
 
-## Getting Started
+## Installation
 
 To install StatsBase through the Julia REPL, you can type `] add StatsBase` or:
 
