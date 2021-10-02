@@ -337,23 +337,22 @@ radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     isempty(sx) && return cm
-    last_sx = sx[1]
-    tmpcount = get(cm, last_sx, 0) + 1
+    last_sx = first(sx)
+    start_i = firstindex(sx)
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
-    @inbounds for i in 2:length(sx)
+    @inbounds for i in start_i+1:lastindex(sx)
         sxi = sx[i]
-        if last_sx == sxi
-            tmpcount += 1
-        else
-            cm[last_sx] = tmpcount
+        if last_sx != sxi
+            cm[last_sx] = get(cm, last_sx, 0) + i - start_i
             last_sx = sxi
-            tmpcount = get(cm, last_sx, 0) + 1
+            start_i = i
         end
     end
 
-    cm[sx[end]] = tmpcount
+    last_sx = last(sx)
+    cm[last_sx] = get(cm, last_sx, 0) + length(sx) + 1 - start_i
 
     return cm
 end
