@@ -165,6 +165,9 @@ it = (xᵢ for xᵢ in x)
 @test @inferred(entropy([1//2, 1//2], 2))    ≈ 1.0
 @test @inferred(entropy([0.2, 0.3, 0.5], 2)) ≈ 1.4854752972273344
 
+@test_throws ArgumentError @inferred(entropy(Float64[]))
+@test_throws ArgumentError @inferred(entropy(Int[]))
+
 ##### Renyi entropies
 # Generate a random probability distribution
 nindiv = 50
@@ -211,6 +214,11 @@ scale = rand()
 @test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 1.6124543443825532
 @test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
 
+# deprecated, should throw an `ArgumentError` at some point
+logpattern = (:warn, "support for empty collections of probabilities will be removed")
+@test iszero(@test_logs logpattern @inferred(crossentropy(Float64[], Float64[])))
+@test iszero(@test_logs logpattern @inferred(crossentropy(Int[], Int[])))
+
 ##### KL divergence
 @test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 0.08801516852582819
 @test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 0.08801516852582819
@@ -218,6 +226,12 @@ scale = rand()
 @test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 0.12697904715521868
 @test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 0.12697904715521868
 @test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
+@test iszero(@inferred(kldivergence([0, 1], [0f0, 1f0])))
+
+# deprecated, should throw an `ArgumentError` at some point
+logpattern = (:warn, "support for empty collections of probabilities will be removed")
+@test iszero(@test_logs logpattern @inferred(kldivergence(Float64[], Float64[])))
+@test iszero(@test_logs logpattern @inferred(kldivergence(Int[], Int[])))
 
 ##### summarystats
 

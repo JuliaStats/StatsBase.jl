@@ -532,7 +532,12 @@ Compute the entropy of a collection of probabilities `p`,
 optionally specifying a real number `b` such that the entropy is scaled by `1/log(b)`.
 Elements with probability 0 or 1 add 0 to the entropy.
 """
-entropy(p) = -sum(xlogx, p)
+function entropy(p)
+    if isempty(p)
+        throw(ArgumentError("empty collections of probabilities are not supported"))
+    end
+    return -sum(xlogx, p)
+end
 
 entropy(p, b::Real) = entropy(p) / log(b)
 
@@ -586,7 +591,22 @@ number `b` such that the result is scaled by `1/log(b)`.
 """
 function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-    return - sum(xlogy(pi, qi) for (pi, qi) in zip(p, q))
+
+    # handle empty collections
+    if isempty(p)
+        Base.depwarn(
+            "support for empty collections of probabilities will be removed",
+            :crossentropy,
+        )
+        # return zero for empty arrays
+        return xlogy(zero(eltype(p)), zero(eltype(q)))
+    end
+
+    # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
+    broadcasted = Broadcast.broadcasted(xlogy, vec(p), vec(q))
+    result = - sum(Broadcast.instantiate(broadcasted))
+
+    return result
 end
 
 crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
@@ -603,7 +623,28 @@ can be specified such that the divergence is scaled by `1/log(b)`.
 """
 function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-    return sum(xlogy(pi, pi / qi) for (pi, qi) in zip(p, q))
+
+    # handle empty collections
+    if isempty(p)
+        Base.depwarn(
+            "support for empty collections of probabilities will be removed",
+            :kldivergence,
+        )
+        # return zero for empty arrays
+        pzero = zero(eltype(p))
+        qzero = zero(eltype(q))
+        return xlogy(pzero, zero(pzero / qzero))
+    end
+
+    # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
+    broadcasted = Broadcast.broadcasted(vec(p), vec(q)) do pi, qi
+        # handle pi = qi = 0, otherwise `NaN` is returned
+        piqi = iszero(pi) && iszero(qi) ? zero(pi / qi) : pi / qi
+        return xlogy(pi, piqi)
+    end
+    result = sum(Broadcast.instantiate(broadcasted))
+
+    return result
 end
 
 kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
