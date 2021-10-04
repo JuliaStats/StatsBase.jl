@@ -205,20 +205,20 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 end
 
 """
-    eweights(t::AbstractVector{<:Integer}, λ::Real, [n::Integer]; scaled=false)
-    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real; scaled=false) where T
-    eweights(n::Integer, λ::Real; scaled=false)
+    eweights(t::AbstractVector{<:Integer}, λ::Real, [n::Integer]; scale=false)
+    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real; scale=false) where T
+    eweights(n::Integer, λ::Real; scale=false)
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
 observations, which in this case corresponds to larger integer values `i` in `t`.
 If an integer `n` is provided, weights are generated for values from 1 to `n`
 (equivalent to `t = 1:n`).
 
-If `scaled` is `true` then for each element `i` in `t` the weight value is computed as:
+If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
 
 ``(1 - λ)^{n - i}``
 
-If `scaled` is `false` then each value is computed as:
+If `scale` is `false` then each value is computed as:
 
 ``λ (1 - λ)^{1 - i}``
 
@@ -233,11 +233,11 @@ If `scaled` is `false` then each value is computed as:
 
 # Keyword arguments
 
-- `scaled::Bool`: Whether are not to return the scaled
+- `scale::Bool`: Whether are not to return the scaled
 
 # Examples
 ```julia-repl
-julia> eweights(1:10, 0.3)
+julia> eweights(1:10, 0.3; scale=true)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
  0.04035360699999998
  0.05764800999999997
@@ -255,9 +255,9 @@ julia> eweights(1:10, 0.3)
 - https://en.wikipedia.org/wiki/Exponential_smoothing
  ```
 """
-function eweights(t::AbstractVector{<:Integer}, λ::Real, n::Integer; scaled::DepBool=nothing)
+function eweights(t::AbstractVector{<:Integer}, λ::Real, n::Integer; scale::DepBool=nothing)
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
-    f = depcheck(:eweights, :scaled, scaled) ? _scaled_eweight : _unscaled_eweight
+    f = depcheck(:eweights, :scale, scale) ? _scaled_eweight : _unscaled_eweight
 
     w0 = map(t) do i
         i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
@@ -332,7 +332,7 @@ julia> uweights(3)
  1
  1
  1
- 
+
 julia> uweights(Float64, 3)
 3-element UnitWeights{Float64}:
  1.0

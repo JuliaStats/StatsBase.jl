@@ -510,55 +510,55 @@ end
         @test round.(w, digits=4) == [0.512, 0.64, 0.8, 1.0]
 
         @testset "basic" begin
-            @test eweights(1:4, λ; scaled=true) ≈ w
+            @test eweights(1:4, λ; scale=true) ≈ w
         end
 
         @testset "1:n" begin
-            @test eweights(4, λ; scaled=true) ≈ w
+            @test eweights(4, λ; scale=true) ≈ w
         end
 
         @testset "indexin" begin
             v = [(1 - λ) ^ (10 - i) for i = 1:10]
 
             # Test that we should be able to skip indices easily
-            @test eweights([1, 3, 5, 7], 1:10, λ; scaled=true) ≈ Weights(v[[1, 3, 5, 7]])
+            @test eweights([1, 3, 5, 7], 1:10, λ; scale=true) ≈ Weights(v[[1, 3, 5, 7]])
 
             # This should also work with actual time types
             t1 = DateTime(2019, 1, 1, 1)
             tx = t1 + Hour(7)
             tn = DateTime(2019, 1, 1, 10)
 
-            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ; scaled=true) ≈ Weights(v[[1, 3, 5, 7]])
+            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ; scale=true) ≈ Weights(v[[1, 3, 5, 7]])
         end
     end
 
     @testset "Empty" begin
-        @test eweights(0, 0.3; scaled=true) == Weights(Float64[])
-        @test eweights(1:0, 0.3; scaled=true) == Weights(Float64[])
-        @test eweights(Int[], 1:10, 0.4; scaled=true) == Weights(Float64[])
+        @test eweights(0, 0.3; scale=true) == Weights(Float64[])
+        @test eweights(1:0, 0.3; scale=true) == Weights(Float64[])
+        @test eweights(Int[], 1:10, 0.4; scale=true) == Weights(Float64[])
     end
 
     @testset "Failure Conditions" begin
         # λ > 1.0
-        @test_throws ArgumentError eweights(1, 1.1; scaled=true)
+        @test_throws ArgumentError eweights(1, 1.1; scale=true)
 
         # time indices are not all positive non-zero integers
-        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3; scaled=true)
+        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3; scale=true)
 
         # Passing in an array of bools will work because Bool <: Integer,
         # but any `false` values will trigger the same argument error as 0.0
-        @test_throws ArgumentError eweights([true, false, true, true], 0.3; scaled=true)
-        @test_throws ArgumentError eweights([true, false, true, true], 0.3, 4; scaled=true)
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3; scale=true)
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3, 4; scale=true)
     end
 
-    @testset "scaled=false" begin
+    @testset "scale=false" begin
         v = [λ * (1 - λ)^(1 - i) for i = 1:4]
         w = Weights(v)
 
         @test round.(w, digits=4) == [0.2, 0.25, 0.3125, 0.3906]
 
-        wv = eweights(1:10, λ; scaled=false)
-        @test eweights(1:10, λ; scaled=true) ≈ wv / maximum(wv)
+        wv = eweights(1:10, λ; scale=false)
+        @test eweights(1:10, λ; scale=true) ≈ wv / maximum(wv)
     end
 end
 
