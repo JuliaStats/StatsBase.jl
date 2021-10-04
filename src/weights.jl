@@ -205,18 +205,22 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 end
 
 """
-    eweights(t::AbstractVector{<:Integer}, λ::Real)
-    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real) where T
-    eweights(n::Integer, λ::Real)
+    eweights(t::AbstractVector{<:Integer}, λ::Real, [n::Integer]; scaled=false)
+    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real; scaled=false) where T
+    eweights(n::Integer, λ::Real; scaled=false)
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
 observations, which in this case corresponds to larger integer values `i` in `t`.
 If an integer `n` is provided, weights are generated for values from 1 to `n`
 (equivalent to `t = 1:n`).
 
-For each element `i` in `t` the weight value is computed as:
+If `scaled` is `true` then for each element `i` in `t` the weight value is computed as:
 
-``λ (1 - λ)^{n - i}``
+``(1 - λ)^{n - i}``
+
+If `scaled` is `false` then each value is computed as:
+
+``λ (1 - λ)^{1 - i}``
 
 # Arguments
 
@@ -226,6 +230,10 @@ For each element `i` in `t` the weight value is computed as:
 - `λ::Real`: a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
   As this value approaches 0, the resulting weights will be almost equal,
   while values closer to 1 will put greater weight on the tail elements of the vector.
+
+# Keyword arguments
+
+- `scaled::Bool`: Whether are not to return the scaled
 
 # Examples
 ```julia-repl
@@ -247,27 +255,31 @@ julia> eweights(1:10, 0.3)
 - https://en.wikipedia.org/wiki/Exponential_smoothing
  ```
 """
-function eweights(t::AbstractVector{T}, λ::Real, n::Integer) where T <: Integer
+function eweights(t::AbstractVector{<:Integer}, λ::Real, n::Integer; scaled::DepBool=nothing)
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
+    f = depcheck(:eweights, :scaled, scaled) ? _scaled_eweight : _unscaled_eweight
 
     w0 = map(t) do i
         i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
-        return (1 - λ) ^ (n - i)
+        f(i, λ, n)
     end
 
     s = sum(w0)
     Weights(w0, s)
 end
 
-function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
-    isempty(t) && return Weights(collect(t), 0)
+function eweights(t::AbstractVector{<:Integer}, λ::Real; kwargs...)
+    isempty(t) && return Weights(copy(t), 0)
     (lo, hi) = extrema(t)
-    return eweights(t, λ, hi - lo + 1)
+    return eweights(t, λ, hi - lo + 1; kwargs...)
 end
 
-eweights(n::Integer, λ::Real) = eweights(1:n, λ, n)
-eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
-    eweights(something.(indexin(t, r)), λ, length(r))
+eweights(n::Integer, λ::Real; kwargs...) = eweights(1:n, λ, n; kwargs...)
+eweights(t::AbstractVector, r::AbstractRange, λ::Real; kwargs...) =
+    eweights(something.(indexin(t, r)), λ, length(r); kwargs...)
+
+_unscaled_eweight(i, λ, n) = λ * (1 - λ)^(1 - i)
+_scaled_eweight(i, λ, n) = (1 - λ)^(n - i)
 
 # NOTE: no variance correction is implemented for exponential weights
 
