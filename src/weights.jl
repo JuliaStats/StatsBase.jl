@@ -37,6 +37,12 @@ end
 
 Base.getindex(wv::W, ::Colon) where {W <: AbstractWeights} = W(copy(wv.values), sum(wv))
 
+@propagate_inbounds function Base.view(wv::W, inds...) where {W <: AbstractWeights}
+    @boundscheck checkbounds(wv, inds...)
+    @inbounds v = view(wv.values, inds...)
+    W(v, sum(v))
+end
+
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
     wv.values[i] = v

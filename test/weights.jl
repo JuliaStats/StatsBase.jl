@@ -37,7 +37,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test sum(sa, wv) === 7.0
 end
 
-@testset "$f, setindex!" for f in weight_funcs
+@testset "$f, getindex, view, setindex!" for f in weight_funcs
     w = [1., 2., 3.]
     wv = f(w)
 
@@ -45,6 +45,17 @@ end
     @test wv[1] === 1.
     @test sum(wv) === 6.
     @test wv == w
+
+    @test wv[[1, 3]] == w[[1, 3]]
+    @test typeof(wv[[1, 3]]) === typeof(wv)
+    @test sum( wv[[1, 3]]) === sum(w[[1, 3]])
+
+    # Check view
+    @test view(wv, [1, 3]) == view(wv, [true, false, true]) == w[[1, 3]]
+    @test typeof(view(wv, [1, 3])) === typeof(view(wv, [true, false, true])) === typeof(wv)
+    @test sum(view(wv, [1, 3])) === sum(view(wv, [true, false, true])) === sum(w[[1, 3]])
+    @test_throws BoundsError view(wv, [1, 5])
+    @test_throws BoundsError view(wv, [true, false, true, true])
 
     # Test setindex! success
     @test (wv[1] = 4) === 4             # setindex! returns original val
