@@ -1,5 +1,6 @@
 using StatsBase
 using Test
+using OffsetArrays
 
 n = 5000
 
@@ -104,7 +105,7 @@ cm_missing = countmap(skipmissing(xx))
 @test cm_missing isa Dict{Int, Int}
 @test cm_missing == cm
 
-cm_any_itr = countmap((i for i in xx)) 
+cm_any_itr = countmap((i for i in xx))
 @test cm_any_itr isa Dict{Any,Int} # no knowledge about type
 @test cm_missing == cm
 
@@ -163,4 +164,25 @@ end
 @testset "views" begin
     X = view([1,1,1,2,2], 1:5)
     @test countmap(X) == countmap(copy(X))
+end
+
+@testset "offset arrays" begin
+    x = rand(1:5, n)
+    w = rand(n)
+    xw = weights(w)
+    y = OffsetArray(x, n÷2)
+    yw = weights(OffsetArray(w, n÷2))
+    z = OffsetArray(x, -2n)
+    zw = weights(OffsetArray(w, -2n))
+
+    # proportions calls counts which calls addcounts!
+    @test proportions(x) == proportions(y) == proportions(z)
+    @test proportions(x, xw) == proportions(y, yw) == proportions(z, zw)
+    @test proportionmap(x) == proportionmap(y) == proportionmap(z)
+    @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
+    @test (proportionmap(x) == proportionmap(x; alg = :dict) == proportionmap(x; alg = :radixsort)
+        == proportionmap(y) == proportionmap(y; alg = :dict) == proportionmap(y; alg = :radixsort)
+        == proportionmap(z) == proportionmap(z; alg = :dict) == proportionmap(z; alg = :radixsort))
+    @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
+    # countmap and proportionmap only support the :dict algorithm for weighted sums.
 end

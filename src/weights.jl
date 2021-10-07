@@ -21,6 +21,7 @@ length(wv::AbstractWeights) = length(wv.values)
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
+Base.axes(wv::AbstractWeights) = Base.axes(wv.values)
 
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
@@ -310,7 +311,7 @@ julia> uweights(3)
  1
  1
  1
- 
+
 julia> uweights(Float64, 3)
 3-element UnitWeights{Float64}:
  1.0

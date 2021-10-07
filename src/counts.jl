@@ -23,16 +23,15 @@ array `r`. If a weighting vector `wv` is specified, the sum of weights is used
 rather than the raw counts.
 """
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
-    # add counts of integers from x to r
+    # add counts of integers from x that fall within levels to r
 
-    k = length(levels)
-    length(r) == k || throw(DimensionMismatch())
+    @boundscheck checkbounds(r, axes(levels)...)
 
-    m0 = levels[1]
-    m1 = levels[end]
+    m0 = first(levels)
+    m1 = last(levels)
     b = m0 - 1
 
-    @inbounds for i in 1 : length(x)
+    @inbounds for i in eachindex(x)
         xi = x[i]
         if m0 <= xi <= m1
             r[xi - b] += 1
@@ -42,14 +41,16 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
 end
 
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
-    k = length(levels)
-    length(r) == k || throw(DimensionMismatch())
+    # add wv weighted counts of integers from x that fall within levels to r
 
-    m0 = levels[1]
-    m1 = levels[end]
+    @boundscheck checkbounds(r, axes(levels)...)
+    @boundscheck axes(x) == axes(wv) || throw(DimensionMismatch("x and wv must have the same axes"))
+
+    m0 = first(levels)
+    m1 = last(levels)
     b = m0 - 1
 
-    @inbounds for i in 1 : length(x)
+    @inbounds for i in eachindex(x)
         xi = x[i]
         if m0 <= xi <= m1
             r[xi - b] += wv[i]
@@ -112,24 +113,23 @@ proportions(x::IntegerArray, wv::AbstractWeights) = proportions(x, span(x), wv)
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange})
     # add counts of integers from x to r
 
-    n = length(x)
-    length(y) == n || throw(DimensionMismatch())
+    @boundscheck( axes(x) == axes(y) ||
+        throw(DimensionMismatch("x and y must have the same axes")))
 
     xlevels, ylevels = levels
 
-    kx = length(xlevels)
-    ky = length(ylevels)
-    size(r) == (kx, ky) || throw(DimensionMismatch())
+    @boundscheck checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
 
-    mx0 = xlevels[1]
-    mx1 = xlevels[end]
-    my0 = ylevels[1]
-    my1 = ylevels[end]
+
+    mx0 = first(xlevels)
+    mx1 = last(xlevels)
+    my0 = first(ylevels)
+    my1 = last(ylevels)
 
     bx = mx0 - 1
     by = my0 - 1
 
-    for i = 1:n
+    for i = eachindex(x)
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -143,24 +143,22 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     # add counts of integers from x to r
 
-    n = length(x)
-    length(y) == length(wv) == n || throw(DimensionMismatch())
+    @boundscheck(axes(x) == axes(y) == axes(wv) ||
+        throw(DimensionMismatch("x, y, and wv must have the same axes")))
 
     xlevels, ylevels = levels
 
-    kx = length(xlevels)
-    ky = length(ylevels)
-    size(r) == (kx, ky) || throw(DimensionMismatch())
+    @boundscheck checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
 
-    mx0 = xlevels[1]
-    mx1 = xlevels[end]
-    my0 = ylevels[1]
-    my1 = ylevels[end]
+    mx0 = first(xlevels)
+    mx1 = last(xlevels)
+    my0 = first(ylevels)
+    my1 = last(ylevels)
 
     bx = mx0 - 1
     by = my0 - 1
 
-    for i = 1:n
+    for i = eachindex(x)
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -284,9 +282,9 @@ function addcounts_dict!(cm::Dict{T}, x) where T
 end
 
 # If the bits type is of small size i.e. it can have up to 65536 distinct values
-# then it is always better to apply a counting-sort like reduce algorithm for 
+# then it is always better to apply a counting-sort like reduce algorithm for
 # faster results and less memory usage. However we still wish to enable others
-# to write generic algorithms, therefore the methods below still accept the 
+# to write generic algorithms, therefore the methods below still accept the
 # `alg` argument but it is ignored.
 function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
@@ -352,7 +350,7 @@ function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     end
 
     last_sx = last(sx)
-    cm[last_sx] = get(cm, last_sx, 0) + length(sx) + 1 - start_i
+    cm[last_sx] = get(cm, last_sx, 0) + firstindex(sx) + 1 - start_i
 
     return cm
 end
@@ -368,17 +366,18 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
 end
 
 # fall-back for `x` an iterator
-function addcounts_radixsort!(cm::Dict{T}, x) where T 
+function addcounts_radixsort!(cm::Dict{T}, x) where T
     sx = sort!(collect(x), alg = RadixSort)
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
-    n = length(x)
-    length(wv) == n || throw(DimensionMismatch())
+    @boundscheck(axes(x) == axes(wv) ||
+        throw(DimensionMismatch("x and wv must have the same axes")))
+
     z = zero(W)
 
-    for i = 1 : n
+    for i = eachindex(x)
         @inbounds xi = x[i]
         @inbounds wi = wv[i]
         cm[xi] = get(cm, xi, z) + wi
@@ -417,5 +416,5 @@ countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcoun
 Return a dictionary mapping each unique value in `x` to its
 proportion in `x`.
 """
-proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
+proportionmap(x::AbstractArray; alg = :auto) = _normalize_countmap(countmap(x; alg = alg), length(x))
 proportionmap(x::AbstractArray, wv::AbstractWeights) = _normalize_countmap(countmap(x, wv), sum(wv))
