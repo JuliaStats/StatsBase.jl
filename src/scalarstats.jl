@@ -534,7 +534,8 @@ Elements with probability 0 or 1 add 0 to the entropy.
 """
 function entropy(p)
     if isempty(p)
-        throw(ArgumentError("empty collections of probabilities are not supported"))
+        throw(ArgumentError("empty collections are not supported since they do not " *
+                            "represent proper probability distributions"))
     end
     return -sum(xlogx, p)
 end
@@ -595,7 +596,8 @@ function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     # handle empty collections
     if isempty(p)
         Base.depwarn(
-            "support for empty collections of probabilities will be removed",
+            "support for empty collections will be removed since they do not " *
+            "represent proper probability distributions",
             :crossentropy,
         )
         # return zero for empty arrays
@@ -625,7 +627,8 @@ function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     # handle empty collections
     if isempty(p)
         Base.depwarn(
-            "support for empty collections of probabilities will be removed",
+            "support for empty collections will be removed since they do not "*
+            "represent proper probability distributions",
             :kldivergence,
         )
         # return zero for empty arrays
