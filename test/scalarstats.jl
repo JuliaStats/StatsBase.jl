@@ -215,7 +215,7 @@ scale = rand()
 @test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
 
 # deprecated, should throw an `ArgumentError` at some point
-logpattern = (:warn, "support for empty collections of probabilities will be removed")
+logpattern = (:warn, "support for empty collections will be removed since they do not represent proper probability distributions")
 @test iszero(@test_logs logpattern @inferred(crossentropy(Float64[], Float64[])))
 @test iszero(@test_logs logpattern @inferred(crossentropy(Int[], Int[])))
 
@@ -229,7 +229,7 @@ logpattern = (:warn, "support for empty collections of probabilities will be rem
 @test iszero(@inferred(kldivergence([0, 1], [0f0, 1f0])))
 
 # deprecated, should throw an `ArgumentError` at some point
-logpattern = (:warn, "support for empty collections of probabilities will be removed")
+logpattern = (:warn, "support for empty collections will be removed since they do not represent proper probability distributions")
 @test iszero(@test_logs logpattern @inferred(kldivergence(Float64[], Float64[])))
 @test iszero(@test_logs logpattern @inferred(kldivergence(Int[], Int[])))
 
