@@ -604,9 +604,7 @@ function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
 
     # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
     broadcasted = Broadcast.broadcasted(xlogy, vec(p), vec(q))
-    result = - sum(Broadcast.instantiate(broadcasted))
-
-    return result
+    return - sum(Broadcast.instantiate(broadcasted))
 end
 
 crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
@@ -642,9 +640,7 @@ function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
         piqi = iszero(pi) && iszero(qi) ? zero(pi / qi) : pi / qi
         return xlogy(pi, piqi)
     end
-    result = sum(Broadcast.instantiate(broadcasted))
-
-    return result
+    return sum(Broadcast.instantiate(broadcasted))
 end
 
 kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
