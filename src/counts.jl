@@ -43,13 +43,12 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
     # add wv weighted counts of integers from x that fall within levels to r
 
     @boundscheck checkbounds(r, axes(levels)...)
-    @boundscheck axes(x) == axes(wv) || throw(DimensionMismatch("x and wv must have the same axes"))
 
     m0 = first(levels)
     m1 = last(levels)
     b = m0 - 1
 
-    @inbounds for i in eachindex(x)
+    @inbounds for i in eachindex(x, wv)
         xi = x[i]
         if m0 <= xi <= m1
             r[xi - b] += wv[i]
@@ -112,8 +111,6 @@ proportions(x::IntegerArray, wv::AbstractWeights) = proportions(x, span(x), wv)
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange})
     # add counts of integers from x to r
 
-    @boundscheck( axes(x) == axes(y) ||
-        throw(DimensionMismatch("x and y must have the same axes")))
 
     xlevels, ylevels = levels
 
@@ -128,7 +125,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
     bx = mx0 - 1
     by = my0 - 1
 
-    for i = eachindex(x)
+    for i in eachindex(x, y)
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -142,8 +139,6 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     # add counts of integers from x to r
 
-    @boundscheck(axes(x) == axes(y) == axes(wv) ||
-        throw(DimensionMismatch("x, y, and wv must have the same axes")))
 
     xlevels, ylevels = levels
 
@@ -157,7 +152,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
     bx = mx0 - 1
     by = my0 - 1
 
-    for i = eachindex(x)
+    for i in eachindex(x, y, wv)
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -371,12 +366,10 @@ function addcounts_radixsort!(cm::Dict{T}, x) where T
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
-    @boundscheck(axes(x) == axes(wv) ||
-        throw(DimensionMismatch("x and wv must have the same axes")))
 
     z = zero(W)
 
-    for i = eachindex(x)
+    for i in eachindex(x, wv)
         @inbounds xi = x[i]
         @inbounds wi = wv[i]
         cm[xi] = get(cm, xi, z) + wi
