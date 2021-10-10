@@ -31,8 +31,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     m1 = last(levels)
     b = m0 - 1
 
-    @inbounds for i in eachindex(x)
-        xi = x[i]
+    @inbounds for xi in x
         if m0 <= xi <= m1
             r[xi - b] += 1
         end
