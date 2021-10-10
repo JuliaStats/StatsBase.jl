@@ -351,7 +351,7 @@ end
 
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     # sort the x using radixsort
-    sx = sort(x, alg = RadixSort)
+    sx = sort(vec(x), alg = RadixSort)
 
     # Delegate the loop to a separate function since sort might not
     # be inferred in Julia 0.6 after SortingAlgorithms is loaded.
