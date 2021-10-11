@@ -2,9 +2,6 @@ using StatsBase
 using Test
 using OffsetArrays
 
-#TODO: firstindex -> lastindex
-#TEST multidimensional input on radix (and dict)
-
 n = 5000
 _reshape(x) = reshape(x, 10, 50, 10)
 
@@ -39,7 +36,7 @@ _reshape(x) = reshape(x, 10, 50, 10)
     @test proportions(x, w)         ≈ (c0 ./ sum(w))
     @test counts(_reshape(x), w)    ≈ c0 # Perhaps this should not be allowed
 
-    #addcounts! to row vector
+    #addcounts! to row matrix
     c0 = reshape(c0, 1, 5)
     @test addcounts!(fill(0.0, 1, 5),          x,  1:5, w) ≈ c0
     @test addcounts!(fill(0.0, 1, 5), _reshape(x), 1:5, w) ≈ c0 # Perhaps this should not be allowed
