@@ -118,11 +118,9 @@ proportions(x::IntegerArray, wv::AbstractWeights) = proportions(x, span(x), wv)
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange})
     # add counts of integers from x to r
 
-
     xlevels, ylevels = levels
 
     @boundscheck checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
-
 
     mx0 = first(xlevels)
     mx1 = last(xlevels)
@@ -376,7 +374,6 @@ function addcounts_radixsort!(cm::Dict{T}, x) where T
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
-
     z = zero(W)
 
     for i in eachindex(x, wv)
