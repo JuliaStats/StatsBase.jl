@@ -42,6 +42,8 @@ end
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
     # add wv weighted counts of integers from x that fall within levels to r
 
+    x = vec(x) # discard shape because weights() discards shape
+
     @boundscheck checkbounds(r, axes(levels)...)
 
     m0 = first(levels)
@@ -139,6 +141,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     # add counts of integers from x to r
 
+    x, y = vec(x), vec(y) # discard shape because weights() discards shape
 
     xlevels, ylevels = levels
 
