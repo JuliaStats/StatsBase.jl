@@ -330,7 +330,7 @@ radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     isempty(sx) && return cm
     last_sx = first(sx)
-    start_i = firstindex(sx)
+    start_i = firstindex(sx)::Integer
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
@@ -344,7 +344,7 @@ function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
     end
 
     last_sx = last(sx)
-    cm[last_sx] = get(cm, last_sx, 0) + firstindex(sx) + 1 - start_i
+    cm[last_sx] = get(cm, last_sx, 0) + lastindex(sx) + 1 - start_i
 
     return cm
 end
