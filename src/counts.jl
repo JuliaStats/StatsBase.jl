@@ -330,7 +330,7 @@ const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
 "Can the type be safely sorted by radixsort"
 radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 
-function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
+function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
     isempty(sx) && return cm
     last_sx = first(sx)
     start_i = firstindex(sx)::Integer
