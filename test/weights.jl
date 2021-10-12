@@ -13,6 +13,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
+    @test axes(f([1, 2, 3])) == (Base.OneTo(3),)
 
     w  = [1., 2., 3.]
     wv = f(w)
