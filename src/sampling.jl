@@ -452,8 +452,8 @@ direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
 function make_alias_table!(w::AbstractVector{T}, wsum::S,
-                           a::AbstractVector{T},
-                           alias::AbstractVector{<:Integer}) where {S, T}
+                           a::AbstractVector{Float64},
+                           alias::AbstractVector{<:Integer}) where {T,S}
     # Arguments:
     #
     #   w [in]:         input weights
@@ -528,7 +528,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights{S
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
-    ap = Vector{T}(undef, n)
+    ap = Vector{Float64}(undef, n)
     alias = Vector{Int}(undef, n)
     make_alias_table!(values(wv), sum(wv), ap, alias)
 
@@ -536,7 +536,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights{S
     s = RangeGenerator(1:n)
     for i = 1:length(x)
         j = rand(rng, s)
-        x[i] = rand(rng) < ap[j] ? a[j] : a[alias[j]]
+        x[i] = rand(rng, Float64) < ap[j] ? a[j] : a[alias[j]]
     end
     return x
 end
