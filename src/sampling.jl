@@ -656,7 +656,7 @@ with General Distributions." *ACM Transactions on Mathematical Software* 3 (3): 
 Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n \\log n)`` time
 for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
 """
-function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights{S, T}, x::AbstractArray) where {S, T}
+function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
