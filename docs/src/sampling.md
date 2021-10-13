@@ -7,6 +7,8 @@ The package provides functions for sampling from a given population (with or wit
 ```@docs
 sample
 sample!
+wsample
+wsample!
 ```
 
 ## Algorithms
@@ -45,6 +47,7 @@ StatsBase.fisher_yates_sample!
 StatsBase.self_avoid_sample!
 StatsBase.seqsample_a!
 StatsBase.seqsample_c!
+StatsBase.seqsample_d!
 ```
 
 ### Weighted Sampling Algorithms

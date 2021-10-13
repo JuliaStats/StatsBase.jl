@@ -15,7 +15,7 @@ function _symmetrize!(a::DenseMatrix)
     return a
 end
 
-function _scalevars(x::DenseMatrix, s::DenseVector, dims::Int)
+function _scalevars(x::DenseMatrix, s::AbstractWeights, dims::Int)
     dims == 1 ? Diagonal(s) * x :
     dims == 2 ? x * Diagonal(s) :
     error("dims should be either 1 or 2.")
@@ -27,9 +27,9 @@ _unscaled_covzm(x::DenseMatrix, dims::Colon)   = unscaled_covzm(x)
 _unscaled_covzm(x::DenseMatrix, dims::Integer) = unscaled_covzm(x, dims)
 
 _unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Colon)   =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv))))
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, wv)))
 _unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer) =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, values(wv), dims), dims))
+    _symmetrize!(unscaled_covzm(x, _scalevars(x, wv, dims), dims))
 
 """
     scattermat(X, [wv::AbstractWeights]; mean=nothing, dims=1)

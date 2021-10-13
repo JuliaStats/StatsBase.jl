@@ -5,19 +5,21 @@ Random.seed!(1234)
 
 #### weighted sample with replacement
 
-function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
+function check_wsample_wrep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real;
+                            ordered::Bool=false, rev::Bool=false)
     K = length(wv)
     (vmin, vmax) = vrgn
     (amin, amax) = extrema(a)
     @test vmin <= amin <= amax <= vmax
-    p0 = values(wv) ./ sum(wv)
+    p0 = wv ./ sum(wv)
+    rev && reverse!(p0)
     if ordered
-        @test issorted(a)
+        @test issorted(a; rev=rev)
         if ptol > 0
             @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         end
     else
-        @test !issorted(a)
+        @test !issorted(a; rev=rev)
         ncols = size(a,2)
         if ncols == 1
             @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
@@ -32,7 +34,8 @@ end
 
 import StatsBase: direct_sample!, alias_sample!
 
-n = 10^5
+n = 10^6
+wv = weights([0.2, 0.8, 0.4, 0.6])
 
 for wv in [
     weights([0.2, 0.8, 0.4, 0.6]),
@@ -50,14 +53,21 @@ for wv in [
 
     a = sample(4:7, wv, n; ordered=false)
     check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
+end
 
-    a = sample(4:7, wv, n; ordered=true)
-    check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=true)
+for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
+    r = rev ? reverse(4:7) : (4:7)
+    r = T===Int ? r : T.(r)
+    aa = Int.(sample(r, wv, n; ordered=true))
+    check_wsample_wrep(aa, (4, 7), wv, 5.0e-3; ordered=true, rev=rev)
+    aa = Int.(sample(r, wv, 10; ordered=true))
+    check_wsample_wrep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
 end
 
 #### weighted sampling without replacement
 
-function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real; ordered::Bool=false)
+function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::Real;
+                             ordered::Bool=false, rev::Bool=false)
     # each column of a for one run
 
     vmin, vmax = vrgn
@@ -69,12 +79,13 @@ function check_wsample_norep(a::AbstractArray, vrgn, wv::AbstractWeights, ptol::
         aj = view(a,:,j)
         @assert allunique(aj)
         if ordered
-            @assert issorted(aj)
+            @assert issorted(aj; rev=rev)
         end
     end
 
     if ptol > 0
-        p0 = values(wv) ./ sum(wv)
+        p0 = wv ./ sum(wv)
+        rev && reverse!(p0)
         @test isapprox(proportions(a[1,:], vmin:vmax), p0, atol=ptol)
     end
 end
@@ -116,5 +127,9 @@ test_rng_use(efraimidis_aexpj_wsample_norep!, 4:7, wv, zeros(Int, 2))
 a = sample(4:7, wv, 3; replace=false, ordered=false)
 check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
 
-a = sample(4:7, wv, 3; replace=false, ordered=true)
-check_wsample_norep(a, (4, 7), wv, -1; ordered=true)
+for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
+    r = rev ? reverse(4:7) : (4:7)
+    r = T===Int ? r : T.(r)
+    aa = Int.(sample(r, wv, 3; replace=false, ordered=true))
+    check_wsample_norep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
+end

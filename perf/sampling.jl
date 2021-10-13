@@ -6,7 +6,7 @@ using StatsBase
 
 import StatsBase: direct_sample!, xmultinom_sample!
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
-import StatsBase: seqsample_a!, seqsample_c!
+import StatsBase: seqsample_a!, seqsample_c!, seqsample_d!
 
 ### generic sampling benchmarking
 
@@ -41,6 +41,9 @@ tsample!(s::Seq_A, a, x) = seqsample_a!(a, x)
 
 mutable struct Seq_C <: NoRep end
 tsample!(s::Seq_C, a, x) = seqsample_c!(a, x)
+
+mutable struct Seq_D <: NoRep end
+tsample!(s::Seq_D, a, x) = seqsample_d!(a, x)
 
 mutable struct Sample_NoRep <: NoRep end
 tsample!(s::Sample_NoRep, a, x) = sample!(a, x; replace=false, ordered=false)
@@ -87,6 +90,7 @@ const procs2 = Proc[ SampleProc{Knuths}(),
                      SampleProc{Sample_NoRep}(),
                      SampleProc{Seq_A}(),
                      SampleProc{Seq_C}(),
+                     SampleProc{Seq_D}(),
                      SampleProc{Sample_NoRep_Ord}() ]
 
 const cfgs2 = (Int, Int)[]
@@ -110,4 +114,3 @@ println("Sampling Without Replacement")
 println("===================================")
 show(rtable2; unit=:mps, cfghead="(n, k)")
 println()
-

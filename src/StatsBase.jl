@@ -1,13 +1,14 @@
-__precompile__()
-
 module StatsBase
 
-import Base: length, isempty, eltype, values, sum, show, maximum, minimum, extrema
+import Base: length, size, isempty, values, sum, show, maximum, minimum, extrema
 import Base.Cartesian: @nloops, @nref, @nextract
 using Base: @irrational, @propagate_inbounds
+using DataAPI
+import DataAPI: describe
 import DataStructures: heapify!, heappop!, percolate_down!
 using SortingAlgorithms
 using Missings
+using LogExpFunctions: xlogx, xlogy
 
 using Statistics
 using LinearAlgebra
@@ -19,6 +20,7 @@ import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
                    cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
                    median, middle
+import StatsAPI: pairwise, pairwise!
 
     ## tackle compatibility issues
 
@@ -30,16 +32,15 @@ export
     AnalyticWeights,    # to represent an analytic/precision/reliability weight vector
     FrequencyWeights,   # to representing a frequency/case/repeat weight vector
     ProbabilityWeights, # to representing a probability/sampling weight vector
+    UnitWeights,        # to representing a uniform weight vector
     weights,            # construct a generic Weights vector
     aweights,           # construct an AnalyticWeights vector
     fweights,           # construct a FrequencyWeights vector
     pweights,           # construct a ProbabilityWeights vector
+    eweights,           # construct an exponential Weights vector
+    uweights,           # construct an UnitWeights vector
     wsum,               # weighted sum with vector as second argument
     wsum!,              # weighted sum across dimensions with provided storage
-    wmean,              # weighted mean
-    wmean!,             # weighted mean across dimensions with provided storage
-    wmedian,            # weighted median
-    wquantile,          # weighted quantile
 
     ## moments
     skewness,       # (standardized) skewness
@@ -157,8 +158,9 @@ export
     inverse_rle,    # inverse run-length encoding
     indexmap,       # construct a map from element to index
     levelsmap,      # construct a map from n unique elements to [1, ..., n]
-    findat,         # find the position within a for elements in b
     indicatormat,   # construct indicator matrix
+    pairwise,       # pairwise application of functions
+    pairwise!,      # pairwise! application of functions
 
     # statistical models
     CoefTable,
@@ -174,6 +176,8 @@ export
     coefnames,
     coeftable,
     confint,
+    cooksdistance,
+    crossmodelmatrix,
     deviance,
     dof,
     dof_residual,
@@ -189,6 +193,7 @@ export
     modelmatrix,
     mss,
     response,
+    responsename,
     nobs,
     nulldeviance,
     nullloglikelihood,
@@ -208,7 +213,11 @@ export
     standardize,
     AbstractDataTransform, # the type to represent a abstract data transformation
     ZScoreTransform,       # the type to represent a z-score data transformation
-    UnitRangeTransform     # the type to represent a 0-1 data transformation
+    UnitRangeTransform,    # the type to represent a 0-1 data transformation
+
+    # reliability
+    CronbachAlpha,        # the type to represent Cronbach's alpha scores
+    cronbachalpha         # function to compute Cronbach's alpha scores
 
 # source files
 
@@ -227,6 +236,8 @@ include("signalcorr.jl")
 include("partialcor.jl")
 include("empirical.jl")
 include("hist.jl")
+include("pairwise.jl")
+include("reliability.jl")
 include("misc.jl")
 
 include("sampling.jl")

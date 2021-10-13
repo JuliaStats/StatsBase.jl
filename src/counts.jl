@@ -48,12 +48,11 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
     m0 = levels[1]
     m1 = levels[end]
     b = m0 - 1
-    w = values(wv)
 
     @inbounds for i in 1 : length(x)
         xi = x[i]
         if m0 <= xi <= m1
-            r[xi - b] += w[i]
+            r[xi - b] += wv[i]
         end
     end
     return r
@@ -160,13 +159,12 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
 
     bx = mx0 - 1
     by = my0 - 1
-    w = values(wv)
 
     for i = 1:n
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
-            r[xi - bx, yi - by] += w[i]
+            r[xi - bx, yi - by] += wv[i]
         end
     end
     return r
@@ -257,7 +255,9 @@ raw counts.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
+addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
+
+function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
@@ -271,7 +271,7 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :auto) where T
 end
 
 """Dict-based addcounts method"""
-function addcounts_dict!(cm::Dict{T}, x::AbstractArray{T}) where T
+function addcounts_dict!(cm::Dict{T}, x) where T
     for v in x
         index = ht_keyindex2!(cm, v)
         if index > 0
@@ -288,14 +288,27 @@ end
 # faster results and less memory usage. However we still wish to enable others
 # to write generic algorithms, therefore the methods below still accept the 
 # `alg` argument but it is ignored.
-function addcounts!(cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg = :ignored)
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + length(x) - sumx
     cm
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+# specialized for `Bool` iterator
+function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
+    sumx = 0
+    len = 0
+    for i in x
+        sumx += i
+        len += 1
+    end
+    cm[true] = get(cm, true, 0) + sumx
+    cm[false] = get(cm, false, 0) + len - sumx
+    cm
+end
+
+function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
 
     @inbounds for xi in x
@@ -320,13 +333,13 @@ const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
                                      Float32, Float64}
 
 "Can the type be safely sorted by radixsort"
-radixsort_safe(::Type{T}) where {T<:BaseRadixSortSafeTypes} = true
-radixsort_safe(::Type) = false
+radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractArray{T}) where T
+    isempty(sx) && return cm
     last_sx = sx[1]
     tmpcount = get(cm, last_sx, 0) + 1
-    
+
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
     @inbounds for i in 2:length(sx)
@@ -355,15 +368,20 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
+# fall-back for `x` an iterator
+function addcounts_radixsort!(cm::Dict{T}, x) where T 
+    sx = sort!(collect(x), alg = RadixSort)
+    return _addcounts_radix_sort_loop!(cm, sx)
+end
+
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
     n = length(x)
     length(wv) == n || throw(DimensionMismatch())
-    w = values(wv)
     z = zero(W)
 
     for i = 1 : n
         @inbounds xi = x[i]
-        @inbounds wi = w[i]
+        @inbounds wi = wv[i]
         cm[xi] = get(cm, xi, z) + wi
     end
     return cm
@@ -372,9 +390,10 @@ end
 
 """
     countmap(x; alg = :auto)
+    countmap(x::AbstractVector, w::AbstractVector{<:Real}; alg = :auto)
 
 Return a dictionary mapping each unique value in `x` to its number
-of occurrences.
+of occurrences. A vector of weights `w` can be provided when `x` is a vector.
 
 - `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
                      `:radixsort`, otherwise use `:dict`.
@@ -389,7 +408,7 @@ of occurrences.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-countmap(x::AbstractArray{T}; alg = :auto) where {T} = addcounts!(Dict{T,Int}(), x; alg = alg)
+countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
 
 

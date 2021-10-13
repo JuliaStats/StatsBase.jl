@@ -5,12 +5,12 @@
 #
 ###########################################################
 
-using Random: RangeGenerator, Random.GLOBAL_RNG
+using Random: Sampler, Random.GLOBAL_RNG
 
 ### Algorithms for sampling with replacement
 
 function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
-    s = RangeGenerator(1:length(a))
+    s = Sampler(rng, 1:length(a))
     b = a[1] - 1
     if b == 0
         for i = 1:length(x)
@@ -34,13 +34,56 @@ and set `x[j] = a[i]`, with `n=length(a)` and `k=length(x)`.
 This algorithm consumes `k` random numbers.
 """
 function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    s = RangeGenerator(1:length(a))
+    s = Sampler(rng, 1:length(a))
     for i = 1:length(x)
         @inbounds x[i] = a[rand(rng, s)]
     end
     return x
 end
 direct_sample!(a::AbstractArray, x::AbstractArray) = direct_sample!(Random.GLOBAL_RNG, a, x)
+
+# check whether we can use T to store indices 1:n exactly, and
+# use some heuristics to decide whether it is beneficial for k samples
+# (true for a subset of hardware-supported numeric types)
+_storeindices(n, k, ::Type{T}) where {T<:Integer} = n ≤ typemax(T)
+_storeindices(n, k, ::Type{T}) where {T<:Union{Float32,Float64}} = k < 22 && n ≤ maxintfloat(T)
+_storeindices(n, k, ::Type{Complex{T}}) where {T} = _storeindices(n, k, T)
+_storeindices(n, k, ::Type{Rational{T}}) where {T} = k < 16 && _storeindices(n, k, T)
+_storeindices(n, k, T) = false
+storeindices(n, k, ::Type{T}) where {T<:Base.HWNumber}  = _storeindices(n, k, T)
+storeindices(n, k, T) = false
+
+# order results of a sampler that does not order automatically
+function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    n, k = length(a), length(x)
+    # todo: if eltype(x) <: Real && eltype(a) <: Real,
+    #       in some cases it might be faster to check
+    #       issorted(a) to see if we can just sort x
+    if storeindices(n, k, eltype(x))
+        sort!(sampler!(rng, Base.OneTo(n), x), by=real, lt=<)
+        @inbounds for i = 1:k
+            x[i] = a[Int(x[i])]
+        end
+    else
+        indices = Array{Int}(undef, k)
+        sort!(sampler!(rng, Base.OneTo(n), indices))
+        @inbounds for i = 1:k
+            x[i] = a[indices[i]]
+        end
+    end
+    return x
+end
+
+# special case of a range can be done more efficiently
+sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractRange, x::AbstractArray) =
+    sort!(sampler!(rng, a, x), rev=step(a)<0)
+
+# weighted case:
+sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray,
+                wv::AbstractWeights, x::AbstractArray) =
+    sample_ordered!(rng, a, x) do rng, a, x
+        sampler!(rng, a, wv, x)
+    end
 
 ### draw a pair of distinct integers in [1:n]
 
@@ -107,7 +150,7 @@ function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
     end
 
     # scan remaining
-    s = RangeGenerator(1:k)
+    s = Sampler(rng, 1:k)
     for i = k+1:n
         if rand(rng) * i < k  # keep it with probability k / i
             @inbounds x[rand(rng, s)] = a[i]
@@ -185,7 +228,7 @@ function self_avoid_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray
 
     s = Set{Int}()
     sizehint!(s, k)
-    rgen = RangeGenerator(1:n)
+    rgen = Sampler(rng, 1:n)
 
     # first one
     idx = rand(rng, rgen)
@@ -286,7 +329,93 @@ function seqsample_c!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 end
 seqsample_c!(a::AbstractArray, x::AbstractArray) = seqsample_c!(Random.GLOBAL_RNG, a, x)
 
-## TODO: implement Algorithm D (page 716 - 717)
+"""
+    seqsample_d!([rng], a::AbstractArray, x::AbstractArray)
+
+Random subsequence sampling using algorithm D described in the following paper (page 716-17):
+Jeffrey Scott Vitter. "Faster Methods for Random Sampling". Communications of the ACM,
+27 (7), July 1984.
+
+This algorithm consumes ``O(k)`` random numbers, with `k=length(x)`.
+The outputs are ordered.
+"""
+function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    N = length(a)
+    n = length(x)
+    n <= N || error("length(x) should not exceed length(a)")
+
+    i = 0
+    j = 0
+
+    vprime = exp(-randexp(rng)/n)
+    q1 = N - n + 1
+    q2 = q1 / N
+    alpha = 1 / 13 # choose alpha value
+    threshold = alpha * n
+
+    while n > 1 && threshold < N
+        while true
+           local X
+            while true
+                X = N * (1 - vprime)
+                s = trunc(Int, X)
+                if s < q1
+                    break
+                end
+                vprime = exp(-randexp(rng)/n)
+            end
+
+            y = rand(rng) / q2
+            lhs = exp(log(y) / (n - 1))
+            rhs = ((q1 - s) / q1) * (N / (N - X))
+
+            if lhs <= rhs
+                vprime = lhs / rhs
+                break
+            end
+
+            if n - 1 > s
+                bottom = N - n
+                limit = N - s
+            else
+                bottom = N - s - 1
+                limit = q1
+            end
+
+            top = N - 1
+
+            while top >= limit
+                y = y * top / bottom
+                bottom -= 1
+                top -= 1
+            end
+
+            if log(y) < (n - 1)*(log(N) - log(N - X))
+                vprime = exp(-randexp(rng) / (n-1))
+                break
+            end
+            vprime = exp(-randexp(rng)/n)
+        end
+
+        j += 1
+        i += s+1
+        @inbounds x[j] = a[i]
+        N = N - s - 1
+        n -= 1
+        q1 -= s
+        q2 = q1 / N
+        threshold -= alpha
+    end
+
+    if n > 1
+        seqsample_a!(rng, a[i+1:end], @view x[j+1:end])
+    else
+        s = trunc(Int, N * vprime)
+        @inbounds x[j+=1] = a[i+=s+1]
+    end
+end
+
+seqsample_d!(a::AbstractArray, x::AbstractArray) = seqsample_d!(Random.GLOBAL_RNG, a, x)
 
 
 ### Interface functions (poly-algorithms)
@@ -310,21 +439,24 @@ Draw a random sample of `length(x)` elements from an array `a`
 and store the result in `x`. A polyalgorithm is used for sampling.
 Sampling probabilities are proportional to the weights given in `wv`,
 if provided. `replace` dictates whether sampling is performed with
-replacement and `order` dictates whether an ordered sample, also called
-a sequential sample, should be taken.
+replacement. `ordered` dictates whether
+an ordered sample (also called a sequential sample, i.e. a sample where
+items appear in the same order as in `a`) should be taken.
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     k = length(x)
     k == 0 && return x
 
     if replace  # with replacement
         if ordered
-            sort!(direct_sample!(rng, a, x))
+            sample_ordered!(direct_sample!, rng, a, x)
         else
             direct_sample!(rng, a, x)
         end
@@ -362,8 +494,9 @@ sample!(a::AbstractArray, x::AbstractArray; replace::Bool=true, ordered::Bool=fa
 Select a random, optionally weighted sample of size `n` from an array `a`
 using a polyalgorithm. Sampling probabilities are proportional to the weights
 given in `wv`, if provided. `replace` dictates whether sampling is performed
-with replacement and `order` dictates whether an ordered sample, also called
-a sequential sample, should be taken.
+with replacement. `ordered` dictates whether
+an ordered sample (also called a sequential sample, i.e. a sample where
+items appear in the same order as in `a`) should be taken.
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
@@ -382,8 +515,9 @@ sample(a::AbstractArray, n::Integer; replace::Bool=true, ordered::Bool=false) =
 Select a random, optionally weighted sample from an array `a` specifying
 the dimensions `dims` of the output array. Sampling probabilities are
 proportional to the weights given in `wv`, if provided. `replace` dictates
-whether sampling is performed with replacement and `order` dictates whether
-an ordered sample, also called a sequential sample, should be taken.
+whether sampling is performed with replacement. `ordered` dictates whether
+an ordered sample (also called a sequential sample, i.e. a sample where
+items appear in the same order as in `a`) should be taken.
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
@@ -412,13 +546,12 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     t = rand(rng) * sum(wv)
-    w = values(wv)
-    n = length(w)
+    n = length(wv)
     i = 1
-    cw = w[1]
+    cw = wv[1]
     while cw < t && i < n
         i += 1
-        @inbounds cw += w[i]
+        @inbounds cw += wv[i]
     end
     return i
 end
@@ -530,10 +663,10 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights{S
     # create alias table
     ap = Vector{Float64}(undef, n)
     alias = Vector{Int}(undef, n)
-    make_alias_table!(values(wv), sum(wv), ap, alias)
+    make_alias_table!(wv, sum(wv), ap, alias)
 
     # sampling
-    s = RangeGenerator(1:n)
+    s = Sampler(rng, 1:n)
     for i = 1:length(x)
         j = rand(rng, s)
         x[i] = rand(rng, Float64) < ap[j] ? a[j] : a[alias[j]]
@@ -561,7 +694,7 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     k = length(x)
 
     w = Vector{Float64}(undef, n)
-    copyto!(w, values(wv))
+    copyto!(w, wv)
     wsum = sum(wv)
 
     for i = 1:k
@@ -696,7 +829,8 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(k \\log(k) \\lo
 processing time to draw ``k`` elements. It consumes ``O(k \\log(n / k))`` random numbers.
 """
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                                         wv::AbstractWeights, x::AbstractArray)
+                                         wv::AbstractWeights, x::AbstractArray;
+                                         ordered::Bool=false)
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -739,24 +873,36 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         threshold = pq[1].first
         X = threshold * randexp(rng)
     end
-
-    # fill output array with items in descending order
-    @inbounds for i in k:-1:1
-        x[i] = a[heappop!(pq).second]
+    if ordered
+        # fill output array with items sorted as in a
+        sort!(pq, by=last)
+        @inbounds for i in 1:k
+            x[i] = a[pq[i].second]
+        end
+    else
+        # fill output array with items in descending order
+        @inbounds for i in k:-1:1
+            x[i] = a[heappop!(pq).second]
+        end
     end
     return x
 end
-efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
-    efraimidis_aexpj_wsample_norep!(Random.GLOBAL_RNG, a, wv, x)
+efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
+                                ordered::Bool=false) =
+    efraimidis_aexpj_wsample_norep!(Random.GLOBAL_RNG, a, wv, x; ordered=ordered)
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     k = length(x)
 
     if replace
         if ordered
-            sort!(direct_sample!(rng, a, wv, x))
+            sample_ordered!(rng, a, wv, x) do rng, a, wv, x
+                sample!(rng, a, wv, x; replace=true, ordered=false)
+            end
         else
             if n < 40
                 direct_sample!(rng, a, wv, x)
@@ -771,16 +917,13 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
         end
     else
         k <= n || error("Cannot draw $n samples from $k samples without replacement.")
-
-        efraimidis_aexpj_wsample_norep!(rng, a, wv, x)
-        if ordered
-            sort!(x)
-        end
+        efraimidis_aexpj_wsample_norep!(rng, a, wv, x; ordered=ordered)
     end
     return x
 end
-sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
-    sample!(Random.GLOBAL_RNG, a, wv, x)
+sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
+        replace::Bool=true, ordered::Bool=false) =
+    sample!(Random.GLOBAL_RNG, a, wv, x; replace=replace, ordered=ordered)
 
 sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, n::Integer;
        replace::Bool=true, ordered::Bool=false) where {T} =
@@ -803,8 +946,9 @@ sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
 
 Select a weighted sample from an array `a` and store the result in `x`. Sampling
 probabilities are proportional to the weights given in `w`. `replace` dictates
-whether sampling is performed with replacement and `order` dictates whether an
-ordered sample, also called a sequential sample, should be taken.
+whether sampling is performed with replacement. `ordered` dictates whether
+an ordered sample (also called a sequential sample, i.e. a sample where
+items appear in the same order as in `a`) should be taken.
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
@@ -837,8 +981,9 @@ wsample(a::AbstractArray, w::RealVector) = wsample(Random.GLOBAL_RNG, a, w)
 Select a weighted random sample of size `n` from `a` with probabilities proportional
 to the weights given in `w` if `a` is present, otherwise select a random sample of size
 `n` of the weights given in `w`. `replace` dictates whether sampling is performed with
-replacement and `order` dictates whether an ordered sample, also called a sequential
-sample, should be taken.
+replacement. `ordered` dictates whether
+an ordered sample (also called a sequential sample, i.e. a sample where
+items appear in the same order as in `a`) should be taken.
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).

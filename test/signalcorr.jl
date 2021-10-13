@@ -22,6 +22,9 @@ x = [-2.133252557240862    -.7445937365828654;
 
 x1 = view(x, :, 1)
 x2 = view(x, :, 2)
+realx = convert(AbstractMatrix{Real}, x)
+realx1 = convert(AbstractVector{Real}, x1)
+realx2 = convert(AbstractVector{Real}, x2)
 
 # autocov & autocorr
 
@@ -40,7 +43,9 @@ racovx1 =  [1.839214242630635709475,
            -0.088687020167434751916]
 
 @test autocov(x1) ≈ racovx1
+@test autocov(realx1) ≈ racovx1
 @test autocov(x)  ≈ [autocov(x1) autocov(x2)]
+@test autocov(realx)  ≈ [autocov(realx1) autocov(realx2)]
 
 racorx1 = [0.999999999999999888978,
           -0.221173011668873431557,
@@ -54,7 +59,9 @@ racorx1 = [0.999999999999999888978,
           -0.048220059475281865091]
 
 @test autocor(x1) ≈ racorx1
+@test autocor(realx1) ≈ racorx1
 @test autocor(x)  ≈ [autocor(x1) autocor(x2)]
+@test autocor(realx)  ≈ [autocor(realx1) autocor(realx2)]
 
 
 # crosscov & crosscor
@@ -76,10 +83,14 @@ c11 = crosscov(x1, x1)
 c12 = crosscov(x1, x2)
 c21 = crosscov(x2, x1)
 c22 = crosscov(x2, x2)
+@test crosscov(realx1, realx2) ≈ c12
 
 @test crosscov(x,  x1) ≈ [c11 c21]
+@test crosscov(realx, realx1) ≈ [c11 c21]
 @test crosscov(x1, x)  ≈ [c11 c12]
+@test crosscov(realx1, realx)  ≈ [c11 c12]
 @test crosscov(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
+@test crosscov(realx,  realx)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
 rcor0 = [0.230940107675850,
         -0.230940107675850,
@@ -98,10 +109,14 @@ c11 = crosscor(x1, x1)
 c12 = crosscor(x1, x2)
 c21 = crosscor(x2, x1)
 c22 = crosscor(x2, x2)
+@test crosscor(realx1, realx2) ≈ c12
 
 @test crosscor(x,  x1) ≈ [c11 c21]
+@test crosscor(realx, realx1) ≈ [c11 c21]
 @test crosscor(x1, x)  ≈ [c11 c12]
+@test crosscor(realx1, realx)  ≈ [c11 c12]
 @test crosscor(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
+@test crosscor(realx, realx)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
 
 ## pacf
@@ -119,4 +134,3 @@ rpacfy = [-0.221173011668873,
           -0.175020669835420]
 
 @test pacf(x[:,1], 1:4, method=:yulewalker) ≈ rpacfy
-

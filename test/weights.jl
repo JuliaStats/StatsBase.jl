@@ -4,7 +4,8 @@ using LinearAlgebra, Random, SparseArrays, Test
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
 
-# Construction
+## Construction
+
 @testset "$f" for f in weight_funcs
     @test isa(f([1, 2, 3]), AbstractWeights{Int})
     @test isa(f([1., 2., 3.]), AbstractWeights{Float64})
@@ -17,7 +18,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     wv = f(w)
     @test eltype(wv) === Float64
     @test length(wv) === 3
-    @test values(wv) === w
+    @test wv ==  w
     @test sum(wv) === 6.0
     @test !isempty(wv)
 
@@ -25,7 +26,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
     bv = f(b)
     @test eltype(bv) === Bool
     @test length(bv) === 3
-    @test values(bv) === b
+    @test convert(Vector, bv) ==  b
     @test sum(bv)    === 3
     @test !isempty(bv)
 
@@ -43,20 +44,20 @@ end
     # Check getindex & sum
     @test wv[1] === 1.
     @test sum(wv) === 6.
-    @test values(wv) == w
+    @test wv == w
 
     # Test setindex! success
     @test (wv[1] = 4) === 4             # setindex! returns original val
     @test wv[1] === 4.                  # value correctly converted and set
     @test sum(wv) === 9.                # sum updated
-    @test values(wv) == [4., 2., 3.]    # Test state of all values
+    @test wv == [4., 2., 3.]    # Test state of all values
 
     # Test mulivalue setindex!
     wv[1:2] = [3., 5.]
     @test wv[1] === 3.
     @test wv[2] === 5.
     @test sum(wv) === 11.
-    @test values(wv) == [3., 5., 3.]   # Test state of all values
+    @test wv == [3., 5., 3.]   # Test state of all values
 
     # Test failed setindex! due to conversion error
     w = [1, 2, 3]
@@ -65,7 +66,7 @@ end
     @test_throws InexactError wv[1] = 1.5   # Returns original value
     @test wv[1] === 1                       # value not updated
     @test sum(wv) === 6                     # sum not corrupted
-    @test values(wv) == [1, 2, 3]           # Test state of all values
+    @test wv == [1, 2, 3]           # Test state of all values
 end
 
 @testset "$f, isequal and ==" for f in weight_funcs
@@ -96,118 +97,143 @@ end
     @test x == y
 end
 
+@testset "Unit weights" begin
+    wv = uweights(Float64, 3)
+    @test wv[1] === 1.
+    @test wv[1:3] == fill(1.0, 3)
+    @test wv[:] == fill(1.0, 3)
+    @test !isempty(wv)
+    @test length(wv) === 3
+    @test size(wv) === (3,)
+    @test sum(wv) === 3.
+    @test wv == fill(1.0, 3)
+    @test StatsBase.varcorrection(wv) == 1/3
+    @test !isequal(wv, fweights(fill(1.0, 3)))
+    @test isequal(wv, uweights(3))
+    @test wv != fweights(fill(1.0, 3))
+    @test wv == uweights(3)
+    @test wv[[true, false, false]] == uweights(Float64, 1)
+end
+
 ## wsum
-x = [6., 8., 9.]
-w = [2., 3., 4.]
-p = [1. 2. ; 3. 4.]
-q = [1., 2., 3., 4.]
 
-@test wsum(Float64[], Float64[]) === 0.0
-@test wsum(x, w) === 72.0
-@test wsum(p, q) === 29.0
+@testset "wsum" begin
+    x = [6., 8., 9.]
+    w = [2., 3., 4.]
+    p = [1. 2. ; 3. 4.]
+    q = [1., 2., 3., 4.]
 
-## wsum along dimension
-@test wsum(x, w, 1) == [72.0]
+    @test wsum(Float64[], Float64[]) === 0.0
+    @test wsum(x, w) === 72.0
+    @test wsum(p, q) === 29.0
 
-x  = rand(6, 8)
-w1 = rand(6)
-w2 = rand(8)
+    ## wsum along dimension
 
-@test size(wsum(x, w1, 1)) == (1, 8)
-@test size(wsum(x, w2, 2)) == (6, 1)
+    @test wsum(x, w, 1) == [72.0]
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, dims = 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', dims = 2)
+    x  = rand(6, 8)
+    w1 = rand(6)
+    w2 = rand(8)
 
-x = rand(6, 5, 4)
-w1 = rand(6)
-w2 = rand(5)
-w3 = rand(4)
+    @test size(wsum(x, w1, 1)) == (1, 8)
+    @test size(wsum(x, w2, 2)) == (6, 1)
 
-@test size(wsum(x, w1, 1)) == (1, 5, 4)
-@test size(wsum(x, w2, 2)) == (6, 1, 4)
-@test size(wsum(x, w3, 3)) == (6, 5, 1)
+    @test wsum(x, w1, 1) ≈ sum(x .* w1, dims=1)
+    @test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, dims = 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', dims = 2)
-@test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), dims = 3)
+    x = rand(6, 5, 4)
+    w1 = rand(6)
+    w2 = rand(5)
+    w3 = rand(4)
 
-v = view(x, 2:4, :, :)
+    @test size(wsum(x, w1, 1)) == (1, 5, 4)
+    @test size(wsum(x, w2, 2)) == (6, 1, 4)
+    @test size(wsum(x, w3, 3)) == (6, 5, 1)
 
-@test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], dims = 1)
-@test wsum(v, w2, 2)      ≈ sum(v .* w2', dims = 2)
-@test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), dims = 3)
+    @test wsum(x, w1, 1) ≈ sum(x .* w1, dims=1)
+    @test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
+    @test wsum(x, w3, 3) ≈ sum(x .* reshape(w3, 1, 1, 4), dims=3)
 
-## wsum for Arrays with non-BlasReal elements
-x = rand(1:100, 6, 8)
-w1 = rand(6)
-w2 = rand(8)
+    v = view(x, 2:4, :, :)
 
-@test wsum(x, w1, 1) ≈ sum(x .* w1, dims = 1)
-@test wsum(x, w2, 2) ≈ sum(x .* w2', dims = 2)
+    @test wsum(v, w1[1:3], 1) ≈ sum(v .* w1[1:3], dims=1)
+    @test wsum(v, w2, 2)      ≈ sum(v .* w2', dims=2)
+    @test wsum(v, w3, 3)      ≈ sum(v .* reshape(w3, 1, 1, 4), dims=3)
 
-## wsum!
-x = rand(6)
-w = rand(6)
+    ## wsum for Arrays with non-BlasReal elements
 
-r = ones(1)
-@test wsum!(r, x, w, 1; init=true) === r
-@test r ≈ [dot(x, w)]
+    x = rand(1:100, 6, 8)
+    w1 = rand(6)
+    w2 = rand(8)
 
-r = ones(1)
-@test wsum!(r, x, w, 1; init=false) === r
-@test r ≈ [dot(x, w) + 1.0]
+    @test wsum(x, w1, 1) ≈ sum(x .* w1, dims=1)
+    @test wsum(x, w2, 2) ≈ sum(x .* w2', dims=2)
 
-x = rand(6, 8)
-w1 = rand(6)
-w2 = rand(8)
+    ## wsum!
 
-r = ones(1, 8)
-@test wsum!(r, x, w1, 1; init=true) === r
-@test r ≈ sum(x .* w1, dims = 1)
+    x = rand(6)
+    w = rand(6)
 
-r = ones(1, 8)
-@test wsum!(r, x, w1, 1; init=false) === r
-@test r ≈ sum(x .* w1, dims = 1) .+ 1.0
+    r = ones(1)
+    @test wsum!(r, x, w, 1; init=true) === r
+    @test r ≈ [dot(x, w)]
 
-r = ones(6)
-@test wsum!(r, x, w2, 2; init=true) === r
-@test r ≈ sum(x .* w2', dims = 2)
+    r = ones(1)
+    @test wsum!(r, x, w, 1; init=false) === r
+    @test r ≈ [dot(x, w) + 1.0]
 
-r = ones(6)
-@test wsum!(r, x, w2, 2; init=false) === r
-@test r ≈ sum(x .* w2', dims = 2) .+ 1.0
+    x = rand(6, 8)
+    w1 = rand(6)
+    w2 = rand(8)
 
-x = rand(8, 6, 5)
-w1 = rand(8)
-w2 = rand(6)
-w3 = rand(5)
+    r = ones(1, 8)
+    @test wsum!(r, x, w1, 1; init=true) === r
+    @test r ≈ sum(x .* w1, dims=1)
 
-r = ones(1, 6, 5)
-@test wsum!(r, x, w1, 1; init=true) === r
-@test r ≈ sum(x .* w1, dims = 1)
+    r = ones(1, 8)
+    @test wsum!(r, x, w1, 1; init=false) === r
+    @test r ≈ sum(x .* w1, dims=1) .+ 1.0
 
-r = ones(1, 6, 5)
-@test wsum!(r, x, w1, 1; init=false) === r
-@test r ≈ sum(x .* w1, dims = 1) .+ 1.0
+    r = ones(6)
+    @test wsum!(r, x, w2, 2; init=true) === r
+    @test r ≈ sum(x .* w2', dims=2)
 
-r = ones(8, 1, 5)
-@test wsum!(r, x, w2, 2; init=true) === r
-@test r ≈ sum(x .* w2', dims = 2)
+    r = ones(6)
+    @test wsum!(r, x, w2, 2; init=false) === r
+    @test r ≈ sum(x .* w2', dims=2) .+ 1.0
 
-r = ones(8, 1, 5)
-@test wsum!(r, x, w2, 2; init=false) === r
-@test r ≈ sum(x .* w2', dims = 2) .+ 1.0
+    x = rand(8, 6, 5)
+    w1 = rand(8)
+    w2 = rand(6)
+    w3 = rand(5)
 
-r = ones(8, 6)
-@test wsum!(r, x, w3, 3; init=true) === r
-@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims = 3)
+    r = ones(1, 6, 5)
+    @test wsum!(r, x, w1, 1; init=true) === r
+    @test r ≈ sum(x .* w1, dims=1)
 
-r = ones(8, 6)
-@test wsum!(r, x, w3, 3; init=false) === r
-@test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims = 3) .+ 1.0
+    r = ones(1, 6, 5)
+    @test wsum!(r, x, w1, 1; init=false) === r
+    @test r ≈ sum(x .* w1, dims=1) .+ 1.0
 
-## the sum and mean syntax
+    r = ones(8, 1, 5)
+    @test wsum!(r, x, w2, 2; init=true) === r
+    @test r ≈ sum(x .* w2', dims=2)
+
+    r = ones(8, 1, 5)
+    @test wsum!(r, x, w2, 2; init=false) === r
+    @test r ≈ sum(x .* w2', dims=2) .+ 1.0
+
+    r = ones(8, 6)
+    @test wsum!(r, x, w3, 3; init=true) === r
+    @test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims=3)
+
+    r = ones(8, 6)
+    @test wsum!(r, x, w3, 3; init=false) === r
+    @test r ≈ sum(x .* reshape(w3, (1, 1, 5)), dims=3) .+ 1.0
+end
+
+## sum, mean and quantile
+
 a = reshape(1.0:27.0, 3, 3, 3)
 
 @testset "Sum $f" for f in weight_funcs
@@ -215,9 +241,9 @@ a = reshape(1.0:27.0, 3, 3, 3)
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test sum(a, f(wt), 1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims = 1)
-        @test sum(a, f(wt), 2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims = 2)
-        @test sum(a, f(wt), 3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims = 3)
+        @test sum(a, f(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
+        @test sum(a, f(wt), dims=2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims=2)
+        @test sum(a, f(wt), dims=3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)
     end
 end
 
@@ -233,8 +259,6 @@ end
     end
 end
 
-
-# Quantile fweights
 @testset "Quantile fweights" begin
     data = (
         [7, 1, 2, 4, 10],
@@ -412,9 +436,8 @@ end
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
-    @test quantile(data[1], f(w), 0.5)    ≈  answer atol = 1e-5
+    @test quantile(data[1], f(w), 0.5) ≈ answer atol = 1e-5
 end
-
 
 @testset "Median $f" for f in weight_funcs
     data = [4, 3, 2, 1]
@@ -445,6 +468,88 @@ end
 
 @testset "Mismatched eltypes" begin
     @test round(mean(Union{Int,Missing}[1,2], weights([1,2])), digits=3) ≈ 1.667
+end
+
+@testset "Sum, mean, quantiles and variance for unit weights" begin
+    wt = uweights(Float64, 3)
+
+    @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
+    @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
+
+    @test sum(a, wt, dims=1) ≈ sum(a, dims=1)
+    @test sum(a, wt, dims=2) ≈ sum(a, dims=2)
+    @test sum(a, wt, dims=3) ≈ sum(a, dims=3)
+
+    @test wsum(a, wt, 1) ≈ sum(a, dims=1)
+    @test wsum(a, wt, 2) ≈ sum(a, dims=2)
+    @test wsum(a, wt, 3) ≈ sum(a, dims=3)
+
+    @test mean(a, wt, dims=1) ≈ mean(a, dims=1)
+    @test mean(a, wt, dims=2) ≈ mean(a, dims=2)
+    @test mean(a, wt, dims=3) ≈ mean(a, dims=3)
+
+    @test_throws DimensionMismatch sum(a, wt)
+    @test_throws DimensionMismatch sum(a, wt, dims=4)
+    @test_throws DimensionMismatch wsum(a, wt, 4)
+    @test_throws DimensionMismatch mean(a, wt, dims=4)
+
+    @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), [0.5]) ≈ [6.0]
+    @test quantile([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5), 0.5) ≈ 6.0
+    @test median([1.0, 4.0, 6.0, 8.0, 10.0], uweights(5)) ≈ 6.0
+
+    @test var(a, uweights(Float64, 27), corrected=false) ≈ var(a, corrected=false)
+    @test var(a, uweights(Float64, 27), corrected=true) ≈ var(a, corrected= true)
+end
+
+@testset "Exponential Weights" begin
+    @testset "Usage" begin
+        θ = 5.25
+        λ = 1 - exp(-1 / θ)     # simple conversion for the more common/readable method
+        v = [λ*(1-λ)^(1-i) for i = 1:4]
+        w = Weights(v)
+
+        @test round.(w, digits=4) == [0.1734, 0.2098, 0.2539, 0.3071]
+
+        @testset "basic" begin
+            @test eweights(1:4, λ) ≈ w
+        end
+
+        @testset "1:n" begin
+            @test eweights(4, λ) ≈ w
+        end
+
+        @testset "indexin" begin
+            v = [λ*(1-λ)^(1-i) for i = 1:10]
+
+            # Test that we should be able to skip indices easily
+            @test eweights([1, 3, 5, 7], 1:10, λ) ≈ Weights(v[[1, 3, 5, 7]])
+
+            # This should also work with actual time types
+            t1 = DateTime(2019, 1, 1, 1)
+            tx = t1 + Hour(7)
+            tn = DateTime(2019, 1, 2, 1)
+
+            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ) ≈ Weights(v[[1, 3, 5, 7]])
+        end
+    end
+
+    @testset "Empty" begin
+        @test eweights(0, 0.3) == Weights(Float64[])
+        @test eweights(1:0, 0.3) == Weights(Float64[])
+        @test eweights(Int[], 1:10, 0.4) == Weights(Float64[])
+    end
+
+    @testset "Failure Conditions" begin
+        # λ > 1.0
+        @test_throws ArgumentError eweights(1, 1.1)
+
+        # time indices are not all positive non-zero integers
+        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3)
+
+        # Passing in an array of bools will work because Bool <: Integer,
+        # but any `false` values will trigger the same argument error as 0.0
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3)
+    end
 end
 
 end # @testset StatsBase.Weights

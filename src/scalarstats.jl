@@ -47,10 +47,11 @@ end
 # compute mode, given the range of integer values
 """
     mode(a, [r])
+    mode(a::AbstractArray, wv::AbstractWeights)
 
 Return the mode (most common number) of an array, optionally
-over a specified range `r`. If several modes exist, the first
-one (in order of appearance) is returned.
+over a specified range `r` or weighted via a vector `wv`.
+If several modes exist, the first one (in order of appearance) is returned.
 """
 function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
@@ -75,9 +76,10 @@ end
 
 """
     modes(a, [r])::Vector
+    mode(a::AbstractArray, wv::AbstractWeights)::Vector
 
 Return all modes (most common numbers) of an array, optionally over a
-specified range `r`.
+specified range `r` or weighted via vector `wv`.
 """
 function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     r0 = r[1]
@@ -158,6 +160,47 @@ function modes(a)
     return [x for (x, c) in cnts if c == mc]
 end
 
+# Weighted mode of arbitrary vectors of values
+function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    length(a) == length(wv) ||
+        throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
+
+    # Iterate through the data
+    mv = first(a)
+    mw = first(wv)
+    weights = Dict{eltype(a), T}()
+    for (x, w) in zip(a, wv)
+        _w = get!(weights, x, zero(T)) + w
+        if _w > mw
+            mv = x
+            mw = _w
+        end
+        weights[x] = _w
+    end
+
+    return mv
+end
+
+function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    length(a) == length(wv) ||
+        throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
+
+    # Iterate through the data
+    mw = first(wv)
+    weights = Dict{eltype(a), T}()
+    for (x, w) in zip(a, wv)
+        _w = get!(weights, x, zero(T)) + w
+        if _w > mw
+            mw = _w
+        end
+        weights[x] = _w
+    end
+
+    # find values corresponding to maximum counts
+    return [x for (x, w) in weights if w == mw]
+end
 
 #############################
 #
@@ -274,7 +317,7 @@ function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constan
     # Knowing the eltype allows allocating a single array able to hold both original values
     # and differences from the center, instead of two arrays
     S = isconcretetype(T) ? promote_type(T, typeof(middle(zero(T)))) : T
-    x2 = x isa AbstractArray ? LinearAlgebra.copy_oftype(x, S) : collect(S, x)
+    x2 = x isa AbstractArray ? copyto!(similar(x, S), x) : collect(S, x)
     c = center === nothing ? median!(x2) : center
     if isconcretetype(T)
         x2 .= abs.(x2 .- c)
@@ -489,7 +532,13 @@ Compute the entropy of a collection of probabilities `p`,
 optionally specifying a real number `b` such that the entropy is scaled by `1/log(b)`.
 Elements with probability 0 or 1 add 0 to the entropy.
 """
-entropy(p) = -sum(pᵢ -> iszero(pᵢ) ? zero(pᵢ) : pᵢ * log(pᵢ), p)
+function entropy(p)
+    if isempty(p)
+        throw(ArgumentError("empty collections are not supported since they do not " *
+                            "represent proper probability distributions"))
+    end
+    return -sum(xlogx, p)
+end
 
 entropy(p, b::Real) = entropy(p) / log(b)
 
@@ -541,21 +590,26 @@ end
 Compute the cross entropy between `p` and `q`, optionally specifying a real
 number `b` such that the result is scaled by `1/log(b)`.
 """
-function crossentropy(p::AbstractArray{T}, q::AbstractArray{T}) where T<:Real
+function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-    s = 0.
-    z = zero(T)
-    for i = 1:length(p)
-        @inbounds pi = p[i]
-        @inbounds qi = q[i]
-        if pi > z
-            s += pi * log(qi)
-        end
+
+    # handle empty collections
+    if isempty(p)
+        Base.depwarn(
+            "support for empty collections will be removed since they do not " *
+            "represent proper probability distributions",
+            :crossentropy,
+        )
+        # return zero for empty arrays
+        return xlogy(zero(eltype(p)), zero(eltype(q)))
     end
-    return -s
+
+    # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
+    broadcasted = Broadcast.broadcasted(xlogy, vec(p), vec(q))
+    return - sum(Broadcast.instantiate(broadcasted))
 end
 
-crossentropy(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} =
+crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
     crossentropy(p,q) / log(b)
 
 
@@ -567,21 +621,32 @@ also called the relative entropy of `p` with respect to `q`,
 that is the sum `pᵢ * log(pᵢ / qᵢ)`. Optionally a real number `b`
 can be specified such that the divergence is scaled by `1/log(b)`.
 """
-function kldivergence(p::AbstractArray{T}, q::AbstractArray{T}) where T<:Real
+function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-    s = 0.
-    z = zero(T)
-    for i = 1:length(p)
-        @inbounds pi = p[i]
-        @inbounds qi = q[i]
-        if pi > z
-            s += pi * log(pi / qi)
-        end
+
+    # handle empty collections
+    if isempty(p)
+        Base.depwarn(
+            "support for empty collections will be removed since they do not "*
+            "represent proper probability distributions",
+            :kldivergence,
+        )
+        # return zero for empty arrays
+        pzero = zero(eltype(p))
+        qzero = zero(eltype(q))
+        return xlogy(pzero, zero(pzero / qzero))
     end
-    return s
+
+    # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
+    broadcasted = Broadcast.broadcasted(vec(p), vec(q)) do pi, qi
+        # handle pi = qi = 0, otherwise `NaN` is returned
+        piqi = iszero(pi) && iszero(qi) ? zero(pi / qi) : pi / qi
+        return xlogy(pi, piqi)
+    end
+    return sum(Broadcast.instantiate(broadcasted))
 end
 
-kldivergence(p::AbstractArray{T}, q::AbstractArray{T}, b::Real) where {T<:Real} =
+kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
     kldivergence(p,q) / log(b)
 
 #############################
@@ -617,7 +682,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     R = typeof(m)
     n = length(a)
     ns = length(s)
-    qs = if m == 0 || n == 0
+    qs = if ns == 0
         R[NaN, NaN, NaN, NaN, NaN]
     elseif T >: Missing
         quantile!(s, [0.00, 0.25, 0.50, 0.75, 1.00])
@@ -648,12 +713,12 @@ Pretty-print the summary statistics provided by [`summarystats`](@ref):
 the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
-describe(a::AbstractArray) = describe(stdout, a)
-function describe(io::IO, a::AbstractArray{T}) where T<:Union{Real,Missing}
+DataAPI.describe(x) = describe(stdout, x)
+function DataAPI.describe(io::IO, a::AbstractArray{T}) where T<:Union{Real,Missing}
     show(io, summarystats(a))
     println(io, "Type:           $(string(eltype(a)))")
 end
-function describe(io::IO, a::AbstractArray)
+function DataAPI.describe(io::IO, a::AbstractArray)
     println(io, "Summary Stats:")
     println(io, "Length:         $(length(a))")
     println(io, "Type:           $(string(eltype(a)))")

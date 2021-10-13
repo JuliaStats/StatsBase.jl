@@ -1,4 +1,5 @@
 using StatsBase
+using Dates
 using LinearAlgebra
 using Random
 using Statistics
@@ -16,6 +17,8 @@ tests = ["ambiguous",
          "rankcorr",
          "signalcorr",
          "misc",
+         "pairwise",
+         "reliability",
          "robust",
          "sampling",
          "wsampling",

@@ -15,5 +15,5 @@ addcounts!(r::AbstractArray, x::StatsBase.IntegerArray, levels::StatsBase.IntUni
 ```@docs
 countmap
 proportionmap
-addcounts!{T}(cm::Dict{T}, x::AbstractArray{T})
+addcounts!(cm::Dict, x::Any)
 ```

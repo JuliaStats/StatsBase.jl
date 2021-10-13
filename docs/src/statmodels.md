@@ -24,6 +24,7 @@ loglikelihood
 mss
 nobs
 nulldeviance
+nullloglikelihood
 r2
 rss
 score
@@ -34,13 +35,21 @@ weights(::StatisticalModel)
 
 `RegressionModel` extends `StatisticalModel` by implementing the following additional methods.
 ```@docs
+crossmodelmatrix
 dof_residual
 fitted
 leverage
+cooksdistance
 meanresponse
 modelmatrix
 response
+responsename
 predict
 predict!
 residuals
+```
+
+An exception type is provided to signal convergence failures during model estimation:
+```@docs
+ConvergenceException
 ```

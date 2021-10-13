@@ -20,13 +20,6 @@ const IntegerMatrix{T<:Integer} = AbstractArray{T,2}
 
 const RealFP = Union{Float32, Float64}
 
-## conversion from real to fp types
-
-fptype(::Type{T}) where {T<:Union{Float32,Bool,Int8,UInt8,Int16,UInt16}} = Float32
-fptype(::Type{T}) where {T<:Union{Float64,Int32,UInt32,Int64,UInt64,Int128,UInt128}} = Float64
-fptype(::Type{Complex{Float32}}) = Complex{Float32}
-fptype(::Type{Complex{Float64}}) = Complex{Float64}
-
 # A convenient typealias for deprecating default corrected Bool
 const DepBool = Union{Bool, Nothing}
 

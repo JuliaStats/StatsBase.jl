@@ -1,6 +1,7 @@
 using StatsBase
 using Test
 using DelimitedFiles
+using Statistics
 
 ##### Location
 
@@ -43,10 +44,24 @@ using DelimitedFiles
 @test modes(skipmissing([1, missing, missing, 3, 2, 2, missing])) == [2]
 @test sort(modes(skipmissing([1, missing, 3, 3, 2, 2, missing]))) == [2, 3]
 
+d1 = [1, 2, 3, 3, 4, 5, 5, 3]
+d2 = ['a', 'b', 'c', 'c', 'd', 'e', 'e', 'c']
+wv = weights([0.1:0.1:0.7; 0.1])
+@test mode(d1) == 3
+@test mode(d2) == 'c'
+@test mode(d1, wv) == 5
+@test mode(d2, wv) == 'e'
+@test sort(modes(d1[1:end-1], weights(ones(7)))) == [3, 5]
+@test sort(modes(d1, weights([.9, .1, .1, .1, .9, .1, .1, .1]))) == [1, 4]
+
 @test_throws ArgumentError mode(Int[])
 @test_throws ArgumentError modes(Int[])
 @test_throws ArgumentError mode(Any[])
 @test_throws ArgumentError modes(Any[])
+@test_throws ArgumentError mode([], weights(Float64[]))
+@test_throws ArgumentError modes([], weights(Float64[]))
+@test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.3]))
+@test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
 ## zscores
 
@@ -113,7 +128,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test mad((x for x in (1, 2.1)), normalize=false) ≈ 0.55
 @test mad(Any[1, 2.1], normalize=false) ≈ 0.55
 @test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
-@test_throws ArgumentError mad(Int[])
+@test_throws ArgumentError mad(Int[], normalize = true)
 
 # Issue 197
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009
@@ -139,12 +154,19 @@ it = (xᵢ for xᵢ in x)
 
 ##### entropy
 
-@test entropy([0.5, 0.5])      ≈ 0.6931471805599453
-@test entropy([0.2, 0.3, 0.5]) ≈ 1.0296530140645737
+@test @inferred(entropy([0.5, 0.5]))      ≈ 0.6931471805599453
+@test @inferred(entropy([1//2, 1//2]))    ≈ 0.6931471805599453
+@test @inferred(entropy([0.5f0, 0.5f0])) isa Float32
+@test @inferred(entropy([0.2, 0.3, 0.5])) ≈ 1.0296530140645737
+@test iszero(@inferred(entropy([0, 1])))
+@test iszero(@inferred(entropy([0.0, 1.0])))
 
-@test entropy([0.5, 0.5],2)       ≈ 1.0
-@test entropy([0.2, 0.3, 0.5], 2) ≈ 1.4854752972273344
-@test entropy([1.0, 0.0]) ≈ 0.0
+@test @inferred(entropy([0.5, 0.5], 2))      ≈ 1.0
+@test @inferred(entropy([1//2, 1//2], 2))    ≈ 1.0
+@test @inferred(entropy([0.2, 0.3, 0.5], 2)) ≈ 1.4854752972273344
+
+@test_throws ArgumentError @inferred(entropy(Float64[]))
+@test_throws ArgumentError @inferred(entropy(Int[]))
 
 ##### Renyi entropies
 # Generate a random probability distribution
@@ -185,12 +207,31 @@ scale = rand()
 @test renyientropy(udist * scale, order) ≈ renyientropy(udist, order) - log(scale)
 
 ##### Cross entropy
-@test crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3])    ≈ 1.1176681825904018
-@test crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) ≈ 1.6124543443825532
+@test @inferred(crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 1.1176681825904018
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 1.1176681825904018
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0])) isa Float32
+@test @inferred(crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 1.6124543443825532
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 1.6124543443825532
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
+
+# deprecated, should throw an `ArgumentError` at some point
+logpattern = (:warn, "support for empty collections will be removed since they do not represent proper probability distributions")
+@test iszero(@test_logs logpattern @inferred(crossentropy(Float64[], Float64[])))
+@test iszero(@test_logs logpattern @inferred(crossentropy(Int[], Int[])))
 
 ##### KL divergence
-@test kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3])    ≈ 0.08801516852582819
-@test kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) ≈ 0.12697904715521868
+@test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 0.08801516852582819
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 0.08801516852582819
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0])) isa Float32
+@test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 0.12697904715521868
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 0.12697904715521868
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
+@test iszero(@inferred(kldivergence([0, 1], [0f0, 1f0])))
+
+# deprecated, should throw an `ArgumentError` at some point
+logpattern = (:warn, "support for empty collections will be removed since they do not represent proper probability distributions")
+@test iszero(@test_logs logpattern @inferred(kldivergence(Float64[], Float64[])))
+@test iszero(@test_logs logpattern @inferred(kldivergence(Int[], Int[])))
 
 ##### summarystats
 
@@ -202,3 +243,31 @@ s = summarystats(1:5)
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
+
+# Issue #631
+s = summarystats([-2, -1, 0, 1, 2, missing])
+@test isa(s, StatsBase.SummaryStats)
+@test s.min == -2.0
+@test s.max == 2.0
+@test s.mean   ≈ 0.0
+@test s.median ≈ 0.0
+@test s.q25    ≈ -1.0
+@test s.q75    ≈ +1.0
+
+# Issue #631
+s = summarystats(zeros(10))
+@test isa(s, StatsBase.SummaryStats)
+@test s.min == 0.0
+@test s.max == 0.0
+@test s.mean   ≈ 0.0
+@test s.median ≈ 0.0
+@test s.q25    ≈ 0.0
+@test s.q75    ≈ 0.0
+
+# Issue #631
+s = summarystats(Union{Float64,Missing}[missing, missing])
+@test isa(s, StatsBase.SummaryStats)
+@test s.nobs == 2
+@test s.nmiss == 2
+@test isnan(s.mean)
+@test isnan(s.median)

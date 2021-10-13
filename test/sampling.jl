@@ -1,5 +1,5 @@
 using StatsBase
-using Test, Random
+using Test, Random, StableRNGs
 
 Random.seed!(1234)
 
@@ -27,19 +27,19 @@ end
 
 #### sample with replacement
 
-function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+function check_sample_wrep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false, rev::Bool=false)
     vmin, vmax = vrgn
     (amin, amax) = extrema(a)
     @test vmin <= amin <= amax <= vmax
     n = vmax - vmin + 1
     p0 = fill(1/n, n)
     if ordered
-        @test issorted(a)
+        @test issorted(a; rev=rev)
         if ptol > 0
             @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
         end
     else
-        @test !issorted(a)
+        @test !issorted(a; rev=rev)
         ncols = size(a,2)
         if ncols == 1
             @test isapprox(proportions(a, vmin:vmax), p0, atol=ptol)
@@ -68,30 +68,36 @@ test_rng_use(direct_sample!, 1:10, zeros(Int, 6))
 a = sample(3:12, n)
 check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 
-a = sample(3:12, n; ordered=true)
-check_sample_wrep(a, (3, 12), 5.0e-3; ordered=true)
+for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
+    r = rev ? reverse(3:12) : (3:12)
+    r = T===Int ? r : T.(r)
+    aa = Int.(sample(r, n; ordered=true))
+    check_sample_wrep(aa, (3, 12), 5.0e-3; ordered=true, rev=rev)
 
-a = sample(3:12, 10; ordered=true)
-check_sample_wrep(a, (3, 12), 0; ordered=true)
+    aa = Int.(sample(r, 10; ordered=true))
+    check_sample_wrep(aa, (3, 12), 0; ordered=true, rev=rev)
+end
+
+@test StatsBase._storeindices(1, 1, BigFloat) == StatsBase._storeindices(1, 1, BigFloat) == false
 
 test_rng_use(sample, 1:10, 10)
 
 @testset "sampling pairs" begin
 
-    Random.seed!(1)
+    rng = StableRNG(1)
 
-    @test samplepair(2)  ===  (1, 2)
-    @test samplepair(10) === (8, 2)
+    @test samplepair(rng, 2)  ===  (2, 1)
+    @test samplepair(rng, 10) === (5, 6)
 
-    @test samplepair([3, 4, 2, 6, 8]) === (2, 6)
-    @test samplepair([1, 2])          === (1, 2)
+    @test samplepair(rng, [3, 4, 2, 6, 8]) === (3, 8)
+    @test samplepair(rng, [1, 2])          === (1, 2)
 end
 
 test_rng_use(samplepair, 1000)
 
 #### sample without replacement
 
-function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false)
+function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=false, rev::Bool=false)
     # each column of a for one run
 
     vmin, vmax = vrgn
@@ -103,7 +109,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
         aj = view(a,:,j)
         @assert allunique(aj)
         if ordered
-            @assert issorted(aj)
+            @assert issorted(aj, rev=rev)
         end
     end
 
@@ -122,7 +128,7 @@ function check_sample_norep(a::AbstractArray, vrgn, ptol::Real; ordered::Bool=fa
 end
 
 import StatsBase: knuths_sample!, fisher_yates_sample!, self_avoid_sample!
-import StatsBase: seqsample_a!, seqsample_c!
+import StatsBase: seqsample_a!, seqsample_c!, seqsample_d!
 
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
@@ -164,11 +170,22 @@ check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 test_rng_use(seqsample_c!, 1:10, zeros(Int, 6))
 
+a = zeros(Int, 5, n)
+for j = 1:size(a,2)
+    seqsample_d!(3:12, view(a,:,j))
+end
+check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
+
+test_rng_use(seqsample_d!, 1:10, zeros(Int, 6))
+
 a = sample(3:12, 5; replace=false)
 check_sample_norep(a, (3, 12), 0; ordered=false)
 
 a = sample(3:12, 5; replace=false, ordered=true)
 check_sample_norep(a, (3, 12), 0; ordered=true)
+
+a = sample(reverse(3:12), 5; replace=false, ordered=true)
+check_sample_norep(a, (3, 12), 0; ordered=true, rev=true)
 
 # tests of multidimensional sampling
 
@@ -202,8 +219,29 @@ wv = Weights([zeros(5); 1:4; -1])
 @test_throws ErrorException sample(a, wv, 1, replace=false)
 
 #### weighted sampling with dimension
-Random.seed!(1);
 
-@test sample([1, 2], Weights([1, 1]), (2,2)) == ones(2,2)
+# weights respected; this works because of the 0-weight
 @test sample([1, 2], Weights([0, 1]), (2,2)) == [2 2 ; 2 2]
-@test sample(collect(1:4), Weights(1:4), (2,2), replace=false) == [4 1; 3 2]
+wm =  sample(collect(1:4), Weights(1:4), (2,2), replace=false)
+@test size(wm) == (2, 2) # correct shape
+@test length(Set(wm)) == 4 # no duplicates in elements
+
+
+#### check that sample and sample! do the same thing
+function test_same(;kws...)
+    wv = Weights(rand(20))
+    Random.seed!(1)
+    x1 = sample(1:20, wv, 10; kws...)
+    Random.seed!(1)
+    x2 = zeros(Int, 10)
+    sample!(1:20, wv, x2; kws...)
+    @test x1 == x2
+end
+
+test_same()
+test_same(replace=true)
+test_same(replace=false)
+test_same(replace=true, ordered=true)
+test_same(replace=false, ordered=true)
+test_same(replace=true, ordered=false)
+test_same(replace=false, ordered=false)

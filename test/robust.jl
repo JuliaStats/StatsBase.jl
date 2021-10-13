@@ -3,39 +3,40 @@ using Test
 
 ### Trimming outliers
 
-@test trim([1,2,3,4,5,6,7,8],   prop=0.1) == [1,2,3,4,5,6,7,8]
-@test trim([1,2,3,4,5,6,7,8],   prop=0.2) == [2,3,4,5,6,7]
-@test trim([1,2,3,4,5,6,7,8,9], prop=0.4) == [4,5,6]
-@test trim([1,2,3,4,5,6,7,8],   count=1)  == [2,3,4,5,6,7]
-@test trim([1,2,3,4,5,6,7,8,9], count=3)  == [4,5,6]
+@test collect(trim([8,2,3,4,5,6,7,1], prop=0.1)) == [8,2,3,4,5,6,7,1]
+@test collect(trim([8,2,3,4,5,6,7,1], prop=0.2)) == [2,3,4,5,6,7]
+@test collect(trim([1,2,3,4,5,6,7,8,9], prop=0.4)) == [4,5,6]
+@test collect(trim([8,7,6,5,4,3,2,1], count=1)) == [7,6,5,4,3,2]
+@test collect(trim([1,2,3,4,5,6,7,8,9], count=3)) == [4,5,6]
 
 
 @test_throws ArgumentError trim([])
 @test_throws ArgumentError trim([1,2,3,4,5], prop=0.5)
 
-@test trim!([1,2,3,4,5,6,7,8],   prop=0.1) == [1,2,3,4,5,6,7,8]
-@test trim!([1,2,3,4,5,6,7,8],   prop=0.2) == [2,3,4,5,6,7]
-@test trim!([1,2,3,4,5,6,7,8,9], prop=0.4) == [4,5,6]
-@test trim!([1,2,3,4,5,6,7,8],   count=1)  == [2,3,4,5,6,7]
-@test trim!([1,2,3,4,5,6,7,8,9], count=3)  == [4,5,6]
+@test collect(trim!([8,2,3,4,5,6,7,1], prop=0.1)) == [8,2,3,4,5,6,7,1]
+@test collect(trim!([8,2,3,4,5,6,7,1], prop=0.2)) == [2,3,4,5,6,7]
+@test collect(trim!([1,2,3,4,5,6,7,8,9], prop=0.4)) == [4,5,6]
+@test collect(trim!([8,7,6,5,4,3,2,1], count=1)) == [7,6,5,4,3,2]
+@test collect(trim!([1,2,3,4,5,6,7,8,9], count=3)) == [4,5,6]
 
 @test_throws ArgumentError trim!([])
 @test_throws ArgumentError trim!([1,2,3,4,5], prop=0.5)
 
-@test winsor([1,2,3,4,5,6,7,8],   prop=0.1) == [1,2,3,4,5,6,7,8]
-@test winsor([1,2,3,4,5,6,7,8],   prop=0.2) == [2,2,3,4,5,6,7,7]
-@test winsor([1,2,3,4,5,6,7,8,9], prop=0.4) == [4,4,4,4,5,6,6,6,6]
-@test winsor([1,2,3,4,5,6,7,8],   count=1)  == [2,2,3,4,5,6,7,7]
-@test winsor([1,2,3,4,5,6,7,8,9], count=3)  == [4,4,4,4,5,6,6,6,6]
+@test collect(winsor([8,2,3,4,5,6,7,1], prop=0.1)) == [8,2,3,4,5,6,7,1]
+@test collect(winsor([8,2,3,4,5,6,7,1], prop=0.2)) == [7,2,3,4,5,6,7,2]
+@test collect(winsor([1,2,3,4,5,6,7,8,9], prop=0.4)) == [4,4,4,4,5,6,6,6,6]
+@test collect(winsor([1,2,3,4,5,6,7,8], count=1)) == [2,2,3,4,5,6,7,7]
+@test collect(winsor([8,7,6,5,4,3,2,1], count=1)) == [7,7,6,5,4,3,2,2]
+@test collect(winsor([1,2,3,4,5,6,7,8,9], count=3)) == [4,4,4,4,5,6,6,6,6]
 
 @test_throws ArgumentError winsor([])
 @test_throws ArgumentError winsor([1,2,3,4,5], prop=0.5)
 
-@test winsor!([1,2,3,4,5,6,7,8],   prop=0.1) == [1,2,3,4,5,6,7,8]
-@test winsor!([1,2,3,4,5,6,7,8],   prop=0.2) == [2,2,3,4,5,6,7,7]
-@test winsor!([1,2,3,4,5,6,7,8,9], prop=0.4) == [4,4,4,4,5,6,6,6,6]
-@test winsor!([1,2,3,4,5,6,7,8],   count=1)  == [2,2,3,4,5,6,7,7]
-@test winsor!([1,2,3,4,5,6,7,8,9], count=3)  == [4,4,4,4,5,6,6,6,6]
+@test collect(winsor!([8,2,3,4,5,6,7,1], prop=0.1)) == [8,2,3,4,5,6,7,1]
+@test collect(winsor!([8,2,3,4,5,6,7,1], prop=0.2)) == [7,2,3,4,5,6,7,2]
+@test collect(winsor!([1,2,3,4,5,6,7,8,9], prop=0.4)) == [4,4,4,4,5,6,6,6,6]
+@test collect(winsor!([8,7,6,5,4,3,2,1], count=1)) == [7,7,6,5,4,3,2,2]
+@test collect(winsor!([1,2,3,4,5,6,7,8,9], count=3)) == [4,4,4,4,5,6,6,6,6]
 
 @test_throws ArgumentError winsor!([])
 @test_throws ArgumentError winsor!([1,2,3,4,5], prop=0.5)
