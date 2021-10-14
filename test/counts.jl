@@ -49,6 +49,7 @@ end
 @testset "2D integer counts" begin
     x = rand(1:4, n)
     y = rand(1:5, n)
+    w = weights(rand(n))
     x0 = deepcopy(x)
     y0 = deepcopy(y)
     w0 = deepcopy(w)

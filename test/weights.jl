@@ -106,6 +106,7 @@ end
     @test !isempty(wv)
     @test length(wv) === 3
     @test size(wv) === (3,)
+    @test axes(wv) === (Base.OneTo(3),)
     @test sum(wv) === 3.
     @test wv == fill(1.0, 3)
     @test StatsBase.varcorrection(wv) == 1/3

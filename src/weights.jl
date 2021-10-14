@@ -277,6 +277,7 @@ sum(wv::UnitWeights{T}) where T = convert(T, length(wv))
 isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = tuple(length(wv))
+Base.axes(wv::UnitWeights) = tuple(Base.OneTo(length(wv)))
 
 Base.convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
