@@ -584,9 +584,9 @@ end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
-function make_alias_table!(w::AbstractVector{T}, wsum::S,
+function make_alias_table!(w::AbstractVector, wsum,
                            a::AbstractVector{Float64},
-                           alias::AbstractVector{<:Integer}) where {T,S}
+                           alias::Vector{Int})
     # Arguments:
     #
     #   w [in]:         input weights
@@ -669,7 +669,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     s = Sampler(rng, 1:n)
     for i = 1:length(x)
         j = rand(rng, s)
-        x[i] = rand(rng, Float64) < ap[j] ? a[j] : a[alias[j]]
+        x[i] = rand(rng) < ap[j] ? a[j] : a[alias[j]]
     end
     return x
 end
