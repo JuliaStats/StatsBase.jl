@@ -241,7 +241,7 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 
-`alg` is only allowed when `wv` is not specified and can be one of:
+`alg` is only allowed for unweighted counting and can be one of:
 - `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
                      `:radixsort`, otherwise use `:dict`.
 
@@ -338,7 +338,7 @@ radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
 function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
     isempty(sx) && return cm
     last_sx = first(sx)
-    start_i = firstindex(sx)::Integer
+    start_i = firstindex(sx)
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
