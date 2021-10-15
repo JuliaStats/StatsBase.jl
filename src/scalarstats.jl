@@ -591,17 +591,10 @@ Compute the cross entropy between `p` and `q`, optionally specifying a real
 number `b` such that the result is scaled by `1/log(b)`.
 """
 function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
-    length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-
-    # handle empty collections
+    length(p) == length(q) || throw(DimensionMismatch("inconsistent array length"))
     if isempty(p)
-        Base.depwarn(
-            "support for empty collections will be removed since they do not " *
-            "represent proper probability distributions",
-            :crossentropy,
-        )
-        # return zero for empty arrays
-        return xlogy(zero(eltype(p)), zero(eltype(q)))
+        throw(ArgumentError("empty collections are not supported since they do not " *
+                            "represent proper probability distributions"))
     end
 
     # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
@@ -622,19 +615,10 @@ that is the sum `pᵢ * log(pᵢ / qᵢ)`. Optionally a real number `b`
 can be specified such that the divergence is scaled by `1/log(b)`.
 """
 function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
-    length(p) == length(q) || throw(DimensionMismatch("Inconsistent array length."))
-
-    # handle empty collections
+    length(p) == length(q) || throw(DimensionMismatch("inconsistent array length"))
     if isempty(p)
-        Base.depwarn(
-            "support for empty collections will be removed since they do not "*
-            "represent proper probability distributions",
-            :kldivergence,
-        )
-        # return zero for empty arrays
-        pzero = zero(eltype(p))
-        qzero = zero(eltype(q))
-        return xlogy(pzero, zero(pzero / qzero))
+        throw(ArgumentError("empty collections are not supported since they do not " *
+                            "represent proper probability distributions"))
     end
 
     # use pairwise summation (https://github.com/JuliaLang/julia/pull/31020)
