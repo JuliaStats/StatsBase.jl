@@ -586,7 +586,7 @@ direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
 
 function make_alias_table!(w::AbstractVector, wsum,
                            a::AbstractVector{Float64},
-                           alias::Vector{Int})
+                           alias::AbstractVector{Int})
     # Arguments:
     #
     #   w [in]:         input weights
