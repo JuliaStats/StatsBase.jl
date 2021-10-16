@@ -584,7 +584,7 @@ end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
-function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
+function make_alias_table!(w::AbstractVector, wsum,
                            a::AbstractVector{Float64},
                            alias::AbstractVector{Int})
     # Arguments:
