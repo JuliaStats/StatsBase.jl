@@ -548,7 +548,6 @@ end
         # Passing in an array of bools will work because Bool <: Integer,
         # but any `false` values will trigger the same argument error as 0.0
         @test_throws ArgumentError eweights([true, false, true, true], 0.3; scale=true)
-        @test_throws ArgumentError eweights([true, false, true, true], 0.3, 4; scale=true)
     end
 
     @testset "scale=false" begin
