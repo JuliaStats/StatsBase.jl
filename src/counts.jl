@@ -123,11 +123,11 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 
     xlevels, ylevels = levels
 
-    axes(x) == axes(y) || throw(DimensionMismatch(
-        "x and y must have the same axes, got $(axes(x)) and $(axes(y))"))
+    axes(x) == axes(y) ||
+        throw(DimensionMismatch("x and y must have the same axes, but got $(axes(x)) and $(axes(y))"))
 
-    axes(r) == (axes(xlevels, 1), axes(ylevels, 1)) || throw(DimensionMismatch(
-        "axes(r) must correspond to the axes of levels, got $(axes(r)) ≠ $(axes(xlevels, 1)), $(axes(ylevels, 1))"))
+    axes(r) == (axes(xlevels, 1), axes(ylevels, 1)) ||
+        throw(DimensionMismatch("axes(r) must correspond to the axes of levels, but got $(axes(r)) ≠ $(axes(xlevels, 1)), $(axes(ylevels, 1))"))
 
     mx0 = first(xlevels)
     mx1 = last(xlevels)
@@ -151,13 +151,13 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     # add counts of pairs from zip(x,y) to r
 
-    axes(x) == axes(y) || throw(DimensionMismatch(
-        "x and y must have the same axes, got $(axes(x)) and $(axes(y))"))
+    axes(x) == axes(y) ||
+        throw(DimensionMismatch("x and y must have the same axes, but got $(axes(x)) and $(axes(y))"))
 
     x, y = vec(x), vec(y) # discard shape because weights() discards shape
 
-    length(x) == length(y) == length(wv) || throw(DimensionMismatch(
-        "x, y, and wv must have the same length, got $(length(x)), $(length(y)), and $(length(wv))"))
+    length(x) == length(y) == length(wv) ||
+        throw(DimensionMismatch("x, y, and wv must have the same length, but got $(length(x)), $(length(y)), and $(length(wv))"))
 
     xlevels, ylevels = levels
 
@@ -391,8 +391,8 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) whe
 
     x = vec(x) # discard shape because weights() discards shape
 
-    length(x) == length(wv) || throw(DimensionMismatch(
-        "x and wv must have the same length, got $(length(x)) and $(length(wv))"))
+    length(x) == length(wv) ||
+        throw(DimensionMismatch("x and wv must have the same length, got $(length(x)) and $(length(wv))"))
 
     z = zero(W)
 
