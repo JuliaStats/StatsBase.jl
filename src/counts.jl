@@ -44,8 +44,8 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
 
     x = vec(x) # discard shape because weights() discards shape
 
-    axes(x) == axes(wv) || throw(DimensionMismatch(
-        "vec(x) and wv must have the same axes, got $(axes(x)) and $(axes(wv))"))
+    lenth(x) == lenth(wv) || throw(DimensionMismatch(
+        "x and wv must have the same length, got $(length(x)) and $(length(wv))"))
 
     @boundscheck checkbounds(r, axes(levels)...)
 
@@ -156,8 +156,8 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
 
     x, y = vec(x), vec(y) # discard shape because weights() discards shape
 
-    axes(x) == axes(y) == axes(wv) || throw(DimensionMismatch(
-        "vec(x), vec(y), and wv must have the same axes, got $(axes(x)), $(axes(y)), and $(axes(wv))"))
+    length(x) == length(y) == length(wv) || throw(DimensionMismatch(
+        "x, y, and wv must have the same length, got $(length(x)), $(length(y)), and $(length(wv))"))
 
     xlevels, ylevels = levels
 
@@ -391,8 +391,8 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) whe
 
     x = vec(x) # discard shape because weights() discards shape
 
-    axes(x) == axes(wv) || throw(DimensionMismatch(
-        "vec(x) and wv must have the same axes, got $(axes(x)) and $(axes(wv))"))
+    length(x) == length(wv) || throw(DimensionMismatch(
+        "x and wv must have the same length, got $(length(x)) and $(length(wv))"))
 
     z = zero(W)
 
