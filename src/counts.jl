@@ -19,8 +19,10 @@ end
     addcounts!(r, x, levels::UnitRange{<:Int}, [wv::AbstractWeights])
 
 Add the number of occurrences in `x` of each value in `levels` to an existing
-array `r`. If a weighting vector `wv` is specified, the sum of weights is used
-rather than the raw counts.
+array `r`.
+
+If a weighting vector `wv` is specified, the sum of weights is used rather than the
+raw counts.
 """
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     # add counts of integers from x that fall within levels to r
@@ -73,7 +75,7 @@ falling in that range will be considered (the others will be ignored without
 raising an error or a warning). If an integer `k` is provided, only values in the
 range `1:k` will be considered.
 
-If a weighting vector `wv` is specified, the sum of the weights is used rather than the
+If a weighting vector `wv` is specified, the proportion of weights is used rather than the
 raw counts.
 
 The output is a vector of length `length(levels)`.
@@ -412,7 +414,7 @@ end
 
 Return a dictionary mapping each unique value in `x` to its number of occurrences.
 
-When `x` is a vector, a vector of weights `wv` can be provided and the sum of the weights
+A vector of weights `wv` can be provided and the sum of the weights
 is used rather than the raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
@@ -439,8 +441,8 @@ countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcoun
 
 Return a dictionary mapping each unique value in `x` to its proportion in `x`.
 
-When `x` is a vector, a vector of weights `wv` can be provided and the sum of the weights
-is used rather than the raw counts.
+If a vector of weights `wv` is provided, the weighted proportion is computed rather
+than the proportion of raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
 - `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
