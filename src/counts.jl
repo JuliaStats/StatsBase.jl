@@ -42,10 +42,10 @@ end
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
     # add wv weighted counts of integers from x that fall within levels to r
 
-    x = vec(x) # discard shape because weights() discards shape
-
     length(x) == length(wv) || throw(DimensionMismatch(
         "x and wv must have the same length, got $(length(x)) and $(length(wv))"))
+
+    xv = vec(x) # discard shape because weights() discards shape
 
     @boundscheck checkbounds(r, axes(levels)...)
 
@@ -53,8 +53,8 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
     m1 = last(levels)
     b = m0 - 1
 
-    @inbounds for i in eachindex(x, wv)
-        xi = x[i]
+    @inbounds for i in eachindex(xv, wv)
+        xi = xv[i]
         if m0 <= xi <= m1
             r[xi - b] += wv[i]
         end
@@ -151,13 +151,13 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     # add counts of pairs from zip(x,y) to r
 
+    length(x) == length(y) == length(wv) ||
+        throw(DimensionMismatch("x, y, and wv must have the same length, but got $(length(x)), $(length(y)), and $(length(wv))"))
+
     axes(x) == axes(y) ||
         throw(DimensionMismatch("x and y must have the same axes, but got $(axes(x)) and $(axes(y))"))
 
-    x, y = vec(x), vec(y) # discard shape because weights() discards shape
-
-    length(x) == length(y) == length(wv) ||
-        throw(DimensionMismatch("x, y, and wv must have the same length, but got $(length(x)), $(length(y)), and $(length(wv))"))
+    xv, yv = vec(x), vec(y) # discard shape because weights() discards shape
 
     xlevels, ylevels = levels
 
@@ -172,9 +172,9 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
     bx = mx0 - 1
     by = my0 - 1
 
-    for i in eachindex(x, y, wv)
-        xi = x[i]
-        yi = y[i]
+    for i in eachindex(xv, yv, wv)
+        xi = xv[i]
+        yi = yv[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
             r[xi - bx, yi - by] += wv[i]
         end
@@ -388,15 +388,17 @@ function addcounts_radixsort!(cm::Dict{T}, x) where T
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
-    x = vec(x) # discard shape because weights() discards shape
+    # add wv weighted counts of integers from x to cm
 
     length(x) == length(wv) ||
         throw(DimensionMismatch("x and wv must have the same length, got $(length(x)) and $(length(wv))"))
 
+    xv = vec(x) # discard shape because weights() discards shape
+
     z = zero(W)
 
-    for i in eachindex(x, wv)
-        @inbounds xi = x[i]
+    for i in eachindex(xv, wv)
+        @inbounds xi = xv[i]
         @inbounds wi = wv[i]
         cm[xi] = get(cm, xi, z) + wi
     end
