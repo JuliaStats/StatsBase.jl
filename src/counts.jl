@@ -388,7 +388,6 @@ function addcounts_radixsort!(cm::Dict{T}, x) where T
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
-
     x = vec(x) # discard shape because weights() discards shape
 
     length(x) == length(wv) ||
