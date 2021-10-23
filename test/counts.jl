@@ -152,6 +152,7 @@ end
     @test cm["c"] == 3.5
 
     @test cm == countmap(x, w)
+    @test cm == countmap(reshape(x, 2, 3), w)
 
     pm = proportionmap(x, weights(w))
     @test pm["a"] ≈ (5.5 / 13.5)
