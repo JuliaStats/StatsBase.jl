@@ -117,8 +117,8 @@ end
     @test cm_missing == cm
 
     # with multidimensional array
-    cm_reshape = countmap(reshape(xx, 20, 100, 20, 10); alg=:radixsort)
-    @test cm_reshape == cm
+    @test countmap(reshape(xx, 20, 100, 20, 10); alg=:radixsort) == cm
+    @test countmap(reshape(xx, 20, 100, 20, 10); alg=:dict)      == cm
 
     # with empty array
     @test countmap(Int[]) == Dict{Int, Int}()
