@@ -114,7 +114,7 @@ end
 
     cm_any_itr = countmap((i for i in xx))
     @test cm_any_itr isa Dict{Any,Int} # no knowledge about type
-    @test cm_missing == cm
+    @test cm_any_itr == cm
 
     # with multidimensional array
     @test countmap(reshape(xx, 20, 100, 20, 10); alg=:radixsort) == cm
