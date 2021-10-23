@@ -44,6 +44,9 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
 
     x = vec(x) # discard shape because weights() discards shape
 
+    axes(x) == axes(wv) || throw(DimensionMismatch(
+        "vec(x) and wv must have the same axes, got $(axes(x)) and $(axes(wv))"))
+
     @boundscheck checkbounds(r, axes(levels)...)
 
     m0 = first(levels)
@@ -116,11 +119,15 @@ proportions(x::IntegerArray, wv::AbstractWeights) = proportions(x, span(x), wv)
 #### functions for counting a single list of integers (2D)
 
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange})
-    # add counts of integers from x to r
+    # add counts of pairs from zip(x,y) to r
 
     xlevels, ylevels = levels
 
-    @boundscheck checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
+    axes(x) == axes(y) || throw(DimensionMismatch(
+        "x and y must have the same axes, got $(axes(x)) and $(axes(y))"))
+
+    axes(r) == (axes(xlevels, 1), axes(ylevels, 1)) || throw(DimensionMismatch(
+        "axes(r) must correspond to the axes of levels, got $(axes(r)) ≠ $(axes(xlevels, 1), axes(ylevels, 1))"))
 
     mx0 = first(xlevels)
     mx1 = last(xlevels)
@@ -142,13 +149,20 @@ end
 
 function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
-    # add counts of integers from x to r
+    # add counts of pairs from zip(x,y) to r
+
+    axes(x) == axes(y) || throw(DimensionMismatch(
+        "x and y must have the same axes, got $(axes(x)) and $(axes(y))"))
 
     x, y = vec(x), vec(y) # discard shape because weights() discards shape
 
+    axes(x) == axes(y) == axes(wv) || throw(DimensionMismatch(
+        "vec(x), vec(y), and wv must have the same axes, got $(axes(x)), $(axes(y)), and $(axes(wv))"))
+
     xlevels, ylevels = levels
 
-    @boundscheck checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
+    axes(r) == (axes(xlevels, 1), axes(ylevels, 1)) || throw(DimensionMismatch(
+        "axes(r) must correspond to the axes of levels, got $(axes(r)) ≠ $(axes(xlevels, 1), axes(ylevels, 1))"))
 
     mx0 = first(xlevels)
     mx1 = last(xlevels)
@@ -374,6 +388,12 @@ function addcounts_radixsort!(cm::Dict{T}, x) where T
 end
 
 function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
+
+    x = vec(x) # discard shape because weights() discards shape
+
+    axes(x) == axes(wv) || throw(DimensionMismatch(
+        "vec(x) and wv must have the same axes, got $(axes(x)) and $(axes(wv))"))
+
     z = zero(W)
 
     for i in eachindex(x, wv)
