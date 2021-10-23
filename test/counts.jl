@@ -3,7 +3,6 @@ using Test
 using OffsetArrays
 
 n = 5000
-_reshape(x) = reshape(x, 10, 50, 10)
 
 @testset "1D integer counts" begin
     x = rand(1:5, n)
@@ -12,34 +11,34 @@ _reshape(x) = reshape(x, 10, 50, 10)
     w0 = deepcopy(w)
 
     c0 = Int[count(v->v == i, x) for i in 1:5]
-    @test counts(x, 5)           == c0
-    @test counts(x .+ 1, 2:6)    == c0
-    @test proportions(x, 1:5)    ≈ (c0 ./ n)
-    @test counts(_reshape(x), 5) == c0
+    @test counts(x, 5)                      == c0
+    @test counts(x .+ 1, 2:6)               == c0
+    @test proportions(x, 1:5)               ≈ (c0 ./ n)
+    @test counts(reshape(x, 10, 50, 10), 5) == c0
 
-    @test counts(x)              == c0
-    @test proportions(x)         ≈ (c0 ./ n)
-    @test counts(_reshape(x))    == c0
+    @test counts(x)                      == c0
+    @test proportions(x)                 ≈ (c0 ./ n)
+    @test counts(reshape(x, 10, 50, 10)) == c0
 
     c0 = reshape(c0, 1, 5)
-    @test addcounts!(fill(0, 1, 5),          x,  1:5) == c0
-    @test addcounts!(fill(0, 1, 5), _reshape(x), 1:5) == c0
+    @test addcounts!(fill(0, 1, 5),                     x,  1:5) == c0
+    @test addcounts!(fill(0, 1, 5), reshape(x, 10, 50, 10), 1:5) == c0
 
     c0 = Float64[sum(w.values[x .== i]) for i in 1:5]
-    @test counts(x, 5, w)           ≈ c0
-    @test counts(x .+ 1, 2:6, w)    ≈ c0
-    @test proportions(x, 1:5, w)    ≈ (c0 ./ sum(w))
-    @test counts(_reshape(x), 5, w) ≈ c0 # Perhaps this should not be allowed
+    @test counts(x, 5, w)                      ≈ c0
+    @test counts(x .+ 1, 2:6, w)               ≈ c0
+    @test proportions(x, 1:5, w)               ≈ (c0 ./ sum(w))
+    @test counts(reshape(x, 10, 50, 10), 5, w) ≈ c0 # Perhaps this should not be allowed
 
-    @test counts(x, w)              ≈ c0
-    @test counts(x .+ 1, 2:6, w)    ≈ c0
-    @test proportions(x, w)         ≈ (c0 ./ sum(w))
-    @test counts(_reshape(x), w)    ≈ c0 # Perhaps this should not be allowed
+    @test counts(x, w)                      ≈ c0
+    @test counts(x .+ 1, 2:6, w)            ≈ c0
+    @test proportions(x, w)                 ≈ (c0 ./ sum(w))
+    @test counts(reshape(x, 10, 50, 10), w) ≈ c0 # Perhaps this should not be allowed
 
     #addcounts! to row matrix
     c0 = reshape(c0, 1, 5)
-    @test addcounts!(fill(0.0, 1, 5),          x,  1:5, w) ≈ c0
-    @test addcounts!(fill(0.0, 1, 5), _reshape(x), 1:5, w) ≈ c0 # Perhaps this should not be allowed
+    @test addcounts!(fill(0.0, 1, 5),                     x,  1:5, w) ≈ c0
+    @test addcounts!(fill(0.0, 1, 5), reshape(x, 10, 50, 10), 1:5, w) ≈ c0 # Perhaps this should not be allowed
 
     @test x == x0
     @test w == w0
@@ -55,26 +54,26 @@ end
     w0 = deepcopy(w)
 
     c0 = Int[count(t->t != 0,  (x .== i) .& (y .== j)) for i in 1:4, j in 1:5]
-    @test counts(x, y, (4, 5))                     == c0
-    @test counts(x .+ 2, y .+ 3, (3:6, 4:8))       == c0
-    @test proportions(x, y, (1:4, 1:5))            ≈ (c0 ./ n)
-    @test counts(_reshape(x), _reshape(y), (4, 5)) == c0
+    @test counts(x, y, (4, 5))                                           == c0
+    @test counts(x .+ 2, y .+ 3, (3:6, 4:8))                             == c0
+    @test proportions(x, y, (1:4, 1:5))                                  ≈ (c0 ./ n)
+    @test counts(reshape(x, 10, 50, 10), reshape(y, 10, 50, 10), (4, 5)) == c0
 
-    @test counts(x, y)                             == c0
-    @test counts(x .+ 2, y .+ 3, (3:6, 4:8))       == c0
-    @test proportions(x, y,)                       ≈ (c0 ./ n)
-    @test counts(_reshape(x), _reshape(y))         == c0
+    @test counts(x, y)                                           == c0
+    @test counts(x .+ 2, y .+ 3, (3:6, 4:8))                     == c0
+    @test proportions(x, y,)                                     ≈ (c0 ./ n)
+    @test counts(reshape(x, 10, 50, 10), reshape(y, 10, 50, 10)) == c0
 
     c0 = Float64[sum(w.values[(x .== i) .& (y .== j)]) for i in 1:4, j in 1:5]
-    @test counts(x, y, (4, 5), w)                     ≈ c0
-    @test counts(x .+ 2, y .+ 3, (3:6, 4:8), w)       ≈ c0
-    @test proportions(x, y, (1:4, 1:5), w)            ≈ (c0 ./ sum(w))
-    @test counts(_reshape(x), _reshape(y), (4, 5), w) ≈ c0 # Perhaps this should not be allowed
+    @test counts(x, y, (4, 5), w)                                           ≈ c0
+    @test counts(x .+ 2, y .+ 3, (3:6, 4:8), w)                             ≈ c0
+    @test proportions(x, y, (1:4, 1:5), w)                                  ≈ (c0 ./ sum(w))
+    @test counts(reshape(x, 10, 50, 10), reshape(y, 10, 50, 10), (4, 5), w) ≈ c0 # Perhaps this should not be allowed
 
-    @test counts(x, y, w)                             ≈ c0
-    @test counts(x .+ 2, y .+ 3, (3:6, 4:8), w)       ≈ c0
-    @test proportions(x, y, w)                        ≈ (c0 ./ sum(w))
-    @test counts(_reshape(x), _reshape(y), w)         ≈ c0 # Perhaps this should not be allowed
+    @test counts(x, y, w)                                           ≈ c0
+    @test counts(x .+ 2, y .+ 3, (3:6, 4:8), w)                     ≈ c0
+    @test proportions(x, y, w)                                      ≈ (c0 ./ sum(w))
+    @test counts(reshape(x, 10, 50, 10), reshape(y, 10, 50, 10), w) ≈ c0 # Perhaps this should not be allowed
 
     @test x == x0
     @test y == y0
@@ -189,13 +188,13 @@ end
     zw = weights(OffsetArray(w, -2n))
 
     # proportions calls counts which calls addcounts!
-    @test proportions(x) == proportions(y) == proportions(z)
-    @test proportions(x, xw) == proportions(y, yw) == proportions(z, zw)
-    @test proportionmap(x) == proportionmap(y) == proportionmap(z)
+    @test proportions(x)       == proportions(y)       == proportions(z)
+    @test proportions(x, xw)   == proportions(y, yw)   == proportions(z, zw)
+    @test proportionmap(x)     == proportionmap(y)     == proportionmap(z)
     @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
-    @test (countmap(x) == countmap(x; alg = :dict) == countmap(x; alg = :radixsort)
-        == countmap(y) == countmap(y; alg = :dict) == countmap(y; alg = :radixsort)
-        == countmap(z) == countmap(z; alg = :dict) == countmap(z; alg = :radixsort))
+    @test (countmap(x) == countmap(x; alg = :dict) == countmap(x; alg = :radixsort) ==
+           countmap(y) == countmap(y; alg = :dict) == countmap(y; alg = :radixsort) ==
+           countmap(z) == countmap(z; alg = :dict) == countmap(z; alg = :radixsort))
     @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
     # countmap and proportionmap only support the :dict algorithm for weighted sums.
 end
