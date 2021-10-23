@@ -98,7 +98,7 @@ counts(x::IntegerArray, wv::AbstractWeights) = counts(x, span(x), wv)
 Return the proportion of values in the range `levels` that occur in `x`.
 Equivalent to `counts(x, levels) / length(x)`.
 
-If a weighting vector `wv` is specified, the sum of the weights is used rather than the
+If a weighting vector `wv` is specified, the proportion of weight is used rather than the
 raw counts.
 """
 proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
@@ -110,7 +110,7 @@ proportions(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
 
 Return the proportion of integers in 1 to `k` that occur in `x`.
 
-If a weighting vector `wv` is specified, the sum of the weights is used rather than the
+If a weighting vector `wv` is specified, the proportion of weight is used rather than the
 raw counts.
 """
 proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
@@ -414,8 +414,8 @@ end
 
 Return a dictionary mapping each unique value in `x` to its number of occurrences.
 
-A vector of weights `wv` can be provided and the sum of the weights
-is used rather than the raw counts.
+A vector of weights `wv` can be provided and the sum of the weights is used rather than the
+raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
 - `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
