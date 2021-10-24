@@ -410,7 +410,7 @@ end
 
 """
     countmap(x; alg = :auto)
-    countmap(x::AbstractVector, w::AbstractVector{<:Real})
+    countmap(x::AbstractVector, wv::AbstractVector{<:Real})
 
 Return a dictionary mapping each unique value in `x` to its number of occurrences.
 
