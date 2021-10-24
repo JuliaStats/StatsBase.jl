@@ -193,9 +193,9 @@ end
     @test proportions(x, xw)   == proportions(y, yw)   == proportions(z, zw)
     @test proportionmap(x)     == proportionmap(y)     == proportionmap(z)
     @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
-    @test (countmap(x) == countmap(x; alg = :dict) == countmap(x; alg = :radixsort) ==
-           countmap(y) == countmap(y; alg = :dict) == countmap(y; alg = :radixsort) ==
-           countmap(z) == countmap(z; alg = :dict) == countmap(z; alg = :radixsort))
+    @test countmap(x) == countmap(x; alg = :dict) == countmap(x; alg = :radixsort) ==
+          countmap(y) == countmap(y; alg = :dict) == countmap(y; alg = :radixsort) ==
+          countmap(z) == countmap(z; alg = :dict) == countmap(z; alg = :radixsort)
     @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
     # countmap and proportionmap only support the :dict algorithm for weighted sums.
 end
