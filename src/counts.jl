@@ -75,8 +75,8 @@ falling in that range will be considered (the others will be ignored without
 raising an error or a warning). If an integer `k` is provided, only values in the
 range `1:k` will be considered.
 
-If a weighting vector `wv` is specified, the proportion of weights is used rather than the
-raw counts.
+If a vector of weights `wv` is provided, the proportion of weights is computed rather
+than the proportion of raw counts.
 
 The output is a vector of length `length(levels)`.
 """
@@ -98,8 +98,8 @@ counts(x::IntegerArray, wv::AbstractWeights) = counts(x, span(x), wv)
 Return the proportion of values in the range `levels` that occur in `x`.
 Equivalent to `counts(x, levels) / length(x)`.
 
-If a weighting vector `wv` is specified, the proportion of weight is used rather than the
-raw counts.
+If a vector of weights `wv` is provided, the proportion of weights is computed rather
+than the proportion of raw counts.
 """
 proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
 proportions(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
@@ -110,8 +110,8 @@ proportions(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
 
 Return the proportion of integers in 1 to `k` that occur in `x`.
 
-If a weighting vector `wv` is specified, the proportion of weight is used rather than the
-raw counts.
+If a vector of weights `wv` is provided, the proportion of weights is computed rather
+than the proportion of raw counts.
 """
 proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
 proportions(x::IntegerArray, k::Integer, wv::AbstractWeights) = proportions(x, 1:k, wv)
@@ -414,7 +414,7 @@ end
 
 Return a dictionary mapping each unique value in `x` to its number of occurrences.
 
-A vector of weights `wv` can be provided and the sum of the weights is used rather than the
+If a weighting vector `wv` is specified, the sum of weights is used rather than the
 raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
@@ -441,7 +441,7 @@ countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcoun
 
 Return a dictionary mapping each unique value in `x` to its proportion in `x`.
 
-If a vector of weights `wv` is provided, the weighted proportion is computed rather
+If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
