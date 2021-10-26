@@ -27,7 +27,7 @@ raw counts.
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     # add counts of integers from x that fall within levels to r
 
-    @boundscheck checkbounds(r, axes(levels)...)
+    checkbounds(r, axes(levels)...)
 
     m0 = first(levels)
     m1 = last(levels)
@@ -49,7 +49,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv:
 
     xv = vec(x) # discard shape because weights() discards shape
 
-    @boundscheck checkbounds(r, axes(levels)...)
+    checkbounds(r, axes(levels)...)
 
     m0 = first(levels)
     m1 = last(levels)
@@ -385,7 +385,7 @@ end
 
 # fall-back for `x` an iterator
 function addcounts_radixsort!(cm::Dict{T}, x) where T
-    sx = sort!(collect(x), alg = RadixSort)
+    sx = sort!(vec(collect(x)), alg = RadixSort)
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
