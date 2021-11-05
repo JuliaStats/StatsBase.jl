@@ -21,7 +21,7 @@ function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     end
 
     # indices for lowest count values
-    x2 = collect(x)
+    x2 = Base.copymutable(x)
     lo = partialsort!(x2, count+1)
     up = partialsort!(x2, n-count)
 
