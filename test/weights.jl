@@ -70,6 +70,10 @@ end
     @test wv[1] == 1
     @test copy(v) == v[:] == v
     @test typeof(copy(v)) === typeof(v[:]) == typeof(wv)
+    @test view(wv, 1) == fill(wv[1])
+    @test view(wv, 1) isa SubArray
+    @test view(wv, CartesianIndex(1, 1)) == fill(wv[CartesianIndex(1, 1)])
+    @test view(wv, CartesianIndex(1, 1)) isa SubArray
 
     # Test setindex! success
     @test (wv[1] = 4) === 4             # setindex! returns original val

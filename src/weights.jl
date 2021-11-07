@@ -43,10 +43,15 @@ Base.copy(wv::W) where {W <: AbstractWeights} =
 
 @propagate_inbounds function Base.view(wv::W, inds...) where {S <: Real, W <: AbstractWeights{S}}
     @boundscheck checkbounds(wv, inds...)
-    @inbounds v = invoke(view, Tuple{AbstractArray, Vararg{Any}},
-                         wv, inds...)
+    @inbounds v = invoke(view, Tuple{AbstractArray, Vararg{Any}}, wv, inds...)
     # Sum is not actually used but compute the right type for clarity
     weightstype(W)(v, zero(S))
+end
+
+# This method is implemented for backward compatibility
+@propagate_inbounds function Base.view(wv::W, inds::Integer) where {S <: Real, W <: AbstractWeights{S}}
+    @boundscheck checkbounds(wv, inds)
+    @inbounds invoke(view, Tuple{AbstractArray, Vararg{Any}}, wv, inds...)
 end
 
 # Always recompute the sum for views of AbstractWeights, as we cannot know whether
@@ -362,7 +367,7 @@ for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
             (x.values isa SubArray || y.values isa SubArray || isequal(x.values, y.values)) &&
                 isequal(x.values, y.values)
         Base.:(==)(x::$w, y::$w)   =
-            (x.values isa SubArray || y.values isa SubArray || (x.sum == y.sum)) &&
+            (x.values isa SubArray || y.values isa SubArray || x.sum == y.sum) &&
                 (x.values == y.values)
     end
 end
