@@ -39,8 +39,14 @@ arbitrary_fun(x, y) = cor(x, y)
 
         @inferred pairwise(f, x, y)
 
-        @test_throws Union{ArgumentError,MethodError} pairwise(f, [Int[]], [Int[]])
-        @test_throws Union{ArgumentError,MethodError} pairwise!(f, zeros(1, 1), [Int[]], [Int[]])
+        if f === cov
+            @test pairwise(f, [Int[]], [Int[]]) ==
+                pairwise!(f, zeros(1, 1), [Int[]], [Int[]]) ==
+                reshape([0.0], 1, 1)
+        else
+            @test_throws Union{ArgumentError,MethodError} pairwise(f, [Int[]], [Int[]])
+            @test_throws Union{ArgumentError,MethodError} pairwise!(f, zeros(1, 1), [Int[]], [Int[]])
+        end
 
         res = pairwise(f, [], [])
         @test size(res) == (0, 0)

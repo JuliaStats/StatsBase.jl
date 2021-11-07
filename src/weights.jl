@@ -14,6 +14,7 @@ macro weights(name)
             sum::S
         end
         $(esc(name))(values::AbstractVector{<:Real}) = $(esc(name))(values, sum(values))
+        $(esc(:weightstype))(::Type{<:$(esc(name))}) = $(esc(name))
     end
 end
 
@@ -37,11 +38,18 @@ end
 
 Base.getindex(wv::W, ::Colon) where {W <: AbstractWeights} = W(copy(wv.values), sum(wv))
 
-@propagate_inbounds function Base.view(wv::W, inds...) where {W <: AbstractWeights}
+@propagate_inbounds function Base.view(wv::W, inds...) where {S <: Real, W <: AbstractWeights{S}}
     @boundscheck checkbounds(wv, inds...)
-    @inbounds v = view(wv.values, inds...)
-    W(v, sum(v))
+    @inbounds v = invoke(view, Tuple{AbstractArray, Vararg{Any}},
+                         wv, inds...)
+    # Sum is not actually used but compute the right type for clarity
+    weightstype(W)(v, zero(S))
 end
+
+# Always recompute the sum for views of AbstractWeights, as we cannot know whether
+# the parent array has been mutated
+Base.sum(wv::AbstractWeights{S, T, <:SubArray{T, <:Any, <:AbstractWeights}}) where
+    {S<:Real, T<:Real} = sum(wv.values)
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]

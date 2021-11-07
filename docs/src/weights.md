@@ -8,6 +8,7 @@ In statistical applications, it is not uncommon to assign weights to samples. To
 !!! note
     - The weight vector is a light-weight wrapper of the input vector. The input vector is NOT copied during construction.
     - The weight vector maintains the sum of weights, which is computed upon construction. If the value of the sum is pre-computed, one can supply it as the second argument to the constructor and save the time of computing the sum again.
+    - Views of weight vectors are also `AbstractWeights`, but their sum has to be recomputed by each call to `sum` as weights in the parent vector may have been mutated.
 
 
 ## Implementations
