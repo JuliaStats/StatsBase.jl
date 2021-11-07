@@ -36,7 +36,10 @@ end
     W(v, sum(v))
 end
 
-Base.getindex(wv::W, ::Colon) where {W <: AbstractWeights} = W(copy(wv.values), sum(wv))
+Base.getindex(wv::AbstractWeights, ::Colon) = copy(wv)
+
+Base.copy(wv::W) where {W <: AbstractWeights} =
+    weightstype(W)(copy(wv.values), sum(wv))
 
 @propagate_inbounds function Base.view(wv::W, inds...) where {S <: Real, W <: AbstractWeights{S}}
     @boundscheck checkbounds(wv, inds...)
@@ -50,6 +53,10 @@ end
 # the parent array has been mutated
 Base.sum(wv::AbstractWeights{S, T, <:SubArray{T, <:Any, <:AbstractWeights}}) where
     {S<:Real, T<:Real} = sum(wv.values)
+
+Base.copy(wv::W) where
+    {S<:Real, T<:Real, W<:AbstractWeights{S, T, <:SubArray{T, <:Any, <:AbstractWeights}}} =
+    weightstype(W)(copy(view(parent(wv.values).values, parentindices(wv.values)...)), wv.sum)
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
@@ -351,8 +358,12 @@ end
 
 for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
     @eval begin
-        Base.isequal(x::$w, y::$w) = isequal(x.sum, y.sum) && isequal(x.values, y.values)
-        Base.:(==)(x::$w, y::$w)   = (x.sum == y.sum) && (x.values == y.values)
+        Base.isequal(x::$w, y::$w) =
+            (x.values isa SubArray || y.values isa SubArray || isequal(x.values, y.values)) &&
+                isequal(x.values, y.values)
+        Base.:(==)(x::$w, y::$w)   =
+            (x.values isa SubArray || y.values isa SubArray || (x.sum == y.sum)) &&
+                (x.values == y.values)
     end
 end
 

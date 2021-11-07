@@ -50,9 +50,16 @@ end
     @test typeof(wv[[1, 3]]) === typeof(wv)
     @test sum( wv[[1, 3]]) === sum(w[[1, 3]])
 
+    # Check copy
+    @test copy(wv) == wv
+    @test typeof(copy(wv)) === typeof(wv)
+
     # Check view
+    @test view(wv, :) == wv
+    @test typeof(view(wv, :)) <: StatsBase.weightstype(typeof(wv))
     @test view(wv, [1, 3]) == view(wv, [true, false, true]) == w[[1, 3]]
-    @test typeof(view(wv, [1, 3])) === typeof(view(wv, [true, false, true])) <: StatsBase.weightstype(typeof(wv))
+    @test typeof(view(wv, [1, 3])) === typeof(view(wv, [true, false, true])) <:
+        StatsBase.weightstype(typeof(wv))
     @test sum(view(wv, [1, 3])) === sum(view(wv, [true, false, true])) === sum(w[[1, 3]])
     @test_throws BoundsError view(wv, [1, 5])
     @test_throws BoundsError view(wv, [true, false, true, true])
@@ -61,6 +68,8 @@ end
     @test sum(v) == sum(view(wv, [1, 3]))
     v[1] -= 1
     @test wv[1] == 1
+    @test copy(v) == v[:] == v
+    @test typeof(copy(v)) === typeof(v[:]) == typeof(wv)
 
     # Test setindex! success
     @test (wv[1] = 4) === 4             # setindex! returns original val
