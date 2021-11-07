@@ -49,8 +49,9 @@ Base.copy(wv::W) where {W <: AbstractWeights} =
 end
 
 # This method is implemented for backward compatibility
-@propagate_inbounds function Base.view(wv::W, inds::Integer) where {S <: Real, W <: AbstractWeights{S}}
-    @boundscheck checkbounds(wv, inds)
+@propagate_inbounds function Base.view(wv::W, inds::Union{Integer, CartesianIndex}...) where
+    {S <: Real, W <: AbstractWeights{S}}
+    @boundscheck checkbounds(wv, inds...)
     @inbounds invoke(view, Tuple{AbstractArray, Vararg{Any}}, wv, inds...)
 end
 
