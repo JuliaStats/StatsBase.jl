@@ -211,11 +211,10 @@ end
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
 observations (larger integer values `i` in `t`).
-The integer value of `n` represents the number of past observations to consider, which defaults to:
-
-1. `maximum(t) - minimum(t) + 1` if only `t` is passed in and the elements are integers
-2. `length(r)` if a superset range `r` is passed in
-3. `n` is explicitly passed instead of `t` (equivalent to `t = 1:n`)
+The integer value `n` represents the number of past observations to consider.
+`n` defaults to `maximum(t) - minimum(t) + 1` if only `t` is passed in
+and the elements are integers, and to `length(r)` if a superset range `r` is also passed in.
+If `n` is explicitly passed instead of `t`, `t` defaults to `1:n`.
 
 If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
 
