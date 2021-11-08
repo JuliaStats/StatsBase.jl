@@ -210,9 +210,12 @@ end
     eweights(n::Integer, λ::Real; scale=false)
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
-observations, which in this case corresponds to larger integer values `i` in `t`.
-If an integer `n` is provided and `t` is omitted, weights are generated for values from 1 to
-`n` (equivalent to `t = 1:n`).
+observations (larger integer values `i` in `t`).
+The integer value of `n` represents the number of past observations to consider, which defaults to:
+
+1. `maximum(t) - minimum(t) + 1` if only `t` is passed in and the elements are integers
+2. `length(r)` if a superset range `r` is passed in
+3. `n` is explicitly passed instead of `t` (equivalent to `t = 1:n`)
 
 If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
 
@@ -226,7 +229,7 @@ If `scale` is `false` then each value is computed as:
 
 - `t::AbstractVector`: temporal indices or timestamps
 - `r::StepRange`: a larger range to use when constructing weights from a subset of timestamps
-- `n::Integer`: if provided instead of `t`, temporal indices are taken to be `1:n`
+- `n::Integer`: the number of past events to consider
 - `λ::Real`: a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
   As this value approaches 0, the resulting weights will be almost equal,
   while values closer to 1 will put greater weight on the tail elements of the vector.
@@ -249,11 +252,10 @@ julia> eweights(1:10, 0.3; scale=true)
  0.48999999999999994
  0.7
  1.0
-
+```
 # Links
 - https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
 - https://en.wikipedia.org/wiki/Exponential_smoothing
- ```
 """
 function eweights(t::AbstractVector{<:Integer}, λ::Real; kwargs...)
     isempty(t) && return Weights(copy(t), 0)
