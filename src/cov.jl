@@ -2,7 +2,7 @@
 
 # auxiliary functions
 
-function _symmetrize!(a::DenseMatrix)
+function _symmetrize!(a::AbstractMatrix)
     m, n = size(a)
     m == n || error("a must be a square matrix.")
     for j = 1:n
@@ -15,7 +15,18 @@ function _symmetrize!(a::DenseMatrix)
     return a
 end
 
-function _scalevars(x::DenseMatrix, s::AbstractWeights, dims::Int)
+function _symmetrize!(a::AbstractSparseMatrix)
+    m, n = size(a)
+    m == n || error("a must be a square matrix.")
+    for (i,j,vl) in zip(findnz(a)...)
+        i > j || continue
+        vr = a[j,i]
+        a[i,j] = a[j,i] = middle(vl, vr)
+    end
+    return a
+end
+
+function _scalevars(x::AbstractMatrix, s::AbstractWeights, dims::Int)
     dims == 1 ? Diagonal(s) * x :
     dims == 2 ? x * Diagonal(s) :
     error("dims should be either 1 or 2.")
@@ -23,12 +34,12 @@ end
 
 ## scatter matrix
 
-_unscaled_covzm(x::DenseMatrix, dims::Colon)   = unscaled_covzm(x)
-_unscaled_covzm(x::DenseMatrix, dims::Integer) = unscaled_covzm(x, dims)
+_unscaled_covzm(x::AbstractMatrix, dims::Colon)   = unscaled_covzm(x)
+_unscaled_covzm(x::AbstractMatrix, dims::Integer) = unscaled_covzm(x, dims)
 
-_unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Colon)   =
+_unscaled_covzm(x::AbstractMatrix, wv::AbstractWeights, dims::Colon)   =
     _symmetrize!(unscaled_covzm(x, _scalevars(x, wv)))
-_unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer) =
+_unscaled_covzm(x::AbstractMatrix, wv::AbstractWeights, dims::Integer) =
     _symmetrize!(unscaled_covzm(x, _scalevars(x, wv, dims), dims))
 
 """
@@ -75,30 +86,29 @@ Finally, bias correction is applied to the covariance calculation if
 """
 function mean_and_cov end
 
-scattermat(x::DenseMatrix; mean=nothing, dims::Int=1) =
+scattermat(x::AbstractMatrix; mean=nothing, dims::Int=1) =
     _scattermatm(x, mean, dims)
-_scattermatm(x::DenseMatrix, ::Nothing, dims::Int) =
+_scattermatm(x::AbstractMatrix, ::Nothing, dims::Int) =
     _unscaled_covzm(x .- mean(x, dims=dims), dims)
-_scattermatm(x::DenseMatrix, mean, dims::Int=1) =
+_scattermatm(x::AbstractMatrix, mean, dims::Int=1) =
     _unscaled_covzm(x .- mean, dims)
 
-scattermat(x::DenseMatrix, wv::AbstractWeights; mean=nothing, dims::Int=1) =
+scattermat(x::AbstractMatrix, wv::AbstractWeights; mean=nothing, dims::Int=1) =
     _scattermatm(x, wv, mean, dims)
-_scattermatm(x::DenseMatrix, wv::AbstractWeights, ::Nothing, dims::Int) =
+_scattermatm(x::AbstractMatrix, wv::AbstractWeights, ::Nothing, dims::Int) =
     _unscaled_covzm(x .- mean(x, wv, dims=dims), wv, dims)
-_scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
+_scattermatm(x::AbstractMatrix, wv::AbstractWeights, mean, dims::Int) =
     _unscaled_covzm(x .- mean, wv, dims)
 
 ## weighted cov
-covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
+covm(x::AbstractMatrix, mean, w::AbstractWeights, dims::Int=1;
      corrected::DepBool=nothing) =
     rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, corrected)))
 
-
-cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing) =
+cov(x::AbstractMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing) =
     covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, corrected))
 
-function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
+function corm(x::AbstractMatrix, mean, w::AbstractWeights, vardim::Int=1)
     c = covm(x, mean, w, vardim; corrected=false)
     s = stdm(x, w, mean, vardim; corrected=false)
     cov2cor!(c, s)
@@ -110,14 +120,18 @@ end
 Compute the Pearson correlation matrix of `X` along the dimension
 `dims` with a weighting `w` .
 """
-cor(x::DenseMatrix, w::AbstractWeights, dims::Int=1) =
+cor(x::AbstractMatrix, w::AbstractWeights, dims::Int=1) =
     corm(x, mean(x, w, dims=dims), w, dims)
 
-function mean_and_cov(x::DenseMatrix, dims::Int=1; corrected::Bool=true)
+function mean_and_cov(x::AbstractVector; corrected::Bool=true)
+    m = mean(x)
+    return m, covm(x, m, corrected=corrected)
+end
+function mean_and_cov(x::AbstractMatrix, dims::Int=1; corrected::Bool=true)
     m = mean(x, dims=dims)
     return m, covm(x, m, dims, corrected=corrected)
 end
-function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
+function mean_and_cov(x::AbstractMatrix, wv::AbstractWeights, dims::Int=1;
                       corrected::DepBool=nothing)
     m = mean(x, wv, dims=dims)
     return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, corrected))
@@ -148,8 +162,10 @@ standard deviations `s`.
 function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
-    for i in CartesianIndices(size(C))
-        @inbounds C[i] *= s[i[1]] * s[i[2]]
+    @inbounds for i in CartesianIndices(size(C))
+        si = s[i[1]] * s[i[2]]
+        # the covariance is 0 when si==0, although C[i] is NaN in this case
+        C[i] = iszero(si) ? zero(eltype(C)) : C[i] * si
     end
     return C
 end
