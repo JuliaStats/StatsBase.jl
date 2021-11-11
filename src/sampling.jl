@@ -595,7 +595,7 @@ function make_alias_table!(w::AbstractVector, wsum,
     #   a [out]:        acceptance probabilities
     #   alias [out]:    alias table
     #
-    # Note: a and w can be the same way, then that away will be
+    # Note: a and w can be the same array, then that array will be
     #       overriden inplace by acceptance probabilities
     #
     # Returns nothing
