@@ -2,6 +2,11 @@ using StatsBase
 using Test
 
 @testset "StatsBase.Moments" begin
+
+function viewweights(f)
+    wv -> view(f([wv; 100]), axes(wv, 1))
+end
+
 weight_funcs = (weights, aweights, fweights, pweights)
 
 ##### weighted var & std
@@ -9,8 +14,9 @@ weight_funcs = (weights, aweights, fweights, pweights)
 x = [0.57, 0.10, 0.91, 0.72, 0.46, 0.0]
 w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
-@testset "Uncorrected with $f" for f in weight_funcs
-    wv = f(w)
+@testset "Uncorrected with $f and $viewf" for f in weight_funcs,
+                                              viewf in (identity, viewweights)
+    wv = viewf(f)(w)
     m = mean(x, wv)
 
     # expected uncorrected output
@@ -52,8 +58,9 @@ end
 expected_var = [NaN, 0.0694434191182236, 0.05466601256158146, 0.06628969012045285]
 expected_std = sqrt.(expected_var)
 
-@testset "Corrected with $(weight_funcs[i])" for i in eachindex(weight_funcs)
-    wv = weight_funcs[i](w)
+@testset "Corrected with $(weight_funcs[i])" for i in eachindex(weight_funcs),
+                                                 viewf in (identity, viewweights)
+    wv = viewf(weight_funcs[i])(w)
     m = mean(x, wv)
 
     @testset "Variance" begin
@@ -107,9 +114,10 @@ x = rand(5, 6)
 w1 = [0.57, 5.10, 0.91, 1.72, 0.0]
 w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
 
-@testset "Uncorrected with $f" for f in weight_funcs
-    wv1 = f(w1)
-    wv2 = f(w2)
+@testset "Uncorrected with $f and $viewf" for f in weight_funcs,
+                                              viewf in (identity, viewweights)
+    wv1 = viewf(f)(w1)
+    wv2 = viewf(f)(w2)
     m1 = mean(x, wv1, dims=1)
     m2 = mean(x, wv2, dims=2)
 
@@ -165,9 +173,10 @@ w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
     end
 end
 
-@testset "Corrected with $f" for f in weight_funcs
-    wv1 = f(w1)
-    wv2 = f(w2)
+@testset "Corrected with $f and $viewf" for f in weight_funcs,
+                                            viewf in (identity, viewweights)
+    wv1 = viewf(f)(w1)
+    wv2 = viewf(f)(w2)
     m1 = mean(x, wv1, dims=1)
     m2 = mean(x, wv2, dims=2)
 
@@ -241,8 +250,9 @@ end
     end
 end
 
-@testset "Skewness and Kurtosis with $f" for f in weight_funcs
-    wv = f(ones(5) * 2.0)
+@testset "Skewness and Kurtosis with $f and $viewf" for f in weight_funcs,
+                                                        viewf in (identity, viewweights)
+    wv = viewf(f)(ones(5) * 2.0)
 
     @test skewness(1:5)             ≈  0.0
     @test skewness([1, 2, 3, 4, 5]) ≈  0.0
@@ -258,7 +268,8 @@ end
     @test kurtosis([1, 2, 3, 4, 5], wv) ≈ -1.3
 end
 
-@testset "General Moments with $f" for f in weight_funcs
+@testset "General Moments with $f and $viewf" for f in weight_funcs,
+                                                  viewf in (identity, viewweights)
     x = collect(2.0:8.0)
     @test moment(x, 2) ≈ sum((x .- 5).^2) / length(x)
     @test moment(x, 3) ≈ sum((x .- 5).^3) / length(x)
@@ -270,7 +281,7 @@ end
     @test moment(x, 4, 4.0) ≈ sum((x .- 4).^4) / length(x)
     @test moment(x, 5, 4.0) ≈ sum((x .- 4).^5) / length(x)
 
-    w = f([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
+    w = viewf(f)([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
     x2 = collect(2.0:6.0)
     @test moment(x, 2, w) ≈ sum((x2 .- 4).^2) / 5
     @test moment(x, 3, w) ≈ sum((x2 .- 4).^3) / 5

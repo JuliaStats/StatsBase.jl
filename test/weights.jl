@@ -2,6 +2,11 @@ using StatsBase
 using LinearAlgebra, Random, SparseArrays, Test
 
 @testset "StatsBase.Weights" begin
+
+function viewweights(f)
+    wv -> view(f([wv; 100]), axes(wv, 1))
+end
+
 weight_funcs = (weights, aweights, fweights, pweights)
 
 ## Construction
@@ -43,7 +48,7 @@ end
 
     # Check getindex & sum
     @test wv[1] === 1.
-    @test sum(wv) === 6.
+    @test @inferred(sum(wv)) === 6.
     @test wv == w
 
     @test wv[[1, 3]] == w[[1, 3]]
@@ -53,33 +58,6 @@ end
     # Check copy
     @test copy(wv) == wv
     @test typeof(copy(wv)) === typeof(wv)
-
-    # Check view
-    @test view(wv, :) == wv
-    @test typeof(view(wv, :)) <: StatsBase.weightstype(typeof(wv))
-    @test view(wv, [1, 3]) == view(wv, [true, false, true]) == w[[1, 3]]
-    @test typeof(view(wv, [1, 3])) === typeof(view(wv, [true, false, true])) <:
-        StatsBase.weightstype(typeof(wv))
-    @test sum(view(wv, [1, 3])) === sum(view(wv, [true, false, true])) === sum(w[[1, 3]])
-    @test_throws BoundsError view(wv, [1, 5])
-    @test_throws BoundsError view(wv, [true, false, true, true])
-    v = view(wv, [1, 3])
-    wv[1] += 1
-    @test sum(v) == sum(view(wv, [1, 3]))
-    v[1] -= 1
-    @test wv[1] == 1
-    @test copy(v) == v[:] == v
-    @test typeof(copy(v)) === typeof(v[:]) == typeof(wv)
-    @test view(wv, [1, 2], 1) == wv[[1, 2]]
-    @test typeof(view(wv, [1, 2], 1)) <: StatsBase.weightstype(typeof(wv))
-    @test view(wv, 1) == fill(wv[1])
-    @test view(wv, 1) isa SubArray
-    @test view(wv, 1, 1) == fill(wv[1])
-    @test view(wv, 1, 1) isa SubArray
-    @test view(wv, CartesianIndex(1, 1)) == fill(wv[CartesianIndex(1, 1)])
-    @test view(wv, CartesianIndex(1, 1)) isa SubArray
-    @test view(wv, CartesianIndex(1, 1), 1) == fill(wv[CartesianIndex(1, 1), 1])
-    @test view(wv, CartesianIndex(1, 1), 1) isa SubArray
 
     # Test setindex! success
     @test (wv[1] = 4) === 4             # setindex! returns original val
@@ -104,14 +82,16 @@ end
     @test wv == [1, 2, 3]           # Test state of all values
 end
 
-@testset "$f, isequal and ==" for f in weight_funcs
-    x = f([1, 2, 3])
+@testset "$f and $viewf with isequal and ==" for f in weight_funcs,
+                                                 viewf in (identity, viewweights)
+    fw = viewf(f)
+    x = fw([1, 2, 3])
 
-    y = f([1, 2, 3]) # same values, type and parameters
+    y = fw([1, 2, 3]) # same values, type and parameters
     @test isequal(x, y)
     @test x == y
 
-    y = f([1.0, 2.0, 3.0]) # same values and type, different parameters
+    y = fw([1.0, 2.0, 3.0]) # same values and type, different parameters
     @test isequal(x, y)
     @test x == y
 
@@ -121,15 +101,59 @@ end
         @test x != y
     end
 
-    x = f([1, 2, NaN]) # isequal and == treat NaN differently
-    y = f([1, 2, NaN])
+    x = fw([1, 2, NaN]) # isequal and == treat NaN differently
+    y = fw([1, 2, NaN])
     @test isequal(x, y)
     @test x != y
 
-    x = f([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
-    y = f([1.0, 2.0, -0.0])
+    x = fw([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
+    y = fw([1.0, 2.0, -0.0])
     @test !isequal(x, y)
     @test x == y
+end
+
+@testset "view of weights" for f in weight_funcs
+    w = [1., 2., 3.]
+    wv = f(w)
+
+    @test view(wv, :) == wv
+    @test sum(view(wv, :)) == sum(wv)
+    @test typeof(view(wv, :)) <: StatsBase.weightstype(typeof(wv))
+    @test view(wv, [1, 3]) == view(wv, [true, false, true]) == w[[1, 3]]
+    @test isequal(view(wv, [1, 3]), view(wv, [true, false, true]))
+    @test isequal(view(wv, [true, false, true]), w[[1, 3]])
+    @test typeof(view(wv, [1, 3])) === typeof(view(wv, [true, false, true])) <:
+        StatsBase.weightstype(typeof(wv))
+    @test sum(view(wv, [1, 3])) === sum(view(wv, [true, false, true])) === sum(w[[1, 3]])
+
+    @test_throws BoundsError view(wv, [1, 5])
+    @test_throws BoundsError view(wv, [true, false, true, true])
+
+    v = view(wv, [1, 3])
+    wv[1] += 1
+    @test sum(v) == sum(view(wv, [1, 3]))
+    v[1] -= 1
+    @test wv[1] == 1
+    @test copy(v) == v[:] == v
+    @test sum(copy(v)) == sum(v[:]) == sum(v)
+    @test typeof(copy(v)) === typeof(v[:]) === typeof(wv)
+
+    @test view(wv, [1, 2], 1) == wv[[1, 2]]
+    @test sum(view(wv, [1, 2], 1)) == sum(wv[[1, 2]])
+    @test typeof(view(wv, [1, 2], 1)) <: StatsBase.weightstype(typeof(wv))
+    @test copy(view(wv, [1, 2], 1)) == view(wv, [1, 2], 1)
+    @test sum(copy(view(wv, [1, 2], 1))) == sum(view(wv, [1, 2]))
+    @test typeof(copy(view(wv, [1, 2], 1))) === typeof(copy(v))
+
+    @test view(wv, 1) == fill(wv[1])
+    @test view(wv, 1) isa SubArray
+    @test view(wv, 1, 1) == fill(wv[1])
+    @test view(wv, 1, 1) isa SubArray
+
+    @test view(wv, CartesianIndex(1, 1)) == fill(wv[CartesianIndex(1, 1)])
+    @test view(wv, CartesianIndex(1, 1)) isa SubArray
+    @test view(wv, CartesianIndex(1, 1), 1) == fill(wv[CartesianIndex(1, 1), 1])
+    @test view(wv, CartesianIndex(1, 1), 1) isa SubArray
 end
 
 @testset "Unit weights" begin
@@ -271,30 +295,35 @@ end
 
 a = reshape(1.0:27.0, 3, 3, 3)
 
-@testset "Sum $f" for f in weight_funcs
-    @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
-    @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
+@testset "Sum $f and $viewf" for f in weight_funcs, viewf in (identity, viewweights)
+    fw = viewf(f)
+    @test sum([1.0, 2.0, 3.0], fw([1.0, 0.5, 0.5])) ≈ 3.5
+    @test sum(1:3, fw([1.0, 1.0, 0.5]))             ≈ 4.5
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test sum(a, f(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
-        @test sum(a, f(wt), dims=2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims=2)
-        @test sum(a, f(wt), dims=3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)
+        @test sum(a, fw(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
+        @test sum(a, fw(wt), dims=2)  ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims=2)
+        @test sum(a, fw(wt), dims=3)  ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)
     end
 end
 
-@testset "Mean $f" for f in weight_funcs
-    @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
-    @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
+@testset "Mean $f and $viewf" for f in weight_funcs,
+                                  viewf in (identity, viewweights)
+    fw = viewf(f)
+
+    @test mean([1:3;], fw([1.0, 1.0, 0.5])) ≈ 1.8
+    @test mean(1:3, fw([1.0, 1.0, 0.5]))    ≈ 1.8
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
-        @test mean(a, f(wt), dims=1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)/sum(wt)
-        @test mean(a, f(wt), dims=2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims=2)/sum(wt)
-        @test mean(a, f(wt), dims=3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)/sum(wt)
-        @test_throws ErrorException mean(a, f(wt), dims=4)
+        @test mean(a, fw(wt), dims=1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)/sum(wt)
+        @test mean(a, fw(wt), dims=2) ≈ sum(a.*reshape(wt, 1, length(wt), 1), dims=2)/sum(wt)
+        @test mean(a, fw(wt), dims=3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)/sum(wt)
+        @test_throws ErrorException mean(a, fw(wt), dims=4)
     end
 end
 
-@testset "Quantile fweights" begin
+@testset "Quantile with fweights and $viewf" for viewf in (identity, viewweights)
+    fw = viewf(fweights)
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -352,27 +381,29 @@ end
     end
     # quantile with fweights is the same as repeated vectors
     for i = 1:length(data)
-        @test quantile(data[i], fweights(wt[i]), p) ≈ quantile(_rep(data[i], wt[i]), p)
+        @test quantile(data[i], fw(wt[i]), p) ≈ quantile(_rep(data[i], wt[i]), p)
     end
     # quantile with fweights = 1  is the same as quantile
     for i = 1:length(data)
-        @test quantile(data[i], fweights(fill!(similar(wt[i]), 1)), p) ≈ quantile(data[i], p)
+        @test quantile(data[i], fw(fill!(similar(wt[i]), 1)), p) ≈ quantile(data[i], p)
     end
 
     # Issue #313
-    @test quantile([1, 2, 3, 4, 5], fweights([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
-    @test quantile([1, 2], fweights([1, 1]), 0.25) ≈ 1.25
-    @test quantile([1, 2], fweights([2, 2]), 0.25) ≈ 1.0
+    @test quantile([1, 2, 3, 4, 5], fw([0,1,2,1,0]), p) ≈ quantile([2, 3, 3, 4], p)
+    @test quantile([1, 2], fw([1, 1]), 0.25) ≈ 1.25
+    @test quantile([1, 2], fw([2, 2]), 0.25) ≈ 1.0
 
     # test non integer frequency weights
-    quantile([1, 2], fweights([1.0, 2.0]), 0.25) == quantile([1, 2], fweights([1, 2]), 0.25)
-    @test_throws ArgumentError quantile([1, 2], fweights([1.5, 2.0]), 0.25)
+    quantile([1, 2], fw([1.0, 2.0]), 0.25) == quantile([1, 2], fw([1, 2]), 0.25)
+    @test_throws ArgumentError quantile([1, 2], fw([1.5, 2.0]), 0.25)
 
-    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), nextfloat(1.0))
-    @test_throws ArgumentError quantile([1, 2], fweights([1, 2]), prevfloat(0.0))
+    @test_throws ArgumentError quantile([1, 2], fw([1, 2]), nextfloat(1.0))
+    @test_throws ArgumentError quantile([1, 2], fw([1, 2]), prevfloat(0.0))
 end
 
-@testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights)
+@testset "Quantile aweights, pweights and weights" for f in (aweights, pweights, weights),
+                                                       viewf in (identity, viewweights)
+    fw = viewf(f)
     data = (
         [7, 1, 2, 4, 10],
         [7, 1, 2, 4, 10],
@@ -440,22 +471,22 @@ end
 
     Random.seed!(10)
     for i = 1:length(data)
-        @test quantile(data[i], f(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
+        @test quantile(data[i], fw(wt[i]), p) ≈ quantile_answers[i] atol = 1e-5
         for j = 1:10
             # order of p does not matter
             reorder = sortperm(rand(length(p)))
-            @test quantile(data[i], f(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-5
+            @test quantile(data[i], fw(wt[i]), p[reorder]) ≈ quantile_answers[i][reorder] atol = 1e-5
         end
         for j = 1:10
             # order of w does not matter
             reorder = sortperm(rand(length(data[i])))
-            @test quantile(data[i][reorder], f(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
+            @test quantile(data[i][reorder], fw(wt[i][reorder]), p) ≈ quantile_answers[i] atol = 1e-5
         end
     end
     # All equal weights corresponds to base quantile
     for v in (1, 2, 345)
         for i = 1:length(data)
-            w = f(fill(v, length(data[i])))
+            w = fw(fill(v, length(data[i])))
             @test quantile(data[i], w, p) ≈ quantile(data[i], p) atol = 1e-5
             for j = 1:10
                 prandom = rand(4)
@@ -465,40 +496,42 @@ end
     end
     # test zeros are removed
     for i = 1:length(data)
-        @test quantile(vcat(1.0, data[i]), f(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-5
+        @test quantile(vcat(1.0, data[i]), fw(vcat(0.0, wt[i])), p) ≈ quantile_answers[i] atol = 1e-5
     end
     # Syntax
     v = [7, 1, 2, 4, 10]
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
-    @test quantile(data[1], f(w), 0.5) ≈ answer atol = 1e-5
+    @test quantile(data[1], fw(w), 0.5) ≈ answer atol = 1e-5
 end
 
-@testset "Median $f" for f in weight_funcs
+@testset "Median with $f and $viewf" for f in weight_funcs,
+                                         viewf in (identity, viewweights)
+    fw = viewf(f)
     data = [4, 3, 2, 1]
     wt = [0, 0, 0, 0]
-    @test_throws ArgumentError median(data, f(wt))
-    @test_throws ArgumentError median(Float64[], f(Float64[]))
+    @test_throws ArgumentError median(data, fw(wt))
+    @test_throws ArgumentError median(Float64[], fw(Float64[]))
     wt = [1, 2, 3, 4, 5]
-    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(data, fw(wt))
     if VERSION >= v"1.0"
-        @test_throws MethodError median([4 3 2 1 0], f(wt))
-        @test_throws MethodError median([[1 2] ; [4 5] ; [7 8] ; [10 11] ; [13 14]], f(wt))
+        @test_throws MethodError median([4 3 2 1 0], fw(wt))
+        @test_throws MethodError median([[1 2] ; [4 5] ; [7 8] ; [10 11] ; [13 14]], fw(wt))
     end
     data = [1, 3, 2, NaN, 2]
-    @test isnan(median(data, f(wt)))
+    @test isnan(median(data, fw(wt)))
     wt = [1, 2, NaN, 4, 5]
-    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(data, fw(wt))
     data = [1, 3, 2, 1, 2]
-    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(data, fw(wt))
     wt = [-1, -1, -1, -1, -1]
-    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(data, fw(wt))
     wt = [-1, -1, -1, 0, 0]
-    @test_throws ArgumentError median(data, f(wt))
+    @test_throws ArgumentError median(data, fw(wt))
 
     data = [4, 3, 2, 1]
     wt = [1, 2, 3, 4]
-    @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
+    @test median(data, fw(wt)) ≈ quantile(data, fw(wt), 0.5) atol = 1e-5
 end
 
 @testset "Mismatched eltypes" begin

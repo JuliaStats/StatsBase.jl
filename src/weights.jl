@@ -11,7 +11,11 @@ macro weights(name)
     return quote
         mutable struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
             values::V
-            sum::S
+            """
+            Pre-computed sum. Private field, to be accessed only via `sum(wv)`.
+            Set to `missing` by `view` as we cannot know when the parent is mutated.
+            """
+            sum::Union{S, Missing}
         end
         $(esc(name))(values::AbstractVector{<:Real}) = $(esc(name))(values, sum(values))
         $(esc(:weightstype))(::Type{<:$(esc(name))}) = $(esc(name))
@@ -19,7 +23,7 @@ macro weights(name)
 end
 
 length(wv::AbstractWeights) = length(wv.values)
-sum(wv::AbstractWeights) = wv.sum
+sum(wv::AbstractWeights{S}) where {S<:Real} = wv.sum::S
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 
@@ -41,11 +45,11 @@ Base.getindex(wv::AbstractWeights, ::Colon) = copy(wv)
 Base.copy(wv::W) where {W <: AbstractWeights} =
     weightstype(W)(copy(wv.values), sum(wv))
 
-@propagate_inbounds function Base.view(wv::W, inds...) where {S <: Real, W <: AbstractWeights{S}}
+@propagate_inbounds function Base.view(wv::W, inds...) where
+    {S <: Real, W <: AbstractWeights{S}}
     @boundscheck checkbounds(wv, inds...)
     @inbounds v = invoke(view, Tuple{AbstractArray, Vararg{Any}}, wv, inds...)
-    # Sum is not actually used but compute the right type for clarity
-    weightstype(W)(v, zero(S))
+    weightstype(W){S, eltype(wv), typeof(v)}(v, missing)
 end
 
 # This method is implemented for backward compatibility
@@ -57,12 +61,12 @@ end
 
 # Always recompute the sum for views of AbstractWeights, as we cannot know whether
 # the parent array has been mutated
-Base.sum(wv::AbstractWeights{S, T, <:SubArray{T, <:Any, <:AbstractWeights}}) where
-    {S<:Real, T<:Real} = sum(wv.values)
+Base.sum(wv::AbstractWeights{S, T, <:SubArray}) where {S<:Real, T<:Real} =
+    sum(wv.values)
 
 Base.copy(wv::W) where
     {S<:Real, T<:Real, W<:AbstractWeights{S, T, <:SubArray{T, <:Any, <:AbstractWeights}}} =
-    weightstype(W)(copy(view(parent(wv.values).values, parentindices(wv.values)...)), wv.sum)
+    weightstype(W)(copy(view(parent(wv.values).values, parentindices(wv.values)...)), sum(wv))
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
@@ -112,7 +116,7 @@ if `corrected=true`.
 @inline function varcorrection(w::Weights, corrected::Bool=false)
     corrected && throw(ArgumentError("Weights type does not support bias correction: " *
                                      "use FrequencyWeights, AnalyticWeights or ProbabilityWeights if applicable."))
-    1 / w.sum
+    1 / sum(w)
 end
 
 @weights AnalyticWeights
@@ -145,7 +149,7 @@ aweights(vs::RealArray) = AnalyticWeights(vec(vs))
 * `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::AnalyticWeights, corrected::Bool=false)
-    s = w.sum
+    s = sum(w)
 
     if corrected
         sum_sn = sum(x -> (x / s) ^ 2, w)
@@ -183,7 +187,7 @@ fweights(vs::RealArray) = FrequencyWeights(vec(vs))
 * `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::FrequencyWeights, corrected::Bool=false)
-    s = w.sum
+    s = sum(w)
 
     if corrected
         1 / (s - 1)
@@ -221,7 +225,7 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 * `corrected=false`: ``\\frac{1}{\\sum w}``
 """
 @inline function varcorrection(w::ProbabilityWeights, corrected::Bool=false)
-    s = w.sum
+    s = sum(w)
 
     if corrected
         n = count(!iszero, w)
@@ -365,11 +369,11 @@ end
 for w in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
     @eval begin
         Base.isequal(x::$w, y::$w) =
-            (x.values isa SubArray || y.values isa SubArray || isequal(x.values, y.values)) &&
+            (x.values isa SubArray || y.values isa SubArray || isequal(x.sum, y.sum)) &&
                 isequal(x.values, y.values)
         Base.:(==)(x::$w, y::$w)   =
             (x.values isa SubArray || y.values isa SubArray || x.sum == y.sum) &&
-                (x.values == y.values)
+                x.values == y.values
     end
 end
 
@@ -700,7 +704,7 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     isempty(p) && throw(ArgumentError("empty quantile array"))
     all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
-    w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
+    sum(w) == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
     length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(v)) and $(length(w))"))
     for x in w.values
