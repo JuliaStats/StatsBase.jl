@@ -4,9 +4,15 @@ using LinearAlgebra, Random, Test
 struct EmptyCovarianceEstimator <: CovarianceEstimator end
 
 @testset "StatsBase.Covariance" begin
+
+function viewweights(f)
+    wv -> view(f([wv; 100]), axes(wv, 1))
+end
+
 weight_funcs = (weights, aweights, fweights, pweights)
 
-@testset "$f" for f in weight_funcs
+@testset "$f with $viewf" for f in weight_funcs, viewf in (identity, viewweights)
+    fw = viewf(f)
     X = randn(3, 8)
 
     Z1 = X .- mean(X, dims = 1)
@@ -21,8 +27,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
         w2[1] += 1
     end
 
-    wv1 = f(w1)
-    wv2 = f(w2)
+    wv1 = fw(w1)
+    wv2 = fw(w2)
 
     Z1w = X .- mean(X, wv1, dims=1)
     Z2w = X .- mean(X, wv2, dims=2)
@@ -237,8 +243,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     end
 
     @testset "Correlation" begin
-        @test cor(X, f(ones(3)), 1) ≈ cor(X, dims = 1)
-        @test cor(X, f(ones(8)), 2) ≈ cor(X, dims = 2)
+        @test cor(X, fw(ones(3)), 1) ≈ cor(X, dims = 1)
+        @test cor(X, fw(ones(8)), 2) ≈ cor(X, dims = 2)
 
         cov1 = cov(X, wv1, 1; corrected=false)
         std1 = std(X, wv1, 1; corrected=false)
