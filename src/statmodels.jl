@@ -239,7 +239,7 @@ Pseudo-coefficient of determination (pseudo R-squared).
 
 For nonlinear models, one of several pseudo R² definitions must be chosen via `variant`.
 Supported variants are:
-- `:MacFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
+- `:McFadden` (a.k.a. likelihood ratio index), defined as ``1 - \\log (L)/\\log (L_0)``;
 - `:CoxSnell`, defined as ``1 - (L_0/L)^{2/n}``;
 - `:Nagelkerke`, defined as ``(1 - (L_0/L)^{2/n})/(1 - L_0^{2/n})``.
 - `:devianceratio`, defined as ``1 - D/D_0``.
