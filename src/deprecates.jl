@@ -39,3 +39,9 @@ end
 ### Deprecated September 2019
 @deprecate sum(A::AbstractArray, w::AbstractWeights, dims::Int) sum(A, w, dims=dims)
 @deprecate values(wv::AbstractWeights) convert(Vector, wv)
+
+### Deprecate August 2020 (v0.33)
+function (ecdf::ECDF)(v::RealArray)
+    depwarn("(ecdf::ECDF)(v::RealArray) is deprecated, use `ecdf.(v)` broadcasting instead", "(ECDF::ecdf)(v::RealArray)")
+    return ecdf.(v)
+end

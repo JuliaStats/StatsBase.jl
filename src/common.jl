@@ -24,11 +24,11 @@ const RealFP = Union{Float32, Float64}
 const DepBool = Union{Bool, Nothing}
 
 function depcheck(fname::Symbol, b::DepBool)
-    if b == nothing
+    if b === nothing
         msg = "$fname will default to corrected=true in the future. Use corrected=false for previous behaviour."
         Base.depwarn(msg, fname)
-        false
+        return false
     else
-        b
+        return b
     end
 end
