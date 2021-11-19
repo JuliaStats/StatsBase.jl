@@ -560,7 +560,7 @@ wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 """
     wsum!(R::AbstractArray, A::AbstractArray,
-          w::AbstractWeights{<:Real}, dim::Int;
+          w::AbstractVector, dim::Int;
           init::Bool=true)
 Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
 the result in `R`. If `init=false`, the sum is added to `R` rather than starting
@@ -599,7 +599,7 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
     wsum!(R, A, w, dim; init=init)
 
 """
-    sum(v::AbstractArray, w::AbstractVector{<:Real}; [dims])
+    sum(v::AbstractArray, w::AbstractWeights{<:Real}; [dims])
 
 Compute the weighted sum of an array `v` with weights `w`,
 optionally over the dimension `dims`.

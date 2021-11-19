@@ -8,6 +8,7 @@ import DataAPI: describe
 import DataStructures: heapify!, heappop!, percolate_down!
 using SortingAlgorithms
 using Missings
+using LogExpFunctions: xlogx, xlogy
 
 using Statistics
 using LinearAlgebra
