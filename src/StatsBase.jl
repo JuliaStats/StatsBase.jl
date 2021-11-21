@@ -26,6 +26,20 @@ import StatsAPI: pairwise, pairwise!
 
 export
 
+    ## functions defined in Statistics
+    cor,
+    cov,
+    mean,
+    mean!,
+    median,
+    median!,
+    quantile,
+    quantile!,
+    std,
+    stdm,
+    var,
+    varm,
+
     ## weights
     AbstractWeights,    # abstract type to represent any weight vector
     Weights,            # to represent a generic weight vector
