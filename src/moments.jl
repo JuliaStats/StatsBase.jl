@@ -2,26 +2,6 @@
 
 ## var
 """
-    varm(x::AbstractArray, w::AbstractWeights, m, [dim]; corrected=false)
-
-Compute the variance of a real-valued array `x` with a known mean `m`, optionally
-over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
-The uncorrected (when `corrected=false`) sample variance is defined as:
-```math
-\\frac{1}{\\sum{w}} \\sum_{i=1}^n {w_i\\left({x_i - m}\\right)^2 }
-```
-where ``n`` is the length of the input. The unbiased estimate (when `corrected=true`) of
-the population variance is computed by replacing
-``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights used:
-* `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
-* `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
-* `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
-* `Weights`: `ArgumentError` (bias correction not supported)
-"""
-varm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
-    _moment2(v, w, m; corrected=depcheck(:varm, :corrected, corrected))
-
-"""
     var(x::AbstractArray, w::AbstractWeights, [dim]; mean=nothing, corrected=false)
 
 Compute the variance of a real-valued array `x`, optionally over a dimension `dim`.
@@ -43,30 +23,22 @@ function var(v::RealArray, w::AbstractWeights; mean=nothing,
     corrected = depcheck(:var, :corrected, corrected)
 
     if mean == nothing
-        varm(v, w, Statistics.mean(v, w); corrected=corrected)
+        _moment2(v, w, Statistics.mean(v, w); corrected=corrected)
     else
-        varm(v, w, mean; corrected=corrected)
+        _moment2(v, w, mean; corrected=corrected)
     end
 end
 
 ## var along dim
-
-function varm!(R::AbstractArray, A::RealArray, w::AbstractWeights, M::RealArray,
-                    dim::Int; corrected::DepBool=nothing)
-    corrected = depcheck(:varm!, :corrected, corrected)
-    rmul!(_wsum_centralize!(R, abs2, A, convert(Vector, w), M, dim, true),
-          varcorrection(w, corrected))
-end
 
 function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
               mean=nothing, corrected::DepBool=nothing)
     corrected = depcheck(:var!, :corrected, corrected)
 
     if mean == 0
-        varm!(R, A, w, Base.reducedim_initarray(A, dims, 0, eltype(R)), dims;
-                   corrected=corrected)
-    elseif mean == nothing
-        varm!(R, A, w, Statistics.mean(A, w, dims=dims), dims; corrected=corrected)
+        mean = Base.reducedim_initarray(A, dims, 0, eltype(R))
+    elseif mean === nothing
+        mean = Statistics.mean(A, w, dims=dims)
     else
         # check size of mean
         for i = 1:ndims(A)
@@ -78,15 +50,9 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
                 dM == dA || throw(DimensionMismatch("Incorrect size of mean."))
             end
         end
-        varm!(R, A, w, mean, dims; corrected=corrected)
     end
-end
-
-function varm(A::RealArray, w::AbstractWeights, M::RealArray, dim::Int;
-                   corrected::DepBool=nothing)
-    corrected = depcheck(:varm, :corrected, corrected)
-    varm!(similar(A, Float64, Base.reduced_indices(axes(A), dim)), A, w, M,
-               dim; corrected=corrected)
+    return rmul!(_wsum_centralize!(R, abs2, A, convert(Vector, w), mean, dims, true),
+                 varcorrection(w, corrected))
 end
 
 function var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
@@ -97,26 +63,6 @@ function var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
 end
 
 ## std
-"""
-    stdm(x::AbstractArray, w::AbstractWeights, m, [dim]; corrected=false)
-
-Compute the standard deviation of a real-valued array `x` with a known mean `m`,
-optionally over a dimension `dim`. Observations in `x` are weighted using weight vector `w`.
-The uncorrected (when `corrected=false`) sample standard deviation is defined as:
-```math
-\\sqrt{\\frac{1}{\\sum{w}} \\sum_{i=1}^n {w_i\\left({x_i - m}\\right)^2 }}
-```
-where ``n`` is the length of the input. The unbiased estimate (when `corrected=true`) of the
-population standard deviation is computed by replacing ``\\frac{1}{\\sum{w}}`` with a factor
-dependent on the type of weights used:
-* `AnalyticWeights`: ``\\frac{1}{\\sum w - \\sum {w^2} / \\sum w}``
-* `FrequencyWeights`: ``\\frac{1}{\\sum{w} - 1}``
-* `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
-* `Weights`: `ArgumentError` (bias correction not supported)
-"""
-stdm(v::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) =
-    sqrt(varm(v, w, m, corrected=depcheck(:stdm, :corrected, corrected)))
-
 """
     std(x::AbstractArray, w::AbstractWeights, [dim]; mean=nothing, corrected=false)
 
@@ -138,15 +84,8 @@ weights used:
 std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, :corrected, corrected)))
 
-stdm(v::RealArray, m::RealArray, dim::Int; corrected::DepBool=nothing) =
-    sqrt!(varm(v, m, dims=dim, corrected=depcheck(:stdm, :corrected, corrected)))
-
-stdm(v::RealArray, w::AbstractWeights, m::RealArray, dim::Int;
-          corrected::DepBool=nothing) =
-    sqrt.(varm(v, w, m, dim; corrected=depcheck(:stdm, :corrected, corrected)))
-
-std(v::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
-         corrected::DepBool=nothing) =
+std(v::RealArray, w::AbstractWeights, dim::Int;
+    mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, w, dim; mean=mean, corrected=depcheck(:std, :corrected, corrected)))
 
 ##### Fused statistics
@@ -161,7 +100,7 @@ See [`var`](@ref) documentation for more details.
 """
 function mean_and_var(x; corrected::Bool=true)
     m = mean(x)
-    v = varm(x, m; corrected=corrected)
+    v = var(x, mean=m, corrected=corrected)
     m, v
 end
 
@@ -177,30 +116,30 @@ See [`std`](@ref) documentation for more details.
 """
 function mean_and_std(x; corrected::Bool=true)
     m = mean(x)
-    s = stdm(x, m; corrected=corrected)
+    s = std(x, mean=m, corrected=corrected)
     m, s
 end
 
 function mean_and_var(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
     m = mean(x, w)
-    v = varm(x, w, m; corrected=depcheck(:mean_and_var, :corrected, corrected))
+    v = var(x, w, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
 function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
     m = mean(x, w)
-    s = stdm(x, w, m; corrected=depcheck(:mean_and_std, :corrected, corrected))
+    s = std(x, w, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
     m, s
 end
 
 
 function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(x, dims = dim)
-    v = varm(x, m, dims = dim, corrected=corrected)
+    m = mean(x, dims=dim)
+    v = var(x, dims=dim, mean=m, corrected=corrected)
     m, v
 end
 function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
-    m = mean(x, dims = dim)
-    s = stdm(x, m, dim; corrected=corrected)
+    m = mean(x, dims=dim)
+    s = std(x, dims=dim, mean=m, corrected=corrected)
     m, s
 end
 
@@ -208,13 +147,13 @@ end
 function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
-    v = varm(x, w, m, dims; corrected=depcheck(:mean_and_var, :corrected, corrected))
+    v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
 function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
-    s = stdm(x, w, m, dims; corrected=depcheck(:mean_and_std, :corrected, corrected))
+    s = std(x, w, dims, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
     m, s
 end
 
