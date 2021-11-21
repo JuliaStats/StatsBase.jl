@@ -380,7 +380,7 @@ Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
 Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
 """
-wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = w' * vec(v)
+wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = transpose(w) * vec(v)
 
 ## wsum along dimension
 #
