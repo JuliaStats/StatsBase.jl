@@ -39,3 +39,10 @@ end
 ### Deprecated September 2019
 @deprecate sum(A::AbstractArray, w::AbstractWeights, dims::Int) sum(A, w, dims=dims)
 @deprecate values(wv::AbstractWeights) convert(Vector, wv)
+
+### Deprecated November 2021
+@deprecate stdm(x::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) std(x, w, mean=m, corrected=corrected) false
+@deprecate varm(x::RealArray, w::AbstractWeights, m::Real; corrected::DepBool=nothing) var(x, w, mean=m, corrected=corrected) false
+@deprecate stdm(x::RealArray, w::AbstractWeights, m::RealArray, dim::Int; corrected::DepBool=nothing) std(x, w, dim, mean=m, corrected=corrected) false
+@deprecate varm(x::RealArray, w::AbstractWeights, m::RealArray, dim::Int; corrected::DepBool=nothing) var(x, w, dim, mean=m, corrected=corrected) false
+@deprecate varm!(R::AbstractArray, x::RealArray, w::AbstractWeights, m::RealArray, dim::Int; corrected::DepBool=nothing) var!(R, x, w, dim, mean=m, corrected=corrected) false

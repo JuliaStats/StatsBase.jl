@@ -100,7 +100,7 @@ cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing)
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
     c = covm(x, mean, w, vardim; corrected=false)
-    s = stdm(x, w, mean, vardim; corrected=false)
+    s = std(x, w, vardim; mean=mean, corrected=false)
     cov2cor!(c, s)
 end
 
