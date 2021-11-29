@@ -65,7 +65,6 @@ function autocov!(r::AbstractVector, x::AbstractVector, lags::AbstractVector{<:I
     m = length(lags)
     length(r) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
-
     T = typeof(zero(eltype(x)) / 1)
     z::Vector{T} = demean ? x .- mean(x) : x
     for k = 1 : m  # foreach lag value
@@ -160,7 +159,7 @@ function autocor!(r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:I
     size(r) == (m, ns) || throw(DimensionMismatch())
     check_lags(lx, lags)
 
-    T = typeof(zero(eltype(x)) / 1)
+    T = typeof(zero(eltype(x))/1)
     z = Vector{T}(undef, lx)
     for j = 1 : ns
         demean_col!(z, x, j, demean)
@@ -548,7 +547,7 @@ crosscor(x::AbstractVecOrMat, y::AbstractVecOrMat; demean::Bool=true) =
 #
 #######################################
 
-function pacf_regress!(r::AbstractMatrix{<:Real}, X::AbstractMatrix{<:Real}, lags::AbstractVector{<:Integer}, mk::Integer)
+function pacf_regress!(r::AbstractMatrix X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer)
     lx = size(X, 1)
     tmpX = ones(eltype(X), lx, mk + 1)
     for j = 1 : size(X,2)
@@ -566,7 +565,7 @@ function pacf_regress!(r::AbstractMatrix{<:Real}, X::AbstractMatrix{<:Real}, lag
     r
 end
 
-function pacf_yulewalker!(r::AbstractMatrix{<:Real}, X::AbstractMatrix{T}, lags::AbstractVector{<:Integer}, mk::Integer) where T<:Union{Float32, Float64}
+function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer) where T<:Union{Float32, Float64}
     tmp = Vector{T}(undef, mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
@@ -589,7 +588,7 @@ using the Yule-Walker equations.
 
 `r` must be a matrix of size `(length(lags), size(x, 2))`.
 """
-function pacf!(r::AbstractMatrix{<:Real}, X::AbstractMatrix{T}, lags::AbstractVector{<:Integer}; method::Symbol=:regression) where T<:Union{Float32, Float64}
+function pacf!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector; method::Symbol=:regression)
     lx = size(X, 1)
     m = length(lags)
     minlag, maxlag = extrema(lags)
@@ -620,11 +619,11 @@ If `x` is a vector, return a vector of the same length as `lags`.
 If `x` is a matrix, return a matrix of size `(length(lags), size(x, 2))`,
 where each column in the result corresponds to a column in `x`.
 """
-function pacf(X::RealMatrix, lags::IntegerVector; method::Symbol=:regression)
+function pacf(X::AbstractMatrix, lags::IntegerVector; method::Symbol=:regression)
     out = Matrix{float(eltype(X))}(undef, length(lags), size(X,2))
     pacf!(out, float(X), lags; method=method)
 end
 
-function pacf(x::RealVector, lags::IntegerVector; method::Symbol=:regression)
+function pacf(x::AbstractVector, lags::IntegerVector; method::Symbol=:regression)
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
