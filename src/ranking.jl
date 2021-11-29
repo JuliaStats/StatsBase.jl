@@ -222,7 +222,7 @@ julia> quantilerank([1, 2, 3, 3, 4], 3, method=:mean)
 0.6
 ```
 
-Note: I reproduced here in Julia, the docstring and the code from scipy, because it was too good to not use it.
+Ref: The "Fundamental Statistics for the Behavioral Sciences" book and the `percentileofscore()` function of Scipy was used as references for the `quantilerank()` function.
 """
 function quantilerank(a::RealVector{T}, score::T; method::Symbol=:rank) where {T<:Real}
 
