@@ -171,3 +171,108 @@ Missing values are assigned rank `missing`.
 """
 tiedrank(x::AbstractArray; sortkwargs...) =
     _rank(_tiedrank!, x, Float64; sortkwargs...)
+
+"""
+    quantilerank(a::RealVector, score)
+    quantilerank(a::RealVector, score::RealVector)
+
+Return the percentile-position of score (0-1) relative to a.
+
+For example, a quantilerank of 80% means that 80% of the values in `a` are below the given score.
+
+# Arguments
+* `a`: Array of values to which `score` is compared.
+* `score`: Value that is compared to the elements in `a`.
+* `method` (optional, default `:rank`):  method used for calculate the quantilerank. Options available (`:rank`, `:weak`, `:strict`, `:mean`).
+    1. `:rank` - Average percentage ranking of score. In case of multiple matches, average the percentage rankings of all matching scores.
+    2. `:weak` - This method corresponds to the definition of a cumulative distribution function. A quantilerank of 80% means that 80% of values are less than or equal to the provided score.
+    3. `:strict` - Similar to :weak, except that only values that are strictly less than the given score are counted.
+    4. `:mean` - The average of the :weak and :strict scores, often used in testing. See https://en.wikipedia.org/wiki/Percentile_rank
+
+Please, check the examples below to a better understand of the methods. 
+
+# Examples
+Three-quarters of the given values lie below a given score:
+```julia
+julia> quantilerank([1, 2, 3, 4], 3)
+0.75
+```
+
+With multiple matches, note how the scores of the two matches, 0.6 and 0.8 respectively, are averaged:
+```julia
+julia> quantilerank([1, 2, 3, 3, 4], 3)   # default: method=:rank
+0.7
+```
+
+Only 2/5 values are strictly less than 3:
+```julia
+julia> quantilerank([1, 2, 3, 3, 4], 3, method=:weak)
+0.8
+```
+
+But 4/5 values are less than or equal to 3:
+```julia
+julia> quantilerank([1, 2, 3, 3, 4], 3, method=:strict)
+0.4
+```
+
+The average between the weak and the strict scores is:
+```julia
+julia> quantilerank([1, 2, 3, 3, 4], 3, method=:mean)
+0.6
+```
+
+Note: I reproduced here in Julia, the docstring and the code from scipy, because it was too good to not use it.
+"""
+function quantilerank(a::RealVector{T}, score::T; method::Symbol=:rank) where {T<:Real}
+
+    isnan(score) && return NaN
+
+    n = length(a)
+
+    n == 0 && return 1.0
+
+    if method == :rank
+        nl = sum(a .< score)
+        nw = sum(a .== score)
+        return (nl + 0.5nw) / n 
+
+    elseif method == :strict
+        return sum(a .< score) / n
+        
+    elseif method == :weak
+        return sum(a .≤ score) / n
+        
+    elseif method == :mean
+        return (sum(a .< score) + sum(a .≤ score)) / 2n
+        
+    else
+        throw(ArgumentError("The Symbol :$method is not valid. Use :rank, :strict, :weak or :mean."))
+
+    end
+end 
+
+function quantilerank(a::RealVector{T}, score::RealVector{T}; method::Symbol=:rank) where {T<:Real}
+    
+    qtl = Vector{Float64}(undef, length(score))
+    
+    for i in eachindex(score)
+        qtl[i] = quantilerank(a, score[i], method=method)
+    end
+
+    return qtl
+end
+
+"""
+    percentilerank(a::RealVector, score)
+    percentilerank(a::RealVector, score::RealVector)
+
+Return the `q`th percentile of a collection `score`, i.e. `quantilerank(a, score) * 100`.
+"""
+function percentilerank(a::RealVector{T}, score::T; method::Symbol=:rank) where {T<:Real}
+    return quantilerank(a, score, method=method) * 100
+end
+
+function percentilerank(a::RealVector{T}, score::RealVector{T}; method::Symbol=:rank) where {T<:Real}
+    return quantilerank(a, score, method=method) .* 100
+end
