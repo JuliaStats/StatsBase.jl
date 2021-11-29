@@ -195,13 +195,13 @@ Please, check the examples below to a better understand of the methods.
 Three-quarters of the given values lie below a given score:
 ```julia
 julia> quantilerank([1, 2, 3, 4], 3)
-0.75
+0.625
 ```
 
 With multiple matches, note how the scores of the two matches, 0.6 and 0.8 respectively, are averaged:
 ```julia
 julia> quantilerank([1, 2, 3, 3, 4], 3)   # default: method=:rank
-0.7
+0.6
 ```
 
 Only 2/5 values are strictly less than 3:
