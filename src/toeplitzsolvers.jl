@@ -1,8 +1,9 @@
 # Symmetric Toeplitz solver
-function durbin!(r::AbstractVector{T}, y::AbstractVector{T}) where T
+function durbin!(r::AbstractVector{T}, p::AbstractVector{T}, y::AbstractVector{T}) where T
     n = length(r)
-    n <= length(y) || throw(DimensionMismatch("Auxiliary vector cannot be shorter than data vector"))
+    n <= length(p) || n <= length(y) || throw(DimensionMismatch("Auxiliary vectors cannot be shorter than data vector"))
     y[1] = -r[1]
+    p[1] = -r[1]
     β = one(T)
     α = -r[1]
     for k = 1:n-1
@@ -19,10 +20,11 @@ function durbin!(r::AbstractVector{T}, y::AbstractVector{T}) where T
         end
         if isodd(k) y[div(k,2)+1] += α*conj(y[div(k,2)+1]) end
         y[k+1] = α
+        p[k+1] = α
     end
-    return y
+    return p
 end
-durbin(r::AbstractVector{T}) where T = durbin!(r, zeros(T, length(r)))
+durbin(r::AbstractVector{T}) where T = durbin!(r, zeros(T, length(r)), zeros(T, length(r)))
 
 function levinson!(r::AbstractVector{T}, b::AbstractVector{T}, x::AbstractVector{T}) where T<:BlasReal
     n = length(b)

@@ -113,18 +113,35 @@ c22 = crosscor(x2, x2)
     crosscor([34566.5345, 3466.4566], Float16[1, 10])
 
 
-## pacf
+## pacf least squares
+pacf_ls = [-1.598495044296996e-03 - 2.915104118351207e-01im
+           -5.560162016912027e-01 + 2.950837739894279e-01im
+           -2.547001916363494e-02 + 2.326084658014266e-01im
+           -5.427443903358727e-01 + 3.146715147305132e-01im]
 
-pacfr = [-1.598495044296996e-03 - 2.915104118351207e-01im
-         -5.560162016912027e-01 + 2.950837739894279e-01im
-         -2.547001916363494e-02 + 2.326084658014266e-01im
-         -5.427443903358727e-01 + 3.146715147305132e-01im];
+@test pacf(x1, 1:4) ≈ pacf_ls[1:4]
 
-@test pacf(x1, 1:4) ≈ pacfr[1:4]
+## pacf Yule-Walker
 
-pacfy = [-1.598495044296996e-03 - 2.915104118351207e-01im
-         -5.560162016912027e-01 + 2.950837739894279e-01im
-         -2.547001916363494e-02 + 2.326084658014266e-01im
-         -5.427443903358727e-01 + 3.146715147305132e-01im];
+function yulewalker_qr(v::AbstractVector)
+    A = toeplitz(v)
+    b = v[2:end]
+    x =-A\b
+end
+function toeplitz(v::AbstractVector{T}) where T
+    N=length(v)
+    A = zeros(T, N - 1, N - 1)
+    for n in 1:N-1
+        A[n, n + 1:end] = conj(v[2:N-n])
+        A[n, 1:n] = reverse(v[1:n])
+    end
+    return A
+end
+# durbin solver 
+acf = autocor(x1)
+p = [yulewalker_qr(acf[1:n])[n-1] for n in 2:length(acf)]
+@test p ≈ StatsBase.durbin(acf[2:end])
 
-@test pacf(x1, 1:4, method=:yulewalker) ≈ pacfy
+pacfy = [];
+
+@test pacf(x1, 1:4, method=:yulewalker) ≈ -p[1:4]

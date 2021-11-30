@@ -547,7 +547,7 @@ crosscor(x::AbstractVecOrMat, y::AbstractVecOrMat; demean::Bool=true) =
 #
 #######################################
 
-function pacf_regress!(r::AbstractMatrix X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer)
+function pacf_regress!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector, mk::Integer)
     lx = size(X, 1)
     tmpX = ones(eltype(X), lx, mk + 1)
     for j = 1 : size(X,2)
