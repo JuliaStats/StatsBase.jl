@@ -126,7 +126,7 @@ pacf_ls = [-1.598495044296996e-03 - 2.915104118351207e-01im
 function yulewalker_qr(v::AbstractVector)
     A = toeplitz(v)
     b = v[2:end]
-    x =-A\b
+    x = -A\b
 end
 function toeplitz(v::AbstractVector{T}) where T
     N=length(v)
