@@ -132,7 +132,7 @@ function toeplitz(v::AbstractVector{T}) where T
     N=length(v)
     A = zeros(T, N - 1, N - 1)
     for n in 1:N-1
-        A[n, n + 1:end] = conj(v[2:N-n])
+        A[n, n+1:end] = conj(v[2:N-n])
         A[n, 1:n] = reverse(v[1:n])
     end
     return A

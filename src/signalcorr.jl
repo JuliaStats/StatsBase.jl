@@ -108,16 +108,16 @@ The output is not normalized. See [`autocor`](@ref) for a function with normaliz
 """
 function autocov(x::AbstractVector, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Vector{float(eltype(x))}(undef, length(lags))
-    autocov!(out, x, lags; demean)
+    autocov!(out, x, lags; demean=demean)
 end
 
 function autocov(x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Matrix{float(eltype(x))}(undef, length(lags), size(x,2))
-    autocov!(out, x, lags; demean)
+    autocov!(out, x, lags; demean=demean)
 end
 
 autocov(x::AbstractVecOrMat; demean::Bool=true) =
-    autocov(x, default_autolags(size(x,1)); demean)
+    autocov(x, default_autolags(size(x,1)); demean=demean)
 
 ## autocor
 
@@ -155,7 +155,7 @@ function autocor!(
     T = typeof(zero(eltype(x))/1)
     z = Vector{T}(undef, size(x, 1))
     for n in 1:size(x, 2)
-        autocor!(view(r, :, n), view(x, :, n), lags, z; demean)
+        autocor!(view(r, :, n), view(x, :, n), lags, z; demean=demean)
     end
     return r
 end
@@ -180,16 +180,16 @@ autocorrelation is 1. See [`autocov`](@ref) for the unnormalized form.
 """
 function autocor(x::AbstractVector, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Vector{float(eltype(x))}(undef, length(lags))
-    autocor!(out, x, lags; demean)
+    autocor!(out, x, lags; demean=demean)
 end
 
 function autocor(x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Matrix{float(eltype(x))}(undef, length(lags), size(x,2))
-    autocor!(out, x, lags; demean)
+    autocor!(out, x, lags; demean=demean)
 end
 
 autocor(x::AbstractVecOrMat; demean::Bool=true) =
-    autocor(x, default_autolags(size(x,1)); demean)
+    autocor(x, default_autolags(size(x,1)); demean=demean)
 
 
 #######################################

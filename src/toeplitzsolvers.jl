@@ -18,7 +18,9 @@ function durbin!(r::AbstractVector{T}, p::AbstractVector{T}, y::AbstractVector{T
             y[j] += α*conj(y[k-j+1])
             y[k-j+1] += α*conj(tmp)
         end
-        if isodd(k) y[div(k,2)+1] += α*conj(y[div(k,2)+1]) end
+        if isodd(k)
+            y[div(k,2)+1] += α*conj(y[div(k,2)+1]) 
+        end
         y[k+1] = α
         p[k+1] = α
     end
