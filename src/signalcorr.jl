@@ -45,7 +45,6 @@ default_autolags(lx::Int) = 0 : default_laglen(lx)
 
 _autodot(x::AbstractVector, lx::Int, l::Int) = dot(view(x, 1:(lx-l)), view(x, (1+l):lx))
 
-
 ## autocov
 """
     autocov!(r, x, lags; demean=true)
@@ -64,15 +63,15 @@ function autocov!(
     r::AbstractVector,
     x::AbstractVector,
     lags::AbstractVector{<:Integer},
-    z=zeros(typeof(zero(eltype(x)) / 1), length(x));
+    z=Vector{typeof(zero(eltype(x)) / 1)}(undef, size(x, 1));
     demean::Bool=true
     )
     lx = length(x)
     m = length(lags)
     length(r) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
-    T = typeof(zero(eltype(x)) / 1)
-    demean  ? z = x :   z .= x .- mean(x)
+    z .= x
+    demean && z .= z .- mean(z)
     for k = 1 : m  # foreach lag value
         r[k] = _autodot(z, lx, lags[k]) / lx
     end
@@ -82,7 +81,8 @@ end
 function autocov!(
     r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true
     )
-    z = zeros(typeof(zero(eltype(x))/1), size(x, 1))
+    T = typeof(zero(eltype(x)) / 1)
+    z = Vector{T}(undef, size(x, 1))
     for n in 1:size(x, 2)
         autocov!(view(r, :, n), view(x, :, n), lags, z; demean)
     end
@@ -145,7 +145,7 @@ function autocor!(
     autocov!(view(r, 1:1), x, 0:0, z; demean)
     zz = r[1]
     autocov!(r, x, lags, z; demean)
-    r ./= zz
+    ldiv!(zz, r)
     return r
 end
 
@@ -552,7 +552,7 @@ function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVec
     y = Vector{eltype(X)}(undef, mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
-        durbin!(acfs, p, y)
+        durbin!(acfs, y, p)
         for i = 1 : length(lags)
             l = lags[i]
             r[i,j] = l == 0 ? 1 : -p[l]

@@ -1,5 +1,27 @@
-# Symmetric Toeplitz solver
-function durbin!(r::AbstractVector{T}, p::AbstractVector{T}, y::AbstractVector{T}) where T
+"""
+    durbin!(r::AbstractVector, y::AbstractVector, p::AbstractVector) -> Vector
+
+Solve Yule-Walker equations using Durbin algorithm.
+
+Solution of NxN system is obtained iteratively, by solving 1x1, 2x2, ...
+in succession. For use in computing partial autocorrelation matrix,
+return the last elements of the successive solutions in vector p[].
+
+The section 4.7 of Golub,VanLoan "Matrix Computations," 4th ed.,
+discusses the algorithm in detail.
+
+# Arguments
+- `r::AbstractVector`: first column of a herimitian positive definite
+    Toeplitz matrix, excluding the diagonal element (equal to one).
+- `y::AbstractVector`: work vector for solution, should have the same length
+    as r[]
+- `p::AbstractVector`: last elements of the successive solutions, should
+     have the same length  as r[]
+
+# Returns
+- `y::AbstractVector`: same as the second argument
+"""
+function durbin!(r::AbstractVector{T}, y::AbstractVector{T}, p::AbstractVector{T}) where T
     n = length(r)
     n <= length(p) || n <= length(y) || throw(DimensionMismatch("Auxiliary vectors cannot be shorter than data vector"))
     y[1] = -r[1]
@@ -24,7 +46,7 @@ function durbin!(r::AbstractVector{T}, p::AbstractVector{T}, y::AbstractVector{T
         y[k+1] = α
         p[k+1] = α
     end
-    return p
+    return y
 end
 durbin(r::AbstractVector{T}) where T = durbin!(r, zeros(T, length(r)), zeros(T, length(r)))
 

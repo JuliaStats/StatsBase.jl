@@ -22,39 +22,46 @@ x = [0.5316732188954801 + 0.015032026010878084im -0.8051436916816284 - 0.7302380
 
 x1 = view(x, :, 1)
 x2 = view(x, :, 2)
-
+cmplx_x = convert(AbstractMatrix{Complex}, x)
+cmplx_x1 = convert(AbstractVector{Complex}, x1)
+cmplx_x2 = convert(AbstractVector{Complex}, x2)
 # autocov & autocorr
 
 @test autocov([1:5;])          ≈ [2.0, 0.8, -0.2, -0.8, -0.8]
 @test autocor([1, 2, 3, 4, 5]) ≈ [1.0, 0.4, -0.1, -0.4, -0.4]
 
-racovx1 =  [0.755284179631112 + 0.0im,
-            -0.005333112170365584 - 0.18633291805458002im,
-            -0.28638133506011604 + 0.1397225175604478im,
-            -0.05476759020476188 + 0.12991227531087618im,
-            -0.00499902418309206 + 0.023463421186162473im,
-            0.11854989361702409 - 0.0028772373657594066im,
-            -0.005123812003979093 - 0.08041878599400383im,
-            -0.14090692583679154 + 0.035230042290069444im,
-            0.039899180711674635 + 0.004918236900383659im,
-            -0.03857936468514856 - 0.04063999068714769im]
+acovx1 =  [0.755284179631112 + 0.0im,
+           -0.005333112170365584 - 0.18633291805458002im,
+           -0.28638133506011604 + 0.1397225175604478im,
+           -0.05476759020476188 + 0.12991227531087618im,
+           -0.00499902418309206 + 0.023463421186162473im,
+           0.11854989361702409 - 0.0028772373657594066im,
+           -0.005123812003979093 - 0.08041878599400383im,
+           -0.14090692583679154 + 0.035230042290069444im,
+           0.039899180711674635 + 0.004918236900383659im,
+           -0.03857936468514856 - 0.04063999068714769im]
 
-@test autocov(x1) ≈ racovx1
+@test autocov(x1) ≈ acovx1
+@test autocov(cmplx_x1) ≈ acovx1
 @test autocov(x)  ≈ [autocov(x1) autocov(x2)]
+@test autocov(cmplx_x)  ≈ [autocov(cmplx_x1) autocov(cmplx_x2)]
 
-racorx1 = [1.0 + 0.0im,
-           -0.007061066965510023 - 0.24670570770539213im,
-           -0.3791703080554228 + 0.18499330626611243im,
-           -0.07251256107537019 + 0.17200449686941222im,
-           -0.006618732813301651 + 0.031065686027770673im,
-           0.1569606471499575 - 0.0038094765432061303im,
-           -0.00678395250709688 - 0.106474871528861im,
-           -0.18656146869859214 + 0.04664475073114351im,
-           0.05282671316002114 + 0.0065117700502952056im,
-           -0.051079270194684986 - 0.0538075492419246im]
+acorx1 = [1.0 + 0.0im,
+          -0.007061066965510023 - 0.24670570770539213im,
+          -0.3791703080554228 + 0.18499330626611243im,
+          -0.07251256107537019 + 0.17200449686941222im,
+          -0.006618732813301651 + 0.031065686027770673im,
+          0.1569606471499575 - 0.0038094765432061303im,
+          -0.00678395250709688 - 0.106474871528861im,
+          -0.18656146869859214 + 0.04664475073114351im,
+          0.05282671316002114 + 0.0065117700502952056im,
+          -0.051079270194684986 - 0.0538075492419246im]
 
-@test autocor(x1) ≈ racorx1
+@test autocor(x1) ≈ acorx1
+@test autocor(cmplx_x1) ≈ acorx1
 @test autocor(x)  ≈ [autocor(x1) autocor(x2)]
+@test autocor(cmplx_x)  ≈ [autocor(cmplx_x1) autocor(cmplx_x2)]
+
 
 # crosscov & crosscor
 
@@ -75,10 +82,14 @@ c11 = crosscov(x1, x1)
 c12 = crosscov(x1, x2)
 c21 = crosscov(x2, x1)
 c22 = crosscov(x2, x2)
+@test crosscov(cmplx_x1, cmplx_x2) ≈ c12
 
 @test crosscov(x,  x1) ≈ [c11 c21]
+@test crosscov(cmplx_x, cmplx_x1) ≈ [c11 c21]
 @test crosscov(x1, x)  ≈ [c11 c12]
+@test crosscov(cmplx_x1, cmplx_x)  ≈ [c11 c12]
 @test crosscov(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
+@test crosscov(cmplx_x,  cmplx_x)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
 # issue #805: avoid converting one input to the other's eltype
 @test crosscov([34566.5345, 3466.4566], Float16[1, 10]) ≈
@@ -102,10 +113,14 @@ c11 = crosscor(x1, x1)
 c12 = crosscor(x1, x2)
 c21 = crosscor(x2, x1)
 c22 = crosscor(x2, x2)
+@test crosscor(cmplx_x1, cmplx_x2) ≈ c12
 
 @test crosscor(x,  x1) ≈ [c11 c21]
+@test crosscor(cmplx_x, cmplx_x1) ≈ [c11 c21]
 @test crosscor(x1, x)  ≈ [c11 c12]
+@test crosscor(cmplx_x1, cmplx_x)  ≈ [c11 c12]
 @test crosscor(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
+@test crosscor(cmplx_x, cmplx_x)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
 # issue #805: avoid converting one input to the other's eltype
 @test crosscor([34566.5345, 3466.4566], Float16[1, 10]) ≈
@@ -139,9 +154,10 @@ function toeplitz(v::AbstractVector{T}) where T
 end
 # durbin solver 
 acf = autocor(x1)
-p = [yulewalker_qr(acf[1:n])[n-1] for n in 2:length(acf)]
-@test p ≈ StatsBase.durbin(acf[2:end])
+p_qr = [yulewalker_qr(acf[1:n])[n-1] for n in 2:length(acf)]
+y = similar(acf[2:end])
+pd = similar(acf[2:end])
+StatsBase.durbin!(acf[2:end], y, pd)
+@test p_qr ≈ pd
 
-pacfy = [];
-
-@test pacf(x1, 1:4, method=:yulewalker) ≈ -p[1:4]
+@test pacf(x1, 1:4, method=:yulewalker) ≈ -p_qr[1:4]
