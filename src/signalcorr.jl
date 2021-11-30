@@ -60,33 +60,31 @@ where each column in the result will correspond to a column in `x`.
 
 The output is not normalized. See [`autocor!`](@ref) for a method with normalization.
 """
-function autocov!(r::AbstractVector, x::AbstractVector, lags::AbstractVector{<:Integer}; demean::Bool=true)
+function autocov!(
+    r::AbstractVector,
+    x::AbstractVector,
+    lags::AbstractVector{<:Integer},
+    z=zeros(typeof(zero(eltype(x)) / 1), length(x));
+    demean::Bool=true
+    )
     lx = length(x)
     m = length(lags)
     length(r) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
     T = typeof(zero(eltype(x)) / 1)
-    z::Vector{T} = demean ? x .- mean(x) : x
+    demean  ? z = x :   z .= x .- mean(x)
     for k = 1 : m  # foreach lag value
         r[k] = _autodot(z, lx, lags[k]) / lx
     end
     return r
 end
 
-function autocov!(r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
-    lx = size(x, 1)
-    ns = size(x, 2)
-    m = length(lags)
-    size(r) == (m, ns) || throw(DimensionMismatch())
-    check_lags(lx, lags)
-
-    T = typeof(zero(eltype(x)) / 1)
-    z = Vector{T}(undef, lx)
-    for j = 1 : ns
-        demean_col!(z, x, j, demean)
-        for k = 1 : m
-            r[k,j] = _autodot(z, lx, lags[k]) / lx
-        end
+function autocov!(
+    r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true
+    )
+    z = zeros(typeof(zero(eltype(x))/1), size(x, 1))
+    for n in 1:size(x, 2)
+        autocov!(view(r, :, n), view(x, :, n), lags, z; demean)
     end
     return r
 end
@@ -110,16 +108,16 @@ The output is not normalized. See [`autocor`](@ref) for a function with normaliz
 """
 function autocov(x::AbstractVector, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Vector{float(eltype(x))}(undef, length(lags))
-    autocov!(out, x, lags; demean=demean)
+    autocov!(out, x, lags; demean)
 end
 
-function autocov(x::AbstractMatrix, lags::AbstractVector; demean::Bool=true)
+function autocov(x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Matrix{float(eltype(x))}(undef, length(lags), size(x,2))
-    autocov!(out, x, lags; demean=demean)
+    autocov!(out, x, lags; demean)
 end
 
 autocov(x::AbstractVecOrMat; demean::Bool=true) =
-    autocov(x, default_autolags(size(x,1)); demean=demean)
+    autocov(x, default_autolags(size(x,1)); demean)
 
 ## autocor
 
@@ -137,36 +135,27 @@ where each column in the result will correspond to a column in `x`.
 The output is normalized by the variance of `x`, i.e. so that the lag 0
 autocorrelation is 1. See [`autocov!`](@ref) for the unnormalized form.
 """
-function autocor!(r::AbstractVector, x::AbstractVector, lags::AbstractVector{<:Integer}; demean::Bool=true)
-    lx = length(x)
-    m = length(lags)
-    length(r) == m || throw(DimensionMismatch())
-    check_lags(lx, lags)
-
-    T = typeof(zero(eltype(x)) / 1)
-    z::Vector{T} = demean ? x .- mean(x) : x
-    zz = dot(z, z)
-    for k = 1 : m  # foreach lag value
-        r[k] = _autodot(z, lx, lags[k]) / zz
-    end
+function autocor!(
+    r::AbstractVector,
+    x::AbstractVector,
+    lags::AbstractVector{<:Integer},
+    z=zeros(typeof(zero(eltype(x)) / 1), length(x));
+    demean::Bool=true
+    )
+    autocov!(view(r, 1:1), x, 0:0, z; demean)
+    zz = r[1]
+    autocov!(r, x, lags, z; demean)
+    r ./= zz
     return r
 end
 
-function autocor!(r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
-    lx = size(x, 1)
-    ns = size(x, 2)
-    m = length(lags)
-    size(r) == (m, ns) || throw(DimensionMismatch())
-    check_lags(lx, lags)
-
+function autocor!(
+    r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true
+    )
     T = typeof(zero(eltype(x))/1)
-    z = Vector{T}(undef, lx)
-    for j = 1 : ns
-        demean_col!(z, x, j, demean)
-        zz = dot(z, z)
-        for k = 1 : m
-            r[k,j] = _autodot(z, lx, lags[k]) / zz
-        end
+    z = Vector{T}(undef, size(x, 1))
+    for n in 1:size(x, 2)
+        autocor!(view(r, :, n), view(x, :, n), lags, z; demean)
     end
     return r
 end
@@ -191,16 +180,16 @@ autocorrelation is 1. See [`autocov`](@ref) for the unnormalized form.
 """
 function autocor(x::AbstractVector, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Vector{float(eltype(x))}(undef, length(lags))
-    autocor!(out, x, lags; demean=demean)
+    autocor!(out, x, lags; demean)
 end
 
 function autocor(x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     out = Matrix{float(eltype(x))}(undef, length(lags), size(x,2))
-    autocor!(out, x, lags; demean=demean)
+    autocor!(out, x, lags; demean)
 end
 
 autocor(x::AbstractVecOrMat; demean::Bool=true) =
-    autocor(x, default_autolags(size(x,1)); demean=demean)
+    autocor(x, default_autolags(size(x,1)); demean)
 
 
 #######################################
@@ -211,13 +200,6 @@ autocor(x::AbstractVecOrMat; demean::Bool=true) =
 
 default_crosslags(lx::Int) = (l=default_laglen(lx); -l:l)
 
-function _crossdot(x::AbstractVector, y::AbstractVector, lx::Int, l::Int)
-    if l >= 0
-        dot(x, 1:(lx-l), y, (1+l):lx)
-    else
-        dot(x, (1-l):lx, y, 1:(lx+l))
-    end
-end
 function _crossdot(x::AbstractVector, y::AbstractVector, lx::Int, l::Int)
     if l >= 0
         dot(view(x, 1:(lx-l)), view(y, (1+l):lx))
@@ -565,13 +547,15 @@ function pacf_regress!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector
     r
 end
 
-function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer) where T<:Union{Float32, Float64}
-    tmp = Vector{T}(undef, mk)
+function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector, mk::Integer)
+    p = Vector{eltype(X)}(undef, mk)
+    y = Vector{eltype(X)}(undef, mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
+        durbin!(acfs, p, y)
         for i = 1 : length(lags)
             l = lags[i]
-            r[i,j] = l == 0 ? 1 : l == 1 ? acfs[i] : -durbin!(view(acfs, 1:l), tmp)[l]
+            r[i,j] = l == 0 ? 1 : -p[l]
         end
     end
 end
