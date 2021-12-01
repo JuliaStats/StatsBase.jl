@@ -70,8 +70,7 @@ function autocov!(
     m = length(lags)
     length(r) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
-    z .= x
-    demean && z .= z .- mean(z)
+    demean ? z .= x .- mean(x) : copyto!(z, x)
     for k = 1 : m  # foreach lag value
         r[k] = _autodot(z, lx, lags[k]) / lx
     end
@@ -529,7 +528,7 @@ crosscor(x::AbstractVecOrMat, y::AbstractVecOrMat; demean::Bool=true) =
 #
 #######################################
 
-function pacf_regress!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector, mk::Integer)
+function pacf_regress!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer)
     lx = size(X, 1)
     tmpX = ones(eltype(X), lx, mk + 1)
     for j = 1 : size(X,2)
@@ -547,7 +546,7 @@ function pacf_regress!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector
     r
 end
 
-function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector, mk::Integer)
+function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer)
     p = Vector{eltype(X)}(undef, mk)
     y = Vector{eltype(X)}(undef, mk)
     for j = 1 : size(X,2)
@@ -572,7 +571,7 @@ using the Yule-Walker equations.
 
 `r` must be a matrix of size `(length(lags), size(x, 2))`.
 """
-function pacf!(r::AbstractMatrix, X::AbstractMatrix, lags::IntegerVector; method::Symbol=:regression)
+function pacf!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVector{<:Integer}; method::Symbol=:regression)
     lx = size(X, 1)
     m = length(lags)
     minlag, maxlag = extrema(lags)
@@ -603,11 +602,11 @@ If `x` is a vector, return a vector of the same length as `lags`.
 If `x` is a matrix, return a matrix of size `(length(lags), size(x, 2))`,
 where each column in the result corresponds to a column in `x`.
 """
-function pacf(X::AbstractMatrix, lags::IntegerVector; method::Symbol=:regression)
+function pacf(X::AbstractMatrix, lags::AbstractVector{<:Integer}; method::Symbol=:regression)
     out = Matrix{float(eltype(X))}(undef, length(lags), size(X,2))
     pacf!(out, float(X), lags; method=method)
 end
 
-function pacf(x::AbstractVector, lags::IntegerVector; method::Symbol=:regression)
+function pacf(x::AbstractVector, lags::AbstractVector{<:Integer}; method::Symbol=:regression)
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
