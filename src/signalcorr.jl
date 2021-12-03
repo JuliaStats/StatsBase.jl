@@ -63,23 +63,23 @@ function autocov!(
     r::AbstractVector,
     x::AbstractVector,
     lags::AbstractVector{<:Integer},
-    z=Vector{typeof(zero(eltype(x)) / 1)}(undef, size(x, 1));
+    z::Vector=Vector{typeof(zero(eltype(x)) / 1)}(undef, length(x));
     demean::Bool=true
-    )
+)
     lx = length(x)
     m = length(lags)
-    length(r) == m || throw(DimensionMismatch())
+    length(r) == length(z) == m || throw(DimensionMismatch())
     check_lags(lx, lags)
     demean ? z .= x .- mean(x) : copyto!(z, x)
-    for k = 1 : m  # foreach lag value
-        r[k] = _autodot(z, lx, lags[k]) / lx
+    @inbounds for (k, lags_k) in zip(eachindex(r), lags) # foreach lag value
+        r[k] = _autodot(z, lx, lags_k) / lx
     end
     return r
 end
 
 function autocov!(
     r::AbstractMatrix, x::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true
-    )
+)
     T = typeof(zero(eltype(x)) / 1)
     z = Vector{T}(undef, size(x, 1))
     for n in 1:size(x, 2)
