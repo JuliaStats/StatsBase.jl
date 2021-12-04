@@ -20,7 +20,15 @@ import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
                    cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
                    median, middle
-import StatsAPI: pairwise, pairwise!
+import StatsAPI: StatisticalModel, RegressionModel
+import StatsAPI: pairwise, pairwise!, params, params!,
+                 fitted, response, responsename, meanresponse, modelmatrix,
+                 crossmodelmatrix, leverage, cooksdistance, residuals, predict,
+                 predict!, dof_residual, coef, coefnames, coeftable, confint,
+                 deviance, islinear, nulldeviance, loglikelihood, nullloglikelihood,
+                 loglikelihood, loglikelihood, score, nobs, dof, mss, rss,
+                 informationmatrix, stderror, vcov, weights, isfitted, fit, fit!,
+                 aic, aicc, bic, r2, r², adjr2
 
     ## tackle compatibility issues
 
