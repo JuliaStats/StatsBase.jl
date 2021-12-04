@@ -916,7 +916,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
             end
         end
     else
-        k <= n || error("Cannot draw $n samples from $k samples without replacement.")
+        k <= n || error("Cannot draw $k samples from $n samples without replacement.")
         efraimidis_aexpj_wsample_norep!(rng, a, wv, x; ordered=ordered)
     end
     return x
