@@ -302,7 +302,7 @@ function crosscov!(r::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, lags
     return r
 end
 
-function crosscov!(r::AbstractArray{U,3} where U, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
+function crosscov!(r::AbstractArray{<:Any}, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
@@ -458,7 +458,7 @@ function crosscor!(r::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, lags
     return r
 end
 
-function crosscor!(r::AbstractArray{U,3} where U, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
+function crosscor!(r::AbstractArray{<:Any}, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)

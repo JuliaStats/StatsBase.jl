@@ -3,25 +3,24 @@
 
 Solve Yule-Walker equations using Durbin algorithm.
 
-Solution of NxN system is obtained iteratively, by solving 1x1, 2x2, ...
+Solution of N×N system is obtained iteratively, by solving 1×1, 2×2, ...
 in succession. For use in computing partial autocorrelation matrix,
-return the last elements of the successive solutions in vector p[].
+return the last elements of the successive solutions in vector `p`.
 
-The section 4.7 of Golub,VanLoan "Matrix Computations," 4th ed.,
-discusses the algorithm in detail.
+Reference: Golub, G. H., and C. F. Van Loan. "Matrix computations 4th edition the johns hopkins university press." Baltimore, MD (2013), section 4.7
 
 # Arguments
-- `r::AbstractVector`: first column of a herimitian positive definite
+- `r::AbstractVector`: first column of a Herimitian positive definite
     Toeplitz matrix, excluding the diagonal element (equal to one).
 - `y::AbstractVector`: work vector for solution, should have the same length
-    as r[]
+    as `r`
 - `p::AbstractVector`: last elements of the successive solutions, should
-     have the same length  as r[]
+     have the same length  as `r`
 
 # Returns
-- `y::AbstractVector`: same as the second argument
+- `y::AbstractVector`: return the solution vector (same as the second argument)
 """
-function durbin!(r::AbstractVector{T}, y::AbstractVector{T}, p::AbstractVector{T}) where T
+function durbin!(r::AbstractVector{T}, y::AbstractVector{T}, p::AbstractVector{T}) where {T}
     n = length(r)
     n <= length(p) || n <= length(y) || throw(DimensionMismatch("Auxiliary vectors cannot be shorter than data vector"))
     y[1] = -r[1]
@@ -48,7 +47,7 @@ function durbin!(r::AbstractVector{T}, y::AbstractVector{T}, p::AbstractVector{T
     end
     return y
 end
-durbin(r::AbstractVector{T}) where T = durbin!(r, zeros(T, length(r)), zeros(T, length(r)))
+durbin(r::AbstractVector{T}) where {T} = durbin!(r, zeros(T, length(r)), zeros(T, length(r)))
 
 function levinson!(r::AbstractVector{T}, b::AbstractVector{T}, x::AbstractVector{T}) where T<:BlasReal
     n = length(b)
