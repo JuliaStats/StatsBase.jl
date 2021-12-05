@@ -57,8 +57,6 @@ function StatsAPI.r2(model::StatisticalModel, variant::Symbol)
     end
 end
 
-const r² = r2
-
 """
     adjr2(model::StatisticalModel, variant::Symbol)
     adjr²(model::StatisticalModel, variant::Symbol)
