@@ -20,7 +20,7 @@ import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
                    cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
                    median, middle
-import StatsAPI: StatisticalModel, RegressionModel
+using StatsAPI: StatisticalModel, RegressionModel
 import StatsAPI: pairwise, pairwise!, params, params!,
                  fitted, response, responsename, meanresponse, modelmatrix,
                  crossmodelmatrix, leverage, cooksdistance, residuals, predict,
