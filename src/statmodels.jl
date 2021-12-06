@@ -7,7 +7,7 @@ Coefficient of determination (R-squared).
 For a linear model, the R² is defined as ``ESS/TSS``, with ``ESS`` the explained sum of squares
 and ``TSS`` the total sum of squares.
 """
-function StatsAPI.r2(model::StatisticalModel)
+function r2(model::StatisticalModel)
     Base.depwarn("The default r² method for linear models is deprecated. " *
                  "Packages should define their own methods.", :r2)
 
