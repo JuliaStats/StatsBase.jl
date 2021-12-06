@@ -71,7 +71,7 @@ In these formulas, ``L`` is the likelihood of the model, ``L0`` that of the null
 ``D_0`` is the deviance of the null model, ``n`` is the number of observations (given by [`nobs`](@ref)) and
 ``k`` is the number of consumed degrees of freedom of the model (as returned by [`dof`](@ref)).
 """
-function StatsAPI.adjr2(model::StatisticalModel, variant::Symbol)
+function adjr2(model::StatisticalModel, variant::Symbol)
     k = dof(model)
     if variant == :McFadden
         ll = loglikelihood(model)
