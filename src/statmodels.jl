@@ -36,7 +36,7 @@ In the above formulas, ``L`` is the likelihood of the model,
 The Cox-Snell and the deviance ratio variants both match the classical definition of R²
 for linear models.
 """
-function StatsAPI.r2(model::StatisticalModel, variant::Symbol)
+function r2(model::StatisticalModel, variant::Symbol)
     loglikbased = (:McFadden, :CoxSnell, :Nagelkerke)
     if variant in loglikbased
         ll = loglikelihood(model)
