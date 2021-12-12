@@ -39,29 +39,25 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 @test tiedrank(x, lt = (x, y) -> isless(y, x)) == tiedrank(-x)
 
 @testset "quantilerank and percentilerank" begin
-
-    pcrk = percentilerank
-    qtrk = quantilerank
- 
-    @testset "score as number and array" begin        
-        for (method, res1, res2) in [(:rank, 40.0, [40.0, 85.0]), 
-                                    (:strict, 30.0, [30.0, 80.0]),
-                                    (:weak, 50.0, [50.0, 90.0]), 
-                                    (:mean, 40.0, [40.0, 85.0])]
-            @test pcrk([1,2,3,4,4,5,6,7,8,9], 4, method=method) == res1
-            @test qtrk([1,2,3,4,4,5,6,7,8,9], 4, method=method) == res1 / 100
-            @test pcrk([1,2,3,4,4,5,6,7,8,9], [4, 8], method=method) == res2
-            @test qtrk([1,2,3,4,4,5,6,7,8,9], [4, 8], method=method) == res2 / 100
+    @testset "score as number and array" begin
+        for (method, res1, res2) in [(:mean, .4, [.4, .85]),
+                                    (:strict, .3, [.3, .8]),
+                                    (:weak, .5, [.5, .9])]
+            @test percentilerank([1, 2, 3, 4, 4, 5, 6, 7, 8, 9], 4, method=method) == res1 * 100
+            @test quantilerank([1, 2, 3, 4, 4, 5, 6, 7, 8, 9], 4, method=method) == res1
+            @test percentilerank([1, 2, 3, 4, 4, 5, 6, 7, 8, 9], [4, 8], method=method) == res2 * 100
+            @test quantilerank([1, 2, 3, 4, 4, 5, 6, 7, 8, 9], [4, 8], method=method) == res2
         end
     end
- 
     @testset "missing and error" begin
-        for method in (:rank, :mean, :strict, :weak)
-            @test pcrk([1,2,3,5,6,7,8,9,10,11], 4, method=method) == 30
-            @test qtrk([1,2,3,5,6,7,8,9,10,11], 4, method=method) == 0.3
+        for method in (:mean, :strict, :weak)
+            @test_throws TypeError quantilerank([1, 2, 3, 5, 6, missing, 8], 4, method=method)
+            @test_throws TypeError percentilerank([1, 2, 3, 5, 6, missing, 8], 4, method=method)
+            @test_nowarn quantilerank(skipmissing([1, 2, 3, 5, 6, missing, 8]), 4, method=method)
+            @test_nowarn percentilerank(skipmissing([1, 2, 3, 5, 6, missing, 8]), 4, method=method)
         end
 
-        @test_throws ArgumentError pcrk([1, 2, 3, 3, 4], 3, method=:wrongargument)
-        @test_throws ArgumentError qtrk([1, 2, 3, 3, 4], 3, method=:wrongargument)
+        @test_throws ArgumentError quantilerank([1, 2, 3, 3, 4], 3, method=:wrongargument)
+        @test_throws ArgumentError percentilerank([1, 2, 3, 3, 4], 3, method=:wrongargument)
     end
 end
