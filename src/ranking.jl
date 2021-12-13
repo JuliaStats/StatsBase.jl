@@ -224,9 +224,10 @@ julia> quantilerank([1, 2, 3, 3, 4], 3, method=:mean)
 
 Ref: The "Fundamental Statistics for the Behavioral Sciences" book and the `percentileofscore()` function of Scipy was used as references for the `quantilerank()` function.
 """
-function quantilerank(v::RealVector{T}, value::T; method::Symbol=:mean) where {T<:Real}
-    isnan(value) && throw(ArgumentError("value evaluated cannot contain NaN entries"))
-    any(isnan.(v)) && throw(ArgumentError("vector cannot contain NaN entries"))
+function quantilerank(v::RealVector, value::Real; method::Symbol=:mean)
+    # checks
+    isnan(value)    && throw(ArgumentError("value evaluated cannot contain NaN entries."))
+    any(isnan.(v))  && throw(ArgumentError("vector cannot contain NaN entries."))
 
     n = length(v)
 
@@ -243,9 +244,14 @@ function quantilerank(v::RealVector{T}, value::T; method::Symbol=:mean) where {T
     end
 end
 
-quantilerank(itr, value; method::Symbol=:mean) = quantilerank(collect(itr), value, method=method)
+function quantilerank(itr, value; method::Symbol=:mean)
+    v = collect(itr)
+    eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
+    Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
+    return quantilerank(v, value, method=method)
+end
 
-function quantilerank(v::RealVector{T}, values::RealVector{T}; method::Symbol=:mean) where {T<:Real}
+function quantilerank(v::RealVector, values::RealVector; method::Symbol=:mean)
     qtl = Vector{Float64}(undef, length(values))
     for i in eachindex(values)
         qtl[i] = quantilerank(v, values[i], method=method)
@@ -259,12 +265,17 @@ end
 
 Return the `q`th percentile of a collection `value`, i.e. `quantilerank(v, value) * 100`.
 """
-function percentilerank(v::RealVector{T}, value::T; method::Symbol=:mean) where {T<:Real}
+function percentilerank(v::RealVector, value::Real; method::Symbol=:mean)
     return quantilerank(v, value, method=method) * 100
 end
 
-percentilerank(itr, value; method::Symbol=:mean) = percentilerank(collect(itr), value, method=method)
+function percentilerank(itr, value; method::Symbol=:mean)
+    v = collect(itr)
+    eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
+    Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
+    return percentilerank(v, value, method=method)
+end
 
-function percentilerank(v::RealVector{T}, values::RealVector{T}; method::Symbol=:mean) where {T<:Real}
+function percentilerank(v::RealVector, values::RealVector; method::Symbol=:mean)
     return quantilerank(v, values, method=method) .* 100
 end
