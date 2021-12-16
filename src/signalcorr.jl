@@ -233,7 +233,7 @@ end
 """
     crosscov!(r, x, y, lags; demean=true)
 
-Compute the cross covariance function (CCF) between real-valued vectors or matrices
+Compute the cross covariance function (CCF) between vectors or matrices
 `x` and `y` at `lags` and store the result in `r`. `demean` specifies whether the
 respective means of `x` and `y` should be subtracted from them before computing their
 CCF.
@@ -343,7 +343,7 @@ end
 """
     crosscov(x, y, [lags]; demean=true)
 
-Compute the cross covariance function (CCF) between real-valued vectors or
+Compute the cross covariance function (CCF) between vectors or
 matrices `x` and `y`, optionally specifying the `lags`. `demean` specifies
 whether the respective means of `x` and `y` should be subtracted from them
 before computing their CCF.
@@ -384,7 +384,7 @@ crosscov(x::AbstractVecOrMat, y::AbstractVecOrMat; demean::Bool=true) =
 """
     crosscor!(r, x, y, lags; demean=true)
 
-Compute the cross correlation between real-valued vectors or matrices `x` and `y` at
+Compute the cross correlation between vectors or matrices `x` and `y` at
 `lags` and store the result in `r`. `demean` specifies whether the respective means of
 `x` and `y` should be subtracted from them before computing their cross correlation.
 
@@ -504,7 +504,7 @@ end
 """
     crosscor(x, y, [lags]; demean=true)
 
-Compute the cross correlation between real-valued vectors or matrices `x` and `y`,
+Compute the cross correlation between vectors or matrices `x` and `y`,
 optionally specifying the `lags`. `demean` specifies whether the respective means of
 `x` and `y` should be subtracted from them before computing their cross correlation.
 
@@ -613,7 +613,7 @@ end
 """
     pacf(X, lags; method=:regression)
 
-Compute the partial autocorrelation function (PACF) of a real-valued vector
+Compute the partial autocorrelation function (PACF) of a vector
 or matrix `X` at `lags`. `method` designates the estimation method. Recognized
 values are `:regression`, which computes the partial autocorrelations via successive
 regression models, and `:yulewalker`, which computes the partial autocorrelations
