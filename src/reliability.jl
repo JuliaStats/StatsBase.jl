@@ -52,9 +52,9 @@ item 4: 0.7826
 """
 function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
     if !isposdef(covmatrix)
-         throw(ArgumentError("Covariance matrix must be positive definite. " *
-                             "Maybe you passed the data matrix instead of its covariance matrix? " *
-                             "If so, call `cronbachalpha(cov(...))` instead."))
+        throw(ArgumentError("Covariance matrix must be positive definite. " *
+                            "Maybe you passed the data matrix instead of its covariance matrix? " *
+                            "If so, call `cronbachalpha(cov(...))` instead."))
     end
     k = size(covmatrix, 2)
     k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
