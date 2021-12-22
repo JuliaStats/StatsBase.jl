@@ -30,7 +30,6 @@ rss
 score
 stderror
 vcov
-weights(::StatisticalModel)
 ```
 
 `RegressionModel` extends `StatisticalModel` by implementing the following additional methods.
