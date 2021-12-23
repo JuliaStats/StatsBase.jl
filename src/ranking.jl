@@ -173,109 +173,146 @@ tiedrank(x::AbstractArray; sortkwargs...) =
     _rank(_tiedrank!, x, Float64; sortkwargs...)
 
 """
-    quantilerank(v::AbstractVector, value)
-    quantilerank(v::AbstractVector, value::AbstractVector)
+    quantilerank(v::AbstractVector, value; method=:inc, sorted=false)
+    quantilerank(v::AbstractVector, values::AbstractVector; method=:inc, sorted=false)
 
-Return the quantile-position of value (0-1) relative to v.
+Compute the quantile(s)-position [0-1] of a `value` or `values` relative to a collection `v`. 
+The keyword argument `sorted` indicates whether `v` can be assumed to be sorted.
 
-For example, a quantilerank of x% means that x% of the values in `v` are below the given value.
+For example, a quantilerank of x% means that x% of the elements in `v` are below the given `value`.
 
-# Arguments
-* `v`: Array of values to which `value` is compared.
-* `value`: Value that is compared to the elements in `v`.
-* `method` (optional, default `:rank`):  method used for calculate the quantilerank. Options available (`:mean`, `:weak` and `:strict`).
-    1. `:rank` - Average percentage ranking of value. In case of multiple matches, average the percentage rankings of all matching values.
-    2. `:weak` - This method corresponds to the definition of a cumulative distribution function. A quantilerank of 80% means that 80% of values are less than or equal to the provided value.
-    3. `:strict` - Similar to :weak, except that only values that are strictly less than the given value are counted.
-    4. `:mean` - The average of the :weak and :strict values, often used in testing. See https://en.wikipedia.org/wiki/Percentile_rank
+The keyword argument `method` (default `:inc`) correspond to different calculation methodologies of the quantilerank, which are as follows:
+- `:inc`     - Def. 7 in Hyndman and Fan (1996) of quantile. (Excel `PERCENTRANK` and `PERCENTRANK.INC`)
+- `:exc`     - Def. 6 in Hyndman and Fan (1996) of quantile. (Excel `PERCENTRANK.EXC`)
+- `:compete` - Based on the `competerank` of StatsBase (MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
+- `:mean`    - Def. in Roscoe, J. T. (1975) (equivalent to `mean` argument of Scipy `percentileofscore`)
+- `:strict`  - (`strict` argument of Scipy `percentileofscore`)
+- `:weak`    - (`weak` argument of Scipy `percentileofscore`)
 
-Please, check the examples below to a better understand of the methods. 
+!!! note
+    An `ArgumentError` is thrown if `v` contains `NaN` or [`missing`](@ref) values.
+
+# References
+- [Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers definitions and examples.
+
+- Roscoe, J. T. (1975). "Fundamental Research Statistics for the Behavioral Sciences (2nd ed.)" (http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-for-the-Behavioral-Sciences-v2.0.pdf#page=57).
+    ISBN 0-03-091934-7.
+
+- Hyndman, R.J and Fan, Y. (1996) "Sample Quantiles in Statistical Packages" (https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf),
+    *The American Statistician*, Vol. 50, No. 4, pp. 361-365
+
+- [Quantile on Wikipedia](https://en.m.wikipedia.org/wiki/Quantile) details the different quantile definitions.
+
 
 # Examples
-Three-quarters of the given values lie below a given value:
-```julia
-julia> quantilerank([1, 2, 3, 4], 3)
-0.625
-```
+```jldoctest
+julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];
 
-With multiple matches, note how the values of the two matches, 0.6 and 0.8 respectively, are averaged:
-```julia
-julia> quantilerank([1, 2, 3, 3, 4], 3)   # default: method=:rank
-0.6
-```
+julia> v2 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
 
-Only 2/5 values are strictly less than 3:
-```julia
-julia> quantilerank([1, 2, 3, 3, 4], 3, method=:weak)
-0.8
-```
+julia> quantilerank(v1, 2), quantilerank(v1, 8)
+(0.3333333333333333, 0.5555555555555556)
 
-But 4/5 values are less than or equal to 3:
-```julia
-julia> quantilerank([1, 2, 3, 3, 4], 3, method=:strict)
-0.4
-```
+julia> quantilerank(v2, [4, 8])
+2-element Vector{Float64}:
+ 0.3333333333333333
+ 0.8888888888888888
+ 
+# also works with DataType
+julia> using Dates
 
-The average between the weak and the strict values is:
-```julia
-julia> quantilerank([1, 2, 3, 3, 4], 3, method=:mean)
-0.6
-```
+julia> d1 = Date("2021-01-01");
 
-Ref: The "Fundamental Statistics for the Behavioral Sciences" book and the `percentileofscore()` function of Scipy was used as references for the `quantilerank()` function.
+julia> daterange = d1:Day(1):(d1+Day(99)) |> collect;
+
+julia> quantilerank(daterange, d1 + Day(20))
+0.20202020202020202
+```
 """
-function quantilerank(v::RealVector, value::Real; method::Symbol=:mean)
+function quantilerank(v::AbstractVector, value; method::Symbol=:inc, sorted::Bool=false)
     # checks
-    isnan(value)    && throw(ArgumentError("value evaluated cannot contain NaN entries."))
-    any(isnan.(v))  && throw(ArgumentError("vector cannot contain NaN entries."))
+    if value isa Number && eltype(v) <: Number
+        isnan(value)    && throw(ArgumentError("value evaluated cannot contain NaN entries."))
+        any(isnan.(v))  && throw(ArgumentError("vector cannot contain NaN entries."))
+    end
+    eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
+    Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
 
     n = length(v)
 
     n == 0 && return 1.0
 
-    if method == :mean
-        return (count(<(value), v) + count(==(value), v)/2) / n
+    if method == :inc
+        if value ∈ v
+            return count(<(value), v) / (n - 1)
+        elseif value > maximum(v)
+            return 1.0
+        else
+            !sorted && (v = sort(v))
+            idx = searchsortedfirst(v, value)
+            smrank, lgrank = 0, 0
+            @inbounds for x in v
+                x < value  && (smrank += 1)
+                x < v[idx] && (lgrank += 1)
+            end
+            smallrank = (smrank - 1)  / (n - 1)
+            largerank =  lgrank / (n - 1)
+            step      = (value - v[idx-1])  / (v[idx] - v[idx-1])
+            return smallrank + step*(largerank - smallrank)
+        end
+    elseif method == :exc
+        if value ∈ v
+            return (count(<(value), v) + 1) / (n + 1)
+        elseif value > maximum(v)
+            return 1.0
+        else
+            !sorted && (v = sort(v))
+            idx  = searchsortedfirst(v, value)
+            step = (value - v[idx-1]) / (v[idx] - v[idx-1])
+            return ((idx - 1) + step) / (n + 1)
+        end
+    elseif method == :compete
+        !sorted && (v = sort(v))
+        return (searchsortedfirst(v, value) - 1) / (n - 1)
+    elseif method == :mean
+        smallrank, largerank = 0, 0
+        for x in v
+            x < value && (smallrank += 1)
+            x ≤ value && (largerank += 1)
+        end
+        return (smallrank + largerank) / 2n
     elseif method == :strict
         return count(<(value), v) / n
     elseif method == :weak
         return count(≤(value), v) / n
     else
-        throw(ArgumentError("method=:$method is not valid. Use :mean, :strict or :weak."))
+        throw(ArgumentError("method=:$method is not valid. Use :inc, :exc, :compete, :mean, :strict or :weak."))
     end
 end
 
-function quantilerank(itr, value; method::Symbol=:mean)
-    v = collect(itr)
-    eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
-    Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
-    return quantilerank(v, value, method=method)
-end
+quantilerank(itr, value; kwargs...) = quantilerank(collect(itr), value; kwargs...)
 
-function quantilerank(v::RealVector, values::RealVector; method::Symbol=:mean)
+function quantilerank(v::AbstractVector, values::AbstractVector; kwargs...)
     qtl = Vector{Float64}(undef, length(values))
     for i in eachindex(values)
-        qtl[i] = quantilerank(v, values[i], method=method)
+        qtl[i] = quantilerank(v, values[i]; kwargs...)
     end
     return qtl
 end
 
 """
-    percentilerank(v::AbstractVector, value)
-    percentilerank(v::AbstractVector, values::AbstractVector)
+    percentrank(v::AbstractVector, value)
+    percentrank(v::AbstractVector, values::AbstractVector)
 
 Return the `q`th percentile of a collection `value`, i.e. `quantilerank(v, value) * 100`.
 """
-function percentilerank(v::RealVector, value::Real; method::Symbol=:mean)
-    return quantilerank(v, value, method=method) * 100
-end
+percentrank(v::AbstractVector, value; kwargs...) = quantilerank(v, value; kwargs...) * 100
 
-function percentilerank(itr, value; method::Symbol=:mean)
+percentrank(v::AbstractVector, values::AbstractVector; kwargs...) = quantilerank(v, values; kwargs...) .* 100
+
+function percentrank(itr, value; kwargs...)
     v = collect(itr)
     eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
     Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
-    return percentilerank(v, value, method=method)
-end
-
-function percentilerank(v::RealVector, values::RealVector; method::Symbol=:mean)
-    return quantilerank(v, values, method=method) .* 100
+    return percentrank(v, value; kwargs...)
 end
