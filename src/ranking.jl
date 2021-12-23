@@ -190,15 +190,15 @@ The keyword argument `method` (default `:inc`) correspond to different calculati
 - `:weak`    - (`weak` argument of Scipy `percentileofscore`)
 
 !!! note
-    An `ArgumentError` is thrown if `v` contains `NaN` or [`missing`](@ref) values.
+    An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values.
 
 # References
 - [Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers definitions and examples.
 
-- Roscoe, J. T. (1975). "Fundamental Research Statistics for the Behavioral Sciences (2nd ed.)" (http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-for-the-Behavioral-Sciences-v2.0.pdf#page=57).
+- Roscoe, J. T. (1975). "[Fundamental Research Statistics for the Behavioral Sciences (2nd ed.)](http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-for-the-Behavioral-Sciences-v2.0.pdf#page=57)".
     ISBN 0-03-091934-7.
 
-- Hyndman, R.J and Fan, Y. (1996) "Sample Quantiles in Statistical Packages" (https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf),
+- Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages](https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf)",
     *The American Statistician*, Vol. 50, No. 4, pp. 361-365
 
 - [Quantile on Wikipedia](https://en.m.wikipedia.org/wiki/Quantile) details the different quantile definitions.
