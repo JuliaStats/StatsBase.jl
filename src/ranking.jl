@@ -205,7 +205,9 @@ The keyword argument `method` (default `:inc`) correspond to different calculati
 
 
 # Examples
-```jldoctest
+```julia
+julia> using StatsBase
+
 julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];
 
 julia> v2 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
