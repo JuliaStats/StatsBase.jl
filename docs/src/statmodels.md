@@ -1,7 +1,7 @@
 # Abstraction for Statistical Models
 
 [StatsAPI.jl](https://github.com/JuliaStats/StatsAPI.jl) defines an abstract type `StatisticalModel`,
-and an abstract subtype `RegressionModel`. They are both extented by StatsBase, and documented here.
+and an abstract subtype `RegressionModel`. They are both extended by StatsBase, and documented here.
 
 Particularly, instances of `StatisticalModel` implement the following methods.
 
