@@ -68,13 +68,13 @@ and [`ProbabilityWeights`](@ref).
 """ Weights
 
 """
-    weights(vs)
+    weights(vs::AbstractArray{<:Real})
 
 Construct a `Weights` vector from array `vs`.
 See the documentation for [`Weights`](@ref) for more details.
 """
-weights(vs::RealVector) = Weights(vs)
 weights(vs::RealArray) = Weights(vec(vs))
+weights(vs::RealVector) = Weights(vs)
 
 """
     varcorrection(w::Weights, corrected=false)
