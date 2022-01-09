@@ -174,35 +174,50 @@ tiedrank(x::AbstractArray; sortkwargs...) =
 
 """
     quantilerank(v::AbstractVector, value; method=:inc, sorted=false)
-    quantilerank(v::AbstractVector, values::AbstractVector; method=:inc, sorted=false)
 
-Compute the quantile(s)-position [0-1] of a `value` or `values` relative to a collection `v`. 
+Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. 
+a quantile rank of x means that x% of the elements in `v` are lesser or lesser-equal the 
+given `value`. 
+
 The keyword argument `sorted` indicates whether `v` can be assumed to be sorted.
 
-For example, a quantilerank of x% means that x% of the elements in `v` are below the given `value`.
+The keyword argument `method` (default `:inc`) can be:
 
-The keyword argument `method` (default `:inc`) correspond to different calculation methodologies of the quantilerank, which are as follows:
-- `:inc`     - Def. 7 in Hyndman and Fan (1996) of quantile. (Excel `PERCENTRANK` and `PERCENTRANK.INC`)
-- `:exc`     - Def. 6 in Hyndman and Fan (1996) of quantile. (Excel `PERCENTRANK.EXC`)
-- `:compete` - Based on the `competerank` of StatsBase (MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
-- `:mean`    - Def. in Roscoe, J. T. (1975) (equivalent to `mean` argument of Scipy `percentileofscore`)
-- `:strict`  - (`strict` argument of Scipy `percentileofscore`)
-- `:weak`    - (`weak` argument of Scipy `percentileofscore`)
+`:inc` - The inverse of the quantile based in def. 7 in Hyndman and Fan (1996). 
+(Excel `PERCENTRANK` and `PERCENTRANK.INC`)
+
+`:exc` - The inverse of the quantile based in def. 6 in Hyndman and Fan (1996). 
+(Excel `PERCENTRANK.EXC`)
+
+`:compete` - Based on the `competerank` of StatsBase 
+(MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
+
+`:tied` - Based in the def. in Roscoe, J. T. (1975) 
+(`mean` argument of Scipy `percentileofscore`)
+
+`:strict` - (`strict` argument of Scipy `percentileofscore`)
+
+`:weak` - (`weak` argument of Scipy `percentileofscore`)
 
 !!! note
-    An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values.
+    An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values
+    and if `v` is empty or contains only one element.
 
 # References
-- [Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers definitions and examples.
+[Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers 
+definitions and examples.
 
-- Roscoe, J. T. (1975). "[Fundamental Research Statistics for the Behavioral Sciences (2nd ed.)](http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-for-the-Behavioral-Sciences-v2.0.pdf#page=57)".
+Roscoe, J. T. (1975). "[Fundamental Research Statistics for the Behavioral Sciences 
+(2nd ed.)](http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-
+for-the-Behavioral-Sciences-v2.0.pdf#page=57)".
     ISBN 0-03-091934-7.
 
-- Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages](https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf)",
+Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
+(https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf)",
     *The American Statistician*, Vol. 50, No. 4, pp. 361-365
 
-- [Quantile on Wikipedia](https://en.m.wikipedia.org/wiki/Quantile) details the different quantile definitions.
-
+[Quantile on Wikipedia](https://en.m.wikipedia.org/wiki/Quantile) details the different 
+quantile definitions.
 
 # Examples
 ```julia
@@ -215,17 +230,18 @@ julia> v2 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
 julia> quantilerank(v1, 2), quantilerank(v1, 8)
 (0.3333333333333333, 0.5555555555555556)
 
-julia> quantilerank(v2, [4, 8])
+# use `Ref` to treat vector `v2` as a scalar during broadcasting.
+julia> quantilerank.(Ref(v2), [4, 8])
 2-element Vector{Float64}:
  0.3333333333333333
  0.8888888888888888
  
-# also works with DataType
+# also works with non-number types
 julia> using Dates
 
 julia> d1 = Date("2021-01-01");
 
-julia> daterange = d1:Day(1):(d1+Day(99)) |> collect;
+julia> daterange = d1:Day(1):d1+Day(99);
 
 julia> quantilerank(daterange, d1 + Day(20))
 0.20202020202020202
@@ -233,88 +249,102 @@ julia> quantilerank(daterange, d1 + Day(20))
 """
 function quantilerank(v::AbstractVector, value; method::Symbol=:inc, sorted::Bool=false)
     # checks
-    if value isa Number && eltype(v) <: Number
-        isnan(value)    && throw(ArgumentError("value evaluated cannot contain NaN entries."))
-        any(isnan.(v))  && throw(ArgumentError("vector cannot contain NaN entries."))
-    end
-    eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
-    Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
+    value isa Number && isnan(value) &&
+        throw(ArgumentError("value cannot be NaN"))
+    any(x -> ismissing(x) || (x isa Number && isnan(x)), v) &&
+        throw(ArgumentError("vector `v` cannot contain missing or NaN entries"))
 
     n = length(v)
 
-    n == 0 && return 1.0
+    n == 0 && throw(ArgumentError("vector `v` is empty. Insert a non-empty vector"))
+    n == 1 && throw(ArgumentError("vector `v` has only 1 value. Use a vector with more elements"))
 
     if method == :inc
-        if value ∈ v
-            return count(<(value), v) / (n - 1)
-        elseif value > maximum(v)
+        if value > maximum(v)
             return 1.0
+        elseif value ≤ minimum(v)
+            return 0.0
         else
-            !sorted && (v = sort(v))
-            idx = searchsortedfirst(v, value)
-            smrank, lgrank = 0, 0
-            @inbounds for x in v
-                x < value  && (smrank += 1)
-                x < v[idx] && (lgrank += 1)
+            !issorted(v) && (v = sort(v))
+            v[1] == value && return 0.0
+            oldcount = 0
+            oldvalue = v[1]
+            i = 1
+            @inbounds while (i < n && v[i] < value)
+                if v[i] ≠ oldvalue
+                    oldcount = i
+                    oldvalue = v[i]
+                end
+                i += 1
             end
-            smallrank = (smrank - 1)  / (n - 1)
-            largerank =  lgrank / (n - 1)
-            step      = (value - v[idx-1])  / (v[idx] - v[idx-1])
-            return smallrank + step*(largerank - smallrank)
+            v[i] ≠ oldvalue && (oldcount = i)
+            value == v[i]   && return (oldcount - 1) / (n - 1)
+            oldcount == 0   && return 0.0
+            fract = (value - v[oldcount-1]) / (v[oldcount] - v[oldcount-1])
+            return ((oldcount - 2) + fract) / (n - 1)
         end
     elseif method == :exc
-        if value ∈ v
-            return (count(<(value), v) + 1) / (n + 1)
+        if value == minimum(v)
+            return 1.0 / (n + 1)
         elseif value > maximum(v)
             return 1.0
+        elseif value < minimum(v)
+            return 0.0
         else
-            !sorted && (v = sort(v))
-            idx  = searchsortedfirst(v, value)
-            step = (value - v[idx-1]) / (v[idx] - v[idx-1])
-            return ((idx - 1) + step) / (n + 1)
+            !issorted(v) && (v = sort(v))
+            v[1] == value && return 1.0 / (n + 1)
+            oldcount = 0
+            oldvalue = v[1]
+            i = 1
+            @inbounds while (i < n && v[i] < value)
+                if v[i] ≠ oldvalue
+                    oldcount = i
+                    oldvalue = v[i]
+                end
+                i += 1
+            end
+            v[i] ≠ oldvalue && (oldcount = i)
+            v[i] == value   && return i / (n + 1)
+            oldcount == 0   && return 0.0
+            fract = (value - v[oldcount-1]) / (v[oldcount] - v[oldcount-1])
+            return (oldcount - 1 + fract)   / (n + 1)
         end
     elseif method == :compete
-        !sorted && (v = sort(v))
-        return (searchsortedfirst(v, value) - 1) / (n - 1)
-    elseif method == :mean
-        smallrank, largerank = 0, 0
-        for x in v
-            x < value && (smallrank += 1)
-            x ≤ value && (largerank += 1)
+        if value > maximum(v)
+            return 1.0
+        elseif value ≤ minimum(v) 
+            return 0.0
+        else
+            nless = 0
+            @inbounds for x in v
+                nless += (x < value)
+            end
+            value ∈ v && (nless += 1)
+            return (nless - 1) / (n - 1)
+        end 
+    elseif method == :tied
+        smallrank = samerank = 0
+        @inbounds for x in v
+            smallrank += (x < value)
+            samerank  += (x == value)
         end
-        return (smallrank + largerank) / 2n
+        return (smallrank + samerank/2) / n
     elseif method == :strict
         return count(<(value), v) / n
     elseif method == :weak
         return count(≤(value), v) / n
     else
-        throw(ArgumentError("method=:$method is not valid. Use :inc, :exc, :compete, :mean, :strict or :weak."))
+        throw(ArgumentError("method=:$method is not valid. Use :inc, :exc, :compete, :tied, :strict or :weak."))
     end
 end
 
 quantilerank(itr, value; kwargs...) = quantilerank(collect(itr), value; kwargs...)
 
-function quantilerank(v::AbstractVector, values::AbstractVector; kwargs...)
-    qtl = Vector{Float64}(undef, length(values))
-    for i in eachindex(values)
-        qtl[i] = quantilerank(v, values[i]; kwargs...)
-    end
-    return qtl
-end
-
 """
     percentrank(v::AbstractVector, value)
-    percentrank(v::AbstractVector, values::AbstractVector)
 
-Return the `q`th percentile of a collection `value`, i.e. `quantilerank(v, value) * 100`.
+Return the `q`th percentile of a collection `value`, i.e. [`quantilerank`](@ref) * 100.
 """
 percentrank(v::AbstractVector, value; kwargs...) = quantilerank(v, value; kwargs...) * 100
 
-percentrank(v::AbstractVector, values::AbstractVector; kwargs...) = quantilerank(v, values; kwargs...) .* 100
-
-function percentrank(itr, value; kwargs...)
-    v = collect(itr)
-    eltype(v) == Missing && throw(ArgumentError("vector cannot have only missings entries."))
-    Missing <: eltype(v) && throw(ArgumentError("vector cannot contain missing entries. Use `skipmissing` function."))
-    return percentrank(v, value; kwargs...)
-end
+percentrank(itr, value; kwargs...) = percentrank(collect(itr), value; kwargs...)
