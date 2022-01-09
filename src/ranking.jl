@@ -179,8 +179,6 @@ Compute the quantile(s)-position in [0-1] of a `value` relative to a collection 
 a quantile rank of x means that x% of the elements in `v` are lesser or lesser-equal the 
 given `value`. 
 
-The keyword argument `sorted` indicates whether `v` can be assumed to be sorted.
-
 The keyword argument `method` (default `:inc`) can be:
 
 `:inc` - The inverse of the quantile based in def. 7 in Hyndman and Fan (1996). 
@@ -247,7 +245,7 @@ julia> quantilerank(daterange, d1 + Day(20))
 0.20202020202020202
 ```
 """
-function quantilerank(v::AbstractVector, value; method::Symbol=:inc, sorted::Bool=false)
+function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
     # checks
     value isa Number && isnan(value) &&
         throw(ArgumentError("value cannot be NaN"))
