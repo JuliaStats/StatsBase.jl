@@ -261,10 +261,17 @@ realXcY(x::Real, y::Real) = x*y
 realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
 """
-    sem(x)
+    sem(x[, weights::AbstractWeights]; mean=nothing)
 
-Return the standard error of the mean of collection `x`,
-i.e. `sqrt(var(x, corrected=true) / length(x))`.
+Return the standard error of the mean for a collection `x`. When using no weights, this is
+equal to the (sample) standard deviation divided by the sample size. If weights are used, 
+the variance of the sample mean is calculated as follows:
+
+* `AnalyticWeights`: Not implemented.
+* `FrequencyWeights`: ``\\frac{\\sum_{i=1}^n w_i (x_i - \\bar{x_i})^2}{(\\sum w_i) (\\sum w_i - 1)}``
+* `ProbabilityWeights`: ``\\frac{n}{n-1} \\frac{\\sum_{i=1}^n w_i^2 (x_i - \\bar{x_i})^2}{\\left( \\sum w_i \\right)^2}``
+
+The standard error is then the square root of the above quantities.
 """
 function sem(x)
     y = iterate(x)
@@ -290,7 +297,30 @@ function sem(x)
         M = new_M
     end
     var = S / (count - 1)
-    return sqrt(var/count)
+    return sqrt(var / count)
+end
+
+function sem(x, weights::UnitWeights; kwargs...)
+    if length(x) == length(weights)
+        T = promote(eltype(x), eltype(weights))
+        return sem(Iterators.map(T, x); kwargs...)
+    else
+        throw(ArgumentError("data and weights must be the same length"))
+    end
+end
+
+function sem(x, weights::FrequencyWeights)
+    return sqrt(var(x, weights; corrected=true) / weights.sum)
+end
+
+function sem(x, weights::ProbabilityWeights)
+    n = length(x)
+    n == length(weights) || error("data and weights must be the same length")
+    μ = mean(x, weights)
+    var = sum(zip(x, weights)) do (x, w)
+        return (w * (x - μ))^2
+    end
+    return sqrt(var * n / (n - 1)) / weights.sum
 end
 
 # Median absolute deviation

@@ -109,6 +109,10 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 @test sem([1:5;]) ≈ 0.707106781186548
 @test sem(skipmissing([missing; 1:5; missing])) ≈ 0.707106781186548
+@test sem([1:5;], UnitWeights{Int}(5)) ≈ 0.707106781186548
+@test sem([1:5;], ProbabilityWeights([1:5;])) ≈ 0.6166 rtol=.01
+@test sem([1:100;], ProbabilityWeights([1:100;])) ≈ 2.440215 rtol=.01
+@test sem([1:5;], FrequencyWeights([1:5;])) ≈ sem([1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5])
 @test sem(Int[]) === NaN
 @test sem(skipmissing(Union{Int,Missing}[missing, missing])) === NaN
 @test_throws MethodError sem(Any[])
