@@ -291,12 +291,10 @@ The standard error is then the square root of the above quantities.
 """
 sem(x; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
-function sem(x, weights::UnitWeights; kwargs...)
-    if length(x) == length(weights)
-        T = promote(eltype(x), eltype(weights))
-        return sem(Iterators.map(T, x); kwargs...)
-    else
-        throw(ArgumentError("data and weights must be the same length"))
+function sem(x, weights::UnitWeights; mean=nothing)
+    length(x) != length(weights) && throw(DimensionMismatch("inconsistent array dimension"))
+    return sem(x; mean=mean)
+end
     end
 end
 
