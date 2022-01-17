@@ -260,6 +260,22 @@ variation(x) = ((m, s) = mean_and_std(x); s/m)
 realXcY(x::Real, y::Real) = x*y
 realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
+
+"""
+    var_sample_mean(x[, weights::AbstractWeights]; mean=nothing)
+
+Return the estimated variance of the mean for a collection `x`. When using no weights, this is
+equal to the (sample) standard deviation divided by the sample size. If weights are used, 
+the variance of the sample mean is calculated as follows:
+
+* `AnalyticWeights`: Not implemented.
+* `FrequencyWeights`: ``\\frac{\\sum_{i=1}^n w_i (x_i - \\bar{x_i})^2}{(\\sum w_i) (\\sum w_i - 1)}``
+* `ProbabilityWeights`: ``\\frac{n}{n-1} \\frac{\\sum_{i=1}^n w_i^2 (x_i - \\bar{x_i})^2}{\\left( \\sum w_i \\right)^2}``
+
+The standard error is then the square root of the above quantities.
+"""
+
+
 """
     sem(x[, weights::AbstractWeights]; mean=nothing)
 
@@ -273,6 +289,8 @@ the variance of the sample mean is calculated as follows:
 
 The standard error is then the square root of the above quantities.
 """
+sem(x; mean::Number) = sqrt(varm(x, mean) / count)
+sem(x; mean::Nothing) = sem(x)
 function sem(x)
     y = iterate(x)
     if y === nothing
@@ -309,13 +327,10 @@ function sem(x, weights::UnitWeights; kwargs...)
     end
 end
 
-function sem(x, weights::FrequencyWeights)
-    return sqrt(var(x, weights; corrected=true) / weights.sum)
-end
+# Weighted methods for the above
+sem(x, weights::FrequencyWeights) = sqrt(var(x, weights; corrected=true) / weights.sum)
 
 function sem(x, weights::ProbabilityWeights)
-    n = length(x)
-    n == length(weights) || error("data and weights must be the same length")
     μ = mean(x, weights)
     var = sum(zip(x, weights)) do (x, w)
         return (w * (x - μ))^2
