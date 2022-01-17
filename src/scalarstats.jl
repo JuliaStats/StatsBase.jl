@@ -289,8 +289,7 @@ the variance of the sample mean is calculated as follows:
 
 The standard error is then the square root of the above quantities.
 """
-sem(x; mean::Number) = sqrt(varm(x, mean) / count)
-sem(x; mean::Nothing) = sem(x)
+sem(x; mean::Number) = sqrt(var(x; mean = mean, corrected=true) / length(x))
 function sem(x)
     y = iterate(x)
     if y === nothing
