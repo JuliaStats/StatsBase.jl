@@ -303,8 +303,7 @@ function sem(x, weights::FrequencyWeights; mean=nothing)
     return sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 end
 
-function sem(x, weights::ProbabilityWeights)
-    μ = mean(x, weights)
+function sem(x, weights::ProbabilityWeights; mean=mean(x, weights))
     var = sum(zip(x, weights)) do (x, w)
         return (w * (x - μ))^2
     end
