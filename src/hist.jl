@@ -112,7 +112,7 @@ function sturges(n)  # Sturges' formula
     ceil(Integer, log2(n))+1
 end
 
-abstract type AbstractHistogram{T<:Real,N,E} end
+abstract type AbstractHistogram{T<:Number,N,E} end
 
 # N-dimensional histogram object
 """
@@ -181,7 +181,7 @@ isdensity: true
 julia> # observe isdensity = true and weights tells us the number of observation per binsize in each bin
 ```
 """
-mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
+mutable struct Histogram{T<:Number,N,E} <: AbstractHistogram{T,N,E}
     edges::E
     weights::Array{T,N}
     closed::Symbol
@@ -266,25 +266,30 @@ Histogram(edge::AbstractVector, closed::Symbol=:left, isdensity::Bool=false) =
     Histogram((edge,), closed, isdensity)
 
 
-push!(h::AbstractHistogram{T,1}, x::Real, w::Real) where {T} = push!(h, (x,), w)
+#push!(h::AbstractHistogram{T,1}, x::Real, w::Real) where {T} = push!(h, (x,), w)
+push!(h::AbstractHistogram{T,1}, x::Real, w::Number) where {T} = push!(h, (x,), w)
 push!(h::AbstractHistogram{T,1}, x::Real) where {T} = push!(h,x,one(T))
 append!(h::AbstractHistogram{T,1}, v::AbstractVector) where {T} = append!(h, (v,))
-append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) where {T} = append!(h, (v,), wv)
+#append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) where {T} = append!(h, (v,), wv)
+append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::AbstractVector) where {T} = append!(h, (v,), wv)
 
-fit(::Type{Histogram{T}},v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
+#=
+fit(::Type{Histogram{T}}, v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
-    fit(Histogram{T},(v,); closed=closed, nbins=nbins)
-fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights, edg::AbstractVector; closed::Symbol=:left) where {T} =
-    fit(Histogram{T},(v,), wv, (edg,), closed=closed)
-fit(::Type{Histogram{T}},v::AbstractVector, wv::AbstractWeights; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
+=#
+fit(::Type{Histogram{T}}, v::AbstractVector; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
+    fit(Histogram{T}, (v,); closed=closed, nbins=nbins)
+fit(::Type{Histogram{T}}, v::AbstractVector, wv::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
+    fit(Histogram{T}, (v,), wv, (edg,), closed=closed)
+fit(::Type{Histogram{T}}, v::AbstractVector, wv::AbstractVector; closed::Symbol=:left, nbins=sturges(length(v))) where {T} =
     fit(Histogram{T}, (v,), wv; closed=closed, nbins=nbins)
 
-fit(::Type{Histogram}, v::AbstractVector, wv::AbstractWeights{W}, args...; kwargs...) where {W} = fit(Histogram{W}, v, wv, args...; kwargs...)
+fit(::Type{Histogram}, v::AbstractVector, wv::AbstractVector{T}, args...; kwargs...) where {T <: Number} = fit(Histogram{T}, v, wv, args...; kwargs...)
 
 # N-dimensional
 
-function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T,N}
+#function push!(h::Histogram{T,N}, xs::NTuple{N,Real}, w::Real) where {T,N}
+function push!(h::Histogram{T,N}, xs::NTuple{N,Real}, w::Number) where {T,N}
     h.isdensity && error("Density histogram must have float-type weights")
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
@@ -293,7 +298,8 @@ function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T,N}
     h
 end
 
-function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T<:AbstractFloat,N}
+#function push!(h::Histogram{T,N}, xs::NTuple{N,Real}, w::Real) where {T<:AbstractFloat,N}
+function push!(h::Histogram{T,N}, xs::NTuple{N,Real}, w::Number) where {T<:AbstractFloat,N}
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
         @inbounds h.weights[idx...] += h.isdensity ? w / binvolume(h, idx) : w
@@ -301,7 +307,7 @@ function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T<:AbstractF
     h
 end
 
-push!(h::AbstractHistogram{T,N},xs::NTuple{N,Real}) where {T,N} = push!(h,xs,one(T))
+push!(h::AbstractHistogram{T,N}, xs::NTuple{N,Real}) where {T,N} = push!(h,xs,one(T))
 
 
 function append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}) where {T,N}
@@ -330,13 +336,13 @@ fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,Abstract
     append!(Histogram(edges, T, closed, false), vs)
 
 fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:left, nbins=sturges(length(vs[1]))) where {T,N} =
-    fit(Histogram{T}, vs, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
+    fit(Histogram{T}, vs, histrange(vs, _nbins_tuple(vs, nbins), closed); closed=closed)
 
-fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:left) where {T,N,W} =
+fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractVector{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:left) where {T,N,W} =
     append!(Histogram(edges, T, closed, false), vs, wv)
 
-fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; closed::Symbol=:left, nbins=sturges(length(vs[1]))) where {T,N} =
-    fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
+fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractVector; closed::Symbol=:left, nbins=sturges(length(vs[1]))) where {T,N} =
+    fit(Histogram{T}, vs, wv, histrange(vs, _nbins_tuple(vs, nbins), closed); closed=closed)
 
 """
     fit(Histogram, data[, weight][, edges]; closed=:left, nbins)
@@ -348,7 +354,7 @@ Fit a histogram to `data`.
 * `data`: either a vector (for a 1-dimensional histogram), or a tuple of
   vectors of equal length (for an *n*-dimensional histogram).
 
-* `weight`: an optional `AbstractWeights` (of the same length as the
+* `weight`: an optional `AbstractVector` (of the same length as the
   data vectors), denoting the weight each observation contributes to the
   bin. If no weight vector is supplied, each observation has weight 1.
 
@@ -381,7 +387,7 @@ h = fit(Histogram, (rand(100),rand(100)),nbins=10)
 ```
 """
 fit(::Type{Histogram}, args...; kwargs...) = fit(Histogram{Int}, args...; kwargs...)
-fit(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, args...; kwargs...) where {N,W} = fit(Histogram{W}, vs, wv, args...; kwargs...)
+fit(::Type{Histogram}, vs::NTuple{N,AbstractVector}, wv::AbstractVector{W}, args...; kwargs...) where {N,W} = fit(Histogram{W}, vs, wv, args...; kwargs...)
 
 
 # Get a suitable high-precision type for the norm of a histogram.
