@@ -266,14 +266,12 @@ Histogram(edge::AbstractVector, closed::Symbol=:left, isdensity::Bool=false) =
     Histogram((edge,), closed, isdensity)
 
 
-#push!(h::AbstractHistogram{T,1}, x::Real, w::Real) where {T} = push!(h, (x,), w)
 push!(h::AbstractHistogram{T,1}, x::Real, w::Number) where {T} = push!(h, (x,), w)
 push!(h::AbstractHistogram{T,1}, x::Real) where {T} = push!(h,x,one(T))
 append!(h::AbstractHistogram{T,1}, v::AbstractVector) where {T} = append!(h, (v,))
-#append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::Union{AbstractVector,AbstractWeights}) where {T} = append!(h, (v,), wv)
 append!(h::AbstractHistogram{T,1}, v::AbstractVector, wv::AbstractVector) where {T} = append!(h, (v,), wv)
 
-#=
+#= todo: positional edges is problematic
 fit(::Type{Histogram{T}}, v::AbstractVector, edg::AbstractVector; closed::Symbol=:left) where {T} =
     fit(Histogram{T},(v,), (edg,), closed=closed)
 =#
