@@ -289,33 +289,7 @@ the variance of the sample mean is calculated as follows:
 
 The standard error is then the square root of the above quantities.
 """
-sem(x; mean::Number) = sqrt(var(x; mean = mean, corrected=true) / length(x))
-function sem(x)
-    y = iterate(x)
-    if y === nothing
-        T = eltype(x)
-        # Return the NaN of the type that we would get, had this collection
-        # contained any elements (this is consistent with std)
-        return oftype(sqrt((abs2(zero(T)) + abs2(zero(T)))/2), NaN)
-    end
-    count = 1
-    value, state = y
-    y = iterate(x, state)
-    # Use Welford algorithm as seen in (among other places)
-    # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-    M = value / 1
-    S = real(zero(M))
-    while y !== nothing
-        value, state = y
-        y = iterate(x, state)
-        count += 1
-        new_M = M + (value - M) / count
-        S = S + realXcY(value - M, value - new_M)
-        M = new_M
-    end
-    var = S / (count - 1)
-    return sqrt(var / count)
-end
+sem(x; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
 function sem(x, weights::UnitWeights; kwargs...)
     if length(x) == length(weights)
