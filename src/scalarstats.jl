@@ -299,7 +299,9 @@ end
 end
 
 # Weighted methods for the above
-sem(x, weights::FrequencyWeights) = sqrt(var(x, weights; corrected=true) / weights.sum)
+function sem(x, weights::FrequencyWeights; mean=nothing)
+    return sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
+end
 
 function sem(x, weights::ProbabilityWeights)
     μ = mean(x, weights)
