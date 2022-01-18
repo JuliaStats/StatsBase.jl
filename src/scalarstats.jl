@@ -262,21 +262,6 @@ realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
 
 """
-    var_sample_mean(x[, weights::AbstractWeights]; mean=nothing)
-
-Return the estimated variance of the mean for a collection `x`. When using no weights, this is
-equal to the (sample) standard deviation divided by the sample size. If weights are used, 
-the variance of the sample mean is calculated as follows:
-
-* `AnalyticWeights`: Not implemented.
-* `FrequencyWeights`: ``\\frac{\\sum_{i=1}^n w_i (x_i - \\bar{x_i})^2}{(\\sum w_i) (\\sum w_i - 1)}``
-* `ProbabilityWeights`: ``\\frac{n}{n-1} \\frac{\\sum_{i=1}^n w_i^2 (x_i - \\bar{x_i})^2}{\\left( \\sum w_i \\right)^2}``
-
-The standard error is then the square root of the above quantities.
-"""
-
-
-"""
     sem(x[, weights::AbstractWeights]; mean=nothing)
 
 Return the standard error of the mean for a collection `x`. When using no weights, this is
@@ -295,8 +280,6 @@ function sem(x, weights::UnitWeights; mean=nothing)
     length(x) != length(weights) && throw(DimensionMismatch("inconsistent array dimension"))
     return sem(x; mean=mean)
 end
-    end
-end
 
 # Weighted methods for the above
 function sem(x, weights::FrequencyWeights; mean=nothing)
@@ -305,7 +288,7 @@ end
 
 function sem(x, weights::ProbabilityWeights; mean=mean(x, weights))
     var = sum(zip(x, weights)) do (x, w)
-        return (w * (x - μ))^2
+        return (w * (x - mean))^2
     end
     return sqrt(var * n / (n - 1)) / weights.sum
 end
