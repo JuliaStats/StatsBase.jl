@@ -290,7 +290,7 @@ function sem(x, weights::ProbabilityWeights; mean=mean(x, weights))
     var = sum(zip(x, weights)) do (x, w)
         return (w * (x - mean))^2
     end
-    return sqrt(var * n / (n - 1)) / weights.sum
+    return sqrt(var * (n / (n - 1))) / sum(weights)
 end
 
 # Median absolute deviation
