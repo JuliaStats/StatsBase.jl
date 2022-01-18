@@ -96,8 +96,8 @@ end
 Construct an `AnalyticWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Analytic weights describe a non-random relative importance (usually between 0 and 1)
-for each observation. These weights may also be referred to as reliability weights,
+Analytic weights represent the inverse of the variance for each case.
+These weights may also be referred to as reliability weights,
 precision weights or inverse variance weights. These are typically used when the observations
 being weighted are aggregate values (e.g., averages) with differing variances.
 """ AnalyticWeights
@@ -136,7 +136,7 @@ end
 Construct a `FrequencyWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Frequency weights describe the number of times (or frequency) each observation
+Frequency weights represent the number of times (or frequency) each case
 was observed. These weights may also be referred to as case weights or repeat weights.
 """ FrequencyWeights
 
@@ -173,9 +173,9 @@ end
 Construct a `ProbabilityWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Probability weights represent the inverse of the sampling probability for each observation,
+Probability weights represent the inverse of the sampling probability for each case,
 providing a correction mechanism for under- or over-sampling certain population groups.
-These weights may also be referred to as sampling weights.
+These weights may also be referred to as sampling weights or survey weights.
 """ ProbabilityWeights
 
 """
