@@ -262,7 +262,7 @@ realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
 
 """
-    sem(x[, weights::AbstractWeights]; mean=nothing)
+    sem(x[, weights::AbstractWeights]; [mean,])
 
 Return the standard error of the mean for a collection `x`. When using no weights, this is
 equal to the (sample) standard deviation divided by the sample size. If weights are used, 
@@ -273,24 +273,36 @@ the variance of the sample mean is calculated as follows:
 * `ProbabilityWeights`: ``\\frac{n}{n-1} \\frac{\\sum_{i=1}^n w_i^2 (x_i - \\bar{x_i})^2}{\\left( \\sum w_i \\right)^2}``
 
 The standard error is then the square root of the above quantities.
+
+# References
+
+Sribney, W. 1997. Probability weights, analytic weights, and summary statistics. Stata FAQ.
 """
 sem(x; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
-function sem(x, weights::UnitWeights; mean=nothing)
-    length(x) != length(weights) && throw(DimensionMismatch("inconsistent array dimension"))
+function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
+    if length(x) ≠ length(weights) 
+        throw(DimensionMismatch("array and weights do not have the same length"))
+    end
     return sem(x; mean=mean)
 end
 
 # Weighted methods for the above
-function sem(x, weights::FrequencyWeights; mean=nothing)
+function sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing)
     return sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 end
 
-function sem(x, weights::ProbabilityWeights; mean=mean(x, weights))
-    var = sum(zip(x, weights)) do (x, w)
-        return (w * (x - mean))^2
+function sem(x::AbstractArray, weights::ProbabilityWeights; mean=mean(x, weights))
+    n = length(x)
+    if n ≠ length(weights) 
+        throw(DimensionMismatch("array and weights do not have the same length"))
     end
-    return sqrt(var * (n / (n - 1))) / sum(weights)
+
+    # sum of squared errors = sse
+    sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
+        return (w * (x_i - mean))^2
+    end))
+    return sqrt(sse * n / (n - 1)) / sum(weights)
 end
 
 # Median absolute deviation
