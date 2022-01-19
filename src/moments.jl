@@ -169,7 +169,7 @@ function n_mean_var(x; mean=nothing, corrected=true)
         n = 0
         variance = var(x)
         mean = Statistics.mean(x)
-    elseif !isnothing(mean)
+    elseif mean ≢ nothing
         n, sse = mapreduce(.+, x) do element
             return 1, abs2(element - mean)
         end

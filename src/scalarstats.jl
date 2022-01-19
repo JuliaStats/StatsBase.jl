@@ -296,12 +296,13 @@ function sem(x::RealArray, weights::FrequencyWeights; mean=nothing)
 end
 
 function sem(x::AbstractArray{<:Number}, weights::ProbabilityWeights; mean=nothing)
-    mean = (isnothing(mean) ? StatsBase.mean(x, weights) : mean)
+    _mean = (mean === nothing ? StatsBase.mean(x, weights) : mean)
     # sum of squared errors = sse
-    n, sse = reduce(.+, Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
-        return !iszero(w), abs2(w * (x_i - mean))
+    sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
+        return abs2(w * (x_i - _mean))
     end)
     )
+    n = count(!iszero, weights)
     return sqrt(sse * n / (n - 1)) / sum(weights)
 end
 
