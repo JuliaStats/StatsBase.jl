@@ -280,7 +280,7 @@ Sribney, W. 1997. Probability weights, analytic weights, and summary statistics.
 """
 sem(x; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
-function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
+function sem(x, weights::UnitWeights; mean=nothing)
     if length(x) ≠ length(weights) 
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
