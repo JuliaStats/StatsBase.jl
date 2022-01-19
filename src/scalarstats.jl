@@ -291,7 +291,7 @@ function sem(x, weights::UnitWeights; mean=nothing)
 end
 
 # Weighted methods for the above
-function sem(x::AbstractVector{<:Number}, weights::FrequencyWeights; mean=nothing)
+function sem(x::RealArray, weights::FrequencyWeights; mean=nothing)
     return sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 end
 
