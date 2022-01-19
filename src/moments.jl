@@ -158,6 +158,39 @@ function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
 end
 
 
+"""
+    n_mean_var(x; mean=nothing, corrected=true) -> (n, mean, var)
+
+Return the length, mean, and variance of `x`.
+"""
+function n_mean_var(x; mean=nothing, corrected=true)
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        n = 0
+        variance = var(x)
+        mean = Statistics.mean(x)
+    elseif !isnothing(mean)
+        n, sse = mapreduce(.+, x) do element
+            return 1, abs2(element - mean)
+        end
+        variance = sse / (n - corrected)
+    else
+        # Use Welford algorithm as seen in (among other places)
+        # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
+        n = 0
+        mean = zero(eltype(x))
+        sse = real(zero(mean))
+        for element in x
+            n += 1
+            new_mean = mean + (element - mean) / n
+            sse += realXcY(element - mean, element - new_mean)
+            mean = new_mean
+        end
+        variance = sse / (n - corrected)
+    end
+    return n, mean, variance
+end
+
 
 ##### General central moment
 function _moment2(v::RealArray, m::Real; corrected=false)

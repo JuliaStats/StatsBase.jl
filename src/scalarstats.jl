@@ -278,9 +278,12 @@ The standard error is then the square root of the above quantities.
 
 Sribney, W. 1997. Probability weights, analytic weights, and summary statistics. Stata FAQ.
 """
-sem(x; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
+function sem(x; mean=nothing)
+    n, mean, var = n_mean_var(x; mean=mean, corrected=true)
+    return sqrt(var / n)
+end
 
-function sem(x, weights::UnitWeights; mean=nothing)
+function sem(x::AbstractVector{<:Number}, weights::UnitWeights; mean=nothing)
     if length(x) ≠ length(weights) 
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
@@ -288,20 +291,17 @@ function sem(x, weights::UnitWeights; mean=nothing)
 end
 
 # Weighted methods for the above
-function sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing)
+function sem(x::AbstractVector{<:Number}, weights::FrequencyWeights; mean=nothing)
     return sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 end
 
-function sem(x::AbstractArray, weights::ProbabilityWeights; mean=mean(x, weights))
-    n = length(x)
-    if n ≠ length(weights) 
-        throw(DimensionMismatch("array and weights do not have the same length"))
-    end
-
+function sem(x::AbstractArray{<:Number}, weights::ProbabilityWeights; mean=nothing)
+    mean = (isnothing(mean) ? StatsBase.mean(x, weights) : mean)
     # sum of squared errors = sse
-    sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
-        return (w * (x_i - mean))^2
-    end))
+    n, sse = reduce(.+, Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
+        return !iszero(w), abs2(w * (x_i - mean))
+    end)
+    )
     return sqrt(sse * n / (n - 1)) / sum(weights)
 end
 
