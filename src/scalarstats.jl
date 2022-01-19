@@ -283,7 +283,7 @@ function sem(x; mean=nothing)
     return sqrt(var / n)
 end
 
-function sem(x::AbstractVector{<:Number}, weights::UnitWeights; mean=nothing)
+function sem(x, weights::UnitWeights; mean=nothing)
     if length(x) ≠ length(weights) 
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
