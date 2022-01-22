@@ -276,7 +276,7 @@ The standard error is then the square root of the above quantities.
 
 # References
 
-Sribney, W. 1997. Probability weights, analytic weights, and summary statistics. Stata FAQ.
+Carl-Erik Sarndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling (pp. 51-53). ISBN 9780387975283. 
 """
 function sem(x; mean=nothing)
     n, mean, var = n_mean_var(x; mean=mean, corrected=true)
