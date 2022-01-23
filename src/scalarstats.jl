@@ -282,7 +282,7 @@ function sem(x; mean=nothing)
     n = 0
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
-        variance = var(x; mean=mean, corrected=corrected)
+        variance = var(x; mean=mean, corrected=true)
         mean = Statistics.mean(x)
     elseif mean ≢ nothing
         sse = real(zero(mean))
