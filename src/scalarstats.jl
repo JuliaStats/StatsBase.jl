@@ -309,7 +309,6 @@ end
 sem(x::RealArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
 function sem(x::RealArray, weights::UnitWeights; mean=nothing)
-    # must be an array, not an iterator, as iterators don't have length defined
     if length(x) ≠ length(weights)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
