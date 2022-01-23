@@ -262,7 +262,7 @@ realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
 
 """
-    sem(x[, weights::AbstractWeights]; [mean,])
+    sem(x[, weights::AbstractWeights]; mean=nothing)
 
 Return the standard error of the mean for a collection `x`. When using no weights, this is
 equal to the (sample) standard deviation divided by the sample size. If weights are used, 
@@ -279,12 +279,44 @@ The standard error is then the square root of the above quantities.
 Carl-Erik Sarndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling (pp. 51-53). ISBN 9780387975283. 
 """
 function sem(x; mean=nothing)
-    n, mean, var = n_mean_var(x; mean=mean, corrected=true)
-    return sqrt(var / n)
+    n = 0
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        variance = var(x; mean=mean, corrected=corrected)
+        mean = Statistics.mean(x)
+    elseif mean ≢ nothing
+        sse = real(zero(mean))
+        @simd for element in x
+            n += 1
+            sse += abs2(element - mean)
+        end
+        variance = sse / (n - corrected)
+    else
+        # Use Welford algorithm as seen in (among other places)
+        # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
+        mean = zero(eltype(x))
+        sse = real(mean)
+        for element in x
+            n += 1
+            new_mean = mean + (element - mean) / n
+            sse += realXcY(element - mean, element - new_mean)
+            mean = new_mean
+        end
+        variance = sse / (n - corrected)
+    end
+    return sqrt(variance / n)
 end
 
-function sem(x, weights::UnitWeights; mean=nothing)
-    if length(x) ≠ length(weights) 
+function sem(x::RealArray; mean=nothing)
+    var = var(x; mean=mean, corrected=true)
+    return sqrt(var / length(x))
+end
+
+
+
+function sem(x::RealArray, weights::UnitWeights; mean=nothing)
+    # must be an array, not an iterator, as iterators don't have length defined
+    if length(x) ≠ length(weights)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
     return sem(x; mean=mean)
