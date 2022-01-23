@@ -316,9 +316,8 @@ function sem(x::RealArray, weights::UnitWeights; mean=nothing)
 end
 
 # Weighted methods for the above
-function sem(x::RealArray, weights::FrequencyWeights; mean=nothing)
-    return sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
-end
+sem(x::RealArray, weights::FrequencyWeights; mean=nothing) =
+    sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 
 function sem(x::RealArray, weights::ProbabilityWeights; mean=nothing)
     _mean = (mean === nothing ? Statistics.mean(x, weights) : mean)
