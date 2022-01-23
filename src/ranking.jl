@@ -173,7 +173,7 @@ tiedrank(x::AbstractArray; sortkwargs...) =
     _rank(_tiedrank!, x, Float64; sortkwargs...)
 
 """
-    quantilerank(v::AbstractVector, value; method=:inc, sorted=false)
+    quantilerank(v, value; method=:inc)
 
 Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. a 
 quantile rank of x means that (x*100)% of the elements in `v` are lesser or lesser-equal the 
@@ -230,7 +230,7 @@ julia> v2 = [1, 2, 3, 5, 6, missing, 8];
 
 julia> v3 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
 
-# use `skipmissing` in vectors with missing entries
+# use `skipmissing` in vectors with missing entries.
 julia> quantilerank(v1, 2), quantilerank(skipmissing(v2), 4)
 (0.3333333333333333, 0.5)
 ```
@@ -243,21 +243,16 @@ julia> quantilerank.(Ref(v3), [4, 8])
  0.8888888888888888
 ```
 """
-function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
+function quantilerank(v, value; method::Symbol=:inc)
     # checks
     value isa Number && isnan(value) &&
         throw(ArgumentError("value cannot be NaN"))
     any(x -> ismissing(x) || (x isa Number && isnan(x)), v) &&
         throw(ArgumentError("vector `v` cannot contain missing or NaN entries"))
 
-    n = length(v)
-
-    n == 0 && throw(ArgumentError("vector `v` is empty. Insert a non-empty vector"))
-    n == 1 && throw(ArgumentError("vector `v` has only 1 value. Use a vector with more elements"))
-
-    count_less = count_equal   = 0
+    count_less = count_equal   = n = 0
     last_less  = first_greater = value
-    @simd for x in v
+    for x in v
         if x == value
             count_equal += 1
         elseif x < value
@@ -270,7 +265,11 @@ function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
                 first_greater = x
             end
         end
+        n += 1
     end
+
+    n == 0 && throw(ArgumentError("vector `v` is empty. Insert a non-empty vector"))
+    n == 1 && throw(ArgumentError("vector `v` has only 1 value. Use a vector with more elements"))
 
     if method == :inc
         if last_less == value
@@ -320,13 +319,9 @@ function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
     end
 end
 
-quantilerank(itr, value; kwargs...) = quantilerank(collect(itr), value; kwargs...)
-
 """
-    percentrank(v::AbstractVector, value)
+    percentrank(v, value; method=:inc)
 
 Return the `q`th percentile of a collection `value`, i.e. [`quantilerank`](@ref) * 100.
 """
-percentrank(v::AbstractVector, value; kwargs...) = quantilerank(v, value; kwargs...) * 100
-
-percentrank(itr, value; kwargs...) = percentrank(collect(itr), value; kwargs...)
+percentrank(v, value; method::Symbol=:inc) = quantilerank(v, value, method=method) * 100

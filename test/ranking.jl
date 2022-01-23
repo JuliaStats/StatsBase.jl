@@ -1,6 +1,5 @@
 using StatsBase
 using Test
-using Dates
 
 a = [1.0, 2.0, 2.0, 3.0, 4.0, 4.0, 4.0, 5.0]
 x = [3.0, 1.0, 2.0, 4.0, 4.0, 2.0, 5.0, 4.0]  # x is a permutated version of a
@@ -87,12 +86,6 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
                 @test percentrank.(Ref(v),  [4, 8], method=method) == res2 * 100
                 @test quantilerank.(Ref(v), [4, 8], method=method) == res2
             end
-        end
-        @testset "date inputs" begin
-            d1 = Date("2021-01-01")
-            daterange = d1:Day(1):d1+Day(99)
-            @test quantilerank(daterange, d1 + Day(20)) == 20/99
-            @test percentrank(daterange,  d1 + Day(40)) == (40/99) * 100
         end
     end
     @testset "missings and NaNs" begin
