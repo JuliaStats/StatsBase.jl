@@ -175,31 +175,34 @@ tiedrank(x::AbstractArray; sortkwargs...) =
 """
     quantilerank(v::AbstractVector, value; method=:inc, sorted=false)
 
-Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. 
-a quantile rank of x means that x% of the elements in `v` are lesser or lesser-equal the 
+Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. a 
+quantile rank of x means that (x*100)% of the elements in `v` are lesser or lesser-equal the 
 given `value`. 
 
 The keyword argument `method` (default `:inc`) can be:
 
 `:inc` - The inverse of the quantile based in def. 7 in Hyndman and Fan (1996). 
-(Excel `PERCENTRANK` and `PERCENTRANK.INC`)
+(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`)
 
 `:exc` - The inverse of the quantile based in def. 6 in Hyndman and Fan (1996). 
-(Excel `PERCENTRANK.EXC`)
+(equivalent to Excel `PERCENTRANK.EXC`)
 
-`:compete` - Based on the `competerank` of StatsBase 
-(MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
+`:compete` - Based on the `competerank` of StatsBase. 
+(equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
 
-`:tied` - Based in the def. in Roscoe, J. T. (1975) 
-(`mean` argument of Scipy `percentileofscore`)
+`:tied` - Based in the def. in Roscoe, J. T. (1975). 
+(equivalent to `mean` argument of Scipy `percentileofscore`)
 
-`:strict` - (`strict` argument of Scipy `percentileofscore`)
+`:strict` - Equivalent to `strict` method of Scipy `percentileofscore`.
 
-`:weak` - (`weak` argument of Scipy `percentileofscore`)
+`:weak` - Equivalent to `weak` method of Scipy `percentileofscore`.
 
 !!! note
     An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values
     and if `v` is empty or contains only one element.
+
+The function also supports types that have the mathematical properties of rings or total 
+order.
 
 # References
 [Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers 
@@ -227,22 +230,14 @@ julia> v2 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
 
 julia> quantilerank(v1, 2), quantilerank(v1, 8)
 (0.3333333333333333, 0.5555555555555556)
+```
 
 # use `Ref` to treat vector `v2` as a scalar during broadcasting.
+```
 julia> quantilerank.(Ref(v2), [4, 8])
 2-element Vector{Float64}:
  0.3333333333333333
  0.8888888888888888
- 
-# also works with non-number types
-julia> using Dates
-
-julia> d1 = Date("2021-01-01");
-
-julia> daterange = d1:Day(1):d1+Day(99);
-
-julia> quantilerank(daterange, d1 + Day(20))
-0.20202020202020202
 ```
 """
 function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
@@ -257,55 +252,50 @@ function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
     n == 0 && throw(ArgumentError("vector `v` is empty. Insert a non-empty vector"))
     n == 1 && throw(ArgumentError("vector `v` has only 1 value. Use a vector with more elements"))
 
-    if method == :inc
-        if value > maximum(v)
-            return 1.0
-        elseif value ≤ minimum(v)
-            return 0.0
-        else
-            !issorted(v) && (v = sort(v))
-            v[1] == value && return 0.0
-            oldcount = 0
-            oldvalue = v[1]
-            i = 1
-            @inbounds while (i < n && v[i] < value)
-                if v[i] ≠ oldvalue
-                    oldcount = i
-                    oldvalue = v[i]
-                end
-                i += 1
+    count_less = count_equal   = 0
+    last_less  = first_greater = value
+    @simd for x in v
+        if x == value
+            count_equal += 1
+        elseif x < value
+            count_less += 1
+            if last_less == value || last_less < x
+                last_less = x
             end
-            v[i] ≠ oldvalue && (oldcount = i)
-            value == v[i]   && return (oldcount - 1) / (n - 1)
-            oldcount == 0   && return 0.0
-            fract = (value - v[oldcount-1]) / (v[oldcount] - v[oldcount-1])
-            return ((oldcount - 2) + fract) / (n - 1)
+        else
+            if first_greater == value || first_greater > x
+                first_greater = x
+            end
+        end
+    end
+
+    if method == :inc
+        if last_less == value
+            return 0.0
+        elseif count_equal > 0
+            return count_less / (n - 1)
+        elseif first_greater == value
+            return 1.0
+        else
+            lower = (count_less - 1) / (n - 1)
+            upper = count_less / (n - 1)
+            ratio = (value - last_less) / (first_greater - last_less)
+            return lower + ratio * (upper - lower)
         end
     elseif method == :exc
-        if value == minimum(v)
-            return 1.0 / (n + 1)
-        elseif value > maximum(v)
-            return 1.0
-        elseif value < minimum(v)
+        if count_less == 0 && count_equal == 0
             return 0.0
+        elseif count_less == 0
+            return 1.0 / (n + 1)
+        elseif count_equal > 0
+            return (count_less + 1) / (n + 1)
+        elseif first_greater == value
+            return 1.0
         else
-            !issorted(v) && (v = sort(v))
-            v[1] == value && return 1.0 / (n + 1)
-            oldcount = 0
-            oldvalue = v[1]
-            i = 1
-            @inbounds while (i < n && v[i] < value)
-                if v[i] ≠ oldvalue
-                    oldcount = i
-                    oldvalue = v[i]
-                end
-                i += 1
-            end
-            v[i] ≠ oldvalue && (oldcount = i)
-            v[i] == value   && return i / (n + 1)
-            oldcount == 0   && return 0.0
-            fract = (value - v[oldcount-1]) / (v[oldcount] - v[oldcount-1])
-            return (oldcount - 1 + fract)   / (n + 1)
+            lower = (count_less) / (n + 1)
+            upper = (count_less + 1) / (n + 1)
+            ratio = (value - last_less) / (first_greater - last_less)
+            return lower + ratio*(upper - lower)
         end
     elseif method == :compete
         if value > maximum(v)
@@ -313,24 +303,15 @@ function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
         elseif value ≤ minimum(v) 
             return 0.0
         else
-            nless = 0
-            @inbounds for x in v
-                nless += (x < value)
-            end
-            value ∈ v && (nless += 1)
-            return (nless - 1) / (n - 1)
+            value ∈ v && (count_less += 1)
+            return (count_less - 1) / (n - 1)
         end 
     elseif method == :tied
-        smallrank = samerank = 0
-        @inbounds for x in v
-            smallrank += (x < value)
-            samerank  += (x == value)
-        end
-        return (smallrank + samerank/2) / n
+        return (count_less + count_equal/2) / n
     elseif method == :strict
-        return count(<(value), v) / n
+        return count_less / n
     elseif method == :weak
-        return count(≤(value), v) / n
+        return (count_less + count_equal) / n
     else
         throw(ArgumentError("method=:$method is not valid. Use :inc, :exc, :compete, :tied, :strict or :weak."))
     end
