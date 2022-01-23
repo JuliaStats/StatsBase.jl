@@ -306,10 +306,7 @@ function sem(x; mean=nothing)
     return sqrt(variance / n)
 end
 
-function sem(x::RealArray; mean=nothing)
-    var = var(x; mean=mean, corrected=true)
-    return sqrt(var / length(x))
-end
+sem(x::RealArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
 function sem(x::RealArray, weights::UnitWeights; mean=nothing)
     # must be an array, not an iterator, as iterators don't have length defined
