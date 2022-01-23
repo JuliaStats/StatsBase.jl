@@ -289,11 +289,11 @@ function sem(x; mean=nothing)
             n += 1
             sse += abs2(element - mean)
         end
-        variance = sse / (n - corrected)
+        variance = sse / (n - 1)
     else
         # Use Welford algorithm as seen in (among other places)
         # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-        mean = zero(eltype(x))
+        mean = zero(first(x))
         sse = real(mean)
         for element in x
             n += 1
@@ -321,7 +321,7 @@ function sem(x::RealArray, weights::FrequencyWeights; mean=nothing)
 end
 
 function sem(x::RealArray, weights::ProbabilityWeights; mean=nothing)
-    _mean = (mean === nothing ? StatsBase.mean(x, weights) : mean)
+    _mean = (mean === nothing ? Statistics.mean(x, weights) : mean)
     # sum of squared errors = sse
     sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
         return abs2(w * (x_i - _mean))
