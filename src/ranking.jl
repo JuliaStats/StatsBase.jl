@@ -226,15 +226,18 @@ julia> using StatsBase
 
 julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];
 
-julia> v2 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
+julia> v2 = [1, 2, 3, 5, 6, missing, 8];
 
-julia> quantilerank(v1, 2), quantilerank(v1, 8)
-(0.3333333333333333, 0.5555555555555556)
+julia> v3 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
+
+# use `skipmissing` in vectors with missing entries
+julia> quantilerank(v1, 2), quantilerank(skipmissing(v2), 4)
+(0.3333333333333333, 0.5)
 ```
 
-# use `Ref` to treat vector `v2` as a scalar during broadcasting.
-```
-julia> quantilerank.(Ref(v2), [4, 8])
+# use `Ref` to treat vector `v3` as a scalar during broadcasting.
+```julia
+julia> quantilerank.(Ref(v3), [4, 8])
 2-element Vector{Float64}:
  0.3333333333333333
  0.8888888888888888
@@ -295,7 +298,7 @@ function quantilerank(v::AbstractVector, value; method::Symbol=:inc)
             lower = (count_less) / (n + 1)
             upper = (count_less + 1) / (n + 1)
             ratio = (value - last_less) / (first_greater - last_less)
-            return lower + ratio*(upper - lower)
+            return lower + ratio * (upper - lower)
         end
     elseif method == :compete
         if value > maximum(v)
