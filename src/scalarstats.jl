@@ -301,7 +301,7 @@ function sem(x; mean=nothing)
             sse += realXcY(element - mean, element - new_mean)
             mean = new_mean
         end
-        variance = sse / (n - corrected)
+        variance = sse / (n - 1)
     end
     return sqrt(variance / n)
 end
