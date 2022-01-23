@@ -96,10 +96,11 @@ end
 Construct an `AnalyticWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Analytic weights represent the inverse of the variance for each case.
-These weights may also be referred to as reliability weights,
-precision weights or inverse variance weights. These are typically used when the observations
-being weighted are aggregate values (e.g., averages) with differing variances.
+Analytic weights are proportional to the inverse of the variance for each case.
+These weights may also be referred to as reliability weights or precision weights.
+
+The scale of analytic weights is significant: for some functions,
+multiplying all weights by a constant changes the result.
 """ AnalyticWeights
 
 """
