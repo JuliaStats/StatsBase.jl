@@ -285,7 +285,7 @@ function sem(x; mean=nothing)
         variance = var(x; mean=mean, corrected=true)
     elseif mean !== nothing
         sse = real(zero(mean))
-        @simd for element in x
+        for element in x
             n += 1
             sse += abs2(element - mean)
         end
