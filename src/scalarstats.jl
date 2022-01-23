@@ -283,7 +283,7 @@ function sem(x; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         variance = var(x; mean=mean, corrected=true)
-    elseif mean ≢ nothing
+    elseif mean !== nothing
         sse = real(zero(mean))
         @simd for element in x
             n += 1
