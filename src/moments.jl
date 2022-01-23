@@ -158,6 +158,7 @@ function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
 end
 
 
+
 ##### General central moment
 function _moment2(v::RealArray, m::Real; corrected=false)
     n = length(v)

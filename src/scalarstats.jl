@@ -325,8 +325,7 @@ function sem(x::RealArray, weights::ProbabilityWeights; mean=nothing)
     # sum of squared errors = sse
     sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
         return abs2(w * (x_i - _mean))
-    end)
-    )
+    end))
     n = count(!iszero, weights)
     return sqrt(sse * n / (n - 1)) / sum(weights)
 end
