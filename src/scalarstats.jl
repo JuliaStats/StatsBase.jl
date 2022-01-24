@@ -276,7 +276,8 @@ The standard error is then the square root of the above quantities.
 
 # References
 
-Carl-Erik Sarndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling (pp. 51-53). ISBN 9780387975283. 
+Carl-Erik Särndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling.
+New York: Springer. pp. 51-53.
 """
 function sem(x; mean=nothing)
     n = 0
