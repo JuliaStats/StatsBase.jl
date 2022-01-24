@@ -302,7 +302,7 @@ function sem(x; mean=nothing)
         while y !== nothing
             n += 1
             new_mean = mean + (value - mean) / n
-            sse += S + realXcY(value - mean, value - new_mean)
+            sse += realXcY(value - mean, value - new_mean)
             mean = new_mean
             y = iterate(x, state)
             value, state = y
