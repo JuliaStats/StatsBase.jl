@@ -306,9 +306,9 @@ function sem(x; mean=nothing)
     return sqrt(variance / n)
 end
 
-sem(x::RealArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
+sem(x::AbstractArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
-function sem(x::RealArray, weights::UnitWeights; mean=nothing)
+function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
     if length(x) ≠ length(weights)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
@@ -316,10 +316,10 @@ function sem(x::RealArray, weights::UnitWeights; mean=nothing)
 end
 
 # Weighted methods for the above
-sem(x::RealArray, weights::FrequencyWeights; mean=nothing) =
+sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
     sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 
-function sem(x::RealArray, weights::ProbabilityWeights; mean=nothing)
+function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
     _mean = (mean === nothing ? Statistics.mean(x, weights) : mean)
     # sum of squared errors = sse
     sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
