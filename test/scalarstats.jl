@@ -118,7 +118,10 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test sem([1:100;], ProbabilityWeights([1:100;])) ≈ 2.452452 rtol=.001
 μ = mean([1:100;], ProbabilityWeights([1:100;]))
 @test sem([1:100;], ProbabilityWeights([1:100;]); mean=μ) ≈ 2.452452 rtol=.001
-@test sem([1:5;], FrequencyWeights([1:5;])) ≈ sem([1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5])
+x = sort!(vcat([1:i for i in 1:5]...))
+μ = mean(x)
+@test sem([1:5;], FrequencyWeights([1:5;])) ≈ sem(x)
+@test sem([1:5;], FrequencyWeights([1:5;]); mean=μ) ≈ sem(x)
 @test sem(Int[]) === NaN
 @test sem(skipmissing(Union{Int,Missing}[missing, missing])) === NaN
 @test_throws MethodError sem(Any[])
