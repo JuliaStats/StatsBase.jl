@@ -294,7 +294,7 @@ function sem(x; mean=nothing)
     else
         # Use Welford algorithm as seen in (among other places)
         # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-        mean = zero(first(x))
+        mean = zero(first(x))/1
         sse = real(mean)
         for element in x
             n += 1
