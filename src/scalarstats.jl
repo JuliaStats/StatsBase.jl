@@ -260,7 +260,6 @@ variation(x) = ((m, s) = mean_and_std(x); s/m)
 realXcY(x::Real, y::Real) = x*y
 realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
-
 """
     sem(x; mean=nothing)
     sem(x::AbstractArray[, weights::AbstractWeights]; mean=nothing)
