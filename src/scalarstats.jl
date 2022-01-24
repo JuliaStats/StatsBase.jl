@@ -292,7 +292,8 @@ function sem(x; mean=nothing)
         end
         variance = sse / (n - 1)
     else
-        value, state = iterate(x)
+        y = iterate(x)
+        value, state = y
         # Use Welford algorithm as seen in (among other places)
         # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
         n = 1
@@ -303,7 +304,8 @@ function sem(x; mean=nothing)
             new_mean = mean + (value - mean) / n
             sse += S + realXcY(value - mean, value - new_mean)
             mean = new_mean
-            value, state = iterate(x, state)
+            y = iterate(x, state)
+            value, state = y
         end
         variance = sse / (n - 1)
     end
