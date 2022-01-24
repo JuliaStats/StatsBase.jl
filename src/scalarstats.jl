@@ -262,7 +262,8 @@ realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
 
 """
-    sem(x[, weights::AbstractWeights]; mean=nothing)
+    sem(x; mean=nothing)
+    sem(x::AbstractArray[, weights::AbstractWeights]; mean=nothing)
 
 Return the standard error of the mean for a collection `x`. When using no weights, this is
 equal to the (sample) standard deviation divided by the sample size. If weights are used, 
