@@ -545,7 +545,10 @@ Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
 function sample(rng::AbstractRNG, wv::AbstractWeights)
-    t = rand(rng) * sum(wv)
+    if !isfinite(wv.sum)
+        throw(DomainError(wv, "sampling weights cannot contain Inf or NaN"))
+    end
+    t = rand(rng) * wv.sum
     n = length(wv)
     i = 1
     cw = wv[1]
@@ -893,6 +896,9 @@ efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstra
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    if !isfinite(wv.sum)
+        throw(DomainError(wv, "sampling weights cannot contain Inf or NaN"))
+    end
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
