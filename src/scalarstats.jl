@@ -279,42 +279,54 @@ The standard error is then the square root of the above quantities.
 Carl-Erik Särndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling.
 New York: Springer. pp. 51-53.
 """
-function sem(x; mean=nothing)
+sem(x, weights::AbstractWeights; mean=nothing) = _sem(x, weights, mean)
+sem(x; mean=nothing) = _sem(x, mean)
+
+function _sem(x, mean)
     n = 0
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         variance = var(x; mean=mean, corrected=true)
-    elseif mean !== nothing
+    else
         sse = real(zero(mean))
         for element in x
             n += 1
             sse += abs2(element - mean)
         end
         variance = sse / (n - 1)
+    end
+    return sqrt(variance / n)
+end
+
+function _sem(x, ::Nothing)
+    n = 0
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        variance = var(x; corrected=true)
     else
         y = iterate(x)
         value, state = y
         # Use Welford algorithm as seen in (among other places)
         # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-        n = 1
         mean = value / 1
         sse = real(zero(mean))
         while y !== nothing
+            value, state = y
+            y = iterate(x, state)
             n += 1
             new_mean = mean + (value - mean) / n
             sse += realXcY(value - mean, value - new_mean)
             mean = new_mean
-            y = iterate(x, state)
-            value, state = y
         end
         variance = sse / (n - 1)
     end
     return sqrt(variance / n)
 end
 
-sem(x::AbstractArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
+_sem(x::AbstractArray, mean) = sqrt(var(x; mean=mean, corrected=true) / length(x))
+_sem(x::AbstractArray, ::Nothing) = sqrt(var(x; corrected=true) / length(x))
 
-function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
+function _sem(x::AbstractArray, weights::UnitWeights, mean)
     if length(x) ≠ length(weights)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
@@ -322,14 +334,16 @@ function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
 end
 
 # Weighted methods for the above
-sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
+_sem(x::AbstractArray, weights::FrequencyWeights, mean) =
     sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 
-function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
-    _mean = (mean === nothing ? Statistics.mean(x, weights) : mean)
+_sem(x::AbstractArray, weights::ProbabilityWeights, ::Nothing) = 
+    _sem(x, weights, mean(x, weights))
+
+function _sem(x::AbstractArray, weights::ProbabilityWeights, mean)
     # sum of squared errors = sse
     sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
-        return abs2(w * (x_i - _mean))
+        return abs2(w * (x_i - mean))
     end))
     n = count(!iszero, weights)
     return sqrt(sse * n / (n - 1)) / sum(weights)
