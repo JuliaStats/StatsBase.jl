@@ -336,7 +336,7 @@ sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
     sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 
 function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
-    _mean = (mean === nothing) ? mean(x, weights) : mean
+    _mean = (mean === nothing) ? Statistics.mean(x, weights) : mean
     # sum of squared errors = sse
     sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
         return abs2(w * (x_i - _mean))
