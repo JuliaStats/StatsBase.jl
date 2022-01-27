@@ -264,9 +264,9 @@ realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
     sem(x; mean=nothing)
     sem(x::AbstractArray[, weights::AbstractWeights]; mean=nothing)
 
-Return the standard error of the mean for a collection `x`. When using no weights, this is
-equal to the (sample) standard deviation divided by the sample size. If weights are used, 
-the variance of the sample mean is calculated as follows:
+Return the standard error of the mean for a collection `x`. When not using weights, this is
+the (sample) standard deviation divided by the sample size. If weights are used, the 
+variance of the sample mean is calculated as follows:
 
 * `AnalyticWeights`: Not implemented.
 * `FrequencyWeights`: ``\\frac{\\sum_{i=1}^n w_i (x_i - \\bar{x_i})^2}{(\\sum w_i) (\\sum w_i - 1)}``
@@ -279,8 +279,15 @@ The standard error is then the square root of the above quantities.
 Carl-Erik Särndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling.
 New York: Springer. pp. 51-53.
 """
-sem(x, weights::AbstractWeights; mean=nothing) = _sem(x, weights, mean)
 sem(x; mean=nothing) = _sem(x, mean)
+sem(x::AbstractArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
+
+function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
+    if length(x) ≠ length(weights)
+        throw(DimensionMismatch("array and weights do not have the same length"))
+    end
+    return _sem(x, mean)
+end
 
 function _sem(x, mean)
     n = 0
@@ -323,27 +330,16 @@ function _sem(x, ::Nothing)
     return sqrt(variance / n)
 end
 
-_sem(x::AbstractArray, mean) = sqrt(var(x; mean=mean, corrected=true) / length(x))
-_sem(x::AbstractArray, ::Nothing) = sqrt(var(x; corrected=true) / length(x))
-
-function _sem(x::AbstractArray, weights::UnitWeights, mean)
-    if length(x) ≠ length(weights)
-        throw(DimensionMismatch("array and weights do not have the same length"))
-    end
-    return sem(x; mean=mean)
-end
 
 # Weighted methods for the above
-_sem(x::AbstractArray, weights::FrequencyWeights, mean) =
+sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
     sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
 
-_sem(x::AbstractArray, weights::ProbabilityWeights, ::Nothing) = 
-    _sem(x, weights, mean(x, weights))
-
-function _sem(x::AbstractArray, weights::ProbabilityWeights, mean)
+function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
+    _mean = (mean === nothing) ? mean(x, weights) : mean
     # sum of squared errors = sse
     sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
-        return abs2(w * (x_i - mean))
+        return abs2(w * (x_i - _mean))
     end))
     n = count(!iszero, weights)
     return sqrt(sse * n / (n - 1)) / sum(weights)
