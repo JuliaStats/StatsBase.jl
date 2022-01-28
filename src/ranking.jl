@@ -175,9 +175,9 @@ tiedrank(x::AbstractArray; sortkwargs...) =
 """
     quantilerank(v, value; method=:inc)
 
-Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. a 
-quantile rank of x means that (x*100)% of the elements in `v` are lesser (strict) or 
-lesser-equal (weak) the given `value`. 
+Compute the quantile(s)-position in [0, 1] interval of a `value` relative to a collection 
+`v`, e.g. a quantile rank of x means that (x*100)% of the elements in `v` are lesser 
+(strict) or lesser-equal (weak) the given `value`. 
 
 The function gets the counts of elements of `v` that are less than `value` (`count_less`), 
 elements of `v` that are equal to `value` (`count_equal`) and the length of `v` (`n`). 
@@ -195,8 +195,8 @@ If `value ∈ v`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interp
 based on def. 6 in Hyndman and Fan (1996). 
 (equivalent to Excel `PERCENTRANK.EXC`)
 
-`:compete` - Based on the `competerank` function from StatsBase.jl, if `value ∈ v`, it returns 
-`count_less / (n - 1)`, if not, returns `(count_less - 1) / (n - 1)`.
+`:compete` - Based on the `competerank` function from StatsBase.jl, if `value ∈ v`, 
+it returns `count_less / (n - 1)`, if not, returns `(count_less - 1) / (n - 1)`.
 Also, there is no interpolation.
 (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
 
