@@ -105,6 +105,7 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
         @test_throws ArgumentError quantilerank(v4, 3, method=:wrongargument)
         @test_throws ArgumentError percentrank(v4,  3, method=:wrongargument)
         @test_throws ArgumentError percentrank(v4,  NaN)
+        @test_throws ArgumentError percentrank(v4,  missing)
         @test_throws ArgumentError quantilerank([], 3)
         @test_throws ArgumentError quantilerank([1], 3)
     end

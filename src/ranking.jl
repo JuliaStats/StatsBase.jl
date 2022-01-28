@@ -175,9 +175,9 @@ tiedrank(x::AbstractArray; sortkwargs...) =
 """
     quantilerank(v, value; method=:inc)
 
-Compute the quantile(s)-position in [0, 1] interval of a `value` relative to a collection `v`, e.g. a 
-quantile rank of x means that (x*100)% of the elements in `v` are lesser or lesser-equal the 
-given `value`. 
+Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. a 
+quantile rank of x means that (x*100)% of the elements in `v` are lesser (strict) or 
+lesser-equal (weak) the given `value`. 
 
 The function gets the counts of elements of `v` that are less than `value` (`count_less`), 
 elements of `v` that are equal to `value` (`count_equal`) and the length of `v` (`n`). 
@@ -214,7 +214,6 @@ Also, there is no interpolation.
     An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values
     or if `v` is empty or contains only one element.
 
-
 # References
 [Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers 
 definitions and examples.
@@ -241,10 +240,15 @@ julia> v2 = [1, 2, 3, 5, 6, missing, 8];
 
 julia> v3 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
 
+julia> quantilerank(v1, 2)
+0.3333333333333333
+
+julia> quantilerank(v1, 2, method=:exc), quantilerank(v1, 2, method=:tied)
+(0.36363636363636365, 0.35)
+
 # use `skipmissing` in vectors with missing entries.
-julia> quantilerank(v1, 2), quantilerank(skipmissing(v2), 4)
-(0.3333333333333333, 0.5)
-```
+julia> quantilerank(skipmissing(v2), 4)
+0.5
 
 # use `Ref` to treat vector `v3` as a scalar during broadcasting.
 ```julia
@@ -256,8 +260,8 @@ julia> quantilerank.(Ref(v3), [4, 8])
 """
 function quantilerank(v, value; method::Symbol=:inc)
     # checks
-    value isa Number && isnan(value) &&
-        throw(ArgumentError("value cannot be NaN"))
+    (value isa Number && isnan(value)) || ismissing(value) &&
+        throw(ArgumentError("`value` cannot be NaN or missing"))
     any(x -> ismissing(x) || (x isa Number && isnan(x)), v) &&
         throw(ArgumentError("`v` cannot contain missing or NaN entries"))
 
@@ -334,5 +338,7 @@ end
     percentrank(v, value; method=:inc)
 
 Return the `q`th percentile of a collection `value`, i.e. [`quantilerank`](@ref) * 100.
+
+Read the [`quantilerank`](@ref) docstring for more details of all available methods. 
 """
 percentrank(v, value; method::Symbol=:inc) = quantilerank(v, value, method=method) * 100
