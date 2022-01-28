@@ -260,7 +260,7 @@ julia> quantilerank.(Ref(v3), [4, 8])
 """
 function quantilerank(v, value; method::Symbol=:inc)
     # checks
-    (value isa Number && isnan(value)) || ismissing(value) &&
+    ((value isa Number && isnan(value)) || ismissing(value)) &&
         throw(ArgumentError("`value` cannot be NaN or missing"))
     any(x -> ismissing(x) || (x isa Number && isnan(x)), v) &&
         throw(ArgumentError("`v` cannot contain missing or NaN entries"))
