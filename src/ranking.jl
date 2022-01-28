@@ -175,7 +175,7 @@ tiedrank(x::AbstractArray; sortkwargs...) =
 """
     quantilerank(v, value; method=:inc)
 
-Compute the quantile(s)-position in [0-1] of a `value` relative to a collection `v`, e.g. a 
+Compute the quantile(s)-position in [0, 1] interval of a `value` relative to a collection `v`, e.g. a 
 quantile rank of x means that (x*100)% of the elements in `v` are lesser or lesser-equal the 
 given `value`. 
 
@@ -186,21 +186,21 @@ value of elements above `value` (`less_greater`). Using them, different methods 
 definitions of the `quantilerank` are obtained by changing the `method` keyword argument: 
 
 `:inc` (default) - It calculates a value in the range 0 to 1 inclusive. 
-If `value ∈ v`, it returns `count_less / (n - 1)`, if not, apply interpolation based in 
+If `value ∈ v`, it returns `count_less / (n - 1)`, if not, apply interpolation based on 
 def. 7 in Hyndman and Fan (1996). 
 (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`)
 
 `:exc` - It calculates a value in the range 0 to 1 exclusive. 
 If `value ∈ v`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interpolation 
-based in def. 6 in Hyndman and Fan (1996). 
+based on def. 6 in Hyndman and Fan (1996). 
 (equivalent to Excel `PERCENTRANK.EXC`)
 
-`:compete` - Based on the `competerank` of StatsBase, if `value ∈ v`, it returns 
-`count_less/ (n - 1)`, if not, returns `(count_less - 1) / (n - 1)`.
+`:compete` - Based on the `competerank` function from StatsBase.jl, if `value ∈ v`, it returns 
+`count_less / (n - 1)`, if not, returns `(count_less - 1) / (n - 1)`.
 Also, there is no interpolation.
 (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
 
-`:tied` - Based in the def. in Roscoe, J. T. (1975), it returns 
+`:tied` - Based on the def. in Roscoe, J. T. (1975), it returns 
 `(count_less + count_equal/2) / n` and there is no interpolation. 
 (equivalent to `mean` argument of Scipy `percentileofscore`)
 
@@ -212,10 +212,8 @@ Also, there is no interpolation.
 
 !!! note
     An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values
-    and if `v` is empty or contains only one element.
+    or if `v` is empty or contains only one element.
 
-The function also supports types that have the mathematical properties of rings or total 
-order.
 
 # References
 [Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers 
@@ -293,7 +291,7 @@ function quantilerank(v, value; method::Symbol=:inc)
             return 1.0
         else
             lower = (count_less - 1) / (n - 1)
-            upper = (count_less) / (n - 1)
+            upper = count_less / (n - 1)
             ratio = (value - last_less) / (first_greater - last_less)
             return lower + ratio * (upper - lower)
         end
@@ -307,7 +305,7 @@ function quantilerank(v, value; method::Symbol=:inc)
         elseif first_greater == value
             return 1.0
         else
-            lower = (count_less) / (n + 1)
+            lower = count_less / (n + 1)
             upper = (count_less + 1) / (n + 1)
             ratio = (value - last_less) / (first_greater - last_less)
             return lower + ratio * (upper - lower)
