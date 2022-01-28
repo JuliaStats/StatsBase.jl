@@ -179,23 +179,36 @@ Compute the quantile(s)-position in [0-1] of a `value` relative to a collection 
 quantile rank of x means that (x*100)% of the elements in `v` are lesser or lesser-equal the 
 given `value`. 
 
-The keyword argument `method` (default `:inc`) can be:
+The function gets the counts of elements of `v` that are less than `value` (`count_less`), 
+elements of `v` that are equal to `value` (`count_equal`) and the length of `v` (`n`). 
+It also extracts the highest value of elements below `value` (`last_less`) and the lowest 
+value of elements above `value` (`less_greater`). Using them, different methods and 
+definitions of the `quantilerank` are obtained by changing the `method` keyword argument: 
 
-`:inc` - The inverse of the quantile based in def. 7 in Hyndman and Fan (1996). 
+`:inc` (default) - It calculates a value in the range 0 to 1 inclusive. 
+If `value ∈ v`, it returns `count_less / (n - 1)`, if not, apply interpolation based in 
+def. 7 in Hyndman and Fan (1996). 
 (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`)
 
-`:exc` - The inverse of the quantile based in def. 6 in Hyndman and Fan (1996). 
+`:exc` - It calculates a value in the range 0 to 1 exclusive. 
+If `value ∈ v`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interpolation 
+based in def. 6 in Hyndman and Fan (1996). 
 (equivalent to Excel `PERCENTRANK.EXC`)
 
-`:compete` - Based on the `competerank` of StatsBase. 
+`:compete` - Based on the `competerank` of StatsBase, if `value ∈ v`, it returns 
+`count_less/ (n - 1)`, if not, returns `(count_less - 1) / (n - 1)`.
+Also, there is no interpolation.
 (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
 
-`:tied` - Based in the def. in Roscoe, J. T. (1975). 
+`:tied` - Based in the def. in Roscoe, J. T. (1975), it returns 
+`(count_less + count_equal/2) / n` and there is no interpolation. 
 (equivalent to `mean` argument of Scipy `percentileofscore`)
 
-`:strict` - Equivalent to `strict` method of Scipy `percentileofscore`.
+`:strict` - It returns `count_less / n` and there is no interpolation.
+(equivalent to `strict` method of Scipy `percentileofscore`)
 
-`:weak` - Equivalent to `weak` method of Scipy `percentileofscore`.
+`:weak` - It returns `(count_less + count_equal) / n` and there is no interpolation.
+(equivalent to `weak` method of Scipy `percentileofscore`)
 
 !!! note
     An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values
@@ -248,7 +261,7 @@ function quantilerank(v, value; method::Symbol=:inc)
     value isa Number && isnan(value) &&
         throw(ArgumentError("value cannot be NaN"))
     any(x -> ismissing(x) || (x isa Number && isnan(x)), v) &&
-        throw(ArgumentError("vector `v` cannot contain missing or NaN entries"))
+        throw(ArgumentError("`v` cannot contain missing or NaN entries"))
 
     count_less = count_equal   = n = 0
     last_less  = first_greater = value
@@ -268,8 +281,8 @@ function quantilerank(v, value; method::Symbol=:inc)
         n += 1
     end
 
-    n == 0 && throw(ArgumentError("vector `v` is empty. Insert a non-empty vector"))
-    n == 1 && throw(ArgumentError("vector `v` has only 1 value. Use a vector with more elements"))
+    n == 0 && throw(ArgumentError("`v` is empty. Insert a non-empty vector"))
+    n == 1 && throw(ArgumentError("`v` has only 1 value. Use a vector with more elements"))
 
     if method == :inc
         if last_less == value
@@ -280,7 +293,7 @@ function quantilerank(v, value; method::Symbol=:inc)
             return 1.0
         else
             lower = (count_less - 1) / (n - 1)
-            upper = count_less / (n - 1)
+            upper = (count_less) / (n - 1)
             ratio = (value - last_less) / (first_greater - last_less)
             return lower + ratio * (upper - lower)
         end
