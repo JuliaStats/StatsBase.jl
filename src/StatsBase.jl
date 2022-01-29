@@ -135,8 +135,8 @@ export
     competerank,    # competition ranking ("1 2 2 4" ranking)
     denserank,      # dense ranking ("1 2 2 3" ranking)
     tiedrank,       # tied ranking ("1 2.5 2.5 4" ranking)
-    quantilerank,   # quantile-position (0-1) of a value relative to a collection.
-    percentrank,    # percentile-position (0-100) of a value relative to a collection.
+    quantilerank,   # quantile-position (0-1) of a value relative to a collection
+    percentilerank, # percentile-position (0-100) of a value relative to a collection
 
     ## rankcorr
     corspearman,       # spearman's rank correlation

@@ -173,51 +173,47 @@ tiedrank(x::AbstractArray; sortkwargs...) =
     _rank(_tiedrank!, x, Float64; sortkwargs...)
 
 """
-    quantilerank(v, value; method=:inc)
+    quantilerank(itr, value; method=:inc)
 
 Compute the quantile(s)-position in [0, 1] interval of a `value` relative to a collection 
-`v`, e.g. a quantile rank of x means that (x*100)% of the elements in `v` are lesser 
-(strict) or lesser-equal (weak) the given `value`. 
+`itr`, e.g. a quantile rank of x means that (x*100)% of the elements in `itr` are lesser 
+or lesser-equal the given `value`, according to the respective method used. 
 
-The function gets the counts of elements of `v` that are less than `value` (`count_less`), 
-elements of `v` that are equal to `value` (`count_equal`) and the length of `v` (`n`). 
-It also extracts the highest value of elements below `value` (`last_less`) and the lowest 
-value of elements above `value` (`less_greater`). Using them, different methods and 
-definitions of the `quantilerank` are obtained by changing the `method` keyword argument: 
+Different definitions can be chosen via the `method` keyword argument.
+Let `count_less` be the number of elements of `itr` that are less than `value`, 
+`count_equal` the number of elements of `itr` that are equal to `value`, `n` the length of `itr`, 
+`greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`. 
+Then `method` supports the following definitions:
 
 `:inc` (default) - It calculates a value in the range 0 to 1 inclusive. 
-If `value ∈ v`, it returns `count_less / (n - 1)`, if not, apply interpolation based on 
+If `value ∈ itr`, it returns `count_less / (n - 1)`, if not, apply interpolation based on 
 def. 7 in Hyndman and Fan (1996). 
-(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`)
+(equivalent to Excel `percentilerank` and `percentilerank.INC`)
 
 `:exc` - It calculates a value in the range 0 to 1 exclusive. 
-If `value ∈ v`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interpolation 
+If `value ∈ itr`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interpolation 
 based on def. 6 in Hyndman and Fan (1996). 
-(equivalent to Excel `PERCENTRANK.EXC`)
+(equivalent to Excel `percentilerank.EXC`)
 
-`:compete` - Based on the `competerank` function from StatsBase.jl, if `value ∈ v`, 
-it returns `count_less / (n - 1)`, if not, returns `(count_less - 1) / (n - 1)`.
-Also, there is no interpolation.
+`:compete` - If `value ∈ itr`, it returns `count_less / (n - 1)`, if not, 
+returns `(count_less - 1) / (n - 1)` and there is no interpolation.
 (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
 
 `:tied` - Based on the def. in Roscoe, J. T. (1975), it returns 
 `(count_less + count_equal/2) / n` and there is no interpolation. 
-(equivalent to `mean` argument of Scipy `percentileofscore`)
+(equivalent to `"mean"` kind of SciPy `percentileofscore`)
 
 `:strict` - It returns `count_less / n` and there is no interpolation.
-(equivalent to `strict` method of Scipy `percentileofscore`)
+(equivalent to `"strict"` kind of SciPy `percentileofscore`)
 
 `:weak` - It returns `(count_less + count_equal) / n` and there is no interpolation.
-(equivalent to `weak` method of Scipy `percentileofscore`)
+(equivalent to `"weak"` kind of SciPy `percentileofscore`)
 
 !!! note
-    An `ArgumentError` is thrown if `v` contains `NaN` or `missing` values
-    or if `v` is empty or contains only one element.
+    An `ArgumentError` is thrown if `itr` contains `NaN` or `missing` values
+    or if `itr` contains fewer than two elements.
 
 # References
-[Percentile Rank on Wikipedia](https://en.wikipedia.org/wiki/Percentile_rank) covers 
-definitions and examples.
-
 Roscoe, J. T. (1975). "[Fundamental Research Statistics for the Behavioral Sciences 
 (2nd ed.)](http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-
 for-the-Behavioral-Sciences-v2.0.pdf#page=57)".
@@ -226,9 +222,6 @@ for-the-Behavioral-Sciences-v2.0.pdf#page=57)".
 Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
 (https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf)",
     *The American Statistician*, Vol. 50, No. 4, pp. 361-365
-
-[Quantile on Wikipedia](https://en.m.wikipedia.org/wiki/Quantile) details the different 
-quantile definitions.
 
 # Examples
 ```julia
@@ -246,56 +239,55 @@ julia> quantilerank(v1, 2)
 julia> quantilerank(v1, 2, method=:exc), quantilerank(v1, 2, method=:tied)
 (0.36363636363636365, 0.35)
 
-# use `skipmissing` in vectors with missing entries.
+# use `skipmissing` for vectors with missing entries.
 julia> quantilerank(skipmissing(v2), 4)
 0.5
 
-# use `Ref` to treat vector `v3` as a scalar during broadcasting.
+# use broadcasting with `Ref` to compute quantile rank for multiple values
 julia> quantilerank.(Ref(v3), [4, 8])
 2-element Vector{Float64}:
  0.3333333333333333
  0.8888888888888888
 ```
 """
-function quantilerank(v, value; method::Symbol=:inc)
-    # checks
+function quantilerank(itr, value; method::Symbol=:inc)
     ((value isa Number && isnan(value)) || ismissing(value)) &&
         throw(ArgumentError("`value` cannot be NaN or missing"))
-    any(x -> ismissing(x) || (x isa Number && isnan(x)), v) &&
-        throw(ArgumentError("`v` cannot contain missing or NaN entries"))
+    any(x -> ismissing(x) || (x isa Number && isnan(x)), itr) &&
+        throw(ArgumentError("`itr` cannot contain missing or NaN entries"))
 
-    count_less = count_equal   = n = 0
-    last_less  = first_greater = value
-    for x in v
+    count_less = count_equal = n = 0
+    greatest_smaller = smallest_greater = value
+    for x in itr
         if x == value
             count_equal += 1
         elseif x < value
             count_less += 1
-            if last_less == value || last_less < x
-                last_less = x
+            if greatest_smaller == value || greatest_smaller < x
+                greatest_smaller = x
             end
         else
-            if first_greater == value || first_greater > x
-                first_greater = x
+            if smallest_greater == value || smallest_greater > x
+                smallest_greater = x
             end
         end
         n += 1
     end
 
-    n == 0 && throw(ArgumentError("`v` is empty. Pass a collection with at least two elements"))
-    n == 1 && throw(ArgumentError("`v` has only 1 value. Pass a collection with at least two elements"))
+    n == 0 && throw(ArgumentError("`itr` is empty. Pass a collection with at least two elements"))
+    n == 1 && throw(ArgumentError("`itr` has only 1 value. Pass a collection with at least two elements"))
 
     if method == :inc
-        if last_less == value
+        if greatest_smaller == value
             return 0.0
         elseif count_equal > 0
             return count_less / (n - 1)
-        elseif first_greater == value
+        elseif smallest_greater == value
             return 1.0
         else
             lower = (count_less - 1) / (n - 1)
             upper = count_less / (n - 1)
-            ratio = (value - last_less) / (first_greater - last_less)
+            ratio = (value - greatest_smaller) / (smallest_greater - greatest_smaller)
             return lower + ratio * (upper - lower)
         end
     elseif method == :exc
@@ -305,21 +297,21 @@ function quantilerank(v, value; method::Symbol=:inc)
             return 1.0 / (n + 1)
         elseif count_equal > 0
             return (count_less + 1) / (n + 1)
-        elseif first_greater == value
+        elseif smallest_greater == value
             return 1.0
         else
             lower = count_less / (n + 1)
             upper = (count_less + 1) / (n + 1)
-            ratio = (value - last_less) / (first_greater - last_less)
+            ratio = (value - greatest_smaller) / (smallest_greater - greatest_smaller)
             return lower + ratio * (upper - lower)
         end
     elseif method == :compete
-        if value > maximum(v)
+        if value > maximum(itr)
             return 1.0
-        elseif value ≤ minimum(v) 
+        elseif value ≤ minimum(itr) 
             return 0.0
         else
-            value ∈ v && (count_less += 1)
+            value ∈ itr && (count_less += 1)
             return (count_less - 1) / (n - 1)
         end 
     elseif method == :tied
@@ -334,10 +326,10 @@ function quantilerank(v, value; method::Symbol=:inc)
 end
 
 """
-    percentrank(v, value; method=:inc)
+    percentilerank(itr, value; method=:inc)
 
 Return the `q`th percentile of a collection `value`, i.e. [`quantilerank`](@ref) * 100.
 
 Read the [`quantilerank`](@ref) docstring for more details of all available methods. 
 """
-percentrank(v, value; method::Symbol=:inc) = quantilerank(v, value, method=method) * 100
+percentilerank(itr, value; method::Symbol=:inc) = quantilerank(itr, value, method=method) * 100

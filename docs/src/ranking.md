@@ -8,7 +8,7 @@ competerank
 denserank
 tiedrank
 quantilerank
-percentrank
+percentilerank
 corspearman
 corkendall
 ```
