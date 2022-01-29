@@ -251,7 +251,6 @@ julia> quantilerank(skipmissing(v2), 4)
 0.5
 
 # use `Ref` to treat vector `v3` as a scalar during broadcasting.
-```julia
 julia> quantilerank.(Ref(v3), [4, 8])
 2-element Vector{Float64}:
  0.3333333333333333
@@ -283,8 +282,8 @@ function quantilerank(v, value; method::Symbol=:inc)
         n += 1
     end
 
-    n == 0 && throw(ArgumentError("`v` is empty. Insert a non-empty vector"))
-    n == 1 && throw(ArgumentError("`v` has only 1 value. Use a vector with more elements"))
+    n == 0 && throw(ArgumentError("`v` is empty. Pass a collection with at least two elements"))
+    n == 1 && throw(ArgumentError("`v` has only 1 value. Pass a collection with at least two elements"))
 
     if method == :inc
         if last_less == value
