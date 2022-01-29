@@ -279,54 +279,55 @@ The standard error is then the square root of the above quantities.
 Carl-Erik Särndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling.
 New York: Springer. pp. 51-53.
 """
-sem(x; mean=nothing) = _sem(x, mean)
+function sem(x; mean=nothing)
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        return var(x; corrected=true)
+    else
+        return _sem(x, mean)
+    end
+end
 sem(x::AbstractArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
 function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
     if length(x) ≠ length(weights)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
-    return _sem(x, mean)
+    return sem(x; mean=mean)
 end
 
 function _sem(x, mean)
-    n = 0
-    if isempty(x)
-        # Return the NaN of the type that we would get for a nonempty x
-        variance = var(x; mean=mean, corrected=true)
-    else
-        sse = real(zero(mean))
-        for element in x
-            n += 1
-            sse += abs2(element - mean)
-        end
-        variance = sse / (n - 1)
+    n = 1
+    y = iterate(x)
+    value, state = y
+    sse = abs2(value - mean)
+    while (y = iterate(x, state)) !== nothing
+        value, state = y
+        n += 1
+        sse += abs2(value - mean)
     end
+    variance = sse / (n - 1)
     return sqrt(variance / n)
 end
 
 function _sem(x, ::Nothing)
     n = 0
-    if isempty(x)
-        # Return the NaN of the type that we would get for a nonempty x
-        variance = var(x; corrected=true)
-    else
-        y = iterate(x)
+    y = iterate(x)
+    value, state = y
+    # Use Welford algorithm as seen in (among other places)
+    # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
+    mean = value / 1
+    sse = real(zero(mean))
+    while y !== nothing
         value, state = y
-        # Use Welford algorithm as seen in (among other places)
-        # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-        mean = value / 1
-        sse = real(zero(mean))
-        while y !== nothing
-            value, state = y
-            y = iterate(x, state)
-            n += 1
-            new_mean = mean + (value - mean) / n
-            sse += realXcY(value - mean, value - new_mean)
-            mean = new_mean
-        end
-        variance = sse / (n - 1)
+        y = iterate(x, state)
+        n += 1
+        new_mean = mean + (value - mean) / n
+        sse += realXcY(value - mean, value - new_mean)
+        mean = new_mean
     end
+    variance = sse / (n - 1)
+    
     return sqrt(variance / n)
 end
 
