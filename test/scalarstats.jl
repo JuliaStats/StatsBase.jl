@@ -122,10 +122,12 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 μ = mean(x)
 @test sem([1:5;], FrequencyWeights([1:5;])) ≈ sem(x)
 @test sem([1:5;], FrequencyWeights([1:5;]); mean=μ) ≈ sem(x)
-if VersionNumber >= v"1.6"  
+if VERSION >= v"1.6"  
      # in earlier versions, Julia throws an error for var(empty) instead of returning NaN.
-     @test sem(Int[]) === NaN
-     @test sem(skipmissing(Union{Int,Missing}[missing, missing])) === NaN
+     @test isnan(sem(Int[]))
+     @test isnan(sem(Int[], FrequencyWeights(Int[])))
+     @test isnan(sem(Int[], ProbabilityWeights(Int[])))
+     @test isnan(sem(skipmissing(Union{Int,Missing}[missing, missing])))
 end
 @test_throws MethodError sem(Any[])
 @test_throws MethodError sem(skipmissing([missing]))
