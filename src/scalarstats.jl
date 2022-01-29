@@ -282,7 +282,7 @@ New York: Springer. pp. 51-53.
 function sem(x; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
-        return var(x; corrected=true)
+        return sqrt(var(x; mean=mean, corrected=true) / 0)
     else
         return _sem(x, mean)
     end
