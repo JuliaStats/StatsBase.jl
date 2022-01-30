@@ -188,12 +188,12 @@ Then `method` supports the following definitions:
 `:inc` (default) - It calculates a value in the range 0 to 1 inclusive. 
 If `value ∈ itr`, it returns `count_less / (n - 1)`, if not, apply interpolation based on 
 def. 7 in Hyndman and Fan (1996). 
-(equivalent to Excel `percentilerank` and `percentilerank.INC`)
+(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`)
 
 `:exc` - It calculates a value in the range 0 to 1 exclusive. 
 If `value ∈ itr`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interpolation 
 based on def. 6 in Hyndman and Fan (1996). 
-(equivalent to Excel `percentilerank.EXC`)
+(equivalent to Excel `PERCENTRANK.EXC`)
 
 `:compete` - If `value ∈ itr`, it returns `count_less / (n - 1)`, if not, 
 returns `(count_less - 1) / (n - 1)` and there is no interpolation.
