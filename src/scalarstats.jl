@@ -282,11 +282,39 @@ New York: Springer. pp. 51-53.
 function sem(x; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
-        return sqrt(var(x; mean=mean, corrected=true) / 0)
+        T = eltype(x)
+        return oftype((abs2(zero(T)) + abs2(zero(T)))/2, NaN)
+    elseif mean === nothing
+        n = 0
+        y = iterate(x)
+        value, state = y
+        # Use Welford algorithm as seen in (among other places)
+        # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
+        _mean = value / 1
+        sse = real(zero(_mean))
+        while y !== nothing
+            value, state = y
+            y = iterate(x, state)
+            n += 1
+            new_mean = _mean + (value - _mean) / n
+            sse += realXcY(value - _mean, value - new_mean)
+            _mean = new_mean
+        end
     else
-        return _sem(x, mean)
+        n = 1
+        y = iterate(x)
+        value, state = y
+        sse = abs2(value - mean)
+        while (y = iterate(x, state)) !== nothing
+            value, state = y
+            n += 1
+            sse += abs2(value - mean)
+        end
     end
+    variance = sse / (n - 1)
+    return sqrt(variance / n)
 end
+
 sem(x::AbstractArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
 
 function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
@@ -294,41 +322,6 @@ function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
     return sem(x; mean=mean)
-end
-
-function _sem(x, mean)
-    n = 1
-    y = iterate(x)
-    value, state = y
-    sse = abs2(value - mean)
-    while (y = iterate(x, state)) !== nothing
-        value, state = y
-        n += 1
-        sse += abs2(value - mean)
-    end
-    variance = sse / (n - 1)
-    return sqrt(variance / n)
-end
-
-function _sem(x, ::Nothing)
-    n = 0
-    y = iterate(x)
-    value, state = y
-    # Use Welford algorithm as seen in (among other places)
-    # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-    mean = value / 1
-    sse = real(zero(mean))
-    while y !== nothing
-        value, state = y
-        y = iterate(x, state)
-        n += 1
-        new_mean = mean + (value - mean) / n
-        sse += realXcY(value - mean, value - new_mean)
-        mean = new_mean
-    end
-    variance = sse / (n - 1)
-    
-    return sqrt(variance / n)
 end
 
 
