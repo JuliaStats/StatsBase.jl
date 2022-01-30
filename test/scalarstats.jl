@@ -122,7 +122,6 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 μ = mean(x)
 @test sem([1:5;], FrequencyWeights([1:5;])) ≈ sem(x)
 @test sem([1:5;], FrequencyWeights([1:5;]); mean=μ) ≈ sem(x)
-# in earlier versions, Julia throws an error for var(empty) instead of returning NaN.
 @test isnan(sem(Int[]))
 @test isnan(sem(Int[], FrequencyWeights(Int[])))
 @test isnan(sem(Int[], ProbabilityWeights(Int[])))

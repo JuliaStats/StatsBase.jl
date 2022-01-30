@@ -315,7 +315,14 @@ function sem(x; mean=nothing)
     return sqrt(variance / n)
 end
 
-sem(x::AbstractArray; mean=nothing) = sqrt(var(x; mean=mean, corrected=true) / length(x))
+function sem(x::AbstractArray; mean=nothing) 
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        T = eltype(x)
+        return oftype((abs2(zero(T)) + abs2(zero(T)))/2, NaN)
+    end
+    return sqrt(var(x; mean=mean, corrected=true) / length(x))
+end
 
 function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
     if length(x) ≠ length(weights)
