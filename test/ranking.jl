@@ -38,7 +38,7 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 @test tiedrank(x, rev = true) == tiedrank(-x)
 @test tiedrank(x, lt = (x, y) -> isless(y, x)) == tiedrank(-x)
 
-@testset "quantilerank" begin
+@testset "quantilerank and percentilerank" begin
     @testset "value as number and array" begin
         @testset ":inc and :exc" begin
             v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13]
@@ -58,12 +58,14 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
             @test quantilerank(v4,  100, method=:inc) == 1.0
             @test quantilerank(v4, -100, method=:exc) == 0.0
             @test quantilerank(v4,  100, method=:exc) == 1.0
+            @test percentilerank(v1, 2)               == 100 * quantilerank(v1, 2)
+            @test percentilerank(v2, 7, method=:exc)  == 100 * quantilerank(v2, 7, method=:exc)
         end
         @testset ":compete" begin
             v = [0, 0, 1, 1, 2, 2, 2, 2, 4, 4]
-            @test quantilerank(v, 1, method=:compete) == 2/9
-            @test quantilerank(v, 2, method=:compete) == 4/9
-            @test quantilerank(v, 4, method=:compete) == 8/9
+            @test quantilerank(v, 1, method=:compete)    == 2/9
+            @test quantilerank(v, 2, method=:compete)    == 4/9
+            @test quantilerank(v, 4, method=:compete)    == 8/9
             @test quantilerank(v, -100, method=:compete) == 0.0
             @test quantilerank(v,  100, method=:compete) == 1.0
         end
@@ -84,45 +86,12 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
         for method in (:tied, :strict, :weak)
             @test_throws ArgumentError quantilerank(v1, 4, method=method)
             @test_throws ArgumentError quantilerank(v2, 4, method=method)
-            @test_throws ArgumentError quantilerank(v3,  4, method=method)
+            @test_throws ArgumentError quantilerank(v3, 4, method=method)
         end
         @test_throws ArgumentError quantilerank(v4, 3, method=:wrongargument)
-        @test_throws ArgumentError quantilerank(v4,  NaN)
-        @test_throws ArgumentError quantilerank(v4,  missing)
+        @test_throws ArgumentError quantilerank(v4, NaN)
+        @test_throws ArgumentError quantilerank(v4, missing)
         @test_throws ArgumentError quantilerank([], 3)
         @test_throws ArgumentError quantilerank([1], 3)
-    end
-end
-
-@testset "percentilerank" begin
-    v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13]
-    v2 = [1, 2, 3, 6, 6, 6, 7, 8, 9]
-    v3 = [0, 0, 1, 1, 2, 2, 2, 2, 4, 4]
-    # :inc and :exc
-    @test percentilerank(v1,  2, method=:inc) == 100 * quantilerank(v1, 2, method=:inc)
-    @test percentilerank(v2, 7, method=:exc)     == 100 * quantilerank(v2, 7, method=:exc)
-    @test percentilerank(v2, 5.43, method=:exc)  == 100 * quantilerank(v2, 5.43, method=:exc)
-    
-    # :compete
-    @test percentilerank(v3,  1, method=:compete) == 100 * quantilerank(v3, 1, method=:compete)
-    
-    @testset ":strict, :weak and :tied" begin
-        v = [7, 8, 2, 1, 3, 4, 5, 4, 6, 9]
-        for (method, res1) in [(:tied, .4),
-                               (:strict, .3),
-                               (:weak, .5)]
-            @test percentilerank(v,  4, method=method) == res1 * 100
-        end
-    end
-
-    @testset "errors" begin
-        v1 = [1, 2, 3, 5, 6, missing, 8]
-        v2 = [missing, missing]
-        v3 = [1, 2, 3, 3, 4]
-        for method in (:tied, :strict, :weak)
-            @test_throws ArgumentError percentilerank(v1,  4, method=method)
-            @test_throws ArgumentError percentilerank(v2,  4, method=method)
-        end
-        @test_throws ArgumentError percentilerank(v3,  3, method=:wrongargument)
     end
 end
