@@ -176,8 +176,7 @@ tiedrank(x::AbstractArray; sortkwargs...) =
     quantilerank(itr, value; method=:inc)
 
 Compute the quantile(s)-position in [0, 1] interval of a `value` relative to a collection 
-`itr`, e.g. a quantile rank of x means that (x*100)% of the elements in `itr` are less than 
-(or less than or equal) the given `value`, according to the respective method used. 
+`itr`. 
 
 Different definitions can be chosen via the `method` keyword argument.
 Let `count_less` be the number of elements of `itr` that are less than `value`, 
