@@ -316,10 +316,12 @@ function sem(x; mean=nothing)
 end
 
 function sem(x::AbstractArray; mean=nothing) 
-    if isempty(x)
-        # Return the NaN of the type that we would get for a nonempty x
-        T = eltype(x)
-        return oftype((abs2(zero(T)) + abs2(zero(T)))/2, NaN)
+    @static if VERSION < v"1.6" 
+        if isempty(x)
+            # Return the NaN of the type that we would get for a nonempty x
+            T = eltype(x)
+            return oftype((abs2(zero(T)) + abs2(zero(T)))/2, NaN)
+        end
     end
     return sqrt(var(x; mean=mean, corrected=true) / length(x))
 end
