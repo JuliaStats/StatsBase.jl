@@ -229,8 +229,7 @@ nquantile(x, n::Integer) = quantile(x, (0:n)/n)
 """
     quantilerank(itr, value; method=:inc)
 
-Compute the quantile(s)-position in [0, 1] interval of a `value` relative to a collection 
-`itr`. 
+Compute the quantile position in the [0, 1] interval of `value` relative to collection `itr`.
 
 Different definitions can be chosen via the `method` keyword argument.
 Let `count_less` be the number of elements of `itr` that are less than `value`, 
@@ -238,43 +237,42 @@ Let `count_less` be the number of elements of `itr` that are less than `value`,
 `greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`. 
 Then `method` supports the following definitions:
 
-`:inc` (default) - It calculates a value in the range 0 to 1 inclusive. 
-If `value ∈ itr`, it returns `count_less / (n - 1)`, if not, apply interpolation based on 
-def. 7 in Hyndman and Fan (1996). 
-(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`)
+- `:inc` (default): Return a value in the range 0 to 1 inclusive. 
+Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on 
+definition 7 of quantile in Hyndman and Fan (1996)
+(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
 
-`:exc` - It calculates a value in the range 0 to 1 exclusive. 
-If `value ∈ itr`, it returns `(count_less + 1) / (n + 1)`,  if not, apply interpolation 
-based on def. 6 in Hyndman and Fan (1996). 
-(equivalent to Excel `PERCENTRANK.EXC`)
+- `:exc`: Return a value in the range 0 to 1 exclusive.
+Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation 
+based on definition 6 of quantile in Hyndman and Fan (1996)
+(equivalent to Excel `PERCENTRANK.EXC`).
 
-`:compete` - If `value ∈ itr`, it returns `count_less / (n - 1)`, if not, 
-returns `(count_less - 1) / (n - 1)` and there is no interpolation.
-(equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`)
+- `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise 
+return `(count_less - 1) / (n - 1)`, without interpolation
+(equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
 
-`:tied` - Based on the def. in Roscoe, J. T. (1975), it returns 
-`(count_less + count_equal/2) / n` and there is no interpolation. 
-(equivalent to `"mean"` kind of SciPy `percentileofscore`)
+- `:tied`: Return `(count_less + count_equal/2) / n`, without interpolation.
+Based on the definition in Roscoe, J. T. (1975)
+(equivalent to `"mean"` kind of SciPy `percentileofscore`).
 
-`:strict` - It returns `count_less / n` and there is no interpolation.
-(equivalent to `"strict"` kind of SciPy `percentileofscore`)
+- `:strict`: Return `count_less / n`, without interpolation
+(equivalent to `"strict"` kind of SciPy `percentileofscore`).
 
-`:weak` - It returns `(count_less + count_equal) / n` and there is no interpolation.
-(equivalent to `"weak"` kind of SciPy `percentileofscore`)
+- `:weak`: Return `(count_less + count_equal) / n`, without interpolation
+(equivalent to `"weak"` kind of SciPy `percentileofscore`).
 
 !!! note
     An `ArgumentError` is thrown if `itr` contains `NaN` or `missing` values
     or if `itr` contains fewer than two elements.
 
 # References
-Roscoe, J. T. (1975). "[Fundamental Research Statistics for the Behavioral Sciences 
-(2nd ed.)](http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-
-for-the-Behavioral-Sciences-v2.0.pdf#page=57)".
-    ISBN 0-03-091934-7.
+Roscoe, J. T. (1975). [Fundamental Research Statistics for the Behavioral Sciences]
+(http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-for-the-Behavioral-Sciences-v2.0.pdf#page=57)",
+2nd ed., New York : Holt, Rinehart and Winston.
 
 Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
 (https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf)",
-    *The American Statistician*, Vol. 50, No. 4, pp. 361-365
+*The American Statistician*, Vol. 50, No. 4, pp. 361-365.
 
 # Examples
 ```julia
@@ -374,16 +372,16 @@ function quantilerank(itr, value; method::Symbol=:inc)
     elseif method == :weak
         return (count_less + count_equal) / n
     else
-        throw(ArgumentError("method=:$method is not valid. Use :inc, :exc, :compete, :tied, :strict or :weak."))
+        throw(ArgumentError("method=:$method is not valid. Pass :inc, :exc, :compete, :tied, :strict or :weak."))
     end
 end
 
 """
     percentilerank(itr, value; method=:inc)
 
-Return the `q`th percentile of a collection `value`, i.e. [`quantilerank`](@ref) * 100.
+Return the `q`th percentile of `value` in collection `itr`, i.e. [`quantilerank(itr, value)`](@ref) * 100.
 
-Read the [`quantilerank`](@ref) docstring for more details of all available methods. 
+See the [`quantilerank`](@ref) docstring for more details.
 """
 percentilerank(itr, value; method::Symbol=:inc) = quantilerank(itr, value, method=method) * 100
 
