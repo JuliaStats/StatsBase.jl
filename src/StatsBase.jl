@@ -81,8 +81,10 @@ export
     zscore,      # compute Z-scores
     zscore!,     # compute Z-scores inplace or to a pre-allocated array
 
-    percentile,  # quantile using percentage (instead of fraction) as argument
-    nquantile,   # quantiles at [0:n]/n
+    percentile,     # quantile using percentage (instead of fraction) as argument
+    nquantile,      # quantiles at [0:n]/n
+    quantilerank,   # quantile-position (0-1) of a value relative to a collection
+    percentilerank, # percentile-position (0-100) of a value relative to a collection
 
     span,        # The range minimum(x):maximum(x)
     variation,   # ratio of standard deviation to mean
@@ -135,8 +137,6 @@ export
     competerank,    # competition ranking ("1 2 2 4" ranking)
     denserank,      # dense ranking ("1 2 2 3" ranking)
     tiedrank,       # tied ranking ("1 2.5 2.5 4" ranking)
-    quantilerank,   # quantile-position (0-1) of a value relative to a collection
-    percentilerank, # percentile-position (0-100) of a value relative to a collection
 
     ## rankcorr
     corspearman,       # spearman's rank correlation

@@ -68,6 +68,8 @@ percentile
 iqr
 nquantile
 quantile
+quantilerank
+percentilerank
 Statistics.median(v::StatsBase.RealVector, w::AbstractWeights{<:Real})
 ```
 
