@@ -109,6 +109,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 @test sem([1:5;]) ≈ 0.707106781186548
 @test sem(skipmissing([missing; 1:5; missing])) ≈ 0.707106781186548
+@test sem(skipmissing([missing; 1:5; missing]), mean=3.0) ≈ 0.707106781186548
 @test sem([1:5;], UnitWeights{Int}(5)) ≈ 0.707106781186548
 @test sem([1:5;], UnitWeights{Int}(5); mean=mean(1:5)) ≈ 0.707106781186548
 @test sem([1:5;], ProbabilityWeights([1:5;])) ≈ 0.6166 rtol=.001
