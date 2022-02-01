@@ -241,6 +241,8 @@ Then `method` supports the following definitions:
 Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on 
 definition 7 of quantile in Hyndman and Fan (1996)
 (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
+This definition corresponds to the lower semi-continuous inverse of
+[`quantile`](@ref) with its default parameters.
 
 - `:exc`: Return a value in the range 0 to 1 exclusive.
 Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation 
