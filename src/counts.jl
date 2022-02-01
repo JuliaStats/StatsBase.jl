@@ -43,7 +43,7 @@ end
 
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
     k = length(levels)
-    length(r) == k || throw(DimensionMismatch())
+    length(r) == length(wv) == k || throw(DimensionMismatch())
 
     m0 = levels[1]
     m1 = levels[end]
