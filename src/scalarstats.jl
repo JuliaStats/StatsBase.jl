@@ -264,8 +264,11 @@ realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
     sem(x; mean=nothing)
     sem(x::AbstractArray[, weights::AbstractWeights]; mean=nothing)
 
-Return the standard error of the mean for a collection `x`. When not using weights, this is
-the (sample) standard deviation divided by the sample size. If weights are used, the 
+Return the standard error of the mean for a collection `x`.
+A pre-computed `mean` may be provided.
+
+When not using weights, this is the (sample) standard deviation
+divided by the sample size. If weights are used, the 
 variance of the sample mean is calculated as follows:
 
 * `AnalyticWeights`: Not implemented.
