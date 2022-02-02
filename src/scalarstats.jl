@@ -350,14 +350,15 @@ function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
         _mean = mean === nothing ? zero(T) / 1 : mean
         z = abs2(zero(T) - _mean)
         return oftype((z + z) / 2, NaN)
+    else
+        _mean = (mean === nothing) ? Statistics.mean(x, weights) : mean
+        # sum of squared errors = sse
+        sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
+            return abs2(w * (x_i - _mean))
+        end))
+        n = count(!iszero, weights)
+        return sqrt(sse * n / (n - 1)) / sum(weights)
     end
-    _mean = (mean === nothing) ? Statistics.mean(x, weights) : mean
-    # sum of squared errors = sse
-    sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
-        return abs2(w * (x_i - _mean))
-    end))
-    n = count(!iszero, weights)
-    return sqrt(sse * n / (n - 1)) / sum(weights)
 end
 
 # Median absolute deviation
