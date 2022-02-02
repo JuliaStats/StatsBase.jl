@@ -323,7 +323,9 @@ function sem(x::AbstractArray; mean=nothing)
         if isempty(x)
             # Return the NaN of the type that we would get for a nonempty x
             T = eltype(x)
-            return oftype((abs2(zero(T)) + abs2(zero(T)))/2, NaN)
+        _mean = mean === nothing ? zero(T) / 1 : mean
+        z = abs2(zero(T) - _mean)
+        return oftype((z + z) / 2, NaN)
         end
     end
     return sqrt(var(x; mean=mean, corrected=true) / length(x))
