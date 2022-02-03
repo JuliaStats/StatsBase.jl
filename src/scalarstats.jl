@@ -286,7 +286,7 @@ function sem(x; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)
-        _mean = mean === nothing ? zero(T) / 1 : mean
+        _mean = (mean === nothing) ? zero(T) / 1 : mean
         z = abs2(zero(T) - _mean)
         return oftype((z + z) / 2, NaN)
     elseif mean === nothing
@@ -324,7 +324,7 @@ function sem(x::AbstractArray; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)
-        _mean = mean === nothing ? zero(T) / 1 : mean
+        _mean = (mean === nothing) ? zero(T) / 1 : mean
         z = abs2(zero(T) - _mean)
         return oftype((z + z) / 2, NaN)
     end
@@ -346,10 +346,7 @@ sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
 function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
-        T = eltype(x)
-        _mean = mean === nothing ? zero(T) / 1 : mean
-        z = abs2(zero(T) - _mean)
-        return oftype((z + z) / 2, NaN)
+        return var(x, weights; mean=nothing, corrected=true) / 0
     else
         _mean = (mean === nothing) ? Statistics.mean(x, weights) : mean
         # sum of squared errors = sse
