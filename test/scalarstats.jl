@@ -125,13 +125,18 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @inferred sem([1:5f0;]; mean=μ) ≈ sem(x)
 @inferred sem([1:5f0;], ProbabilityWeights([1:5;]); mean=μ)
 @inferred sem([1:5f0;], FrequencyWeights([1:5;]); mean=μ)
-# Broken: Bug to do with implementation of 
+# Broken: Bug to do with Statistics.jl's implementation of `var`
 # @inferred sem([1:5f0;], UnitWeights{Int}(5); mean=μ)
 
-@test isnan(sem(Int[]))
-@test isnan(sem(Int[], FrequencyWeights(Int[])))
-@test isnan(sem(Int[], ProbabilityWeights(Int[])))
-@test isnan(sem(skipmissing(Union{Int,Missing}[missing, missing])))
+@test @inferred(isnan(sem(Int[])))
+@test @inferred(isnan(sem(Int[], FrequencyWeights(Int[]))))
+@test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]))))
+
+@test @inferred(isnan(sem(Int[]; mean=0f0)))
+@test @inferred(isnan(sem(Int[], FrequencyWeights(Int[]); mean=0f0)))
+@test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]); mean=0f0)))
+
+@test @inferred(isnan(sem(skipmissing(Union{Int,Missing}[missing, missing]))))
 @test_throws MethodError sem(Any[])
 @test_throws MethodError sem(skipmissing([missing]))
 
