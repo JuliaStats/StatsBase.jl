@@ -81,8 +81,10 @@ export
     zscore,      # compute Z-scores
     zscore!,     # compute Z-scores inplace or to a pre-allocated array
 
-    percentile,  # quantile using percentage (instead of fraction) as argument
-    nquantile,   # quantiles at [0:n]/n
+    percentile,     # quantile using percentage (instead of fraction) as argument
+    nquantile,      # quantiles at [0:n]/n
+    quantilerank,   # quantile-position (0-1) of a value relative to a collection
+    percentilerank, # percentile-position (0-100) of a value relative to a collection
 
     span,        # The range minimum(x):maximum(x)
     variation,   # ratio of standard deviation to mean
