@@ -348,7 +348,7 @@ function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
         # Return the NaN of the type that we would get for a nonempty x
         return var(x, weights; mean=mean, corrected=true) / 0
     else
-        _mean = (mean === nothing) ? Statistics.mean(x, weights) : mean
+        _mean = mean === nothing ? Statistics.mean(x, weights) : mean
         # sum of squared errors = sse
         sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
             return abs2(w * (x_i - _mean))
