@@ -164,10 +164,36 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test variation([1:5;]) ≈ 0.527046276694730
 @test variation(skipmissing([missing; 1:5; missing])) ≈ 0.527046276694730
 
-@test sem([1:5;]) ≈ 0.707106781186548
-@test sem(skipmissing([missing; 1:5; missing])) ≈ 0.707106781186548
-@test sem(Int[]) === NaN
-@test sem(skipmissing(Union{Int,Missing}[missing, missing])) === NaN
+@test @inferred(sem([1:5;])) ≈ 0.707106781186548
+@test @inferred(sem(skipmissing([missing; 1:5; missing]))) ≈ 0.707106781186548
+@test @inferred(sem(skipmissing([missing; 1:5; missing]), mean=3.0)) ≈ 0.707106781186548
+@test @inferred(sem([1:5;], UnitWeights{Int}(5))) ≈ 0.707106781186548
+@test @inferred(sem([1:5;], UnitWeights{Int}(5); mean=mean(1:5))) ≈ 0.707106781186548
+@test_throws DimensionMismatch sem(1:5, UnitWeights{Int}(4))
+@test @inferred(sem([1:5;], ProbabilityWeights([1:5;]))) ≈ 0.6166 rtol=.001
+μ = mean(1:5, ProbabilityWeights([1:5;]))
+@test @inferred(sem([1:5;], ProbabilityWeights([1:5;]); mean=μ)) ≈ 0.6166 rtol=.001
+@test @inferred(sem([10; 1:5;], ProbabilityWeights([0; 1:5;]); mean=μ)) ≈ 0.6166 rtol=.001
+x = sort!(vcat([5:-1:i for i in 1:5]...))
+μ = mean(x)
+@test @inferred(sem([1:5;], FrequencyWeights([1:5;]))) ≈ sem(x)
+@test @inferred(sem([1:5;], FrequencyWeights([1:5;]); mean=μ)) ≈ sem(x)
+
+@inferred sem([1:5f0;]; mean=μ) ≈ sem(x)
+@inferred sem([1:5f0;], ProbabilityWeights([1:5;]); mean=μ)
+@inferred sem([1:5f0;], FrequencyWeights([1:5;]); mean=μ)
+# Broken: Bug to do with Statistics.jl's implementation of `var`
+# @inferred sem([1:5f0;], UnitWeights{Int}(5); mean=μ)
+
+@test @inferred(isnan(sem(Int[])))
+@test @inferred(isnan(sem(Int[], FrequencyWeights(Int[]))))
+@test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]))))
+
+@test @inferred(isnan(sem(Int[]; mean=0f0)))
+@test @inferred(isnan(sem(Int[], FrequencyWeights(Int[]); mean=0f0)))
+@test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]); mean=0f0)))
+
+@test @inferred(isnan(sem(skipmissing(Union{Int,Missing}[missing, missing]))))
 @test_throws MethodError sem(Any[])
 @test_throws MethodError sem(skipmissing([missing]))
 
