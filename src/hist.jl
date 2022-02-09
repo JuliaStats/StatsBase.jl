@@ -2,6 +2,7 @@ using Base.Cartesian
 
 import Base: show, ==, push!, append!, float
 import LinearAlgebra: norm, normalize, normalize!
+import Statistics: median
 
 
 ## Fast getindex function for multiple arrays, returns a tuple of array elements
@@ -577,3 +578,93 @@ Calculate the midpoints (pairwise mean of consecutive elements).
 midpoints(v::AbstractVector) = [middle(v[i - 1], v[i]) for i in 2:length(v)]
 
 midpoints(r::AbstractRange) = r[1:(end - 1)] .+ (step(r) / 2)
+
+#binned statistics -- fast histograms with a statistic calculated at each bin
+"""
+Compute a fast binned statistic for an array of y-values along some array of x-values,
+essentially a histogram with the chosen statistic computed at each bin.
+
+This function is an analog to the existing scipy.stats.binned_statistic function, but written in native Julia, and this implementation is faster than the SciPy version!
+
+Returns the bin edges, bin centers, and corresponding binned statistic. Currently implemented stats operations are sum, mean, median, variance, and standard deviation.
+The median is implementation is much slower than the others (~10x slower than sum, which is the fastest), but included to match with scipy.stats.binned_statistic. It could easily be improved but left in lazy state for now.
+
+Usage examples:
+x = rand(2048,2048); y = rand(2048,2048)
+edges, centers, binnedSum = binnedStatistic(x,y,nbins=500,statistic=:sum)
+
+edges, centers, binnedSum = binnedStatistic(x,y) #defaults to :sum with 100 bins
+
+edges, centers, binnedVar = binnedStatistic(x,y,statistic=:var) #compute the variance in each bin, leaving default of 100 bins
+
+This can technically be done with the existing Histogram functionality above, but it's very slow, and this new way is ~15-20x faster.
+Example using existing histogram routine in StatsBase:
+
+function histSum(x::Array,y::Array,bins::Int=100) #compute the sum on each bin in a histogram, using the existing functionality in StatsBase
+    h = fit(Histogram, vec(x), aweights(y), nbins=bins)
+    h.edges, h.weights
+end
+
+julia> x = rand(2048,2048); y = rand(2048,2048)
+julia> using BenchmarkTools
+julia> @btime histSum(x,y)
+    268.793 ms (8 allocations: 1.20 KiB)
+
+if using this new, faster version we obtain a ~15-20x speed-up:
+
+julia> @btime binnedStatistic(x,y)
+    14.165 ms (3 allocations: 1.83 KiB)
+
+These tests were performed using Julia 1.6.1 on a system running Linux Mint 20.3 Cinnamon with a Intel Core i7-1065G7 CPU (4 cores @ 1.3 GHz)
+"""
+
+function binnedStatistic(x::Array{Float64,}, y::Array{Float64,}; nbins::Int=100, statistic::Symbol=:sum)
+    if length(x) > 0 && nbins < 1
+        throw(ArgumentError("number of bins must be ≥ 1 for a non-empty array, got $nbins"))
+    end
+    if length(vec(x)) != length(vec(y))
+        throw(ArgumentError("length of x must match length of y"))
+    end
+    binMax, binMin = maximum(x), minimum(x) #this is faster for some reason?
+    result = zeros(nbins)
+    Δ = nbins / (binMax - binMin) #spacing
+    if statistic == :sum
+        for (x, y) in zip(x, y)
+            i = min(nbins, 1 + floor(Int, Δ * (x - binMin))) #which bin are we in at this x?
+            result[i] += y
+        end
+    elseif statistic == :mean || statistic == :std || statistic == :var
+        N = zeros(nbins)
+        for (x, y) in zip(x, y)
+            i = min(nbins, 1 + floor(Int, Δ * (x - binMin)))
+            result[i] += y
+            N[i] += 1 #need to keep track of number of counts in each bin for mean, std, var
+        end
+        N[N .== 0.] .= 1. #no dividing by zero
+        result ./= N
+        if statistic == :std || statistic == :var
+            μ = copy(result)
+            result = zeros(nbins)
+            for (x, y) in zip(x, y)
+                i = min(nbins, 1 + floor(Int, Δ * (x - binMin)))
+                result[i] += (y-μ[i])^2
+            end
+            result ./= N
+            if statistic == :std
+                @. result = √result
+            end
+        end
+    elseif statistic == :median
+        tmp = [{Array{Float64}(undef,0) for i = 1:nbins]
+        for (x, y) in zip(x, y)
+            i = min(nbins, 1 + floor(Int, Δ * (x - binMin)))
+            push!(tmp[i],y)
+        end
+        result = [length(tmp[i]) > 0 ? median(tmp[i]) : 0. for i=1:nbins]
+    else
+        throw(ArgumentError("Valid statistic options are :sum, :mean, :std, or :var, got $statistic"))
+    end
+    edges = range(binMin, stop=binMax, length=nbins+1)
+    centers = [(edges[i]+edges[i+1])/2 for i=1:length(edges)-1]
+    return edges, centers, result
+end
