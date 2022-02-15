@@ -28,7 +28,7 @@ import StatsAPI: pairwise, pairwise!, params, params!,
                  deviance, islinear, nulldeviance, loglikelihood, nullloglikelihood,
                  loglikelihood, loglikelihood, score, nobs, dof, mss, rss,
                  informationmatrix, stderror, vcov, weights, isfitted, fit, fit!,
-                 aic, aicc, bic, r2, r², adjr2
+                 aic, aicc, bic, r2, r², adjr2, adjr²
 
     ## tackle compatibility issues
 
