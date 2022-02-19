@@ -187,4 +187,7 @@ end
               aic, aicc, bic, r2, r², adjr2, adjr²)
         @test f isa Function
     end
+    # Defined but not reexported
+    @test StatsBase.params isa Function
+    @test StatsBase.params! isa Function
 end

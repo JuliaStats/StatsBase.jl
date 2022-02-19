@@ -21,7 +21,7 @@ import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
                    cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
                    median, middle
 using StatsAPI: StatisticalModel, RegressionModel
-import StatsAPI: pairwise, pairwise!,
+import StatsAPI: pairwise, pairwise!, params, params!,
                  fitted, response, responsename, meanresponse, modelmatrix,
                  crossmodelmatrix, leverage, cooksdistance, residuals, predict,
                  predict!, dof_residual, coef, coefnames, coeftable, confint,
