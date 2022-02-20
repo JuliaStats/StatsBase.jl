@@ -226,11 +226,17 @@ binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]
 binindex(h::Histogram{T,N}, xs::NTuple{N,Real}) where {T,N} =
     map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
 
+_normalize_zero(x::AbstractFloat) = isequal(x, -0.0) ? oftype(x, 0.0) : x
+_normalize_zero(x::Any) = x
+
 @inline function _edge_binindex(edge::AbstractVector, closed::Symbol, x::Real)
+    # Always treat -0.0 like 0.0
     if closed == :right
-        searchsortedfirst(edge, x) - 1
+        return searchsortedfirst(edge, _normalize_zero(x),
+                                 by=_normalize_zero) - 1
     else
-        searchsortedlast(edge, x)
+        return searchsortedlast(edge, _normalize_zero(x),
+                                by=_normalize_zero)
     end
 end
 

@@ -224,4 +224,32 @@ end
     @test StatsBase.midpoints(range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
 end
 
+@testset "histogram with -0.0" begin
+    @test fit(Histogram, [-0.0, 1.0]) == fit(Histogram, [0.0, 1.0])
+    @test fit(Histogram, [-0.0, 1.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], closed=:right)
+    @test fit(Histogram, [-0.0, -1.0]) == fit(Histogram, [0.0, -1.0])
+    @test fit(Histogram, [-0.0, -1.0], closed=:right) ==
+        fit(Histogram, [0.0, -1.0], closed=:right)
+
+    @test fit(Histogram, [-0.0, 1.0], [-0.0, 0.5]) ==
+        fit(Histogram, [0.0, 1.0], [0.0, 0.5]) ==
+        fit(Histogram, [-0.0, 1.0], [0.0, 0.5]) ==
+        fit(Histogram, [0.0, 1.0], [-0.0, 0.5])
+    @test fit(Histogram, [-0.0, 1.0], [-0.5, -0.0]) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, -0.0]) ==
+        fit(Histogram, [-0.0, 1.0], [-0.5, 0.0]) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, -0.0])
+    @test fit(Histogram, [-0.0, 1.0], [-0.5, -0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, 0.0], closed=:right)
+    @test fit(Histogram, [-0.0, 1.0], [-0.0, 0.5], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [0.0, 0.5], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.0, 0.5], closed=:right) ==
+        fit(Histogram, [-0.0, 1.0], [0.0, 0.5], closed=:right)
+    @test fit(Histogram, [-0.0, 1.0], [-0.5, -0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, 0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, -0.0], closed=:right) ==
+        fit(Histogram, [-0.0, 1.0], [-0.5, 0.0], closed=:right)
+end
+
 end # @testset "StatsBase.Histogram"
