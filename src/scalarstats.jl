@@ -532,11 +532,6 @@ If `normalize` is set to `true`, the MAD is multiplied by
 of the standard deviation under the assumption that the data is normally distributed.
 """
 function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constant=nothing)
-    if normalize === nothing
-        Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
-        normalize = true
-    end
-
     isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
     T = eltype(x)
     # Knowing the eltype allows allocating a single array able to hold both original values
