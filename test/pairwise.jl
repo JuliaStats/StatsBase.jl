@@ -258,4 +258,17 @@ arbitrary_fun(x, y) = cor(x, y)
             end
         end
     end
+
+    @testset "type-unstable corner case (#771)" begin
+        v = [rand(5) for _=1:10]
+        function f(v)
+            pairwise(v) do x, y
+                (x[1] < 0 ? nothing :
+                    x[1] > y[1] ? 1 : 1.5,
+                 0)
+            end
+        end
+        res = f(v)
+        @test res isa Matrix{Tuple{Real, Int}}
+    end
 end
