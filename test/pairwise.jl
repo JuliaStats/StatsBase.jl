@@ -260,6 +260,8 @@ arbitrary_fun(x, y) = cor(x, y)
     end
 
     @testset "promote_type_union" begin
+        @test StatsBase.promote_type_union(Int) === Int
+        @test StatsBase.promote_type_union(Real) === Real
         @test StatsBase.promote_type_union(Union{Int, Float64}) === Float64
         @test StatsBase.promote_type_union(Union{Int, Missing}) === Union{Int, Missing}
         @test StatsBase.promote_type_union(Union{Int, String}) === Any
