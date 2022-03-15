@@ -129,23 +129,24 @@ if VERSION >= v"1.6.0-DEV"
     else
         using Base.Broadcast: typejoin_union_tuple
     end
-    # Identical to `Base.promote_typejoin` except that it uses `promote_type`
-    # instead of `typejoin`
-    function promote_type_union(::Type{T}) where T
-        if T === Union{}
-            return Union{}
-        elseif T isa UnionAll
-            return Any # TODO: compute more precise bounds
-        elseif T isa Union
-            return promote_type(promote_type_union(T.a), promote_type_union(T.b))
-        elseif T <: Tuple
-            return typejoin_union_tuple(T)
-        else
-            return T
-        end
-    end
 else
-    promote_type_union(::Type) = Any
+    typejoin_union_tuple(::Type) = Any
+end
+
+# Identical to `Base.promote_typejoin` except that it uses `promote_type`
+# instead of `typejoin` to combine members of `Union` types
+function promote_type_union(::Type{T}) where T
+    if T === Union{}
+        return Union{}
+    elseif T isa UnionAll
+        return Any # TODO: compute more precise bounds
+    elseif T isa Union
+        return promote_type(promote_type_union(T.a), promote_type_union(T.b))
+    elseif T <: Tuple
+        return typejoin_union_tuple(T)
+    else
+        return T
+    end
 end
 
 function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmissing}

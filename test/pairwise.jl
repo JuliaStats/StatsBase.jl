@@ -259,6 +259,21 @@ arbitrary_fun(x, y) = cor(x, y)
         end
     end
 
+    @testset "promote_type_union" begin
+        @test StatsBase.promote_type_union(Union{Int, Float64}) === Float64
+        @test StatsBase.promote_type_union(Union{Int, Missing}) === Union{Int, Missing}
+        @test StatsBase.promote_type_union(Union{Int, String}) === Any
+        @test StatsBase.promote_type_union(Vector) === Any
+        @test StatsBase.promote_type_union(Union{}) === Union{}
+        if VERSION >= v"1.6.0-DEV"
+            @test StatsBase.promote_type_union(Tuple{Union{Int, Float64}}) ===
+                Tuple{Real}
+        else
+            @test StatsBase.promote_type_union(Tuple{Union{Int, Float64}}) ===
+                Any
+        end
+    end
+
     @testset "type-unstable corner case (#771)" begin
         v = [rand(5) for _=1:10]
         function f(v)
