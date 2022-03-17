@@ -897,6 +897,7 @@ median, 75th percentile, and maxmimum.
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
+    a = length(size(a)) != 1 ? a[:] : a
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
     R = typeof(m)
