@@ -194,11 +194,10 @@ mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
         # We do not handle -0.0 in ranges correctly in `binindex` for performance
         # Constructing ranges starting or ending with -0.0 is very hard,
         # and ranges containing -0.0 elsewhere virtually impossible,
-        # so check the former just in case as it is cheap
+        # but check this just in case as it is cheap
         foreach(edges) do e
-            e isa AbstractRange &&
-                (isequal(first(e), -0.0) || isequal(last(e), -0.0)) &&
-                throw(ArgumentError("ranges starting or ending with -0.0 not allowed in edges"))
+            e isa AbstractRange && any(isequal(-0.0), e) &&
+                throw(ArgumentError("ranges containing -0.0 not allowed in edges"))
         end
         new{T,N,E}(edges,weights,closed,isdensity)
     end
