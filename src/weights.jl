@@ -382,6 +382,14 @@ Compute the weighted sum of an array `v` with weights `w`, optionally over the d
 """
 wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = transpose(w) * vec(v)
 
+# Optimized methods (to ensure we use BLAS when possible)
+for W in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+    @eval begin
+        wsum(v::AbstractArray, w::$W, dims::Colon) = transpose(w.values) * vec(v)
+    end
+end
+wsum(v::AbstractArray, w::UnitWeights, dims::Colon) = sum(v)
+
 ## wsum along dimension
 #
 #  Brief explanation of the algorithm:
