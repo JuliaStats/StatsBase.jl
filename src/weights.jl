@@ -388,7 +388,11 @@ for W in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
         wsum(v::AbstractArray, w::$W, dims::Colon) = transpose(w.values) * vec(v)
     end
 end
-wsum(v::AbstractArray, w::UnitWeights, dims::Colon) = sum(v)
+
+function wsum(A::AbstractArray, w::UnitWeights, dims::Colon)
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A)
+end
 
 ## wsum along dimension
 #
@@ -612,12 +616,6 @@ optionally over the dimension `dims`.
 """
 Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:) =
     wsum(A, w, dims)
-
-function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = (dims === :) ? length(A) : size(A, dims)
-    a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims=dims)
-end
 
 ##### Weighted means #####
 
