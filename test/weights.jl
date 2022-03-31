@@ -476,7 +476,7 @@ end
 @testset "Sum, mean, quantiles and variance for unit weights" begin
     wt = uweights(Float64, 3)
 
-    @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
+    @test sum([1.0, 2.0, 3.0], wt) ≈ wsum([1.0, 2.0, 3.0], wt) ≈ 6.0
     @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
 
     @test sum(a, wt, dims=1) ≈ sum(a, dims=1)

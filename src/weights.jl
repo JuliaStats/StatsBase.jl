@@ -382,6 +382,18 @@ Compute the weighted sum of an array `v` with weights `w`, optionally over the d
 """
 wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = transpose(w) * vec(v)
 
+# Optimized methods (to ensure we use BLAS when possible)
+for W in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+    @eval begin
+        wsum(v::AbstractArray, w::$W, dims::Colon) = transpose(w.values) * vec(v)
+    end
+end
+
+function wsum(A::AbstractArray, w::UnitWeights, dims::Colon)
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A)
+end
+
 ## wsum along dimension
 #
 #  Brief explanation of the algorithm:
@@ -604,12 +616,6 @@ optionally over the dimension `dims`.
 """
 Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:) =
     wsum(A, w, dims)
-
-function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = (dims === :) ? length(A) : size(A, dims)
-    a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims=dims)
-end
 
 ##### Weighted means #####
 
