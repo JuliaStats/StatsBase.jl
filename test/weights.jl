@@ -239,6 +239,8 @@ a = reshape(1.0:27.0, 3, 3, 3)
 @testset "Sum $f" for f in weight_funcs
     @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
+    @test sum([1 + 2im, 2 + 3im], f([1.0, 0.5])) ≈ 2 + 3.5im
+    @test sum([[1, 2], [3, 4]], f([2, 3])) == [11, 16]
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
         @test sum(a, f(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
@@ -250,6 +252,7 @@ end
 @testset "Mean $f" for f in weight_funcs
     @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
     @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
+    @test mean([1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ 2 + 3im
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
         @test mean(a, f(wt), dims=1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)/sum(wt)
@@ -473,7 +476,7 @@ end
 @testset "Sum, mean, quantiles and variance for unit weights" begin
     wt = uweights(Float64, 3)
 
-    @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
+    @test sum([1.0, 2.0, 3.0], wt) ≈ wsum([1.0, 2.0, 3.0], wt) ≈ 6.0
     @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
 
     @test sum(a, wt, dims=1) ≈ sum(a, dims=1)
@@ -502,53 +505,62 @@ end
 end
 
 @testset "Exponential Weights" begin
+    λ = 0.2
     @testset "Usage" begin
-        θ = 5.25
-        λ = 1 - exp(-1 / θ)     # simple conversion for the more common/readable method
-        v = [λ*(1-λ)^(1-i) for i = 1:4]
+        v = [(1 - λ) ^ (4 - i) for i = 1:4]
         w = Weights(v)
 
-        @test round.(w, digits=4) == [0.1734, 0.2098, 0.2539, 0.3071]
+        @test round.(w, digits=4) == [0.512, 0.64, 0.8, 1.0]
 
         @testset "basic" begin
-            @test eweights(1:4, λ) ≈ w
+            @test eweights(1:4, λ; scale=true) ≈ w
         end
 
         @testset "1:n" begin
-            @test eweights(4, λ) ≈ w
+            @test eweights(4, λ; scale=true) ≈ w
         end
 
         @testset "indexin" begin
-            v = [λ*(1-λ)^(1-i) for i = 1:10]
+            v = [(1 - λ) ^ (10 - i) for i = 1:10]
 
             # Test that we should be able to skip indices easily
-            @test eweights([1, 3, 5, 7], 1:10, λ) ≈ Weights(v[[1, 3, 5, 7]])
+            @test eweights([1, 3, 5, 7], 1:10, λ; scale=true) ≈ Weights(v[[1, 3, 5, 7]])
 
             # This should also work with actual time types
             t1 = DateTime(2019, 1, 1, 1)
             tx = t1 + Hour(7)
-            tn = DateTime(2019, 1, 2, 1)
+            tn = DateTime(2019, 1, 1, 10)
 
-            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ) ≈ Weights(v[[1, 3, 5, 7]])
+            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ; scale=true) ≈ Weights(v[[1, 3, 5, 7]])
         end
     end
 
     @testset "Empty" begin
-        @test eweights(0, 0.3) == Weights(Float64[])
-        @test eweights(1:0, 0.3) == Weights(Float64[])
-        @test eweights(Int[], 1:10, 0.4) == Weights(Float64[])
+        @test eweights(0, 0.3; scale=true) == Weights(Float64[])
+        @test eweights(1:0, 0.3; scale=true) == Weights(Float64[])
+        @test eweights(Int[], 1:10, 0.4; scale=true) == Weights(Float64[])
     end
 
     @testset "Failure Conditions" begin
         # λ > 1.0
-        @test_throws ArgumentError eweights(1, 1.1)
+        @test_throws ArgumentError eweights(1, 1.1; scale=true)
 
         # time indices are not all positive non-zero integers
-        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3)
+        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3; scale=true)
 
         # Passing in an array of bools will work because Bool <: Integer,
         # but any `false` values will trigger the same argument error as 0.0
-        @test_throws ArgumentError eweights([true, false, true, true], 0.3)
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3; scale=true)
+    end
+
+    @testset "scale=false" begin
+        v = [λ * (1 - λ)^(1 - i) for i = 1:4]
+        w = Weights(v)
+
+        @test round.(w, digits=4) == [0.2, 0.25, 0.3125, 0.3906]
+
+        wv = eweights(1:10, λ; scale=false)
+        @test eweights(1:10, λ; scale=true) ≈ wv / maximum(wv)
     end
 end
 

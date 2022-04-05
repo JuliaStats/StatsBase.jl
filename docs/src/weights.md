@@ -149,5 +149,5 @@ fweights
 pweights
 eweights
 uweights
-weights
+weights(vs::AbstractArray{<:Real})
 ```

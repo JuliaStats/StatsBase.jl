@@ -92,15 +92,15 @@ _scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
 ## weighted cov
 covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
      corrected::DepBool=nothing) =
-    rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, corrected)))
+    rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, :corrected, corrected)))
 
 
 cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing) =
-    covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, corrected))
+    covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, :corrected, corrected))
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
     c = covm(x, mean, w, vardim; corrected=false)
-    s = stdm(x, w, mean, vardim; corrected=false)
+    s = std(x, w, vardim; mean=mean, corrected=false)
     cov2cor!(c, s)
 end
 
@@ -120,7 +120,7 @@ end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
                       corrected::DepBool=nothing)
     m = mean(x, wv, dims=dims)
-    return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, corrected))
+    return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, :corrected, corrected))
 end
 
 """

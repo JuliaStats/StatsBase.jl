@@ -20,11 +20,13 @@ w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
     @testset "Variance" begin
         @test var(x, wv; corrected=false)           ≈ expected_var
         @test var(x, wv; mean=m, corrected=false)   ≈ expected_var
+        @test varm(x, wv, m; corrected=false)       ≈ expected_var
     end
 
     @testset "Standard Deviation" begin
         @test std(x, wv; corrected=false)           ≈ expected_std
         @test std(x, wv; mean=m, corrected=false)   ≈ expected_std
+        @test stdm(x, wv, m; corrected=false)       ≈ expected_std
     end
 
     @testset "Mean and Variance" begin
@@ -62,6 +64,7 @@ expected_std = sqrt.(expected_var)
         else
             @test var(x, wv; corrected=true)           ≈ expected_var[i]
             @test var(x, wv; mean=m, corrected=true)   ≈ expected_var[i]
+            @test varm(x, wv, m; corrected=true)       ≈ expected_var[i]
         end
     end
 
@@ -71,6 +74,7 @@ expected_std = sqrt.(expected_var)
         else
             @test std(x, wv; corrected=true)           ≈ expected_std[i]
             @test std(x, wv; mean=m, corrected=true)   ≈ expected_std[i]
+            @test stdm(x, wv, m; corrected=true)       ≈ expected_std[i]
         end
     end
 
@@ -119,10 +123,12 @@ w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
     expected_std2 = sqrt.(expected_var2)
 
     @testset "Variance" begin
-        @test var(x, wv1, 1; corrected=false) ≈ expected_var1
-        @test var(x, wv2, 2; corrected=false) ≈ expected_var2
+        @test var(x, wv1, 1; corrected=false)          ≈ expected_var1
+        @test var(x, wv2, 2; corrected=false)          ≈ expected_var2
         @test var(x, wv1, 1; mean=m1, corrected=false) ≈ expected_var1
         @test var(x, wv2, 2; mean=m2, corrected=false) ≈ expected_var2
+        @test varm(x, wv1, m1, 1; corrected=false)     ≈ expected_var1
+        @test varm(x, wv2, m2, 2; corrected=false)     ≈ expected_var2
     end
 
     @testset "Standard Deviation" begin
@@ -130,6 +136,8 @@ w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
         @test std(x, wv2, 2; corrected=false)          ≈ expected_std2
         @test std(x, wv1, 1; mean=m1, corrected=false) ≈ expected_std1
         @test std(x, wv2, 2; mean=m2, corrected=false) ≈ expected_std2
+        @test stdm(x, wv1, m1, 1; corrected=false)     ≈ expected_std1
+        @test stdm(x, wv2, m2, 2; corrected=false)     ≈ expected_std2
     end
 
     @testset "Mean and Variance" begin
@@ -182,10 +190,12 @@ end
         if isa(wv1, Weights)
             @test_throws ArgumentError var(x, wv1, 1; corrected=true)
         else
-            @test var(x, wv1, 1; corrected=true) ≈ expected_var1
-            @test var(x, wv2, 2; corrected=true) ≈ expected_var2
+            @test var(x, wv1, 1; corrected=true)          ≈ expected_var1
+            @test var(x, wv2, 2; corrected=true)          ≈ expected_var2
             @test var(x, wv1, 1; mean=m1, corrected=true) ≈ expected_var1
             @test var(x, wv2, 2; mean=m2, corrected=true) ≈ expected_var2
+            @test varm(x, wv1, m1, 1; corrected=true)     ≈ expected_var1
+            @test varm(x, wv2, m2, 2; corrected=true)     ≈ expected_var2
         end
     end
 
@@ -197,6 +207,8 @@ end
             @test std(x, wv2, 2; corrected=true)          ≈ expected_std2
             @test std(x, wv1, 1; mean=m1, corrected=true) ≈ expected_std1
             @test std(x, wv2, 2; mean=m2, corrected=true) ≈ expected_std2
+            @test stdm(x, wv1, m1, 1; corrected=true)     ≈ expected_std1
+            @test stdm(x, wv2, m2, 2; corrected=true)     ≈ expected_std2
         end
     end
 

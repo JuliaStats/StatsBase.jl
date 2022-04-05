@@ -8,6 +8,7 @@ import DataAPI: describe
 import DataStructures: heapify!, heappop!, percolate_down!
 using SortingAlgorithms
 using Missings
+using LogExpFunctions: xlogx, xlogy
 
 using Statistics
 using LinearAlgebra
@@ -19,11 +20,31 @@ import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
                    cor, corm, cov2cor!, unscaled_covzm, quantile, sqrt!,
                    median, middle
-import StatsAPI: pairwise, pairwise!
+using StatsAPI: StatisticalModel, RegressionModel
+import StatsAPI: pairwise, pairwise!, params, params!,
+                 fitted, response, responsename, meanresponse, modelmatrix,
+                 crossmodelmatrix, leverage, cooksdistance, residuals, predict,
+                 predict!, dof_residual, coef, coefnames, coeftable, confint,
+                 deviance, islinear, nulldeviance, loglikelihood, nullloglikelihood,
+                 loglikelihood, loglikelihood, score, nobs, dof, mss, rss,
+                 informationmatrix, stderror, vcov, weights, isfitted, fit, fit!,
+                 aic, aicc, bic, r2, r², adjr2, adjr²
 
     ## tackle compatibility issues
 
 export
+
+    ## functions defined in Statistics
+    cor,
+    cov,
+    mean,
+    mean!,
+    median,
+    median!,
+    quantile,
+    quantile!,
+    std,
+    var,
 
     ## weights
     AbstractWeights,    # abstract type to represent any weight vector
@@ -60,8 +81,10 @@ export
     zscore,      # compute Z-scores
     zscore!,     # compute Z-scores inplace or to a pre-allocated array
 
-    percentile,  # quantile using percentage (instead of fraction) as argument
-    nquantile,   # quantiles at [0:n]/n
+    percentile,     # quantile using percentage (instead of fraction) as argument
+    nquantile,      # quantiles at [0:n]/n
+    quantilerank,   # quantile-position (0-1) of a value relative to a collection
+    percentilerank, # percentile-position (0-100) of a value relative to a collection
 
     span,        # The range minimum(x):maximum(x)
     variation,   # ratio of standard deviation to mean
