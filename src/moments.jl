@@ -1,3 +1,8 @@
+require_accu_mean(x::AbstractArray) = length(x)≥4 && x[1]==x[2]==x[end-1]==x[end]
+
+calc_∆m(x::AbstractArray, m::Number) = sum(xᵢ->xᵢ-m, x) / length(x)
+calc_∆m(x::AbstractArray, w::AbstractWeights, m::Number) = mapreduce((xᵢ,wᵢ)->(xᵢ-m)*wᵢ, +, x, w) / sum(w)
+
 ##### Weighted var & std
 
 ## var
@@ -100,6 +105,7 @@ See [`var`](@ref) documentation for more details.
 """
 function mean_and_var(x; corrected::Bool=true)
     m = mean(x)
+    require_accu_mean(x) && (m += calc_∆m(x, m))
     v = var(x, mean=m, corrected=corrected)
     m, v
 end
@@ -116,33 +122,36 @@ See [`std`](@ref) documentation for more details.
 """
 function mean_and_std(x; corrected::Bool=true)
     m = mean(x)
+    require_accu_mean(x) && (m += calc_∆m(x, m))
     s = std(x, mean=m, corrected=corrected)
     m, s
 end
 
 function mean_and_var(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
     m = mean(x, w)
+    require_accu_mean(x) && (m += calc_∆m(x, m))
     v = var(x, w, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
+
 function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
     m = mean(x, w)
+    require_accu_mean(x) && (m += calc_∆m(x, w, m))
     s = std(x, w, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
     m, s
 end
-
 
 function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims=dim)
     v = var(x, dims=dim, mean=m, corrected=corrected)
     m, v
 end
+
 function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims=dim)
     s = std(x, dims=dim, mean=m, corrected=corrected)
     m, s
 end
-
 
 function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
@@ -150,6 +159,7 @@ function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
     v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
+
 function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
