@@ -1,7 +1,76 @@
 require_accu_mean(x::AbstractArray) = length(x)≥4 && x[1]==x[2]==x[end-1]==x[end]
+require_accu_mean(x::AbstractArray, 
+                  ci::CartesianIndex{K},  # location of vector to examine
+                  ∆ci::CartesianIndex{K},  # (0, ..., 0, 1, 0, ..., 0); CartesianIndex(ntuple(k->k==dim, Val(K))) 
+                  N::Int  # size(x, dim)
+                  ) where {K} =
+    N≥4 && x[ci+∆ci] == x[ci+2∆ci] == x[ci+(N-1)∆ci] == x[ci+N*∆ci]
 
-calc_∆m(x::AbstractArray, m::Number) = sum(xᵢ->xᵢ-m, x) / length(x)
-calc_∆m(x::AbstractArray, w::AbstractWeights, m::Number) = mapreduce((xᵢ,wᵢ)->(xᵢ-m)*wᵢ, +, x, w) / sum(w)
+# For non-array x (e.g., iterator)
+function require_accu_mean(x)
+    vs₁ = iterate(x)
+    vs₁ === nothing && return false
+
+    val₁, st = vs₁
+    count = 1
+    while (count+=1) ≤ 4
+        vs = iterate(x, st)
+        vs === nothing && return false  # do not require accurate mean Inf length(x) < 4
+        val, st = vs
+        val != val₁ && return false
+    end
+
+    return true
+end
+    
+function calc_∆m(x, m::Number)
+    ∆m = zero(m)
+
+    vs = iterate(x)
+    count = 0
+    while vs !== nothing
+        count += 1
+        val, st = vs
+        ∆m += val - m
+        vs = iterate(x, st)
+    end
+    ∆m /= count
+
+    return ∆m
+end
+
+calc_∆m(x, w::AbstractWeights, m::Number) = mapreduce((xᵢ,wᵢ)->(xᵢ-m)*wᵢ, +, x, w) / sum(w)
+function calc_∆m(x::AbstractArray, 
+                 m::Number,  # mean calculated with rounding errors
+                 ci::CartesianIndex{K},  # location of vector to examine
+                 ∆ci::CartesianIndex{K},  # (0, ..., 0, 1, 0, ..., 0); CartesianIndex(ntuple(k->k==dim, Val(K))) 
+                 N::Int  # size(x, dim)
+                 ) where {K}
+    ∆m = zero(m)
+    for j = 1:N
+        ∆m += x[ci+j*∆ci]
+    end
+    ∆m /= N
+
+    return ∆m
+end
+
+function calc_∆m(x::AbstractArray,
+                 w::AbstractWeights,
+                 m::Number,  # mean calculated with rounding errors
+                 ci::CartesianIndex{K},  # location of vector to examine
+                 ∆ci::CartesianIndex{K},  # (0, ..., 0, 1, 0, ..., 0); CartesianIndex(ntuple(k->k==dim, Val(K))) 
+                 N::Int  # size(x, dim)
+                 ) where {K}
+    ∆m = zero(m)
+    for j = 1:N
+        ∆m += w[j] * x[ci+j*∆ci]
+    end
+    ∆m /= sum(w)
+
+    return ∆m
+end
+
 
 ##### Weighted var & std
 
