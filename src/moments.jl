@@ -143,12 +143,34 @@ end
 
 function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims=dim)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dim]
+
+    CI = CartesianIndices(ntuple(k->(k==dim ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dim ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, m, ci, ∆ci, N))
+    end
+
     v = var(x, dims=dim, mean=m, corrected=corrected)
     m, v
 end
 
 function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims=dim)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dim]
+
+    CI = CartesianIndices(ntuple(k->(k==dim ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dim ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, m, ci, ∆ci, N))
+    end
+
     s = std(x, dims=dim, mean=m, corrected=corrected)
     m, s
 end
@@ -156,6 +178,17 @@ end
 function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dims]
+
+    CI = CartesianIndices(ntuple(k->(k==dims ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dims ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, w, m, ci, ∆ci, N))
+    end
+
     v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
@@ -163,6 +196,17 @@ end
 function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dims]
+
+    CI = CartesianIndices(ntuple(k->(k==dims ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dims ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, w, m, ci, ∆ci, N))
+    end
+
     s = std(x, w, dims, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
     m, s
 end
