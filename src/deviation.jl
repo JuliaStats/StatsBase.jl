@@ -9,13 +9,10 @@ Count the number of indices at which the elements of the arrays
 `a` and `b` are equal.
 """
 function counteq(a::AbstractArray, b::AbstractArray)
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    length(a) == length(b) || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    for i = 1:n
-        @inbounds if a[i] == b[i]
-            c += 1
-        end
+    for i = eachindex(a, b)
+        c += (a[i] == b[i])
     end
     return c
 end
@@ -28,13 +25,10 @@ Count the number of indices at which the elements of the arrays
 `a` and `b` are not equal.
 """
 function countne(a::AbstractArray, b::AbstractArray)
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    length(a) == length(b) || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    for i = 1:n
-        @inbounds if a[i] != b[i]
-            c += 1
-        end
+    for i = eachindex(a, b)
+        c += (a[i] != b[i])
     end
     return c
 end
@@ -47,11 +41,10 @@ Compute the squared L2 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|^
 Efficient equivalent of `sumabs2(a - b)`.
 """
 function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
+    length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for i = 1:n
-        @inbounds r += abs2(a[i] - b[i])
+    for i = eachindex(a, b)
+        r += abs2(a[i] - b[i])
     end
     return r
 end
@@ -75,11 +68,10 @@ Compute the L1 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|``.
 Efficient equivalent of `sum(abs, a - b)`.
 """
 function L1dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
+    length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for i = 1:n
-        @inbounds r += abs(a[i] - b[i])
+    for i = eachindex(a, b)
+        r += abs(a[i] - b[i])
     end
     return r
 end
@@ -94,11 +86,10 @@ two arrays: ``\\max_{i\\in1:n} |a_i - b_i|``.
 Efficient equivalent of `maxabs(a - b)`.
 """
 function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
-    n = length(a)
-    length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
+    length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for i = 1:n
-        @inbounds v = abs(a[i] - b[i])
+    for i = eachindex(a, b)
+        v = abs(a[i] - b[i])
         if r < v
             r = v
         end
@@ -118,9 +109,9 @@ Efficient equivalent of `sum(a*log(a/b)-a+b)`.
 function gkldiv(a::AbstractArray{T}, b::AbstractArray{T}) where T<:AbstractFloat
     n = length(a)
     r = 0.0
-    for i = 1:n
-        @inbounds ai = a[i]
-        @inbounds bi = b[i]
+    for i = eachindex(a, b)
+        ai = a[i]
+        bi = b[i]
         if ai > 0
             r += (ai * log(ai / bi) - ai + bi)
         else
