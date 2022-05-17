@@ -125,11 +125,8 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
 
     xlevels, ylevels = levels
 
-    axes(x) == axes(y) ||
-        throw(DimensionMismatch("x and y must have the same axes, but got $(axes(x)) and $(axes(y))"))
 
-    axes(r) == (axes(xlevels, 1), axes(ylevels, 1)) ||
-        throw(DimensionMismatch("axes(r) must correspond to the axes of levels, but got $(axes(r)) ≠ $(axes(xlevels, 1)), $(axes(ylevels, 1))"))
+    checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
 
     mx0 = first(xlevels)
     mx1 = last(xlevels)
@@ -139,7 +136,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
     bx = mx0 - 1
     by = my0 - 1
 
-    for i in eachindex(x, y)
+    for i in eachindex(vec(x), vec(y))
         xi = x[i]
         yi = y[i]
         if (mx0 <= xi <= mx1) && (my0 <= yi <= my1)
@@ -163,8 +160,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
 
     xlevels, ylevels = levels
 
-    axes(r) == (axes(xlevels, 1), axes(ylevels, 1)) || throw(DimensionMismatch(
-        "axes(r) must correspond to the axes of levels, got $(axes(r)) ≠ $(axes(xlevels, 1)), $(axes(ylevels, 1))"))
+    checkbounds(r, axes(xlevels, 1), axes(ylevels, 1))
 
     mx0 = first(xlevels)
     mx1 = last(xlevels)
