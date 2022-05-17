@@ -44,8 +44,8 @@ end
 function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
     # add wv weighted counts of integers from x that fall within levels to r
 
-    length(x) == length(wv) || throw(DimensionMismatch(
-        "x and wv must have the same length, got $(length(x)) and $(length(wv))"))
+    length(x) == length(wv) ||
+        throw(DimensionMismatch("x and wv must have the same length, got $(length(x)) and $(length(wv))"))
 
     xv = vec(x) # discard shape because weights() discards shape
 
