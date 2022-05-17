@@ -89,7 +89,7 @@ function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
     for (ai, bi) = zip(a, b)
-        v = abs(a[i] - b[i])
+        v = abs(ai - bi)
         if r < v
             r = v
         end
