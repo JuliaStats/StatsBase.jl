@@ -15,7 +15,7 @@ macro weights(name)
         end
         function $(esc(name))(values::AbstractVector{<:Real})
             Base.require_one_based_indexing(values)
-            $(esc(name))(values, sum(values))
+            return $(esc(name))(values, sum(values))
         end
     end
 end
