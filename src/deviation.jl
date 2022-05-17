@@ -11,8 +11,8 @@ Count the number of indices at which the elements of the arrays
 function counteq(a::AbstractArray, b::AbstractArray)
     length(a) == length(b) || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    @inbounds for i = eachindex(a, b)
-        c += (a[i] == b[i])
+    for (ai, bi) = zip(a, b)
+        c += (ai == bi)
     end
     return c
 end
@@ -27,8 +27,8 @@ Count the number of indices at which the elements of the arrays
 function countne(a::AbstractArray, b::AbstractArray)
     length(a) == length(b) || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    @inbounds for i = eachindex(a, b)
-        c += (a[i] != b[i])
+    for (ai, bi) = zip(a, b)
+        c += (ai != bi)
     end
     return c
 end
@@ -43,8 +43,8 @@ Efficient equivalent of `sumabs2(a - b)`.
 function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    @inbounds for i = eachindex(a, b)
-        r += abs2(a[i] - b[i])
+    for (ai, bi) = zip(a, b)
+        r += abs2(ai - bi)
     end
     return r
 end
@@ -70,8 +70,8 @@ Efficient equivalent of `sum(abs, a - b)`.
 function L1dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    @inbounds for i = eachindex(a, b)
-        r += abs(a[i] - b[i])
+    for (ai, bi) = zip(a, b)
+        r += abs(ai - bi)
     end
     return r
 end
@@ -88,7 +88,7 @@ Efficient equivalent of `maxabs(a - b)`.
 function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    @inbounds for i = eachindex(a, b)
+    for (ai, bi) = zip(a, b)
         v = abs(a[i] - b[i])
         if r < v
             r = v
@@ -109,9 +109,7 @@ Efficient equivalent of `sum(a*log(a/b)-a+b)`.
 function gkldiv(a::AbstractArray{T}, b::AbstractArray{T}) where T<:AbstractFloat
     n = length(a)
     r = 0.0
-    @inbounds for i = eachindex(a, b)
-        ai = a[i]
-        bi = b[i]
+    for (ai, bi) = zip(a, b)
         if ai > 0
             r += (ai * log(ai / bi) - ai + bi)
         else
