@@ -23,9 +23,9 @@ const RealFP = Union{Float32, Float64}
 # A convenient typealias for deprecating default corrected Bool
 const DepBool = Union{Bool, Nothing}
 
-function depcheck(fname::Symbol, b::DepBool)
-    if b == nothing
-        msg = "$fname will default to corrected=true in the future. Use corrected=false for previous behaviour."
+function depcheck(fname::Symbol, varname::Symbol, b::DepBool)
+    if b === nothing
+        msg = "$fname will default to $varname=true in the future. Use $varname=false for previous behaviour."
         Base.depwarn(msg, fname)
         false
     else

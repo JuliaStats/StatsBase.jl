@@ -69,13 +69,13 @@ and [`ProbabilityWeights`](@ref).
 """ Weights
 
 """
-    weights(vs)
+    weights(vs::AbstractArray{<:Real})
 
 Construct a `Weights` vector from array `vs`.
 See the documentation for [`Weights`](@ref) for more details.
 """
-weights(vs::RealVector) = Weights(vs)
 weights(vs::RealArray) = Weights(vec(vs))
+weights(vs::RealVector) = Weights(vs)
 
 """
     varcorrection(w::Weights, corrected=false)
@@ -206,16 +206,22 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 end
 
 """
-    eweights(t::AbstractVector{<:Integer}, λ::Real)
-    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real) where T
-    eweights(n::Integer, λ::Real)
+    eweights(t::AbstractVector{<:Integer}, λ::Real; scale=false)
+    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real; scale=false) where T
+    eweights(n::Integer, λ::Real; scale=false)
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
-observations, which in this case corresponds to larger integer values `i` in `t`.
-If an integer `n` is provided, weights are generated for values from 1 to `n`
-(equivalent to `t = 1:n`).
+observations (larger integer values `i` in `t`).
+The integer value `n` represents the number of past observations to consider.
+`n` defaults to `maximum(t) - minimum(t) + 1` if only `t` is passed in
+and the elements are integers, and to `length(r)` if a superset range `r` is also passed in.
+If `n` is explicitly passed instead of `t`, `t` defaults to `1:n`.
 
-For each element `i` in `t` the weight value is computed as:
+If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
+
+``(1 - λ)^{n - i}``
+
+If `scale` is `false` then each value is computed as:
 
 ``λ (1 - λ)^{1 - i}``
 
@@ -223,42 +229,59 @@ For each element `i` in `t` the weight value is computed as:
 
 - `t::AbstractVector`: temporal indices or timestamps
 - `r::StepRange`: a larger range to use when constructing weights from a subset of timestamps
-- `n::Integer`: if provided instead of `t`, temporal indices are taken to be `1:n`
+- `n::Integer`: the number of past events to consider
 - `λ::Real`: a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
   As this value approaches 0, the resulting weights will be almost equal,
   while values closer to 1 will put greater weight on the tail elements of the vector.
 
+# Keyword arguments
+
+- `scale::Bool`: Return the weights scaled to between 0 and 1 (default: false)
+
 # Examples
 ```julia-repl
-julia> eweights(1:10, 0.3)
+julia> eweights(1:10, 0.3; scale=true)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
- 0.3
- 0.42857142857142855
- 0.6122448979591837
- 0.8746355685131197
- 1.249479383590171
- 1.7849705479859588
- 2.549957925694227
- 3.642797036706039
- 5.203995766722913
- 7.434279666747019
+ 0.04035360699999998
+ 0.05764800999999997
+ 0.08235429999999996
+ 0.11764899999999996
+ 0.16806999999999994
+ 0.24009999999999995
+ 0.3429999999999999
+ 0.48999999999999994
+ 0.7
+ 1.0
 ```
+# Links
+- https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+- https://en.wikipedia.org/wiki/Exponential_smoothing
 """
-function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
+function eweights(t::AbstractVector{<:Integer}, λ::Real; kwargs...)
+    isempty(t) && return Weights(copy(t), 0)
+    (lo, hi) = extrema(t)
+    return _eweights(t, λ, hi - lo + 1; kwargs...)
+end
+
+eweights(n::Integer, λ::Real; kwargs...) = _eweights(1:n, λ, n; kwargs...)
+eweights(t::AbstractVector, r::AbstractRange, λ::Real; kwargs...) =
+    _eweights(something.(indexin(t, r)), λ, length(r); kwargs...)
+
+function _eweights(t::AbstractVector{<:Integer}, λ::Real, n::Integer; scale::DepBool=nothing)
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
+    f = depcheck(:eweights, :scale, scale) ? _scaled_eweight : _unscaled_eweight
 
     w0 = map(t) do i
         i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
-        λ * (1 - λ)^(1 - i)
+        f(i, λ, n)
     end
 
     s = sum(w0)
     Weights(w0, s)
 end
 
-eweights(n::Integer, λ::Real) = eweights(1:n, λ)
-eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
-    eweights(something.(indexin(t, r)), λ)
+_unscaled_eweight(i, λ, n) = λ * (1 - λ)^(1 - i)
+_scaled_eweight(i, λ, n) = (1 - λ)^(n - i)
 
 # NOTE: no variance correction is implemented for exponential weights
 
@@ -326,7 +349,7 @@ uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
 """
     varcorrection(w::UnitWeights, corrected=false)
 
-* `corrected=true`: ``\\frac{n}{n - 1}``, where ``n`` is the length of the weight vector
+* `corrected=true`: ``\\frac{1}{n - 1}``, where ``n`` is the length of the weight vector
 * `corrected=false`: ``\\frac{1}{n}``, where ``n`` is the length of the weight vector
 
 This definition is equivalent to the correction applied to unweighted data.
@@ -359,9 +382,19 @@ Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
 Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
 """
-wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
-wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
-wsum(v::AbstractArray, w::AbstractVector, dims::Colon) = wsum(v, w)
+wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = transpose(w) * vec(v)
+
+# Optimized methods (to ensure we use BLAS when possible)
+for W in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+    @eval begin
+        wsum(v::AbstractArray, w::$W, dims::Colon) = transpose(w.values) * vec(v)
+    end
+end
+
+function wsum(A::AbstractArray, w::UnitWeights, dims::Colon)
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A)
+end
 
 ## wsum along dimension
 #
@@ -539,7 +572,7 @@ wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 """
     wsum!(R::AbstractArray, A::AbstractArray,
-          w::AbstractWeights{<:Real}, dim::Int;
+          w::AbstractVector, dim::Int;
           init::Bool=true)
 Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
 the result in `R`. If `init=false`, the sum is added to `R` rather than starting
@@ -578,19 +611,13 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
     wsum!(R, A, w, dim; init=init)
 
 """
-    sum(v::AbstractArray, w::AbstractVector{<:Real}; [dims])
+    sum(v::AbstractArray, w::AbstractWeights{<:Real}; [dims])
 
 Compute the weighted sum of an array `v` with weights `w`,
 optionally over the dimension `dims`.
 """
 Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:) =
     wsum(A, w, dims)
-
-function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = (dims === :) ? length(A) : size(A, dims)
-    a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims=dims)
-end
 
 ##### Weighted means #####
 

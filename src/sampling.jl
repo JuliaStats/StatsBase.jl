@@ -584,7 +584,7 @@ end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(Random.GLOBAL_RNG, a, wv, x)
 
-function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
+function make_alias_table!(w::AbstractVector, wsum,
                            a::AbstractVector{Float64},
                            alias::AbstractVector{Int})
     # Arguments:
@@ -595,8 +595,8 @@ function make_alias_table!(w::AbstractVector{Float64}, wsum::Float64,
     #   a [out]:        acceptance probabilities
     #   alias [out]:    alias table
     #
-    # Note: a and w can be the same way, then that away will be
-    #       overriden inplace by acceptance probabilities
+    # Note: a and w can be the same array, then that array will be
+    #       overwritten inplace by acceptance probabilities
     #
     # Returns nothing
     #
@@ -916,7 +916,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
             end
         end
     else
-        k <= n || error("Cannot draw $n samples from $k samples without replacement.")
+        k <= n || error("Cannot draw $k samples from $n samples without replacement.")
         efraimidis_aexpj_wsample_norep!(rng, a, wv, x; ordered=ordered)
     end
     return x

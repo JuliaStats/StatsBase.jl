@@ -226,6 +226,166 @@ returns a vector of quantiles, respectively at `[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]`.
 """
 nquantile(x, n::Integer) = quantile(x, (0:n)/n)
 
+"""
+    quantilerank(itr, value; method=:inc)
+
+Compute the quantile position in the [0, 1] interval of `value` relative to collection `itr`.
+
+Different definitions can be chosen via the `method` keyword argument.
+Let `count_less` be the number of elements of `itr` that are less than `value`, 
+`count_equal` the number of elements of `itr` that are equal to `value`, `n` the length of `itr`, 
+`greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`. 
+Then `method` supports the following definitions:
+
+- `:inc` (default): Return a value in the range 0 to 1 inclusive. 
+Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on 
+definition 7 of quantile in Hyndman and Fan (1996)
+(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
+This definition corresponds to the lower semi-continuous inverse of
+[`quantile`](@ref) with its default parameters.
+
+- `:exc`: Return a value in the range 0 to 1 exclusive.
+Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation 
+based on definition 6 of quantile in Hyndman and Fan (1996)
+(equivalent to Excel `PERCENTRANK.EXC`).
+
+- `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise 
+return `(count_less - 1) / (n - 1)`, without interpolation
+(equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
+
+- `:tied`: Return `(count_less + count_equal/2) / n`, without interpolation.
+Based on the definition in Roscoe, J. T. (1975)
+(equivalent to `"mean"` kind of SciPy `percentileofscore`).
+
+- `:strict`: Return `count_less / n`, without interpolation
+(equivalent to `"strict"` kind of SciPy `percentileofscore`).
+
+- `:weak`: Return `(count_less + count_equal) / n`, without interpolation
+(equivalent to `"weak"` kind of SciPy `percentileofscore`).
+
+!!! note
+    An `ArgumentError` is thrown if `itr` contains `NaN` or `missing` values
+    or if `itr` contains fewer than two elements.
+
+# References
+Roscoe, J. T. (1975). [Fundamental Research Statistics for the Behavioral Sciences]
+(http://www.bryanburnham.net/wp-content/uploads/2014/07/Fundamental-Statistics-for-the-Behavioral-Sciences-v2.0.pdf#page=57)",
+2nd ed., New York : Holt, Rinehart and Winston.
+
+Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
+(https://www.amherst.edu/media/view/129116/original/Sample+Quantiles.pdf)",
+*The American Statistician*, Vol. 50, No. 4, pp. 361-365.
+
+# Examples
+```julia
+julia> using StatsBase
+
+julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];
+
+julia> v2 = [1, 2, 3, 5, 6, missing, 8];
+
+julia> v3 = [1, 2, 3, 4, 4, 5, 6, 7, 8, 9];
+
+julia> quantilerank(v1, 2)
+0.3333333333333333
+
+julia> quantilerank(v1, 2, method=:exc), quantilerank(v1, 2, method=:tied)
+(0.36363636363636365, 0.35)
+
+# use `skipmissing` for vectors with missing entries.
+julia> quantilerank(skipmissing(v2), 4)
+0.5
+
+# use broadcasting with `Ref` to compute quantile rank for multiple values
+julia> quantilerank.(Ref(v3), [4, 8])
+2-element Vector{Float64}:
+ 0.3333333333333333
+ 0.8888888888888888
+```
+"""
+function quantilerank(itr, value; method::Symbol=:inc)
+    ((value isa Number && isnan(value)) || ismissing(value)) &&
+        throw(ArgumentError("`value` cannot be NaN or missing"))
+    any(x -> ismissing(x) || (x isa Number && isnan(x)), itr) &&
+        throw(ArgumentError("`itr` cannot contain missing or NaN entries"))
+
+    count_less = count_equal = n = 0
+    greatest_smaller = smallest_greater = value
+    for x in itr
+        if x == value
+            count_equal += 1
+        elseif x < value
+            count_less += 1
+            if greatest_smaller == value || greatest_smaller < x
+                greatest_smaller = x
+            end
+        else
+            if smallest_greater == value || smallest_greater > x
+                smallest_greater = x
+            end
+        end
+        n += 1
+    end
+
+    n == 0 && throw(ArgumentError("`itr` is empty. Pass a collection with at least two elements"))
+    n == 1 && throw(ArgumentError("`itr` has only 1 value. Pass a collection with at least two elements"))
+
+    if method == :inc
+        if greatest_smaller == value
+            return 0.0
+        elseif count_equal > 0
+            return count_less / (n - 1)
+        elseif smallest_greater == value
+            return 1.0
+        else
+            lower = (count_less - 1) / (n - 1)
+            upper = count_less / (n - 1)
+            ratio = (value - greatest_smaller) / (smallest_greater - greatest_smaller)
+            return lower + ratio * (upper - lower)
+        end
+    elseif method == :exc
+        if count_less == 0 && count_equal == 0
+            return 0.0
+        elseif count_less == 0
+            return 1.0 / (n + 1)
+        elseif count_equal > 0
+            return (count_less + 1) / (n + 1)
+        elseif smallest_greater == value
+            return 1.0
+        else
+            lower = count_less / (n + 1)
+            upper = (count_less + 1) / (n + 1)
+            ratio = (value - greatest_smaller) / (smallest_greater - greatest_smaller)
+            return lower + ratio * (upper - lower)
+        end
+    elseif method == :compete
+        if value > maximum(itr)
+            return 1.0
+        elseif value ≤ minimum(itr) 
+            return 0.0
+        else
+            value ∈ itr && (count_less += 1)
+            return (count_less - 1) / (n - 1)
+        end 
+    elseif method == :tied
+        return (count_less + count_equal/2) / n
+    elseif method == :strict
+        return count_less / n
+    elseif method == :weak
+        return (count_less + count_equal) / n
+    else
+        throw(ArgumentError("method=:$method is not valid. Pass :inc, :exc, :compete, :tied, :strict or :weak."))
+    end
+end
+
+"""
+    percentilerank(itr, value; method=:inc)
+
+Return the `q`th percentile of `value` in collection `itr`, i.e. [`quantilerank(itr, value)`](@ref) * 100.
+
+See the [`quantilerank`](@ref) docstring for more details.
+"""
+percentilerank(itr, value; method::Symbol=:inc) = quantilerank(itr, value, method=method) * 100
 
 #############################
 #
@@ -261,36 +421,101 @@ realXcY(x::Real, y::Real) = x*y
 realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
 
 """
-    sem(x)
+    sem(x; mean=nothing)
+    sem(x::AbstractArray[, weights::AbstractWeights]; mean=nothing)
 
-Return the standard error of the mean of collection `x`,
-i.e. `sqrt(var(x, corrected=true) / length(x))`.
+Return the standard error of the mean for a collection `x`.
+A pre-computed `mean` may be provided.
+
+When not using weights, this is the (sample) standard deviation
+divided by the sample size. If weights are used, the 
+variance of the sample mean is calculated as follows:
+
+* `AnalyticWeights`: Not implemented.
+* `FrequencyWeights`: ``\\frac{\\sum_{i=1}^n w_i (x_i - \\bar{x_i})^2}{(\\sum w_i) (\\sum w_i - 1)}``
+* `ProbabilityWeights`: ``\\frac{n}{n-1} \\frac{\\sum_{i=1}^n w_i^2 (x_i - \\bar{x_i})^2}{\\left( \\sum w_i \\right)^2}``
+
+The standard error is then the square root of the above quantities.
+
+# References
+
+Carl-Erik Särndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling.
+New York: Springer. pp. 51-53.
 """
-function sem(x)
-    y = iterate(x)
-    if y === nothing
+function sem(x; mean=nothing)
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)
-        # Return the NaN of the type that we would get, had this collection
-        # contained any elements (this is consistent with std)
-        return oftype(sqrt((abs2(zero(T)) + abs2(zero(T)))/2), NaN)
-    end
-    count = 1
-    value, state = y
-    y = iterate(x, state)
-    # Use Welford algorithm as seen in (among other places)
-    # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
-    M = value / 1
-    S = real(zero(M))
-    while y !== nothing
+        _mean = mean === nothing ? zero(T) / 1 : mean
+        z = abs2(zero(T) - _mean)
+        return oftype((z + z) / 2, NaN)
+    elseif mean === nothing
+        n = 0
+        y = iterate(x)
         value, state = y
-        y = iterate(x, state)
-        count += 1
-        new_M = M + (value - M) / count
-        S = S + realXcY(value - M, value - new_M)
-        M = new_M
+        # Use Welford algorithm as seen in (among other places)
+        # Knuth's TAOCP, Vol 2, page 232, 3rd edition.
+        _mean = value / 1
+        sse = real(zero(_mean))
+        while y !== nothing
+            value, state = y
+            y = iterate(x, state)
+            n += 1
+            new_mean = _mean + (value - _mean) / n
+            sse += realXcY(value - _mean, value - new_mean)
+            _mean = new_mean
+        end
+    else
+        n = 1
+        y = iterate(x)
+        value, state = y
+        sse = abs2(value - mean)
+        while (y = iterate(x, state)) !== nothing
+            value, state = y
+            n += 1
+            sse += abs2(value - mean)
+        end
     end
-    var = S / (count - 1)
-    return sqrt(var/count)
+    variance = sse / (n - 1)
+    return sqrt(variance / n)
+end
+
+function sem(x::AbstractArray; mean=nothing) 
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        T = eltype(x)
+        _mean = mean === nothing ? zero(T) / 1 : mean
+        z = abs2(zero(T) - _mean)
+        return oftype((z + z) / 2, NaN)
+    end
+    return sqrt(var(x; mean=mean, corrected=true) / length(x))
+end
+
+function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
+    if length(x) ≠ length(weights)
+        throw(DimensionMismatch("array and weights do not have the same length"))
+    end
+    return sem(x; mean=mean)
+end
+
+
+# Weighted methods for the above
+sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
+    sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
+
+function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
+    if isempty(x)
+        # Return the NaN of the type that we would get for a nonempty x
+        return var(x, weights; mean=mean, corrected=true) / 0
+    else
+        _mean = mean === nothing ? Statistics.mean(x, weights) : mean
+        # sum of squared errors = sse
+        sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
+            return abs2(w * (x_i - _mean))
+        end))
+        n = count(!iszero, weights)
+        return sqrt(sse * n / (n - 1)) / sum(weights)
+    end
 end
 
 # Median absolute deviation
@@ -307,11 +532,6 @@ If `normalize` is set to `true`, the MAD is multiplied by
 of the standard deviation under the assumption that the data is normally distributed.
 """
 function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constant=nothing)
-    if normalize === nothing
-        Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
-        normalize = true
-    end
-
     isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
     T = eltype(x)
     # Knowing the eltype allows allocating a single array able to hold both original values
