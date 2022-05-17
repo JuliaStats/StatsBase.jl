@@ -16,7 +16,7 @@ end
 
 #### functions for counting a single list of integers (1D)
 """
-    addcounts!(r, x, levels::UnitRange{<:Int}, [wv::AbstractWeights])
+    addcounts!(r, x, levels::UnitRange{<:Integer}, [wv::AbstractWeights])
 
 Add the number of occurrences in `x` of each value in `levels` to an existing
 array `r`.
