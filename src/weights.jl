@@ -5,7 +5,7 @@ abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: Abstrac
     @weights name
 
 Generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
-and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
+and stores the `values` (`V<:RealVector` using 1-based indexing) and `sum` (`S<:Real`).
 """
 macro weights(name)
     return quote
@@ -13,7 +13,10 @@ macro weights(name)
             values::V
             sum::S
         end
-        $(esc(name))(values::AbstractVector{<:Real}) = $(esc(name))(values, sum(values))
+        function $(esc(name))(values::AbstractVector{<:Real})
+            Base.require_one_based_indexing(values)
+            $(esc(name))(values, sum(values))
+        end
     end
 end
 
