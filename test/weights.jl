@@ -21,6 +21,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test wv ==  w
     @test sum(wv) === 6.0
     @test !isempty(wv)
+    @test Base.mightalias(w, wv)
+    @test !Base.mightalias([1], wv)
 
     b  = trues(3)
     bv = f(b)

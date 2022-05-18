@@ -445,9 +445,14 @@ items appear in the same order as in `a`) should be taken.
 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
+
+Output array `a` must not be the same object as `x` or `wv`
+nor share memory with them, or the result may be incorrect.
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array a must not share memory with input array x"))
     1 == firstindex(a) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
@@ -893,6 +898,10 @@ efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstra
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array a must not share memory with input array x"))
+    Base.mightalias(a, wv) &&
+        throw(ArgumentError("output array a must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
