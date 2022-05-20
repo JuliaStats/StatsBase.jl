@@ -245,3 +245,18 @@ test_same(replace=true, ordered=true)
 test_same(replace=false, ordered=true)
 test_same(replace=true, ordered=false)
 test_same(replace=false, ordered=false)
+
+# Test that sample! throws when output shares memory with inputs
+x = rand(10)
+y = rand(10)
+@test_throws ArgumentError sample!(x, x)
+@test_throws ArgumentError sample!(x, weights(y), x)
+@test_throws ArgumentError sample!(x, weights(x), y)
+@test_throws ArgumentError sample!(x, weights(x), x)
+@test_throws ArgumentError sample!(view(x, 2:4), view(x, 3:5))
+@test_throws ArgumentError sample!(view(x, 2:4), weights(view(x, 3:5)), y)
+@test_throws ArgumentError sample!(view(x, 2:4), weights(view(x, 3:5)), view(x, 1:2))
+# These corner cases should theoretically succeed
+# but the second currently fails as Base.mightalias is not smart enough
+sample!(view(x, 2:4), view(x, 5:6))
+@test_broken sample!(view(x, 2:4), weights(view(x, 5:6)), y)

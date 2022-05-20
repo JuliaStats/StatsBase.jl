@@ -22,6 +22,8 @@ sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 
+Base.dataids(wv::AbstractWeights) = Base.dataids(wv.values)
+
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 @propagate_inbounds function Base.getindex(wv::AbstractWeights, i::Integer)
@@ -347,7 +349,7 @@ uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
 """
     varcorrection(w::UnitWeights, corrected=false)
 
-* `corrected=true`: ``\\frac{1}{n - 1}``, where ``n`` is the length of the weight vector
+* `corrected=true`: ``\\frac{n}{n - 1}``, where ``n`` is the length of the weight vector
 * `corrected=false`: ``\\frac{1}{n}``, where ``n`` is the length of the weight vector
 
 This definition is equivalent to the correction applied to unweighted data.
