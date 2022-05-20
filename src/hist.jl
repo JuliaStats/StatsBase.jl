@@ -39,15 +39,6 @@ function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:left) where 
     histrange(F(lo), F(hi), n, closed)
 end
 
-# Base.floatrange has bugs and is not public API anymore
-# See https://github.com/JuliaLang/julia/issues/45336
-# Use a simplified implementation instead
-function _floatrange(start::F, step::F, len::Integer, divisor::F) where F
-    start = Base.TwicePrecision{Float64}((start, divisor))
-    step = Base.TwicePrecision{Float64}((step, divisor))
-    StepRangeLen(start, step, len)
-end
-
 function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
     if hi == lo
         start = F(hi)
@@ -105,7 +96,9 @@ function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
             len += one(F)
         end
     end
-    _floatrange(start,step,Int(len),divisor)
+    StepRangeLen(Base.TwicePrecision{Float64}((start, divisor)),
+                 Base.TwicePrecision{Float64}((step, divisor)),
+                 Int(len))
 end
 
 histrange(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) where {N} =
