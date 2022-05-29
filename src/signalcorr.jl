@@ -43,7 +43,7 @@ end
 
 default_autolags(lx::Int) = 0 : default_laglen(lx)
 
-_autodot(x::AbstractVector{<:RealFP}, lx::Int, l::Int) = dot(x, 1:(lx-l), x, (1+l):lx)
+_autodot(x::AbstractVector{<:Union{Float32, Float64}}, lx::Int, l::Int) = dot(x, 1:(lx-l), x, (1+l):lx)
 _autodot(x::AbstractVector, lx::Int, l::Int) = dot(view(x, 1:(lx-l)), view(x, (1+l):lx))
 
 
@@ -213,7 +213,7 @@ autocor(x::AbstractVecOrMat; demean::Bool=true) =
 
 default_crosslags(lx::Int) = (l=default_laglen(lx); -l:l)
 
-function _crossdot(x::AbstractVector{T}, y::AbstractVector{T}, lx::Int, l::Int) where {T<:RealFP}
+function _crossdot(x::AbstractVector, y::AbstractVector, lx::Int, l::Int)
     if l >= 0
         dot(x, 1:(lx-l), y, (1+l):lx)
     else
@@ -302,7 +302,7 @@ function crosscov!(r::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, lags
     return r
 end
 
-function crosscov!(r::AbstractArray{<:Any}, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
+function crosscov!(r::AbstractArray{<:Any,3}, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
@@ -458,7 +458,7 @@ function crosscor!(r::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, lags
     return r
 end
 
-function crosscor!(r::AbstractArray{<:Any}, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
+function crosscor!(r::AbstractArray{<:Any, 3}, x::AbstractMatrix, y::AbstractMatrix, lags::AbstractVector{<:Integer}; demean::Bool=true)
     lx = size(x, 1)
     nx = size(x, 2)
     ny = size(y, 2)
@@ -568,8 +568,9 @@ function pacf_regress!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVecto
 end
 
 function pacf_yulewalker!(r::AbstractMatrix, X::AbstractMatrix, lags::AbstractVector{<:Integer}, mk::Integer)
-    p = Vector{eltype(X)}(undef, mk)
-    y = Vector{eltype(X)}(undef, mk)
+    T = eltype(X)
+    p = Vector{T}(undef, mk)
+    y = Vector{T}(undef, mk)
     for j = 1 : size(X,2)
         acfs = autocor(X[:,j], 1:mk)
         durbin!(acfs, y, p)

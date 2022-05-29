@@ -29,6 +29,8 @@ cmplx_x2 = convert(AbstractVector{Complex}, x2)
 
 @test autocov([1:5;])          ≈ [2.0, 0.8, -0.2, -0.8, -0.8]
 @test autocor([1, 2, 3, 4, 5]) ≈ [1.0, 0.4, -0.1, -0.4, -0.4]
+@test_throws MethodError autocov([1 missing 2 3 4 5])
+@test_throws MethodError autocor([1 missing 2 3 4 5])
 
 acovx1 =  [0.755284179631112 + 0.0im,
            -0.005333112170365584 - 0.18633291805458002im,
@@ -144,7 +146,7 @@ function yulewalker_qr(v::AbstractVector)
     x = -A\b
 end
 function toeplitz(v::AbstractVector{T}) where T
-    N=length(v)
+    N = length(v)
     A = zeros(T, N - 1, N - 1)
     for n in 1:N-1
         A[n, n+1:end] = conj(v[2:N-n])
