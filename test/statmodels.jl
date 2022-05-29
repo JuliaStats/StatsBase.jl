@@ -82,6 +82,12 @@ ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
      df = 0.2422083248151139, p = 0.4530583319523316)
 ]
 
+ct = CoefTable(rand(1,100), ["c$i" for i in 1:100], [], 4)
+sct = sprint(show, ct, context=:limit=>false)
+@test length(first(split(sct, \'n'))) > 1000
+sct = sprint(show, ct, context=:limit=>true)
+@test length(first(split(sct, \'n'))) < 200
+
 @test sprint(show, PValue(1.0)) == "1.0000"
 @test sprint(show, PValue(1e-1)) == "0.1000"
 if VERSION > v"1.6.0-DEV"
