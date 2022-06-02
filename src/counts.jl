@@ -31,7 +31,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
 
     m0 = first(levels)
     m1 = last(levels)
-    b = m0 - 1
+    b = m0 - firstindex(levels) # firstindex(levels) == 1 because levels::IntUnitRange
 
     @inbounds for xi in x
         if m0 <= xi <= m1
