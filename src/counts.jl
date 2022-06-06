@@ -374,7 +374,7 @@ function _alg(x::AbstractArray)
         Base.DEFAULT_UNSTABLE
     else
         firstindex(x) == 1 ||
-            throw(ArgumentError("alg=:radixsort requires either one based indexing or Julia >= 1.9. "
+            throw(ArgumentError("alg = :radixsort requires either one based indexing or Julia >= 1.9. "
                               * "Use `alg = :dict` as an alternative."))
         SortingAlgorithms.RadixSort
     end
