@@ -179,7 +179,7 @@ end
     @test countmap(X) == countmap(copy(X))
 end
 
-if VERSION >= v"1.6"
+if VERSION >= v"1.9.0-DEV"
     @testset "offset arrays" begin
         x = rand(1:5, n)
         w = rand(n)

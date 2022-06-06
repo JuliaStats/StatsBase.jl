@@ -369,9 +369,18 @@ function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
     return cm
 end
 
+function _alg(x::AbstractArray)
+    @static if VERSION >= v"1.9.0-DEV"
+        Base.DEFAULT_UNSTABLE
+    else
+        firstindex(x) == 1 || error("addcounts_radixsort! requires either one based indexing or Julia 1.9. Use `alg = :dict` as an alternative.")
+        SortingAlgorithms.RadixSort
+    end
+end
+
 function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
     # sort the x using radixsort
-    sx = sort(vec(x), alg = RadixSort)
+    sx = sort(vec(x), alg=_alg(x))
 
     # Delegate the loop to a separate function since sort might not
     # be inferred in Julia 0.6 after SortingAlgorithms is loaded.
@@ -381,7 +390,8 @@ end
 
 # fall-back for `x` an iterator
 function addcounts_radixsort!(cm::Dict{T}, x) where T
-    sx = sort!(vec(collect(x)), alg = RadixSort)
+    cx = vec(collect(x))
+    sx = sort!(cx, alg = _alg(cx))
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
