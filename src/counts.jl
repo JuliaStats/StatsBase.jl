@@ -373,7 +373,9 @@ function _alg(x::AbstractArray)
     @static if VERSION >= v"1.9.0-DEV"
         Base.DEFAULT_UNSTABLE
     else
-        firstindex(x) == 1 || error("addcounts_radixsort! requires either one based indexing or Julia 1.9. Use `alg = :dict` as an alternative.")
+        firstindex(x) == 1 ||
+            throw(ArgumentError("alg=:radixsort requires either one based indexing or Julia >= 1.9. "
+                                "Use `alg = :dict` as an alternative."))
         SortingAlgorithms.RadixSort
     end
 end
@@ -464,5 +466,5 @@ than the proportion of raw counts.
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM and is safe for any data type.
 """
-proportionmap(x::AbstractArray; alg = :auto) = _normalize_countmap(countmap(x; alg = alg), length(x))
+proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::AbstractWeights) = _normalize_countmap(countmap(x, wv), sum(wv))
