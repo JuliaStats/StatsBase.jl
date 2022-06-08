@@ -371,12 +371,12 @@ end
 
 function _alg(x::AbstractArray)
     @static if VERSION >= v"1.9.0-DEV"
-        Base.DEFAULT_UNSTABLE
+        return Base.DEFAULT_UNSTABLE
     else
         firstindex(x) == 1 ||
-            throw(ArgumentError("alg = :radixsort requires either one based indexing or Julia >= 1.9. "
-                              * "Use `alg = :dict` as an alternative."))
-        SortingAlgorithms.RadixSort
+            throw(ArgumentError("alg = :radixsort requires either one based indexing or Julia >= 1.9. " *
+                                "Use `alg = :dict` as an alternative."))
+        return SortingAlgorithms.RadixSort
     end
 end
 
@@ -444,27 +444,13 @@ countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcoun
 
 
 """
-    proportionmap(x; alg = :auto)
+    proportionmap(x)
     proportionmap(x::AbstractVector, w::AbstractVector{<:Real})
 
 Return a dictionary mapping each unique value in `x` to its proportion in `x`.
 
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
-
-`alg` is only allowed for unweighted counting and can be one of:
-- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
-                     `:radixsort`, otherwise use `:dict`.
-
-- `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
-                     [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
-                     algorithm to sort the input vector which will generally lead to
-                     shorter running time. However the radix sort algorithm creates a
-                     copy of the input vector and hence uses more RAM. Choose `:dict`
-                     if the amount of available RAM is a limitation.
-
-- `:dict`:           use `Dict`-based method which is generally slower but uses less
-                     RAM and is safe for any data type.
 """
 proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
 proportionmap(x::AbstractArray, wv::AbstractWeights) = _normalize_countmap(countmap(x, wv), sum(wv))
