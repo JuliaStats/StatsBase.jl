@@ -13,6 +13,7 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
+    @test axes(f([1, 2, 3])) == (Base.OneTo(3),)
 
     w  = [1., 2., 3.]
     wv = f(w)
@@ -107,6 +108,7 @@ end
     @test !isempty(wv)
     @test length(wv) === 3
     @test size(wv) === (3,)
+    @test axes(wv) === (Base.OneTo(3),)
     @test sum(wv) === 3.
     @test wv == fill(1.0, 3)
     @test StatsBase.varcorrection(wv) == 1/3
