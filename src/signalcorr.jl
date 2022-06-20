@@ -255,7 +255,7 @@ function crosscov!(r::RealVector, x::RealVector, y::RealVector, lags::IntegerVec
     T = typeof(zero(eltype(x)) / 1)
     zx::Vector{T} = demean ? x .- mean(x) : x
     S = typeof(zero(eltype(y)) / 1)
-    zy::Vector{T} = demean ? y .- mean(y) : y
+    zy::Vector{S} = demean ? y .- mean(y) : y
     for k = 1 : m  # foreach lag value
         r[k] = _crossdot(zx, zy, lx, lags[k]) / lx
     end
@@ -406,7 +406,7 @@ function crosscor!(r::RealVector, x::RealVector, y::RealVector, lags::IntegerVec
     T = typeof(zero(eltype(x)) / 1)
     zx::Vector{T} = demean ? x .- mean(x) : x
     S = typeof(zero(eltype(y)) / 1)
-    zy::Vector{T} = demean ? y .- mean(y) : y
+    zy::Vector{S} = demean ? y .- mean(y) : y
     sc = sqrt(dot(zx, zx) * dot(zy, zy))
     for k = 1 : m  # foreach lag value
         r[k] = _crossdot(zx, zy, lx, lags[k]) / sc
