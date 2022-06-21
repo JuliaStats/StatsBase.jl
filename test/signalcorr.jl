@@ -92,6 +92,11 @@ c22 = crosscov(x2, x2)
 @test crosscov(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
 @test crosscov(realx,  realx)  ≈ cat([c11 c21], [c12 c22], dims=3)
 
+# issue #805: avoid converting one input to the other's eltype
+@test crosscov([34566.5345, 3466.4566], Float16[1, 10]) ≈
+    crosscov(Float16[1, 10], [34566.5345, 3466.4566]) ≈
+    crosscov([34566.5345, 3466.4566], Float16[1, 10])
+
 rcor0 = [0.230940107675850,
         -0.230940107675850,
          0.057735026918963,
@@ -117,6 +122,11 @@ c22 = crosscor(x2, x2)
 @test crosscor(realx1, realx)  ≈ [c11 c12]
 @test crosscor(x,  x)  ≈ cat([c11 c21], [c12 c22], dims=3)
 @test crosscor(realx, realx)  ≈ cat([c11 c21], [c12 c22], dims=3)
+
+# issue #805: avoid converting one input to the other's eltype
+@test crosscor([34566.5345, 3466.4566], Float16[1, 10]) ≈
+    crosscor(Float16[1, 10], [34566.5345, 3466.4566]) ≈
+    crosscor([34566.5345, 3466.4566], Float16[1, 10])
 
 
 ## pacf
