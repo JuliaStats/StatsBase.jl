@@ -568,4 +568,12 @@ end
     end
 end
 
+@testset "UnitWeights" begin
+    @test convert(Vector, uweights(3)) == ones(3)
+    @test !Base.mightalias(uweights(3), uweights(3))
+    @test Base.dataids(uweights(3)) == ()
+    @test length(uweights(3)) == 3
+    @test sum(uweights(3)) == 3
+end
+
 end # @testset StatsBase.Weights
