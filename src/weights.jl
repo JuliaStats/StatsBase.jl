@@ -304,6 +304,7 @@ length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = tuple(length(wv))
 Base.axes(wv::UnitWeights) = tuple(Base.OneTo(length(wv)))
 
+Base.dataids(::UnitWeights) = ()
 Base.convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T

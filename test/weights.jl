@@ -117,6 +117,9 @@ end
     @test wv != fweights(fill(1.0, 3))
     @test wv == uweights(3)
     @test wv[[true, false, false]] == uweights(Float64, 1)
+    @test convert(Vector, wv) == ones(3)
+    @test !Base.mightalias(wv, uweights(Float64, 3))
+    @test Base.dataids(wv) == ()
 end
 
 ## wsum
