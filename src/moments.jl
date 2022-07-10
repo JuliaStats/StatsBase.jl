@@ -368,7 +368,7 @@ kurtosis(v::RealArray, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
     cumulant(v, k, [wv::AbstractWeights], m=mean(v))
 
 Return the `k`th order cumulant of a real-valued array `v`, optionally
-specifying a weighting vector `wv` and a center `m`.
+specifying a weighting vector `wv` and a center `m`. This quantity is calculated using a recursive definition on lower order cumulants and central moments.
 """
 function cumulant(v::RealArray, k::Int, m::Real)
     cmoms = zeros(Float64, k)

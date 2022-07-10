@@ -35,6 +35,11 @@ kurtosis
 moment
 ```
 
+## Cumulants
+```@docs
+cumulant
+```
+
 ## Measurements of Variation
 
 ```@docs
