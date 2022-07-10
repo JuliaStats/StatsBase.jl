@@ -364,10 +364,6 @@ end
 kurtosis(v::RealArray) = kurtosis(v, mean(v))
 kurtosis(v::RealArray, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
 
-<<<<<<< HEAD
-=======
-
->>>>>>> c980c0325e12be9e694250057b5853d76dac0bbd
 """
     cumulant(v, k, [wv::AbstractWeights], m=mean(v))
 
