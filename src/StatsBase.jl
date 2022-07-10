@@ -69,6 +69,7 @@ export
     mean_and_var,   # (mean, var)
     mean_and_std,   # (mean, std)
     mean_and_cov,   # (mean, cov)
+    cumulant,       # cumulant of given order
 
     ## scalarstats
     geomean,     # geometric mean
