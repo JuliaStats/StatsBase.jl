@@ -290,4 +290,27 @@ end
     @test moment(x, 5, w) ≈ sum((x2 .- 4).^5) / 5
 end
 
+@testset "Cumulants with $f" for f in weight_funcs
+    x = collect(2.0:8.0)
+    @test cumulant(x, 2) ≈ moment(x, 2)
+    @test cumulant(x, 3) ≈ moment(x, 3)
+    @test cumulant(x, 4) ≈ moment(x, 4) - 3*moment(x, 2)^2
+    @test cumulant(x, 5) ≈ moment(x, 5) - 10*moment(x,3)*moment(x,2)
+    @test cumulant(x, 6) ≈ moment(x, 6) - 15*moment(x,4)*moment(x,2) - 10*moment(x,3)^2 + 30*moment(x,2)^3
+
+    @test cumulant(x, 2, 4.0) ≈ moment(x, 2, 4.0)
+    @test cumulant(x, 3, 4.0) ≈ moment(x, 3, 4.0)
+    @test cumulant(x, 4, 4.0) ≈ moment(x, 4, 4.0) - 3*moment(x, 2, 4.0)^2
+    @test cumulant(x, 5, 4.0) ≈ moment(x, 5, 4.0) - 10*moment(x,3, 4.0)*moment(x,2, 4.0)
+    @test cumulant(x, 6, 4.0) ≈ moment(x, 6, 4.0) - 15*moment(x,4, 4.0)*moment(x,2, 4.0) - 10*moment(x,3, 4.0)^2 + 30*moment(x,2, 4.0)^3
+
+    w = f([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
+    x2 = collect(2.0:6.0)
+    @test cumulant(x, 2, w) ≈ moment(x2, 2)
+    @test cumulant(x, 3, w) ≈ moment(x2, 3)
+    @test cumulant(x, 4, w) ≈ moment(x2, 4) - 3*moment(x2, 2)^2
+    @test cumulant(x, 5, w) ≈ moment(x2, 5) - 10*moment(x2,3)*moment(x2,2)
+    @test cumulant(x, 6, w) ≈ moment(x2, 6) - 15*moment(x2,4)*moment(x2,2) + 10*moment(x2,3)^2 + 30*moment(x2,2)^3
+end
+
 end # @testset "StatsBase.Moments"
