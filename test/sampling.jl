@@ -263,4 +263,4 @@ sample!(view(x, 2:4), view(x, 5:6))
 
 # Test that sample and sample! throws for Inf/NaN weights
 @test_throws DomainError sample(Weights([NaN, 1.0]))
-@test_throws DomainError sample(Weights([0.1, Inf]))
+@test_throws DomainError sample!([1.0,2], Weights([0.1, Inf]), zeros(1))
