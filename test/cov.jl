@@ -288,12 +288,23 @@ end
 
     x = rand(8)
     y = rand(8)
+    X = hcat(x, y)
 
     for corrected ∈ (false, true)
         @test_throws MethodError SimpleCovariance(corrected)
         scc = SimpleCovariance(corrected=corrected)
         @test cov(scc, x) ≈ cov(x; corrected=corrected)
         @test cov(scc, x, y) ≈ cov(x, y; corrected=corrected)
+        @test cov(scc, X) ≈ cov(X; corrected=corrected)
+
+        @test var(scc, x) ≈ var(x; corrected=corrected)
+        @test std(scc, x) ≈ std(x; corrected=corrected)
+
+        # NB That we should get the same correlation regardless of `corrected`, since it
+        #   only affects the overall scale of the covariance. This cancels out when turning
+        #   it into a correlation matrix.
+        @test cor(scc, x, y) ≈ cor(x, y)
+        @test cor(scc, X) ≈ cor(X)
     end
 end
 end # @testset "StatsBase.Covariance"
