@@ -551,6 +551,8 @@ Optionally specify a random number generator `rng` as the first argument
 """
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     t = rand(rng) * sum(wv)
+    isfinite(sum(wv)) || 
+        throw(DomainError(wv, "sampling weights must not contain Inf or NaN"))
     n = length(wv)
     i = 1
     cw = wv[1]
@@ -904,6 +906,8 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
         throw(ArgumentError("output array a must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
+    isfinite(sum(wv)) || 
+        throw(DomainError(wv, "sampling weights must not contain Inf or NaN"))
     n = length(a)
     k = length(x)
 
