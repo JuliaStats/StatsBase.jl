@@ -232,7 +232,6 @@ function cor(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
     #
     # Whilst in some cases it might be equivalent (and possibly more efficient) to use:
     #   cov(ce, x, y) / (std(ce, x) * std(ce, y)),
-    #
     # this need not apply in general.
     return cor(ce, hcat(x, y))[1, 2]
 end
