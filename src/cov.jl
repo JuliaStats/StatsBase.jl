@@ -269,7 +269,7 @@ where `x`, `y` are vectors, `X` is a matrix and `w` is a weighting vector.
 """
 struct SimpleCovariance <: CovarianceEstimator
     corrected::Bool
-    SimpleCovariance(; corrected::Bool=false) = new(corrected)
+    SimpleCovariance(;corrected::Bool=false) = new(corrected)
 end
 
 cov(sc::SimpleCovariance, x::AbstractVector) =
