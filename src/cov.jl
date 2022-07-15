@@ -155,13 +155,13 @@ function cor2cov!(C::AbstractMatrix, s::AbstractArray)
 end
 
 """
-    cov2cor!(C)
+    _cov2cor!(C)
 
 Compute the correlation matrix from the covariance matrix `C`, in-place.
 
 The leading diagonal is used to determine the standard deviations by which to normalise.
 """
-cov2cor!(C::AbstractMatrix) = cov2cor!(C, sqrt.(diag(C)))
+_cov2cor!(C::AbstractMatrix) = cov2cor!(C, sqrt.(diag(C)))
 
 """
     CovarianceEstimator
@@ -254,9 +254,11 @@ The keyword argument `mean` can be:
   * when `dims=2`, an `AbstractVector` of length `N` or an `AbstractMatrix`
     of size `(N,1)`.
 """
-cor(ce::CovarianceEstimator, X::AbstractMatrix; kwargs...) = cov2cor!(cov(ce, X; kwargs...))
+function cor(ce::CovarianceEstimator, X::AbstractMatrix; kwargs...)
+    return _cov2cor!(cov(ce, X; kwargs...))
+end
 function cor(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; kwargs...)
-    return cov2cor!(cov(ce, X, w; kwargs...))
+    return _cov2cor!(cov(ce, X, w; kwargs...))
 end
 
 """
