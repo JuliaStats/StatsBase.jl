@@ -123,13 +123,14 @@ function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
     return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, :corrected, corrected))
 end
 
-"""
-    cov2cor(C, s)
 
-Compute the correlation matrix from the covariance matrix `C` and a vector of standard
-deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
 """
-cov2cor(C::AbstractMatrix, s::AbstractArray) = cov2cor!(copy(C), s)
+    cov2cor(C::AbstractMatrix, [s::AbstractArray])
+
+Compute the correlation matrix from the covariance matrix `C` and, optionally, a vector
+of standard deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
+"""
+cov2cor(C::AbstractMatrix, s::AbstractArray=sqrt.(view(C, diagind(C)))) = cov2cor!(copy(C), s)
 
 """
     cor2cov(C, s)
