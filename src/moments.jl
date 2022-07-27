@@ -368,11 +368,15 @@ kurtosis(v::RealArray, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
     cumulant(v, k, [wv::AbstractWeights], m=mean(v))
 
 Return the `k`th order cumulant of a real-valued array `v`, optionally
-specifying a weighting vector `wv` and a pre-computed mean `m`.
+specifying a weighting vector `wv` and a pre-computed mean `m`. If `k` is a `UnitRange`, then return all the cumulants of orders in this range as a vector.
 
 This quantity is calculated using a recursive definition on lower-order cumulants and central moments.
 """
-function cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real=mean(v, wv))
+function cumulant(v::RealArray, krange::UnitRange{Int}, wv::AbstractWeights, m::Real=mean(v, wv))
+    if minimum(krange) <= 0
+        throw(ArgumentError("The cumulant order must be positive."))
+    end
+    k = maximum(krange)
     cmoms = zeros(typeof(m), k)
     cumls = zeros(typeof(m), k)
     cmoms[1] = 0
@@ -385,7 +389,10 @@ function cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real=mean(v, wv)
         end
         cumls[i] = kn
     end
-    return cumls[k]
+    return cumls[krange]
 end
 
+cumulant(v::RealArray, krange::UnitRange{Int}, m::Real=mean(v)) = cumulant(v, krange, uweights(typeof(m), length(v)), m)
+
+cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real=mean(v, wv)) = first(cumulant(v, k:k, wv, m))
 cumulant(v::RealArray, k::Int, m::Real=mean(v)) = cumulant(v, k, uweights(typeof(m), length(v)), m)

@@ -298,11 +298,15 @@ end
     @test cumulant(x, 5) ≈ moment(x, 5) - 10*moment(x, 3)*moment(x, 2)
     @test cumulant(x, 6) ≈ moment(x, 6) - 15*moment(x, 4)*moment(x, 2) - 10*moment(x, 3)^2 + 30*moment(x, 2)^3
 
+    @test cumulant(x, 1:6) == [cumulant(x, i) for i in 1:6]
+
     @test cumulant(x, 2, 4.0) ≈ moment(x, 2, 4.0)
     @test cumulant(x, 3, 4.0) ≈ moment(x, 3, 4.0)
     @test cumulant(x, 4, 4.0) ≈ moment(x, 4, 4.0) - 3*moment(x, 2, 4.0)^2
     @test cumulant(x, 5, 4.0) ≈ moment(x, 5, 4.0) - 10*moment(x, 3, 4.0)*moment(x,2, 4.0)
     @test cumulant(x, 6, 4.0) ≈ moment(x, 6, 4.0) - 15*moment(x, 4, 4.0)*moment(x,2, 4.0) - 10*moment(x, 3, 4.0)^2 + 30*moment(x, 2, 4.0)^3
+
+    @test cumulant(x, 1:6, 4.0) == [cumulant(x, i, 4.0) for i in 1:6]
 
     w1 = f([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
     x2 = collect(2.0:6.0)
@@ -311,6 +315,8 @@ end
     @test cumulant(x, 4, w) ≈ moment(x2, 4) - 3*moment(x2, 2)^2
     @test cumulant(x, 5, w) ≈ moment(x2, 5) - 10*moment(x2,3)*moment(x2,2)
     @test cumulant(x, 6, w) ≈ moment(x2, 6) - 15*moment(x2,4)*moment(x2,2) + 10*moment(x2,3)^2 + 30*moment(x2,2)^3
+
+    @test cumulant(x, 1:6, w) == [cumulant(x2, i) for i in 1:6]
 
     x3 = collect(2:8)
     @test cumulant(x3, 6) ≈ moment(x3, 6) - 15*moment(x3, 4)*moment(x3, 2) - 10*moment(x3, 3)^2 + 30*moment(x3, 2)^3
