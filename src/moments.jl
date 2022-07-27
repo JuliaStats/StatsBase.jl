@@ -368,39 +368,24 @@ kurtosis(v::RealArray, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
     cumulant(v, k, [wv::AbstractWeights], m=mean(v))
 
 Return the `k`th order cumulant of a real-valued array `v`, optionally
-specifying a weighting vector `wv` and a center `m`. This quantity is calculated using a recursive definition on lower order cumulants and central moments.
+specifying a weighting vector `wv` and a pre-computed mean `m`.
+
+This quantity is calculated using a recursive definition on lower-order cumulants and central moments.
 """
-function cumulant(v::RealArray, k::Int, m::Real)
-    cmoms = zeros(Float64, k)
-    cumls = zeros(Float64, k)
+function cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real=mean(v, wv))
+    cmoms = zeros(typeof(m), k)
+    cumls = zeros(typeof(m), k)
     cmoms[1] = 0
     cumls[1] = m
-    for i=2:k
-        @inbounds cmoms[i] =  moment(v, i, m)
-        @inbounds kn = cmoms[i]
-        for j=2:i-2
-            @inbounds kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]
+    for i = 2:k
+        kn =  moment(v, i, wv, m)
+        cmoms[i] = kn
+        for j = 2:i-2
+            kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]
         end
-        @inbounds cumls[i] = kn
+        cumls[i] = kn
     end
     return cumls[k]
 end
 
-function cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real)
-    cmoms = zeros(Float64, k)
-    cumls = zeros(Float64, k)
-    cmoms[1] = 0
-    cumls[1] = m
-    for i=2:k
-        @inbounds cmoms[i] =  moment(v, i, wv, m)
-        @inbounds kn = cmoms[i]
-        for j=2:i-2
-            @inbounds kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]
-        end
-        @inbounds cumls[i] = kn
-    end
-    return cumls[k]
-end
-
-cumulant(v::RealArray, k::Int) = cumulant(v, k, mean(v))
-cumulant(v::RealArray, k::Int, wv::AbstractWeights) = cumulant(v, k, wv::RealArray, mean(v, wv))
+cumulant(v::RealArray, k::Int, m::Real=mean(v)) = cumulant(v, k, uweights(typeof(m), length(v)), m)
