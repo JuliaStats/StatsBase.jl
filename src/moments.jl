@@ -132,25 +132,25 @@ function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothi
 end
 
 
-function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
+function mean_and_var(x::RealArray; dim::Any=dim, corrected::Bool=true)
     m = mean(x, dims=dim)
     v = var(x, dims=dim, mean=m, corrected=corrected)
     m, v
 end
-function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
+function mean_and_std(x::RealArray; dim::Any=dim, corrected::Bool=true)
     m = mean(x, dims=dim)
     s = std(x, dims=dim, mean=m, corrected=corrected)
     m, s
 end
 
 
-function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
+function mean_and_var(x::RealArray, w::AbstractWeights; dims::Any=dims,
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
     v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
-function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
+function mean_and_std(x::RealArray, w::AbstractWeights; dims::Any=dims,
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
     s = std(x, w, dims, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
