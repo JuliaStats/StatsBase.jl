@@ -31,7 +31,7 @@ end
 
 ## var along dim
 
-function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
+function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Any;
               mean=nothing, corrected::DepBool=nothing)
     corrected = depcheck(:var!, :corrected, corrected)
 
@@ -55,7 +55,7 @@ function var!(R::AbstractArray, A::RealArray, w::AbstractWeights, dims::Int;
                  varcorrection(w, corrected))
 end
 
-function var(A::RealArray, w::AbstractWeights, dim::Int; mean=nothing,
+function var(A::RealArray, w::AbstractWeights, dim::Any; mean=nothing,
                   corrected::DepBool=nothing)
     corrected = depcheck(:var, :corrected, corrected)
     var!(similar(A, Float64, Base.reduced_indices(axes(A), dim)), A, w, dim;
@@ -84,7 +84,7 @@ weights used:
 std(v::RealArray, w::AbstractWeights; mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, :corrected, corrected)))
 
-std(v::RealArray, w::AbstractWeights, dim::Int;
+std(v::RealArray, w::AbstractWeights, dim::Any;
     mean=nothing, corrected::DepBool=nothing) =
     sqrt.(var(v, w, dim; mean=mean, corrected=depcheck(:std, :corrected, corrected)))
 
@@ -132,25 +132,25 @@ function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothi
 end
 
 
-function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
+function mean_and_var(x::RealArray, dim::Any; corrected::Bool=true)
     m = mean(x, dims=dim)
     v = var(x, dims=dim, mean=m, corrected=corrected)
     m, v
 end
-function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
+function mean_and_std(x::RealArray, dim::Any; corrected::Bool=true)
     m = mean(x, dims=dim)
     s = std(x, dims=dim, mean=m, corrected=corrected)
     m, s
 end
 
 
-function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
+function mean_and_var(x::RealArray, w::AbstractWeights, dims::Any;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
     v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
-function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
+function mean_and_std(x::RealArray, w::AbstractWeights, dims::Any;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
     s = std(x, w, dims, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
