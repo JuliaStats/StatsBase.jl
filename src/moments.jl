@@ -382,7 +382,11 @@ function cumulant(v::RealArray, krange::UnitRange{Int}, wv::AbstractWeights, m::
     cmoms[1] = 0
     cumls[1] = m
     for i = 2:k
-        kn =  moment(v, i, wv, m)
+        if wv isa UnitWeights
+            kn =  moment(v, i, m)
+        else
+            kn =  moment(v, i, wv, m)
+        end
         cmoms[i] = kn
         for j = 2:i-2
             kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]

@@ -324,6 +324,8 @@ end
     w2 = f([1, 1, 1, 1, 1, 0, 0])
     x4 = collect(2:6)
     @test cumulant(x3, 6, w) ≈ moment(x4, 6) - 15*moment(x4, 4)*moment(x4, 2) + 10*moment(x4, 3)^2 + 30*moment(x4, 2)^3
+
+    @test_throws ArgumentError cumulant(x, -1:3)
 end
 
 end # @testset "StatsBase.Moments"
