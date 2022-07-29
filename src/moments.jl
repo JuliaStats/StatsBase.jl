@@ -374,7 +374,7 @@ If `k` is a range of `Integer`s, then return all the cumulants of orders in this
 
 This quantity is calculated using a recursive definition on lower-order cumulants and central moments.
 """
-function cumulant(v::RealArray, krange::AbstractRange{<:Integer}, wv::AbstractWeights,
+function cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}, wv::AbstractWeights,
                   m::Real=mean(v, wv))
     if minimum(krange) <= 0
         throw(ArgumentError("Cumulant orders must be strictly positive."))
@@ -395,8 +395,5 @@ function cumulant(v::RealArray, krange::AbstractRange{<:Integer}, wv::AbstractWe
     return cumls[krange]
 end
 
-cumulant(v::RealArray, krange::AbstractRange{<:Integer}, m::Real=mean(v)) =
+cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}, m::Real=mean(v)) =
     cumulant(v, krange, uweights(typeof(m), length(v)), m)
-
-cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real=mean(v, wv)) = first(cumulant(v, k:k, wv, m))
-cumulant(v::RealArray, k::Int, m::Real=mean(v)) = cumulant(v, k, uweights(typeof(m), length(v)), m)
