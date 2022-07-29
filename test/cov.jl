@@ -290,6 +290,7 @@ end
 
     x = rand(8)
     y = rand(8)
+    wv = fweights(rand(8))
     X = hcat(x, y)
 
     for corrected ∈ (false, true)
@@ -298,6 +299,7 @@ end
         @test cov(scc, x) ≈ cov(x; corrected=corrected)
         @test cov(scc, x, y) ≈ cov(x, y; corrected=corrected)
         @test cov(scc, X) ≈ cov(X; corrected=corrected)
+        @test cov(scc, X, wv) ≈ cov(X, wv; corrected=corrected)
 
         @test var(scc, x) ≈ var(x; corrected=corrected)
         @test std(scc, x) ≈ std(x; corrected=corrected)
@@ -307,6 +309,7 @@ end
         #   it into a correlation matrix.
         @test cor(scc, x, y) ≈ cor(x, y)
         @test cor(scc, X) ≈ cor(X)
+        @test cor(scc, X, wv) ≈ cor(X, wv)
     end
 end
 end # @testset "StatsBase.Covariance"
