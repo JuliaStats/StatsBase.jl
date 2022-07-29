@@ -368,13 +368,16 @@ kurtosis(v::RealArray, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
     cumulant(v, k, [wv::AbstractWeights], m=mean(v))
 
 Return the `k`th order cumulant of a real-valued array `v`, optionally
-specifying a weighting vector `wv` and a pre-computed mean `m`. If `k` is a `UnitRange`, then return all the cumulants of orders in this range as a vector.
+specifying a weighting vector `wv` and a pre-computed mean `m`.
+
+If `k` is a range of `Integer`s, then return all the cumulants of orders in this range as a vector.
 
 This quantity is calculated using a recursive definition on lower-order cumulants and central moments.
 """
-function cumulant(v::RealArray, krange::UnitRange{Int}, wv::AbstractWeights, m::Real=mean(v, wv))
+function cumulant(v::RealArray, krange::AbstractRange{<:Integer}, wv::AbstractWeights,
+                  m::Real=mean(v, wv))
     if minimum(krange) <= 0
-        throw(ArgumentError("The cumulant order must be positive."))
+        throw(ArgumentError("Cumulant orders must be strictly positive."))
     end
     k = maximum(krange)
     cmoms = zeros(typeof(m), k)
@@ -382,11 +385,7 @@ function cumulant(v::RealArray, krange::UnitRange{Int}, wv::AbstractWeights, m::
     cmoms[1] = 0
     cumls[1] = m
     for i = 2:k
-        if wv isa UnitWeights
-            kn =  moment(v, i, m)
-        else
-            kn =  moment(v, i, wv, m)
-        end
+        kn = wv isa UnitWeights ? moment(v, i, m) : moment(v, i, wv, m)
         cmoms[i] = kn
         for j = 2:i-2
             kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]
@@ -396,7 +395,8 @@ function cumulant(v::RealArray, krange::UnitRange{Int}, wv::AbstractWeights, m::
     return cumls[krange]
 end
 
-cumulant(v::RealArray, krange::UnitRange{Int}, m::Real=mean(v)) = cumulant(v, krange, uweights(typeof(m), length(v)), m)
+cumulant(v::RealArray, krange::AbstractRange{<:Integer}, m::Real=mean(v)) =
+    cumulant(v, krange, uweights(typeof(m), length(v)), m)
 
 cumulant(v::RealArray, k::Int, wv::AbstractWeights, m::Real=mean(v, wv)) = first(cumulant(v, k:k, wv, m))
 cumulant(v::RealArray, k::Int, m::Real=mean(v)) = cumulant(v, k, uweights(typeof(m), length(v)), m)
