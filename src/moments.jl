@@ -373,6 +373,10 @@ specifying a weighting vector `wv` and a pre-computed mean `m`.
 If `k` is a range of `Integer`s, then return all the cumulants of orders in this range as a vector.
 
 This quantity is calculated using a recursive definition on lower-order cumulants and central moments.
+
+Reference: Smith, P. J. 1995. A Recursive Formulation of the Old Problem of Obtaining
+Moments from Cumulants and Vice Versa. The American Statistician, 49(2), 217–218.
+https://doi.org/10.2307/2684642
 """
 function cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}, wv::AbstractWeights,
                   m::Real=mean(v, wv))
@@ -396,4 +400,4 @@ function cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}
 end
 
 cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}, m::Real=mean(v)) =
-    cumulant(v, krange, uweights(typeof(m), length(v)), m)
+    cumulant(v, krange, uweights(length(v)), m)
