@@ -66,6 +66,7 @@ export
     skewness,       # (standardized) skewness
     kurtosis,       # (excessive) kurtosis
     moment,         # central moment of given order
+    cumulant,       # cumulant of given order
     mean_and_var,   # (mean, var)
     mean_and_std,   # (mean, std)
     mean_and_cov,   # (mean, cov)

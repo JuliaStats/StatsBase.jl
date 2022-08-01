@@ -363,3 +363,41 @@ end
 
 kurtosis(v::RealArray) = kurtosis(v, mean(v))
 kurtosis(v::RealArray, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
+
+"""
+    cumulant(v, k, [wv::AbstractWeights], m=mean(v))
+
+Return the `k`th order cumulant of a real-valued array `v`, optionally
+specifying a weighting vector `wv` and a pre-computed mean `m`.
+
+If `k` is a range of `Integer`s, then return all the cumulants of orders in this range as a vector.
+
+This quantity is calculated using a recursive definition on lower-order cumulants and central moments.
+
+Reference: Smith, P. J. 1995. A Recursive Formulation of the Old Problem of Obtaining
+Moments from Cumulants and Vice Versa. The American Statistician, 49(2), 217–218.
+https://doi.org/10.2307/2684642
+"""
+function cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}, wv::AbstractWeights,
+                  m::Real=mean(v, wv))
+    if minimum(krange) <= 0
+        throw(ArgumentError("Cumulant orders must be strictly positive."))
+    end
+    k = maximum(krange)
+    cmoms = zeros(typeof(m), k)
+    cumls = zeros(typeof(m), k)
+    cmoms[1] = 0
+    cumls[1] = m
+    for i = 2:k
+        kn = wv isa UnitWeights ? moment(v, i, m) : moment(v, i, wv, m)
+        cmoms[i] = kn
+        for j = 2:i-2
+            kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]
+        end
+        cumls[i] = kn
+    end
+    return cumls[krange]
+end
+
+cumulant(v::RealArray, krange::Union{Integer, AbstractRange{<:Integer}}, m::Real=mean(v)) =
+    cumulant(v, krange, uweights(length(v)), m)

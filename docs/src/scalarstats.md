@@ -23,7 +23,7 @@ harmmean
 genmean
 ```
 
-## Moments
+## Moments and cumulants
 
 ```@docs
 var
@@ -33,6 +33,7 @@ mean_and_std
 skewness
 kurtosis
 moment
+cumulant
 ```
 
 ## Measurements of Variation
