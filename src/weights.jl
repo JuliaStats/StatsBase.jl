@@ -23,6 +23,8 @@ isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 Base.axes(wv::AbstractWeights) = Base.axes(wv.values)
 
+Base.IndexStyle(::Type{<:AbstractWeights{S,T,V}}) where {S,T,V} = IndexStyle(V)
+
 Base.dataids(wv::AbstractWeights) = Base.dataids(wv.values)
 
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
