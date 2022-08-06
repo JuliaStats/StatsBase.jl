@@ -711,7 +711,6 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(v)) and $(length(w))"))
     for x in w.values
-        isnan(x) && throw(ArgumentError("weight vector cannot contain NaN entries"))
         x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
     end
 
