@@ -47,9 +47,10 @@ Base.getindex(wv::W, ::Colon) where {W <: AbstractWeights} = W(copy(wv.values), 
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
+    sum = wv.sum + s
+    isfinite(sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
     wv.values[i] = v
-    wv.sum += s
-    isfinite(wv.sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
+    wv.sum = sum
     v
 end
 
