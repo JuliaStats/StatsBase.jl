@@ -353,13 +353,13 @@ end
 fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, edges::NTuple{N,AbstractVector}; closed::Symbol=:left) where {T,N} =
     append!(Histogram(edges, T, closed, false), vs)
 
-fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:left[, nbins]) where {T,N} =
+fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}; closed::Symbol=:left, nbins=sturges(length(vs[1]))) where {T,N} =
     fit(Histogram{T}, vs, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 
 fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights{W}, edges::NTuple{N,AbstractVector}; closed::Symbol=:left) where {T,N,W} =
     append!(Histogram(edges, T, closed, false), vs, wv)
 
-fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; closed::Symbol=:left[, nbins]) where {T,N} =
+fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; closed::Symbol=:left, nbins=sturges(length(vs[1]))) where {T,N} =
     fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 
 """
@@ -387,7 +387,7 @@ Fit a histogram to `data`.
 
 * `nbins`: if no `edges` argument is supplied, the approximate number of bins to use
   along each dimension (can be either a single integer, or a tuple of integers).
-  If ommitted, it is computed using Sturges's formula, i.e. `ceil(log2(length(n))) + 1`
+  If omitted, it is computed using Sturges's formula, i.e. `ceil(log2(length(n))) + 1`
   with `n` the number of data points.
 
 # Examples
