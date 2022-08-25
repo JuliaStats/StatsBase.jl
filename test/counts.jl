@@ -106,6 +106,8 @@ end
     xx = repeat([6, 1, 3, 1], outer=100_000)
     cm = countmap(xx)
     @test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
+    @test countmap([0.0, -0.0, 0.0, -0.0, -0.0]) == Dict(0.0 => 2, -0.0 => 3)
+    @test countmap([NaN, NaN]) == Dict(NaN => 2)
 
     # with iterator
     cm_missing = countmap(skipmissing(xx))
