@@ -363,7 +363,7 @@ fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; clo
     fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 
 """
-    fit(Histogram, data[, weight][, edges]; closed=:left, nbins)
+    fit(Histogram, data[, weight][, edges]; closed=:left[, nbins])
 
 Fit a histogram to `data`.
 
