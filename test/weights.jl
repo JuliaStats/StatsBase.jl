@@ -129,12 +129,9 @@ end
         @test all(>=(0), f([1, 2]))
         @test all(>=(0), f([-0.0, 0.0]))
         @test !all(>=(0), f([1, -2]))
-        @test !all(>=(0), f([1, NaN]))
         @test !any(<(0), f([1, 2]))
         @test !any(<(0), f([-0.0, 0.0]))
         @test any(<(0), f([1, -2]))
-        @test !any(<(0), f([1, NaN]))
-        @test any(<(0), f([-1, NaN]))
 
         @test all(>=(1), [2, 3, 4])
         @test !all(>=(1), [0, 1, 2])
