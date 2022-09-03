@@ -739,7 +739,7 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm consumes ``O(k)`` random 
 and has overall time complexity ``O(n k)``.
 """
 function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
-                              wv::AbstractWeights, x::AbstractArray)*
+                              wv::AbstractWeights, x::AbstractArray)
     Base.mightalias(a, x) &&
         throw(ArgumentError("output array x must not share memory with input array a"))
     Base.mightalias(x, wv) &&
