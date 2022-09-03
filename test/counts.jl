@@ -106,8 +106,6 @@ end
     xx = repeat([6, 1, 3, 1], outer=100_000)
     cm = countmap(xx)
     @test cm == Dict(1 => 200_000, 3 => 100_000, 6 => 100_000)
-    @test countmap([0.0, -0.0, 0.0, -0.0, -0.0]) == Dict(0.0 => 2, -0.0 => 3)
-    @test countmap([NaN, NaN]) == Dict(NaN => 2)
 
     # with iterator
     cm_missing = countmap(skipmissing(xx))
@@ -174,6 +172,14 @@ end
         @test cm_tx_missing == countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
         @test cm_tx_missing isa Dict{T, Int}
     end
+
+    # -0.0 and NaN
+    @test countmap([0.0, -0.0, 0.0, -0.0, -0.0], alg=:dict) ==
+        countmap([0.0, -0.0, 0.0, -0.0, -0.0], alg=:radixsort) ==
+        Dict(0.0 => 2, -0.0 => 3)
+    @test countmap([NaN, NaN], alg=:dict) ==
+        countmap([NaN, NaN], alg=:radixsort) ==
+        Dict(NaN => 2)
 end
 
 @testset "views" begin
