@@ -356,7 +356,7 @@ function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
     # adding into the Dict
     @inbounds for i in start_i+1:lastindex(sx)
         sxi = sx[i]
-        if last_sx != sxi
+        if !isequal(last_sx, sxi)
             cm[last_sx] = get(cm, last_sx, 0) + i - start_i
             last_sx = sxi
             start_i = i

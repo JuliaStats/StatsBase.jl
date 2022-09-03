@@ -172,6 +172,14 @@ end
         @test cm_tx_missing == countmap(tx) == Dict(typemin(T) => 1, typemax(T) => 1, 8 => 2, 19 => 1)
         @test cm_tx_missing isa Dict{T, Int}
     end
+
+    # -0.0 and NaN
+    @test countmap([0.0, -0.0, 0.0, -0.0, -0.0], alg=:dict) ==
+        countmap([0.0, -0.0, 0.0, -0.0, -0.0], alg=:radixsort) ==
+        Dict(0.0 => 2, -0.0 => 3)
+    @test countmap([NaN, NaN], alg=:dict) ==
+        countmap([NaN, NaN], alg=:radixsort) ==
+        Dict(NaN => 2)
 end
 
 @testset "views" begin
