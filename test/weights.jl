@@ -42,7 +42,6 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test_throws ArgumentError f([0.1, Inf])
     @test_throws ArgumentError f([0.1, NaN])
-
 end
 
 @testset "$f, setindex!" for f in weight_funcs
@@ -123,6 +122,45 @@ end
     @test convert(Vector, wv) == ones(3)
     @test !Base.mightalias(wv, uweights(Float64, 3))
     @test Base.dataids(wv) == ()
+end
+
+@testset "Fast-path all(<=, wv) and any(<, wv)" begin
+    for f in weight_funcs
+        @test all(>=(0), f([1, 2]))
+        @test all(>=(0), f([-0.0, 0.0]))
+        @test !all(>=(0), f([1, -2]))
+        @test !all(>=(0), f([1, NaN]))
+        @test !any(<(0), f([1, 2]))
+        @test !any(<(0), f([-0.0, 0.0]))
+        @test any(<(0), f([1, -2]))
+        @test !any(<(0), f([1, NaN]))
+        @test any(<(0), f([-1, NaN]))
+
+        @test all(>=(1), [2, 3, 4])
+        @test !all(>=(1), [0, 1, 2])
+        @test any(<(3), [2, 3, 4])
+        @test !any(<(1), [1, 2, 3])
+
+        wv = f([1.0, 2.0, 3.0])
+        @test all(>=(0), wv)
+        @test !any(<(0), wv)
+        wv[2] = -0.0
+        @test all(>=(0), wv)
+        @test !any(<(0), wv)
+        wv[2] = -1.0
+        @test !all(>=(0), wv)
+        @test any(<(0), wv)
+        wv[2] = 1.0
+        @test all(>=(0), wv)
+        @test !any(<(0), wv)
+    end
+
+    @test all(>=(0), uweights(2))
+    @test !any(<(0), uweights(2))
+    @test all(>=(1), uweights(2))
+    @test !any(<(1), uweights(2))
+    @test !all(>=(2), uweights(2))
+    @test any(<(2), uweights(2))
 end
 
 ## wsum
