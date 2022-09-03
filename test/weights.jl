@@ -39,6 +39,10 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test sum(ba, wv) === 4.0
     @test sum(sa, wv) === 7.0
+
+    @test_throws ArgumentError f([0.1, Inf])
+    @test_throws ArgumentError f([0.1, NaN])
+
 end
 
 @testset "$f, setindex!" for f in weight_funcs
@@ -62,6 +66,9 @@ end
     @test wv[2] === 5.
     @test sum(wv) === 11.
     @test wv == [3., 5., 3.]   # Test state of all values
+
+    @test_throws ArgumentError wv[1] = Inf
+    @test_throws ArgumentError wv[1] = NaN
 
     # Test failed setindex! due to conversion error
     w = [1, 2, 3]
@@ -89,11 +96,6 @@ end
         @test !isequal(x, y)
         @test x != y
     end
-
-    x = f([1, 2, NaN]) # isequal and == treat NaN differently
-    y = f([1, 2, NaN])
-    @test isequal(x, y)
-    @test x != y
 
     x = f([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
     y = f([1.0, 2.0, -0.0])
