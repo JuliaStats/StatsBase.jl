@@ -10,6 +10,8 @@ using Random: Sampler, Random.GLOBAL_RNG
 ### Algorithms for sampling with replacement
 
 function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     s = Sampler(rng, 1:length(a))
     b = a[1] - 1
     if b == 0
@@ -34,6 +36,10 @@ and set `x[j] = a[i]`, with `n=length(a)` and `k=length(x)`.
 This algorithm consumes `k` random numbers.
 """
 function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     s = Sampler(rng, 1:length(a))
     for i = 1:length(x)
         @inbounds x[i] = a[rand(rng, s)]
@@ -55,6 +61,10 @@ storeindices(n, k, T) = false
 
 # order results of a sampler that does not order automatically
 function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     n, k = length(a), length(x)
     # todo: if eltype(x) <: Real && eltype(a) <: Real,
     #       in some cases it might be faster to check
@@ -130,6 +140,10 @@ memory space. Suitable for the case where memory is tight.
 """
 function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                         initshuffle::Bool=true)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -186,6 +200,10 @@ faster than Knuth's algorithm especially when `n` is greater than `k`.
 It is ``O(n)`` for initialization, plus ``O(k)`` for random shuffling
 """
 function fisher_yates_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -222,6 +240,10 @@ However, if `k` is large and approaches ``n``, the rejection rate would increase
 drastically, resulting in poorer performance.
 """
 function self_avoid_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -260,6 +282,10 @@ This algorithm consumes ``O(n)`` random numbers, with `n=length(a)`.
 The outputs are ordered.
 """
 function seqsample_a!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -298,6 +324,10 @@ This algorithm consumes ``O(k^2)`` random numbers, with `k=length(x)`.
 The outputs are ordered.
 """
 function seqsample_c!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     n = length(a)
     k = length(x)
     k <= n || error("length(x) should not exceed length(a)")
@@ -340,6 +370,10 @@ This algorithm consumes ``O(k)`` random numbers, with `k=length(x)`.
 The outputs are ordered.
 """
 function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
     N = length(a)
     n = length(x)
     n <= N || error("length(x) should not exceed length(a)")
@@ -451,8 +485,6 @@ nor share memory with them, or the result may be incorrect.
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
-    Base.mightalias(a, x) &&
-        throw(ArgumentError("output array a must not share memory with input array x"))
     1 == firstindex(a) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
@@ -550,6 +582,8 @@ Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
 function sample(rng::AbstractRNG, wv::AbstractWeights)
+    1 == firstindex(wv) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     t = rand(rng) * sum(wv)
     n = length(wv)
     i = 1
@@ -579,6 +613,12 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm:
 """
 function direct_sample!(rng::AbstractRNG, a::AbstractArray,
                         wv::AbstractWeights, x::AbstractArray)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    Base.mightalias(x, wv) &&
+        throw(ArgumentError("output array x must not share memory with weights array wv"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     for i = 1:length(x)
@@ -662,6 +702,12 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n \\log n)`` ti
 for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
 """
 function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    Base.mightalias(x, wv) &&
+        throw(ArgumentError("output array x must not share memory with weights array wv"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
 
@@ -694,6 +740,12 @@ and has overall time complexity ``O(n k)``.
 """
 function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                               wv::AbstractWeights, x::AbstractArray)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    Base.mightalias(x, wv) &&
+        throw(ArgumentError("output array x must not share memory with weights array wv"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
@@ -734,6 +786,12 @@ processing time to draw ``k`` elements. It consumes ``n`` random numbers.
 """
 function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                      wv::AbstractWeights, x::AbstractArray)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    Base.mightalias(x, wv) &&
+        throw(ArgumentError("output array x must not share memory with weights array wv"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -769,6 +827,12 @@ processing time to draw ``k`` elements. It consumes ``n`` random numbers.
 """
 function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                         wv::AbstractWeights, x::AbstractArray)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    Base.mightalias(x, wv) &&
+        throw(ArgumentError("output array x must not share memory with weights array wv"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -836,6 +900,12 @@ processing time to draw ``k`` elements. It consumes ``O(k \\log(n / k))`` random
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                          wv::AbstractWeights, x::AbstractArray;
                                          ordered::Bool=false)
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    Base.mightalias(x, wv) &&
+        throw(ArgumentError("output array x must not share memory with weights array wv"))
+    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -898,10 +968,6 @@ efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstra
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
-    Base.mightalias(a, x) &&
-        throw(ArgumentError("output array a must not share memory with input array x"))
-    Base.mightalias(a, wv) &&
-        throw(ArgumentError("output array a must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)

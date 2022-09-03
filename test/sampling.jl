@@ -1,5 +1,5 @@
 using StatsBase
-using Test, Random, StableRNGs
+using Test, Random, StableRNGs, OffsetArrays
 
 Random.seed!(1234)
 
@@ -246,17 +246,23 @@ test_same(replace=false, ordered=true)
 test_same(replace=true, ordered=false)
 test_same(replace=false, ordered=false)
 
-# Test that sample! throws when output shares memory with inputs
-x = rand(10)
-y = rand(10)
-@test_throws ArgumentError sample!(x, x)
-@test_throws ArgumentError sample!(x, weights(y), x)
-@test_throws ArgumentError sample!(x, weights(x), y)
-@test_throws ArgumentError sample!(x, weights(x), x)
-@test_throws ArgumentError sample!(view(x, 2:4), view(x, 3:5))
-@test_throws ArgumentError sample!(view(x, 2:4), weights(view(x, 3:5)), y)
-@test_throws ArgumentError sample!(view(x, 2:4), weights(view(x, 3:5)), view(x, 1:2))
-# These corner cases should theoretically succeed
-# but the second currently fails as Base.mightalias is not smart enough
-sample!(view(x, 2:4), view(x, 5:6))
-@test_broken sample!(view(x, 2:4), weights(view(x, 5:6)), y)
+@testset "validation of inputs" begin
+    for f in (sample!, knuths_sample!, fisher_yates_sample!, self_avoid_sample!,
+            seqsample_a!, seqsample_c!, seqsample_d!)
+        x = rand(10)
+        y = rand(10)
+        ox = OffsetArray(x, -4:5)
+        oy = OffsetArray(y, -4:5)
+
+        # Test that offset arrays throw an error
+        @test_throws ArgumentError f(ox, y)
+        @test_throws ArgumentError f(x, oy)
+        @test_throws ArgumentError f(ox, oy)
+
+        # Test that an error is thrown when output shares memory with inputs
+        @test_throws ArgumentError f(x, x)
+        @test_throws ArgumentError f(view(x, 2:4), view(x, 3:5))
+        # This corner case should succeed
+        f(view(x, 2:4), view(x, 5:6))
+    end
+end
