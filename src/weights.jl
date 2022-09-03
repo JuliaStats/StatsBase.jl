@@ -14,7 +14,7 @@ macro weights(name)
             values::V
             sum::S
             positive::Union{Bool, Missing}
-            function $(esc(name)){S, T, V}(values, sum, positive) where {S<:Real, T<:Real, V<:AbstractVector{T}}
+            function $(esc(name)){S, T, V}(values, sum, positive=missing) where {S<:Real, T<:Real, V<:AbstractVector{T}}
                 isfinite(sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
                 return new{S, T, V}(values, sum, positive)
             end
