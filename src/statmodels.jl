@@ -129,7 +129,7 @@ function show(io::IO, ct::CoefTable)
     end
 
     sepsize = 3
-    hdots = "  \u2026  "
+    hdots = "  …  "
     mat = [j == 1 ? NoQuote(rownms[i]) :
            j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
            j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
@@ -146,18 +146,19 @@ function show(io::IO, ct::CoefTable)
 
     # remove columns that do not fit on the screen
     maxcols = length(A)
-    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)+sepsize
     if maxcols < nc+1
         ncols = min(nc, maxcols)
         mat = mat[:, 1:ncols]
+        mat = hcat(mat, [hdots for i in 1:nr])
         colnms = colnms[1:ncols]
-        sepsize = length(hdots)+1
+        sepsize = textwidth(hdots)+1
     else
         sepsize = 0
     end
 
     # print table
-    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)+sepsize
+    totwidth = sum(sum, A) + 2 * (maxcols - 1) + sepsize
+
     println(io, repeat('─', totwidth))
     print(io, repeat(' ', sum(A[1])))
     for j in 1:maxcols-1
@@ -165,10 +166,11 @@ function show(io::IO, ct::CoefTable)
     end
     maxcols < nc+1 && print(io, lpad(hdots, sepsize))
     println(io, '\n', repeat('─', totwidth))
-    for i in 1:size(mat, 1)
-        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), "  ")
-        maxcols < nc+1 && print(io, lpad(hdots, sepsize))
-        i != size(mat, 1) && println(io)
+    m, n =size(mat)
+    for i in 1:m
+        Base.print_matrix_row(io, mat, A, i, 1:n, "  ")
+        maxcols < nc+1 && (i+4)%5 == 0 && print(io, lpad(hdots, sepsize))
+        i != m && println(io)
     end
     print(io, '\n', repeat('─', totwidth))
     nothing
