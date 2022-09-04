@@ -6,23 +6,23 @@ abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: Abstrac
 
 Generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
 and stores the `values` (`V<:RealVector`), the pre-computed `sum` (`S<:Real`) and
-whether all values are `positive`.
+whether any values are `negative`.
 """
 macro weights(name)
     return quote
         mutable struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
             values::V
             sum::S
-            positive::Union{Bool, Missing}
-            function $(esc(name)){S, T, V}(values, sum, positive=missing) where {S<:Real, T<:Real, V<:AbstractVector{T}}
+            negative::Union{Bool, Missing}
+            function $(esc(name)){S, T, V}(values, sum, negative=missing) where {S<:Real, T<:Real, V<:AbstractVector{T}}
                 isfinite(sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
-                return new{S, T, V}(values, sum, positive)
+                return new{S, T, V}(values, sum, negative)
             end
         end
         $(esc(name))(values::AbstractVector{T},
                      sum::S=Base.sum(values),
-                     positive::Union{Bool, Missing}=missing) where {S<:Real, T<:Real} =
-            $(esc(name)){S, T, typeof(values)}(values, sum, positive)
+                     negative::Union{Bool, Missing}=missing) where {S<:Real, T<:Real} =
+            $(esc(name)){S, T, typeof(values)}(values, sum, negative)
     end
 end
 
@@ -57,17 +57,18 @@ Base.getindex(wv::W, ::Colon) where {W <: AbstractWeights} = W(copy(wv.values), 
     isfinite(sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
     wv.values[i] = v
     wv.sum = sum
-    wv.positive = missing
+    wv.negative = v < zero(v) ? true :
+                  wv.negative === false ? false : missing
     v
 end
 
 function Base.all(f::Base.Fix2{typeof(>=)}, wv::AbstractWeights)
     if iszero(f.x)
-        if ismissing(wv.positive)
+        if wv.negative === missing
             # sum is significantly faster than all when no entries are negative
-            wv.positive = sum(<(0), wv.values) == 0
+            wv.negative = sum(<(0), wv.values) > 0
         end
-        return wv.positive
+        return !wv.negative
     else
         return all(f, wv.values)
     end
@@ -75,11 +76,11 @@ end
 
 function Base.any(f::Base.Fix2{typeof(<)}, wv::AbstractWeights)
     if iszero(f.x)
-        if ismissing(wv.positive)
+        if wv.negative === missing
             # sum is significantly faster than all when no entries are negative
-            wv.positive = sum(<(0), wv.values) == 0
+            wv.negative = sum(<(0), wv.values) > 0
         end
-        return !wv.positive
+        return wv.negative
     else
         return any(f, wv.values)
     end

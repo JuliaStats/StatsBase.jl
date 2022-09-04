@@ -133,10 +133,10 @@ end
         @test !any(<(0), f([-0.0, 0.0]))
         @test any(<(0), f([1, -2]))
 
-        @test all(>=(1), [2, 3, 4])
-        @test !all(>=(1), [0, 1, 2])
-        @test any(<(3), [2, 3, 4])
-        @test !any(<(1), [1, 2, 3])
+        @test all(>=(1), f([2, 3, 4]))
+        @test !all(>=(1), f([0, 1, 2]))
+        @test any(<(3), f([2, 3, 4]))
+        @test !any(<(1), f([1, 2, 3]))
 
         wv = f([1.0, 2.0, 3.0])
         @test all(>=(0), wv)
@@ -144,6 +144,14 @@ end
         wv[2] = -0.0
         @test all(>=(0), wv)
         @test !any(<(0), wv)
+        wv[2] = -1.0
+        @test !all(>=(0), wv)
+        @test any(<(0), wv)
+        wv[2] = 1.0
+        @test all(>=(0), wv)
+        @test !any(<(0), wv)
+
+        wv = f([1.0, 2.0, 3.0])
         wv[2] = -1.0
         @test !all(>=(0), wv)
         @test any(<(0), wv)
