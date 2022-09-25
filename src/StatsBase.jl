@@ -240,7 +240,10 @@ export
 
     # reliability
     CronbachAlpha,        # the type to represent Cronbach's alpha scores
-    cronbachalpha         # function to compute Cronbach's alpha scores
+    cronbachalpha,         # function to compute Cronbach's alpha scores
+
+    # nestimate: Minimum-variance unbiased and Method of Moments Estimatino (of N)
+    nestimate
 
 # source files
 
@@ -267,6 +270,8 @@ include("sampling.jl")
 include("statmodels.jl")
 
 include("transformations.jl")
+
+include("nestimate.jl")
 
 include("deprecates.jl")
 
