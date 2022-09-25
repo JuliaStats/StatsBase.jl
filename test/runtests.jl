@@ -23,13 +23,13 @@ tests = ["ambiguous",
          "wsampling",
          "statmodels",
          "partialcor",
-         "mvue",
+         "nestimate",
          "transformations"]
          #"statquiz"]
 
 println("Running tests:")
 
-tests = ["nestimate"]
+
 for t in tests
     tfile = string(t, ".jl")
     println(" * $(tfile) ...")
