@@ -1,16 +1,6 @@
-function mvue(sampl::AbstractVector)::Float64
-    mx = maximum(sampl)
-    estimate = mx + mx / length(sampl) - 1.0
-    return estimate
-end 
-
-function mom(sampl::AbstractVector)::Float64
-    return 2.0 * mean(sampl) - 1.0
-end 
-
 
 """
-    nestimate(x::AbstractVector; method = "mvue")
+    nestimate(x::AbstractArray; method = "mvue")
 
 Estimate ``N`` using an ``n`` sample of integer IDs. If the method is mvue 
 (Minimum-variance unbiased estimator) then 
@@ -28,7 +18,7 @@ If the method is selected as "mom" then the the estimate of ``N``is
 
 where ``\\bar{x}`` is the sample mean.
 
-* `x::AbstractVector`: Vector of samples. 
+* `x::AbstractArray`: Vector of samples. 
 * `method::String`: Either "mvue" or "mom". Default is "mvue".
 
 # Description 
@@ -40,7 +30,18 @@ example of the problem of estimating ``N`` using a sample.
 - https://en.wikipedia.org/wiki/German_tank_problem
 
 """
-function nestimate(sampl::AbstractVector; method = "mvue")::Float64
+function nestimate(sampl::AbstractArray; method = "mvue")::Float64
+    
+    function mvue(sampl::AbstractArray)::Float64
+        mx = maximum(sampl)
+        estimate = mx + mx / length(sampl) - 1.0
+        return estimate
+    end 
+
+    function mom(sampl::AbstractArray)::Float64
+        return 2.0 * mean(sampl) - 1.0
+    end 
+   
     if method == "mvue"
         return mvue(sampl)
     elseif method == "mom"
