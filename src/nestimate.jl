@@ -23,7 +23,7 @@ is the estimate of ``N`` where ``n`` is the sample size and  ``m`` is the sample
 If the method is selected as "mom" then the the estimate of ``N``is 
 
 ```math
-2 + \\bar{x} - 1
+2 * \\bar{x} - 1
 ```
 
 where ``\\bar{x}`` is the sample mean.
