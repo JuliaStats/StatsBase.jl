@@ -10,7 +10,7 @@ end
 
 
 """
-    nestimate(x::AbstractArray; method = "mvue")
+    nestimate(x::AbstractVector; method = "mvue")
 
 Estimate ``N`` using an ``n`` sample of integer IDs. If the method is mvue 
 (Minimum-variance unbiased estimator) then 
@@ -28,7 +28,7 @@ If the method is selected as "mom" then the the estimate of ``N``is
 
 where ``\\bar{x}`` is the sample mean.
 
-* `x::AbstractArray`: Vector of samples. 
+* `x::AbstractVector`: Vector of samples. 
 * `method::String`: Either "mvue" or "mom". Default is "mvue".
 
 # Description 
