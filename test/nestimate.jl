@@ -18,4 +18,13 @@ using Test
         @test result isa Float64 
         @test result == 79.5
     end  
+
+    @testset "Unknown method" begin 
+        vect = [19, 40, 42, 60]
+        try
+            result = nestimate(vect, method = "wrongmethodname")
+        catch e 
+            @test e isa ArgumentError
+        end
+    end 
 end 
