@@ -90,7 +90,7 @@ std(v::RealArray, w::AbstractWeights, dim::Int;
 
 ##### Fused statistics
 """
-    mean_and_var(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, var)
+    mean_and_var(x, [w::AbstractWeights], [dim]; corrected=true) -> (mean, var)
 
 Return the mean and variance of collection `x`. If `x` is an `AbstractArray`,
 `dim` can be specified as a tuple to compute statistics over these dimensions.
