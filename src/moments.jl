@@ -105,7 +105,7 @@ function mean_and_var(x; corrected::Bool=true)
 end
 
 """
-    mean_and_std(x, [w::AbstractWeights], [dim]; corrected=false) -> (mean, std)
+    mean_and_std(x, [w::AbstractWeights], [dim]; corrected=true) -> (mean, std)
 
 Return the mean and standard deviation of collection `x`. If `x` is an `AbstractArray`,
 `dim` can be specified as a tuple to compute statistics over these dimensions.
