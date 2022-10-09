@@ -166,7 +166,7 @@ function show(io::IO, ct::CoefTable)
     end
     maxcols < nc+1 && print(io, lpad(hdots, sepsize))
     println(io, '\n', repeat('─', totwidth))
-    m, n =size(mat)
+    m, n = size(mat)
     for i in 1:m
         Base.print_matrix_row(io, mat, A, i, 1:n, "  ")
         maxcols < nc+1 && (i+4)%5 == 0 && print(io, lpad(hdots, sepsize))
