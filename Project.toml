@@ -26,6 +26,7 @@ StatsAPI = "1.2"
 julia = "1"
 
 [extras]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
@@ -33,4 +34,4 @@ StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Dates", "DelimitedFiles", "OffsetArrays", "StableRNGs", "Test"]
+test = ["BenchmarkTools", "Dates", "DelimitedFiles", "OffsetArrays", "StableRNGs", "Test"]
