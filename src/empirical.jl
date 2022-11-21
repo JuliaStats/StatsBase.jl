@@ -16,7 +16,7 @@ function (ecdf::ECDF)(x::Real)
     partialsum / weightsum
 end
 
-function (ecdf::ECDF)(v::RealVector)
+function (ecdf::ECDF)(v::AbstractVector{<:Real})
     evenweights = isempty(ecdf.weights)
     weightsum = evenweights ? length(ecdf.sorted_values) : sum(ecdf.weights)
     ord = sortperm(v)
@@ -53,7 +53,7 @@ evaluate CDF values on other samples.
 `extrema`, `minimum`, and `maximum` are supported to for obtaining the range over which
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
-function ecdf(X::RealVector; weights::AbstractVector{<:Real}=Weights(Float64[]))
+function ecdf(X::AbstractVector{<:Real}; weights::AbstractVector{<:Real}=Weights(Float64[]))
     any(isnan, X) && throw(ArgumentError("ecdf can not include NaN values"))
     isempty(weights) || length(X) == length(weights) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(X)) and $(length(weights))"))

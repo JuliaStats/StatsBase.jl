@@ -91,11 +91,11 @@ _scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
 
 ## weighted cov
 covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
-     corrected::DepBool=nothing) =
+     corrected::Union{Bool, Nothing}=nothing) =
     rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, :corrected, corrected)))
 
 
-cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing) =
+cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::Union{Bool, Nothing}=nothing) =
     covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, :corrected, corrected))
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
@@ -118,7 +118,7 @@ function mean_and_cov(x::DenseMatrix, dims::Int=1; corrected::Bool=true)
     return m, covm(x, m, dims, corrected=corrected)
 end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
-                      corrected::DepBool=nothing)
+                      corrected::Union{Bool, Nothing}=nothing)
     m = mean(x, wv, dims=dims)
     return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, :corrected, corrected))
 end

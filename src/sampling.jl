@@ -1028,10 +1028,10 @@ items appear in the same order as in `a`) should be taken.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-wsample!(rng::AbstractRNG, a::AbstractArray, w::RealVector, x::AbstractArray;
+wsample!(rng::AbstractRNG, a::AbstractArray, w::AbstractVector{<:Real}, x::AbstractArray;
          replace::Bool=true, ordered::Bool=false) =
     sample!(rng, a, weights(w), x; replace=replace, ordered=ordered)
-wsample!(a::AbstractArray, w::RealVector, x::AbstractArray;
+wsample!(a::AbstractArray, w::AbstractVector{<:Real}, x::AbstractArray;
          replace::Bool=true, ordered::Bool=false) =
     sample!(Random.GLOBAL_RNG, a, weights(w), x; replace=replace, ordered=ordered)
 
@@ -1044,10 +1044,10 @@ to the weights given in `w`. If `a` is not present, select a random weight from 
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-wsample(rng::AbstractRNG, w::RealVector) = sample(rng, weights(w))
-wsample(w::RealVector) = wsample(Random.GLOBAL_RNG, w)
-wsample(rng::AbstractRNG, a::AbstractArray, w::RealVector) = sample(rng, a, weights(w))
-wsample(a::AbstractArray, w::RealVector) = wsample(Random.GLOBAL_RNG, a, w)
+wsample(rng::AbstractRNG, w::AbstractVector{<:Real}) = sample(rng, weights(w))
+wsample(w::AbstractVector{<:Real}) = wsample(Random.GLOBAL_RNG, w)
+wsample(rng::AbstractRNG, a::AbstractArray, w::AbstractVector{<:Real}) = sample(rng, a, weights(w))
+wsample(a::AbstractArray, w::AbstractVector{<:Real}) = wsample(Random.GLOBAL_RNG, a, w)
 
 
 """
@@ -1063,10 +1063,10 @@ items appear in the same order as in `a`) should be taken.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-wsample(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, n::Integer;
+wsample(rng::AbstractRNG, a::AbstractArray{T}, w::AbstractVector{<:Real}, n::Integer;
         replace::Bool=true, ordered::Bool=false) where {T} =
     wsample!(rng, a, w, Vector{T}(undef, n); replace=replace, ordered=ordered)
-wsample(a::AbstractArray, w::RealVector, n::Integer;
+wsample(a::AbstractArray, w::AbstractVector{<:Real}, n::Integer;
         replace::Bool=true, ordered::Bool=false) =
     wsample(Random.GLOBAL_RNG, a, w, n; replace=replace, ordered=ordered)
 
@@ -1080,9 +1080,9 @@ weights given in `w` if `a` is present, otherwise select a random sample of size
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-wsample(rng::AbstractRNG, a::AbstractArray{T}, w::RealVector, dims::Dims;
+wsample(rng::AbstractRNG, a::AbstractArray{T}, w::AbstractVector{<:Real}, dims::Dims;
         replace::Bool=true, ordered::Bool=false) where {T} =
     wsample!(rng, a, w, Array{T}(undef, dims); replace=replace, ordered=ordered)
-wsample(a::AbstractArray, w::RealVector, dims::Dims;
+wsample(a::AbstractArray, w::AbstractVector{<:Real}, dims::Dims;
         replace::Bool=true, ordered::Bool=false) =
     wsample(Random.GLOBAL_RNG, a, w, dims; replace=replace, ordered=ordered)

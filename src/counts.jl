@@ -24,7 +24,7 @@ array `r`. For each `xi ∈ x`, if `xi == levels[j]`, then we increment `r[j]`.
 If a weighting vector `wv` is specified, the sum of weights is used rather than the
 raw counts.
 """
-function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::IntUnitRange)
     # add counts of integers from x that fall within levels to r
 
     checkbounds(r, axes(levels)...)
@@ -41,7 +41,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange)
     return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights)
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::IntUnitRange, wv::AbstractWeights)
     # add wv weighted counts of integers from x that fall within levels to r
 
     length(x) == length(wv) ||
@@ -82,14 +82,14 @@ The output is a vector of length `length(levels)`.
 """
 function counts end
 
-counts(x::IntegerArray, levels::IntUnitRange) =
+counts(x::AbstractArray{<:Integer}, levels::IntUnitRange) =
     addcounts!(zeros(Int, length(levels)), x, levels)
-counts(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
+counts(x::AbstractArray{<:Integer}, levels::IntUnitRange, wv::AbstractWeights) =
     addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
-counts(x::IntegerArray, k::Integer) = counts(x, 1:k)
-counts(x::IntegerArray, k::Integer, wv::AbstractWeights) = counts(x, 1:k, wv)
-counts(x::IntegerArray) = counts(x, span(x))
-counts(x::IntegerArray, wv::AbstractWeights) = counts(x, span(x), wv)
+counts(x::AbstractArray{<:Integer}, k::Integer) = counts(x, 1:k)
+counts(x::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) = counts(x, 1:k, wv)
+counts(x::AbstractArray{<:Integer}) = counts(x, span(x))
+counts(x::AbstractArray{<:Integer}, wv::AbstractWeights) = counts(x, span(x), wv)
 
 
 """
@@ -101,8 +101,8 @@ Equivalent to `counts(x, levels) / length(x)`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportions(x::IntegerArray, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
-proportions(x::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, levels::IntUnitRange) = counts(x, levels) .* inv(length(x))
+proportions(x::AbstractArray{<:Integer}, levels::IntUnitRange, wv::AbstractWeights) =
     counts(x, levels, wv) .* inv(sum(wv))
 
 """
@@ -113,14 +113,14 @@ Return the proportion of integers in 1 to `k` that occur in `x`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportions(x::IntegerArray, k::Integer) = proportions(x, 1:k)
-proportions(x::IntegerArray, k::Integer, wv::AbstractWeights) = proportions(x, 1:k, wv)
-proportions(x::IntegerArray) = proportions(x, span(x))
-proportions(x::IntegerArray, wv::AbstractWeights) = proportions(x, span(x), wv)
+proportions(x::AbstractArray{<:Integer}, k::Integer) = proportions(x, 1:k)
+proportions(x::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) = proportions(x, 1:k, wv)
+proportions(x::AbstractArray{<:Integer}) = proportions(x, span(x))
+proportions(x::AbstractArray{<:Integer}, wv::AbstractWeights) = proportions(x, span(x), wv)
 
 #### functions for counting a single list of integers (2D)
 
-function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange})
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,IntUnitRange})
     # add counts of pairs from zip(x,y) to r
 
     xlevels, ylevels = levels
@@ -146,7 +146,7 @@ function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray, levels::
     return r
 end
 
-function addcounts!(r::AbstractArray, x::IntegerArray, y::IntegerArray,
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer},
                     levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     # add counts of pairs from zip(x,y) to r
 
@@ -182,43 +182,43 @@ end
 
 # facet functions
 
-function counts(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange})
+function counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,IntUnitRange})
     addcounts!(zeros(Int, length(levels[1]), length(levels[2])), x, y, levels)
 end
 
-function counts(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
+function counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,IntUnitRange}, wv::AbstractWeights)
     addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
 end
 
-counts(x::IntegerArray, y::IntegerArray, levels::IntUnitRange) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::IntUnitRange) =
     counts(x, y, (levels, levels))
-counts(x::IntegerArray, y::IntegerArray, levels::IntUnitRange, wv::AbstractWeights) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::IntUnitRange, wv::AbstractWeights) =
     counts(x, y, (levels, levels), wv)
 
-counts(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}) =
     counts(x, y, (1:ks[1], 1:ks[2]))
-counts(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}, wv::AbstractWeights) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}, wv::AbstractWeights) =
     counts(x, y, (1:ks[1], 1:ks[2]), wv)
-counts(x::IntegerArray, y::IntegerArray, k::Integer) = counts(x, y, (1:k, 1:k))
-counts(x::IntegerArray, y::IntegerArray, k::Integer, wv::AbstractWeights) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer) = counts(x, y, (1:k, 1:k))
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) =
     counts(x, y, (1:k, 1:k), wv)
-counts(x::IntegerArray, y::IntegerArray) = counts(x, y, (span(x), span(y)))
-counts(x::IntegerArray, y::IntegerArray, wv::AbstractWeights) = counts(x, y, (span(x), span(y)), wv)
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}) = counts(x, y, (span(x), span(y)))
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, wv::AbstractWeights) = counts(x, y, (span(x), span(y)), wv)
 
-proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,IntUnitRange}) =
     counts(x, y, levels) .* inv(length(x))
-proportions(x::IntegerArray, y::IntegerArray, levels::NTuple{2,IntUnitRange}, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,IntUnitRange}, wv::AbstractWeights) =
     counts(x, y, levels, wv) .* inv(sum(wv))
 
-proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}) =
     proportions(x, y, (1:ks[1], 1:ks[2]))
-proportions(x::IntegerArray, y::IntegerArray, ks::NTuple{2,Integer}, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}, wv::AbstractWeights) =
     proportions(x, y, (1:ks[1], 1:ks[2]), wv)
-proportions(x::IntegerArray, y::IntegerArray, k::Integer) = proportions(x, y, (1:k, 1:k))
-proportions(x::IntegerArray, y::IntegerArray, k::Integer, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer) = proportions(x, y, (1:k, 1:k))
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) =
     proportions(x, y, (1:k, 1:k), wv)
-proportions(x::IntegerArray, y::IntegerArray) = proportions(x, y, (span(x), span(y)))
-proportions(x::IntegerArray, y::IntegerArray, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}) = proportions(x, y, (span(x), span(y)))
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, wv::AbstractWeights) =
     proportions(x, y, (span(x), span(y)), wv)
 
 
