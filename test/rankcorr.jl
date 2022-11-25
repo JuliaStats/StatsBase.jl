@@ -35,7 +35,7 @@ c22 = corspearman(x2, x2)
 @test isnan(corkendall([1,1,1], [1,2,3]))
 @test corkendall([-Inf,-0.0,Inf],[1,2,3]) == 1.0
 
-# Test, with exact equality, some known results. 
+# Test, with exact equality, some known results.
 # RealVector, RealVector
 @test corkendall(x1, y) == -1/sqrt(90)
 @test corkendall(x2, y) == -1/sqrt(72)
