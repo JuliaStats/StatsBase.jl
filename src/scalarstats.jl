@@ -232,24 +232,24 @@ nquantile(x, n::Integer) = quantile(x, (0:n)/n)
 Compute the quantile position in the [0, 1] interval of `value` relative to collection `itr`.
 
 Different definitions can be chosen via the `method` keyword argument.
-Let `count_less` be the number of elements of `itr` that are less than `value`, 
-`count_equal` the number of elements of `itr` that are equal to `value`, `n` the length of `itr`, 
-`greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`. 
+Let `count_less` be the number of elements of `itr` that are less than `value`,
+`count_equal` the number of elements of `itr` that are equal to `value`, `n` the length of `itr`,
+`greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`.
 Then `method` supports the following definitions:
 
-- `:inc` (default): Return a value in the range 0 to 1 inclusive. 
-Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on 
+- `:inc` (default): Return a value in the range 0 to 1 inclusive.
+Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on
 definition 7 of quantile in Hyndman and Fan (1996)
 (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
 This definition corresponds to the lower semi-continuous inverse of
 [`quantile`](@ref) with its default parameters.
 
 - `:exc`: Return a value in the range 0 to 1 exclusive.
-Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation 
+Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation
 based on definition 6 of quantile in Hyndman and Fan (1996)
 (equivalent to Excel `PERCENTRANK.EXC`).
 
-- `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise 
+- `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise
 return `(count_less - 1) / (n - 1)`, without interpolation
 (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
 
@@ -361,12 +361,12 @@ function quantilerank(itr, value; method::Symbol=:inc)
     elseif method == :compete
         if value > maximum(itr)
             return 1.0
-        elseif value ≤ minimum(itr) 
+        elseif value ≤ minimum(itr)
             return 0.0
         else
             value ∈ itr && (count_less += 1)
             return (count_less - 1) / (n - 1)
-        end 
+        end
     elseif method == :tied
         return (count_less + count_equal/2) / n
     elseif method == :strict
@@ -428,7 +428,7 @@ Return the standard error of the mean for a collection `x`.
 A pre-computed `mean` may be provided.
 
 When not using weights, this is the (sample) standard deviation
-divided by the sample size. If weights are used, the 
+divided by the sample size. If weights are used, the
 variance of the sample mean is calculated as follows:
 
 * `AnalyticWeights`: Not implemented.
@@ -480,7 +480,7 @@ function sem(x; mean=nothing)
     return sqrt(variance / n)
 end
 
-function sem(x::AbstractArray; mean=nothing) 
+function sem(x::AbstractArray; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)

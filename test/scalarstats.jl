@@ -108,7 +108,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
              @test quantilerank(v1, 2, method=:inc)    == 1/3
              @test quantilerank(v1, 4, method=:inc)    == 5/9
              @test quantilerank(v1, 8, method=:inc)    == 2/3
-             @test quantilerank(v1, 5, method=:inc)    == 7/12        
+             @test quantilerank(v1, 5, method=:inc)    == 7/12
              @test quantilerank(v2, 7, method=:exc)    == 0.7
              @test quantilerank(v2, 5.43, method=:exc) == 0.381
              @test quantilerank(v3, 4, method=:exc)    == 6/9
@@ -155,7 +155,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
          @test_throws ArgumentError quantilerank([1], 3)
      end
  end
- 
+
 ##### Dispersion
 
 @test span([3, 4, 5, 6, 2]) == (2:6)
