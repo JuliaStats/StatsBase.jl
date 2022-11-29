@@ -86,6 +86,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test zscore(a, 1) ≈ zscore(a, mean(a, dims=1), std(a, dims=1))
 @test zscore(a, 2) ≈ zscore(a, mean(a, dims=2), std(a, dims=2))
 
+@test all(isnan, zscore(fill(log(1e-5), 8)))  # Issue #196
 
 ###### quantile & friends
 

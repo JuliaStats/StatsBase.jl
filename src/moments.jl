@@ -1,3 +1,77 @@
+require_accu_mean(x::AbstractArray) = length(x)≥4 && x[1]==x[2]==x[end-1]==x[end]
+require_accu_mean(x::AbstractArray, 
+                  ci::CartesianIndex{K},  # location of vector to examine
+                  ∆ci::CartesianIndex{K},  # (0, ..., 0, 1, 0, ..., 0); CartesianIndex(ntuple(k->k==dim, Val(K))) 
+                  N::Int  # size(x, dim)
+                  ) where {K} =
+    N≥4 && x[ci+∆ci] == x[ci+2∆ci] == x[ci+(N-1)∆ci] == x[ci+N*∆ci]
+
+# For non-array x (e.g., iterator)
+function require_accu_mean(x)
+    vs₁ = iterate(x)
+    vs₁ === nothing && return false
+
+    val₁, st = vs₁
+    count = 1
+    while (count+=1) ≤ 4
+        vs = iterate(x, st)
+        vs === nothing && return false  # do not require accurate mean Inf length(x) < 4
+        val, st = vs
+        val != val₁ && return false
+    end
+
+    return true
+end
+    
+function calc_∆m(x, m::Number)
+    ∆m = zero(m)
+
+    vs = iterate(x)
+    count = 0
+    while vs !== nothing
+        count += 1
+        val, st = vs
+        ∆m += val - m
+        vs = iterate(x, st)
+    end
+    ∆m /= count
+
+    return ∆m
+end
+
+calc_∆m(x, w::AbstractWeights, m::Number) = mapreduce((xᵢ,wᵢ)->(xᵢ-m)*wᵢ, +, x, w) / sum(w)
+function calc_∆m(x::AbstractArray, 
+                 m::Number,  # mean calculated with rounding errors
+                 ci::CartesianIndex{K},  # location of vector to examine
+                 ∆ci::CartesianIndex{K},  # (0, ..., 0, 1, 0, ..., 0); CartesianIndex(ntuple(k->k==dim, Val(K))) 
+                 N::Int  # size(x, dim)
+                 ) where {K}
+    ∆m = zero(m)
+    for j = 1:N
+        ∆m += x[ci+j*∆ci]
+    end
+    ∆m /= N
+
+    return ∆m
+end
+
+function calc_∆m(x::AbstractArray,
+                 w::AbstractWeights,
+                 m::Number,  # mean calculated with rounding errors
+                 ci::CartesianIndex{K},  # location of vector to examine
+                 ∆ci::CartesianIndex{K},  # (0, ..., 0, 1, 0, ..., 0); CartesianIndex(ntuple(k->k==dim, Val(K))) 
+                 N::Int  # size(x, dim)
+                 ) where {K}
+    ∆m = zero(m)
+    for j = 1:N
+        ∆m += w[j] * x[ci+j*∆ci]
+    end
+    ∆m /= sum(w)
+
+    return ∆m
+end
+
+
 ##### Weighted var & std
 
 ## var
@@ -100,6 +174,7 @@ See [`var`](@ref) documentation for more details.
 """
 function mean_and_var(x; corrected::Bool=true)
     m = mean(x)
+    require_accu_mean(x) && (m += calc_∆m(x, m))
     v = var(x, mean=m, corrected=corrected)
     m, v
 end
@@ -116,43 +191,91 @@ See [`std`](@ref) documentation for more details.
 """
 function mean_and_std(x; corrected::Bool=true)
     m = mean(x)
+    require_accu_mean(x) && (m += calc_∆m(x, m))
     s = std(x, mean=m, corrected=corrected)
     m, s
 end
 
 function mean_and_var(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
     m = mean(x, w)
+    require_accu_mean(x) && (m += calc_∆m(x, m))
     v = var(x, w, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
+
 function mean_and_std(x::RealArray, w::AbstractWeights; corrected::DepBool=nothing)
     m = mean(x, w)
+    require_accu_mean(x) && (m += calc_∆m(x, w, m))
     s = std(x, w, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
     m, s
 end
 
-
 function mean_and_var(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims=dim)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dim]
+
+    CI = CartesianIndices(ntuple(k->(k==dim ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dim ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, m, ci, ∆ci, N))
+    end
+
     v = var(x, dims=dim, mean=m, corrected=corrected)
     m, v
 end
+
 function mean_and_std(x::RealArray, dim::Int; corrected::Bool=true)
     m = mean(x, dims=dim)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dim]
+
+    CI = CartesianIndices(ntuple(k->(k==dim ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dim ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, m, ci, ∆ci, N))
+    end
+
     s = std(x, dims=dim, mean=m, corrected=corrected)
     m, s
 end
 
-
 function mean_and_var(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dims]
+
+    CI = CartesianIndices(ntuple(k->(k==dims ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dims ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, w, m, ci, ∆ci, N))
+    end
+
     v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
     m, v
 end
+
 function mean_and_std(x::RealArray, w::AbstractWeights, dims::Int;
                       corrected::DepBool=nothing)
     m = mean(x, w, dims=dims)
+
+    sz = size(x)
+    K = length(sz)
+    N = sz[dims]
+
+    CI = CartesianIndices(ntuple(k->(k==dims ? (0:0) : (1:sz[k])), Val(K)))
+    ∆ci = CartesianIndex(ntuple(k->(k==dims ? 1 : 0), Val(K)))
+    for ci = CI
+        require_accu_mean(x, ci, ∆ci, N) && (m[ci+∆ci] += calc_∆m(x, w, m, ci, ∆ci, N))
+    end
+
     s = std(x, w, dims, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
     m, s
 end
