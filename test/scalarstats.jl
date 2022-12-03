@@ -2,6 +2,7 @@ using StatsBase
 using Test
 using DelimitedFiles
 using Statistics
+using BenchmarkTools: @benchmark
 
 ##### Location
 
@@ -212,6 +213,9 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test mad(Any[1, 2.1], normalize=false) ≈ 0.55
 @test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
 @test_throws ArgumentError mad(Int[], normalize = true)
+@test mad(Iterators.repeated(4, 10)) == 0
+@test mad(Integer[1,2,3,4]) === mad(1:4)
+@test (@benchmark mad((i for i in 1:10000))).allocs < 200
 
 # Issue 197
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009
