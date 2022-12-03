@@ -161,5 +161,20 @@ end
         # This corner case should theoretically succeed
         # but it currently fails as Base.mightalias is not smart enough
         @test_broken f(y, weights(view(x, 5:6)), view(x, 2:4))
+
+        # Check that negative weights are not allowed
+        if f === efraimidis_ares_wsample_norep! || f === efraimidis_aexpj_wsample_norep!
+            y[3] = -0.0
+            @test_throws ArgumentError f(x, weights(y), z)
+        else
+            y[3] = -0.0
+            f(x, weights(y), z)
+        end
+        y[3] = -1.0
+        @test_throws ArgumentError f(x, weights(y), z)
+
+        # Check that sum of weights cannot be zero
+        @test_throws ArgumentError f(x, weights(fill(0.0, 10)), z)
+        @test_throws ArgumentError f(x, weights(fill(-0.0, 10)), z)
     end
 end

@@ -584,7 +584,10 @@ Optionally specify a random number generator `rng` as the first argument
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     1 == firstindex(wv) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
-    t = rand(rng) * sum(wv)
+    all(>=(0), wv) || throw(ArgumentError("negative weights are not allowed"))
+    s = sum(wv)
+    s > 0 || throw(ArgumentError("sum of weights must be greater than 0"))
+    t = rand(rng) * s
     n = length(wv)
     i = 1
     cw = wv[1]
@@ -621,6 +624,8 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray,
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    all(>=(0), wv) || throw(ArgumentError("negative weights are not allowed"))
+    sum(wv) > 0 || throw(ArgumentError("sum of weights must be greater than 0"))
     for i = 1:length(x)
         x[i] = a[sample(rng, wv)]
     end
@@ -710,6 +715,8 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
         throw(ArgumentError("non 1-based arrays are not supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    all(>=(0), wv) || throw(ArgumentError("negative weights are not allowed"))
+    sum(wv) > 0 || throw(ArgumentError("sum of weights must be greater than 0"))
 
     # create alias table
     ap = Vector{Float64}(undef, n)
@@ -749,6 +756,8 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
+    all(>=(0), wv) || throw(ArgumentError("negative weights are not allowed"))
+    sum(wv) > 0 || throw(ArgumentError("sum of weights must be greater than 0"))
 
     w = Vector{Float64}(undef, n)
     copyto!(w, wv)
@@ -795,6 +804,8 @@ function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
+    all(>=(0), wv) || throw(ArgumentError("negative weights are not allowed"))
+    sum(wv) > 0 || throw(ArgumentError("sum of weights must be greater than 0"))
 
     # calculate keys for all items
     keys = randexp(rng, n)
@@ -845,14 +856,14 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     @inbounds for _s in 1:n
         s = _s
         w = wv.values[s]
-        w < 0 && error("Negative weight found in weight vector at index $s")
+        w < 0 && throw(ArgumentError("Negative weight found in weight vector at index $s"))
         if w > 0
             i += 1
             pq[i] = (w/randexp(rng) => s)
         end
         i >= k && break
     end
-    i < k && throw(DimensionMismatch("wv must have at least $k strictly positive entries (got $i)"))
+    i < k && throw(ArgumentError("wv must have at least $k strictly positive entries (got $i)"))
     heapify!(pq)
 
     # set threshold
@@ -860,7 +871,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
 
     @inbounds for i in s+1:n
         w = wv.values[i]
-        w < 0 && error("Negative weight found in weight vector at index $i")
+        w < 0 && throw(ArgumentError("Negative weight found in weight vector at index $i"))
         w > 0 || continue
         key = w/randexp(rng)
 
@@ -918,14 +929,14 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     @inbounds for _s in 1:n
         s = _s
         w = wv.values[s]
-        w < 0 && error("Negative weight found in weight vector at index $s")
+        w < 0 && throw(ArgumentError("Negative weight found in weight vector at index $s"))
         if w > 0
             i += 1
             pq[i] = (w/randexp(rng) => s)
         end
         i >= k && break
     end
-    i < k && throw(DimensionMismatch("wv must have at least $k strictly positive entries (got $i)"))
+    i < k && throw(ArgumentError("wv must have at least $k strictly positive entries (got $i)"))
     heapify!(pq)
 
     # set threshold
@@ -934,7 +945,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
 
     @inbounds for i in s+1:n
         w = wv.values[i]
-        w < 0 && error("Negative weight found in weight vector at index $i")
+        w < 0 && throw(ArgumentError("Negative weight found in weight vector at index $i"))
         w > 0 || continue
         X -= w
         X <= 0 || continue
@@ -991,7 +1002,7 @@ function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::Abs
             end
         end
     else
-        k <= n || error("Cannot draw $k samples from $n samples without replacement.")
+        k <= n || throw(ArgumentError("Cannot draw $k samples from $n samples without replacement."))
         efraimidis_aexpj_wsample_norep!(rng, a, wv, x; ordered=ordered)
     end
     return x
