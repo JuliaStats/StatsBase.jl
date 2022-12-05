@@ -2,6 +2,7 @@ using StatsBase
 using Test
 using DelimitedFiles
 using Statistics
+using BenchmarkTools: @benchmark
 
 ##### Location
 
@@ -108,7 +109,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
              @test quantilerank(v1, 2, method=:inc)    == 1/3
              @test quantilerank(v1, 4, method=:inc)    == 5/9
              @test quantilerank(v1, 8, method=:inc)    == 2/3
-             @test quantilerank(v1, 5, method=:inc)    == 7/12        
+             @test quantilerank(v1, 5, method=:inc)    == 7/12
              @test quantilerank(v2, 7, method=:exc)    == 0.7
              @test quantilerank(v2, 5.43, method=:exc) == 0.381
              @test quantilerank(v3, 4, method=:exc)    == 6/9
@@ -155,7 +156,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
          @test_throws ArgumentError quantilerank([1], 3)
      end
  end
- 
+
 ##### Dispersion
 
 @test span([3, 4, 5, 6, 2]) == (2:6)
@@ -212,6 +213,9 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test mad(Any[1, 2.1], normalize=false) ≈ 0.55
 @test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
 @test_throws ArgumentError mad(Int[], normalize = true)
+@test mad(Iterators.repeated(4, 10)) == 0
+@test mad(Integer[1,2,3,4]) === mad(1:4)
+@test (@benchmark mad((i for i in 1:10000))).allocs < 200
 
 # Issue 197
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009

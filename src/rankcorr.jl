@@ -143,8 +143,8 @@ function corkendall!(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, permx
         if x[i - 1] == x[i]
             k += 1
         elseif k > 0
-            # Sort the corresponding chunk of y, so the rows of hcat(x,y) are 
-            # sorted first on x, then (where x values are tied) on y. Hence 
+            # Sort the corresponding chunk of y, so the rows of hcat(x,y) are
+            # sorted first on x, then (where x values are tied) on y. Hence
             # double ties can be counted by calling countties.
             sort!(view(y, (i - k - 1):(i - 1)))
             ntiesx += div(widen(k) * (k + 1), 2) # Must use wide integers here
@@ -217,7 +217,7 @@ end
 """
     countties(x::AbstractVector{<:Real}, lo::Integer, hi::Integer)
 
-Return the number of ties within `x[lo:hi]`. Assumes `x` is sorted. 
+Return the number of ties within `x[lo:hi]`. Assumes `x` is sorted.
 """
 function countties(x::AbstractVector, lo::Integer, hi::Integer)
     # Use of widen below prevents possible overflow errors when
@@ -246,9 +246,9 @@ const SMALL_THRESHOLD = 64
 # merge_sort! copied from Julia Base
 # (commit 28330a2fef4d9d149ba0fd3ffa06347b50067647, dated 20 Sep 2020)
 """
-    merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t::AbstractVector=similar(v, 0))    
+    merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t::AbstractVector=similar(v, 0))
 
-Mutates `v` by sorting elements `x[lo:hi]` using the merge sort algorithm. 
+Mutates `v` by sorting elements `x[lo:hi]` using the merge sort algorithm.
 This method is a copy-paste-edit of sort! in base/sort.jl, amended to return the bubblesort distance.
 """
 function merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t::AbstractVector=similar(v, 0))
@@ -300,7 +300,7 @@ midpoint(lo::Integer, hi::Integer) = midpoint(promote(lo, hi)...)
 """
     insertion_sort!(v::AbstractVector, lo::Integer, hi::Integer)
 
-Mutates `v` by sorting elements `x[lo:hi]` using the insertion sort algorithm. 
+Mutates `v` by sorting elements `x[lo:hi]` using the insertion sort algorithm.
 This method is a copy-paste-edit of sort! in base/sort.jl, amended to return the bubblesort distance.
 """
 function insertion_sort!(v::AbstractVector, lo::Integer, hi::Integer)
