@@ -35,13 +35,13 @@ c22 = corspearman(x2, x2)
 @test isnan(corkendall([1,1,1], [1,2,3]))
 @test corkendall([-Inf,-0.0,Inf],[1,2,3]) == 1.0
 
-# Test, with exact equality, some known results.
-# RealVector, RealVector
+# Test, with exact equality, some known results. 
+# AbstractVector{<:Real}, AbstractVector{<:Real}
 @test corkendall(x1, y) == -1/sqrt(90)
 @test corkendall(x2, y) == -1/sqrt(72)
-# RealMatrix, RealVector
+# AbstractMatrix{<:Real}, AbstractVector{<:Real}
 @test corkendall(X, y)  == [-1/sqrt(90), -1/sqrt(72)]
-# RealVector, RealMatrix
+# AbstractVector{<:Real}, AbstractMatrix{<:Real}
 @test corkendall(y, X)  == [-1/sqrt(90) -1/sqrt(72)]
 
 # n = 78_000 tests for overflow errors on 32 bit
@@ -66,9 +66,9 @@ c11 = corkendall(x1, x1)
 c12 = corkendall(x1, x2)
 c22 = corkendall(x2, x2)
 
-# RealMatrix, RealMatrix
+# AbstractMatrix{<:Real}, AbstractMatrix{<:Real}
 @test corkendall(X, X) ≈ [c11 c12; c12 c22]
-# RealMatrix
+# AbstractMatrix{<:Real}
 @test corkendall(X)    ≈ [c11 c12; c12 c22]
 
 @test c11 == 1.0
