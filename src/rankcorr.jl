@@ -125,7 +125,7 @@ end
 # Knight, William R. “A Computer Method for Calculating Kendall's Tau with Ungrouped Data.”
 # Journal of the American Statistical Association, vol. 61, no. 314, 1966, pp. 436–439.
 # JSTOR, www.jstor.org/stable/2282833.
-function corkendall!(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, permx::AbstractArray{<:Integer}=sortperm(x))
+function corkendall!(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, permx::AbstractVector{<:Integer}=sortperm(x))
     if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
@@ -192,8 +192,7 @@ function corkendall(X::AbstractMatrix{<:Real})
     for j = 2:n
         permx = sortperm(X[:,j])
         for i = 1:j - 1
-            C[j,i] = corkendall!(X[:,j], X[:,i], permx)
-            C[i,j] = C[j,i]
+            C[i,j] = C[j,i] = corkendall!(X[:,j], X[:,i], permx)
         end
     end
     return C
