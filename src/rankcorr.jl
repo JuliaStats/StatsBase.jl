@@ -17,14 +17,14 @@ Compute Spearman's rank correlation coefficient. If `x` and `y` are vectors, the
 output is a float, otherwise it's a matrix corresponding to the pairwise correlations
 of the columns of `x` and `y`.
 """
-function corspearman(x::AbstractVector{<:Real}, y::AbstractVector{<:Real})
+function corspearman(x::AbstractVector, y::AbstractVector)
     n = length(x)
     n == length(y) || throw(DimensionMismatch("vectors must have same length"))
     (any(isnan, x) || any(isnan, y)) && return NaN
     return cor(tiedrank(x), tiedrank(y))
 end
 
-function corspearman(X::AbstractMatrix{<:Real}, y::AbstractVector{<:Real})
+function corspearman(X::AbstractMatrix, y::AbstractVector)
     size(X, 1) == length(y) ||
         throw(DimensionMismatch("X and y have inconsistent dimensions"))
     n = size(X, 2)
@@ -43,7 +43,7 @@ function corspearman(X::AbstractMatrix{<:Real}, y::AbstractVector{<:Real})
     return C
 end
 
-function corspearman(x::AbstractVector{<:Real}, Y::AbstractMatrix{<:Real})
+function corspearman(x::AbstractVector, Y::AbstractMatrix)
     size(Y, 1) == length(x) ||
         throw(DimensionMismatch("x and Y have inconsistent dimensions"))
     n = size(Y, 2)
@@ -62,7 +62,7 @@ function corspearman(x::AbstractVector{<:Real}, Y::AbstractMatrix{<:Real})
     return C
 end
 
-function corspearman(X::AbstractMatrix{<:Real})
+function corspearman(X::AbstractMatrix)
     n = size(X, 2)
     C = Matrix{Float64}(I, n, n)
     anynan = Vector{Bool}(undef, n)
@@ -89,7 +89,7 @@ function corspearman(X::AbstractMatrix{<:Real})
     return C
 end
 
-function corspearman(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
+function corspearman(X::AbstractMatrix, Y::AbstractMatrix)
     size(X, 1) == size(Y, 1) ||
         throw(ArgumentError("number of rows in each array must match"))
     nr = size(X, 2)
@@ -125,7 +125,8 @@ end
 # Knight, William R. “A Computer Method for Calculating Kendall's Tau with Ungrouped Data.”
 # Journal of the American Statistical Association, vol. 61, no. 314, 1966, pp. 436–439.
 # JSTOR, www.jstor.org/stable/2282833.
-function corkendall!(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, permx::AbstractVector{<:Integer}=sortperm(x))
+function corkendall!(x::AbstractVector, y::AbstractVector, permx::AbstractVector{<:Integer}=sortperm(x))
+    println("calling corkendall")
     if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
@@ -173,20 +174,20 @@ end
 Compute Kendall's rank correlation coefficient, τ. `x` and `y` must both be either
 matrices or vectors.
 """
-corkendall(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}) = corkendall!(copy(x), copy(y))
+corkendall(x::AbstractVector, y::AbstractVector) = corkendall!(copy(x), copy(y))
 
-function corkendall(X::AbstractMatrix{<:Real}, y::AbstractVector{<:Real})
+function corkendall(X::AbstractMatrix, y::AbstractVector)
     permy = sortperm(y)
     return([corkendall!(copy(y), X[:,i], permy) for i in 1:size(X, 2)])
 end
 
-function corkendall(x::AbstractVector{<:Real}, Y::AbstractMatrix{<:Real})
+function corkendall(x::AbstractVector, Y::AbstractMatrix)
     n = size(Y, 2)
     permx = sortperm(x)
     return(reshape([corkendall!(copy(x), Y[:,i], permx) for i in 1:n], 1, n))
 end
 
-function corkendall(X::AbstractMatrix{<:Real})
+function corkendall(X::AbstractMatrix)
     n = size(X, 2)
     C = Matrix{Float64}(I, n, n)
     for j = 2:n
@@ -198,7 +199,7 @@ function corkendall(X::AbstractMatrix{<:Real})
     return C
 end
 
-function corkendall(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
+function corkendall(X::AbstractMatrix, Y::AbstractMatrix)
     nr = size(X, 2)
     nc = size(Y, 2)
     C = Matrix{Float64}(undef, nr, nc)
@@ -214,7 +215,7 @@ end
 # Auxilliary functions for Kendall's rank correlation
 
 """
-    countties(x::AbstractVector{<:Real}, lo::Integer, hi::Integer)
+    countties(x::AbstractVector, lo::Integer, hi::Integer)
 
 Return the number of ties within `x[lo:hi]`. Assumes `x` is sorted.
 """
