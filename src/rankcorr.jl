@@ -126,7 +126,6 @@ end
 # Journal of the American Statistical Association, vol. 61, no. 314, 1966, pp. 436–439.
 # JSTOR, www.jstor.org/stable/2282833.
 function corkendall!(x::AbstractVector, y::AbstractVector, permx::AbstractVector{<:Integer}=sortperm(x))
-    println("calling corkendall")
     if any(isnan, x) || any(isnan, y) return NaN end
     n = length(x)
     if n != length(y) error("Vectors must have same length") end
