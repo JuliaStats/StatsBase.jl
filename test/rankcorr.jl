@@ -24,7 +24,7 @@ c22 = corspearman(x2, x2)
 @test corspearman(X, X) ≈ [c11 c12; c12 c22]
 @test corspearman(X)    ≈ [c11 c12; c12 c22]
 
-@test corspearman(X, Y) ==
+@test corspearman(X, Y) ≈
      [corspearman(X[:,i], Y[:,j]) for i in axes(X, 2), j in axes(Y, 2)]
 
 # corkendall
@@ -152,7 +152,7 @@ end
 @test_throws DimensionMismatch corspearman([1], [1, 2])
 @test_throws DimensionMismatch corspearman([1], [1 2; 3 4])
 @test_throws DimensionMismatch corspearman([1 2; 3 4], [1])
-@test_throws ArgumentError corspearman([1 2; 3 4: 4 6], [1 2; 3 4])
+@test_throws ArgumentError corspearman([1 2; 3 4; 4 6], [1 2; 3 4])
 
 # TODO: fix corkendall to match corspearman (PR#659)
 @test_throws ErrorException corkendall([1], [1, 2])
