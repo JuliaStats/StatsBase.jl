@@ -87,7 +87,7 @@ function tiedrank_nan(X::AbstractMatrix{<:Real})
             Z[:, j] .= tiedrank(view(X, :, j))
         end
     end
-    return (Z)
+    return Z
 end
 
 
