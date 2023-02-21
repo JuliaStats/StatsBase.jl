@@ -63,7 +63,7 @@ function corspearman(x::AbstractVector{<:Real}, Y::AbstractMatrix{<:Real})
 end
 
 function corspearman(X::AbstractMatrix{<:Real})
-    return(cor(tiedrank_nan(X)))
+    return cor(tiedrank_nan(X))
 end
 
 function corspearman(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
