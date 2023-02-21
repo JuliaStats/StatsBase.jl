@@ -80,11 +80,15 @@ set all elements of the column to NaN.
 """
 function tiedrank_nan(X::AbstractMatrix{<:Real})
     Z = similar(X, Float64)
+    idxs = Vector{Int}(undef, size(X, 1))
     for j in axes(X, 2)
-        if any(isnan, view(X, :, j))
-            Z[:, j] .= NaN
+        Xj = view(X, :, j)
+        Zj = view(Z, :, j) 
+        if any(isnan, Xj)
+            fill!(Zj, NaN)
         else
-            Z[:, j] .= tiedrank(view(X, :, j))
+            sortperm!(idxs, Xj)
+            _tiedrank!(Zj, Xj, idxs)
         end
     end
     return Z
