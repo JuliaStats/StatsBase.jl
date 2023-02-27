@@ -63,7 +63,7 @@ function corspearman(x::AbstractVector{<:Real}, Y::AbstractMatrix{<:Real})
 end
 
 function corspearman(X::AbstractMatrix{<:Real})
-    return(cor(tiedrank_nan(X)))
+    return cor(tiedrank_nan(X))
 end
 
 function corspearman(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
@@ -80,14 +80,18 @@ set all elements of the column to NaN.
 """
 function tiedrank_nan(X::AbstractMatrix{<:Real})
     Z = similar(X, Float64)
+    idxs = Vector{Int}(undef, size(X, 1))
     for j in axes(X, 2)
-        if any(isnan, view(X, :, j))
-            Z[:, j] .= NaN
+        Xj = view(X, :, j)
+        Zj = view(Z, :, j) 
+        if any(isnan, Xj)
+            fill!(Zj, NaN)
         else
-            Z[:, j] .= tiedrank(view(X, :, j))
+            sortperm!(idxs, Xj)
+            _tiedrank!(Zj, Xj, idxs)
         end
     end
-    return (Z)
+    return Z
 end
 
 
