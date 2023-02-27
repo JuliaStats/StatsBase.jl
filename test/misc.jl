@@ -8,6 +8,7 @@ z = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3]
 @test vals == [1, 2, 3, 1, 2, 3]
 @test lens == [2, 3, 1, 1, 2, 4]
 @test inverse_rle(vals, lens) == z
+@test_throws ArgumentError inverse_rle(vals, fill(-1, length(lens)))
 
 z = [true, true, false, false, true, false, true, true, true]
 vals, lens = rle(z)
