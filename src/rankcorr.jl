@@ -187,7 +187,7 @@ function corkendall(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
     return C
 end
 
-# Auxilliary functions for Kendall's rank correlation
+# Auxiliary functions for Kendall's rank correlation
 
 """
     countties(x::AbstractVector{<:Real}, lo::Integer, hi::Integer)
