@@ -450,5 +450,5 @@ Return a dictionary mapping each unique value in `x` to its proportion in `x`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportionmap(x::AbstractArray) = _normalize_countmap(countmap(x), length(x))
+proportionmap(x) = _normalize_countmap(countmap(x), length(collect(x)))
 proportionmap(x::AbstractArray, wv::AbstractWeights) = _normalize_countmap(countmap(x, wv), sum(wv))
