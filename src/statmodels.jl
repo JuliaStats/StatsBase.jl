@@ -85,7 +85,7 @@ TestStat(x::TestStat) = x
 
 float(x::Union{TestStat, PValue}) = float(x.v)
 
-for op in [:(==), :<, :(isless), :(isequal)] # isless and < to place nice with NaN
+for op in [:(==), :<, :≤, :(isless), :(isequal)] # isless and < to place nice with NaN
     @eval begin
         Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
         Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
