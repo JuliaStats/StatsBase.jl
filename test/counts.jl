@@ -215,3 +215,4 @@ end
     b =[true, true ,false, false, true, false]
     @test proportionmap(skipmissing(a)) == Dict(1 => 0.25, 2 => 0.25, 3 => 0.25, 4 => 0.25)
     @test proportionmap(skipmissing(b)) == Dict(true => 0.5, false => 0.5)
+end
