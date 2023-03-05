@@ -450,5 +450,13 @@ Return a dictionary mapping each unique value in `x` to its proportion in `x`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportionmap(x) = _normalize_countmap(countmap(x), length(collect(x)))
+function proportionmap(x)
+    countm = Dict{eltype(x), Int}()
+    n = 0
+    for y in x
+        countm[y] = get(countm, y, 0) + 1
+        n += 1
+    end
+    _normalize_countmap(countm, n)
+end
 proportionmap(x::AbstractArray, wv::AbstractWeights) = _normalize_countmap(countmap(x, wv), sum(wv))
