@@ -411,7 +411,7 @@ a precomputed mean `m`. The coefficient of variation is the ratio of the
 standard deviation to the mean.
 """
 variation(x, m) = stdm(x, m) / m
-variation(x) = ((m, s) = mean_and_std(x); s/m)
+variation(x; corrected::Bool=true) = ((m, s) = mean_and_std(x; corrected=corrected); s/m)
 
 # Standard error of the mean: std / sqrt(len)
 # Code taken from var in the Statistics stdlib module
