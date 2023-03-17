@@ -164,7 +164,7 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 
 @test variation([1:5;]) ≈ 0.527046276694730
 @test variation(skipmissing([missing; 1:5; missing])) ≈ 0.527046276694730
-@test isnan(variation(a))
+@test isnan(variation(1))
 @test variation(1; corrected = false) == 0
 
 @test @inferred(sem([1:5;])) ≈ 0.707106781186548
