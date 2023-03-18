@@ -163,9 +163,13 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test span(skipmissing([1, missing, 5, missing])) == 1:5
 
 @test variation([1:5;]) ≈ 0.527046276694730
+@test variation([1:5;]; corrected=false) ≈ 0.471404520791032
 @test variation(skipmissing([missing; 1:5; missing])) ≈ 0.527046276694730
 @test isnan(variation(1))
-@test variation(1; corrected = false) == 0
+@test variation(1; corrected=false) == 0
+# Possibly deprecated
+@test variation([1:5;],4) ≈ 0.4841229182759271
+@test variation([1:5;],4; corrected=false) ≈ 0.4330127018922193
 
 @test @inferred(sem([1:5;])) ≈ 0.707106781186548
 @test @inferred(sem(skipmissing([missing; 1:5; missing]))) ≈ 0.707106781186548
