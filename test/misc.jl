@@ -54,6 +54,7 @@ describe(io, collect(1:10))
                            Length:         10
                            Missing Count:  0
                            Mean:           5.500000
+                           Std. Deviation: 3.027650
                            Minimum:        1.000000
                            1st Quartile:   3.250000
                            Median:         5.500000
@@ -68,6 +69,7 @@ describe(io, Union{Float32,Missing}[1.0, 4.5, missing, missing, 33.1])
                            Length:         5
                            Missing Count:  2
                            Mean:           12.866666
+                           Std. Deviation: 17.609751
                            Minimum:        1.000000
                            1st Quartile:   2.750000
                            Median:         4.500000
