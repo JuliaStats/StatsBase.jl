@@ -857,6 +857,7 @@ kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
 
 struct SummaryStats{T<:Union{AbstractFloat,Missing}}
     mean::T
+    sd::T
     min::T
     q25::T
     median::T
@@ -871,14 +872,16 @@ end
     summarystats(a)
 
 Compute summary statistics for a real-valued array `a`. Returns a
-`SummaryStats` object containing the mean, minimum, 25th percentile,
-median, 75th percentile, and maxmimum.
+`SummaryStats` object containing the number of observations,
+number of missing observations, standard deviation, mean, minimum,
+25th percentile, median, 75th percentile, and maxmimum.
 """
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
+    stdev = std(s)
     R = typeof(m)
     n = length(a)
     ns = length(s)
@@ -889,7 +892,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     else
         quantile(s, [0.00, 0.25, 0.50, 0.75, 1.00])
     end
-    SummaryStats{R}(m, qs..., n, n - ns)
+    SummaryStats{R}(m, stdev, qs..., n, n - ns)
 end
 
 function Base.show(io::IO, ss::SummaryStats)
@@ -898,6 +901,7 @@ function Base.show(io::IO, ss::SummaryStats)
     ss.nobs > 0 || return
     @printf(io, "Missing Count:  %i\n", ss.nmiss)
     @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std. Deviation: %.6f\n", ss.sd)
     @printf(io, "Minimum:        %.6f\n", ss.min)
     @printf(io, "1st Quartile:   %.6f\n", ss.q25)
     @printf(io, "Median:         %.6f\n", ss.median)
