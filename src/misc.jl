@@ -60,6 +60,7 @@ run lengths.
 function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) where T
     m = length(vals)
     length(lens) == m || raise_dimerror()
+
     r = Vector{T}(undef, sum(lens))
     p = 0
     @inbounds for i = 1 : m
