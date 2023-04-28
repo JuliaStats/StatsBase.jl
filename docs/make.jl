@@ -22,7 +22,8 @@ makedocs(
              "multivariate.md",
              "misc.md",
              "statmodels.md",
-             "transformations.md"],
+             "transformations.md",
+             "nestimate.md"],
     strict=true,
     checkdocs=:exports
 )

@@ -23,10 +23,12 @@ tests = ["ambiguous",
          "wsampling",
          "statmodels",
          "partialcor",
+         "nestimate",
          "transformations"]
          #"statquiz"]
 
 println("Running tests:")
+
 
 for t in tests
     tfile = string(t, ".jl")
