@@ -85,7 +85,7 @@ TestStat(x::TestStat) = x
 
 float(x::Union{TestStat, PValue}) = float(x.v)
 
-for op in [:(==), :<, :≤, :>, :≥, :(isless), :(isequal)] # isless and < to place nice with NaN
+for op in [:(==), :<, :≤, :(isless), :(isequal)] # isless and < to place nice with NaN
     @eval begin
         Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
         Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
@@ -166,7 +166,6 @@ function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
     nmswidths = pushfirst!(length.(colnms), 0)
     A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
          for i in 1:length(A)]
-    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
 
     # not using Markdown stdlib here because that won't give us nice decimal
     # alignment (even if that is lost when rendering to HTML, it's still nice

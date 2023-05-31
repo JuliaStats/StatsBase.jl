@@ -8,6 +8,8 @@ cov
 cov(::CovarianceEstimator, ::AbstractVector)
 cov(::CovarianceEstimator, ::AbstractVector, ::AbstractVector)
 cov(::CovarianceEstimator, ::AbstractMatrix)
+var(::CovarianceEstimator, ::AbstractVector)
+std(::CovarianceEstimator, ::AbstractVector)
 cor
 mean_and_cov
 cov2cor

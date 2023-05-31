@@ -44,7 +44,7 @@ end
     sqL2dist(a, b)
 
 Compute the squared L2 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|^2``.
-Efficient equivalent of `sumabs2(a - b)`.
+Efficient equivalent of `sum(abs2, a - b)`.
 """
 function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
@@ -62,7 +62,7 @@ end
     L2dist(a, b)
 
 Compute the L2 distance between two arrays: ``\\sqrt{\\sum_{i=1}^n |a_i - b_i|^2}``.
-Efficient equivalent of `sqrt(sumabs2(a - b))`.
+Efficient equivalent of `sqrt(sum(abs2, a - b))`.
 """
 L2dist(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqrt(sqL2dist(a, b))
 
@@ -135,7 +135,7 @@ end
 """
     meanad(a, b)
 
-Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
+Return the mean absolute deviation between two arrays: `mean(abs, a - b)`.
 """
 meanad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
     L1dist(a, b) / length(a)
@@ -154,7 +154,7 @@ maxad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = Linfdist(a, 
 """
     msd(a, b)
 
-Return the mean squared deviation between two arrays: `mean(abs2(a - b))`.
+Return the mean squared deviation between two arrays: `mean(abs2, a - b)`.
 """
 msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
     sqL2dist(a, b) / length(a)

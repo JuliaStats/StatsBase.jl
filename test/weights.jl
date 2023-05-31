@@ -13,6 +13,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
+    @test axes(f([1, 2, 3])) == (Base.OneTo(3),)
+    @test IndexStyle(f([1, 2, 3])) == IndexLinear()
 
     w  = [1., 2., 3.]
     wv = f(w)
@@ -21,6 +23,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test wv ==  w
     @test sum(wv) === 6.0
     @test !isempty(wv)
+    @test Base.mightalias(w, wv)
+    @test !Base.mightalias([1], wv)
 
     b  = trues(3)
     bv = f(b)
@@ -35,6 +39,10 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test sum(ba, wv) === 4.0
     @test sum(sa, wv) === 7.0
+
+    @test_throws ArgumentError f([0.1, Inf])
+    @test_throws ArgumentError f([0.1, NaN])
+
 end
 
 @testset "$f, setindex!" for f in weight_funcs
@@ -58,6 +66,9 @@ end
     @test wv[2] === 5.
     @test sum(wv) === 11.
     @test wv == [3., 5., 3.]   # Test state of all values
+
+    @test_throws ArgumentError wv[1] = Inf
+    @test_throws ArgumentError wv[1] = NaN
 
     # Test failed setindex! due to conversion error
     w = [1, 2, 3]
@@ -86,11 +97,6 @@ end
         @test x != y
     end
 
-    x = f([1, 2, NaN]) # isequal and == treat NaN differently
-    y = f([1, 2, NaN])
-    @test isequal(x, y)
-    @test x != y
-
     x = f([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
     y = f([1.0, 2.0, -0.0])
     @test !isequal(x, y)
@@ -105,6 +111,7 @@ end
     @test !isempty(wv)
     @test length(wv) === 3
     @test size(wv) === (3,)
+    @test axes(wv) === (Base.OneTo(3),)
     @test sum(wv) === 3.
     @test wv == fill(1.0, 3)
     @test StatsBase.varcorrection(wv) == 1/3
@@ -113,6 +120,9 @@ end
     @test wv != fweights(fill(1.0, 3))
     @test wv == uweights(3)
     @test wv[[true, false, false]] == uweights(Float64, 1)
+    @test convert(Vector, wv) == ones(3)
+    @test !Base.mightalias(wv, uweights(Float64, 3))
+    @test Base.dataids(wv) == ()
 end
 
 ## wsum

@@ -1,5 +1,5 @@
 using StatsBase
-using Random, Test
+using Random, Test, OffsetArrays
 
 Random.seed!(1234)
 
@@ -37,13 +37,13 @@ import StatsBase: direct_sample!, alias_sample!
 n = 10^6
 wv = weights([0.2, 0.8, 0.4, 0.6])
 
-for wv in [
+for wv in (
     weights([0.2, 0.8, 0.4, 0.6]),
     weights([2, 8, 4, 6]),
     weights(Float32[0.2, 0.8, 0.4, 0.6]),
     Weights(Float32[0.2, 0.8, 0.4, 0.6], 2),
     Weights([2, 8, 4, 6], 20.0),
-]
+)
     a = direct_sample!(4:7, wv, zeros(Int, n, 3))
     check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
     test_rng_use(direct_sample!, 4:7, wv, zeros(Int, 100))
@@ -132,4 +132,34 @@ for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64
     r = T===Int ? r : T.(r)
     aa = Int.(sample(r, wv, 3; replace=false, ordered=true))
     check_wsample_norep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
+end
+
+@testset "validation of inputs" begin
+    x = rand(10)
+    y = rand(10)
+    z = rand(10)
+    ox = OffsetArray(x, -4:5)
+    oy = OffsetArray(y, -4:5)
+    oz = OffsetArray(z, -4:5)
+
+    @test_throws ArgumentError sample(weights(ox))
+
+    for f in (sample!, wsample!, naive_wsample_norep!, efraimidis_a_wsample_norep!,
+            efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!)
+        # Test that offset arrays throw an error
+        @test_throws ArgumentError f(ox, weights(y), z)
+        @test_throws ArgumentError f(x, weights(oy), z)
+        @test_throws ArgumentError f(x, weights(y), oz)
+        @test_throws ArgumentError f(ox, weights(oy), oz)
+
+        # Test that an error is thrown when output shares memory with inputs
+        @test_throws ArgumentError f(x, weights(y), x)
+        @test_throws ArgumentError f(y, weights(x), x)
+        @test_throws ArgumentError f(x, weights(x), x)
+        @test_throws ArgumentError f(y, weights(view(x, 3:5)), view(x, 2:4))
+        @test_throws ArgumentError f(view(x, 2:4), weights(view(x, 3:5)), view(x, 1:2))
+        # This corner case should theoretically succeed
+        # but it currently fails as Base.mightalias is not smart enough
+        @test_broken f(y, weights(view(x, 5:6)), view(x, 2:4))
+    end
 end
