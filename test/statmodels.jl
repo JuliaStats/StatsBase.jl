@@ -98,29 +98,6 @@ end
 @test sprint(show, TestStat(1e-5)) == "0.00"
 @test sprint(show, TestStat(π)) == "3.14"
 
-@testset "Union{PValue, TestStat} is Real" begin
-    vals = [0.0, Rational(1,3), NaN]
-    for T in [PValue, TestStat],
-        f in (==, <, ≤, >, ≥, isless, isequal),
-        lhs in vals, rhs in vals
-        # make sure that T behaves like a Real,
-        # regardless of whether it's on the LHS, RHS or both
-        @test f(T(lhs), T(rhs)) == f(lhs, rhs)
-        @test f(lhs, T(rhs)) == f(lhs, rhs)
-        @test f(T(lhs), rhs) == f(lhs, rhs)
-    end
-
-    # the (approximate) equality operators get a bit more attention
-    for T in [PValue, TestStat]
-        @test T(Rational(1,3)) ≈ T(1/3)
-        @test Rational(1,3) ≈ T(1/3) atol=0.01
-        @test T(Rational(1,3)) isa Real
-        @test T(T(0.05)) === T(0.05)
-        @test hash(T(0.05)) == hash(0.05)
-        @test hash(T(0.05), UInt(42)) == hash(0.05, UInt(42))
-    end
-end
-
 @test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
 
 @test sprint(showerror, ConvergenceException(10, 0.2, 0.1)) ==

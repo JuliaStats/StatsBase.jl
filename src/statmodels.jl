@@ -55,7 +55,7 @@ end
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
 """
-struct PValue <: Real
+struct PValue
     v::Real
     function PValue(v::Real)
         0 <= v <= 1 || isnan(v) || error("p-values must be in [0; 1]")
@@ -76,35 +76,12 @@ function show(io::IO, pv::PValue)
 end
 
 """Show a test statistic using 2 decimal digits"""
-struct TestStat <: Real
+struct TestStat
     v::Real
 end
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
 TestStat(x::TestStat) = x
-
-float(x::Union{TestStat, PValue}) = float(x.v)
-
-for op in [:(==), :<, :≤, :(isless), :(isequal)] # isless and < to place nice with NaN
-    @eval begin
-        Base.$op(x::Union{TestStat, PValue}, y::Real) = $op(x.v, y)
-        Base.$op(y::Real, x::Union{TestStat, PValue}) = $op(y, x.v)
-        Base.$op(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}) = $op(x1.v, x2.v)
-    end
-end
-
-Base.hash(x::Union{TestStat, PValue}, h::UInt) = hash(x.v, h)
-
-# necessary to avoid a method ambiguity with isless(::TestStat, NaN)
-Base.isless(x::Union{TestStat, PValue}, y::AbstractFloat) = isless(x.v, y)
-Base.isless(y::AbstractFloat, x::Union{TestStat, PValue},) = isless(y, x.v)
-Base.isequal(y::AbstractFloat, x::Union{TestStat, PValue}) = isequal(y, x.v)
-Base.isequal(x::Union{TestStat, PValue}, y::AbstractFloat) = isequal(x.v, y)
-
-Base.isapprox(x::Union{TestStat, PValue}, y::Real; kwargs...) = isapprox(x.v, y; kwargs...)
-Base.isapprox(y::Real, x::Union{TestStat, PValue}; kwargs...) = isapprox(y, x.v; kwargs...)
-Base.isapprox(x1::Union{TestStat, PValue}, x2::Union{TestStat, PValue}; kwargs...) = isapprox(x1.v, x2.v; kwargs...)
-
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
