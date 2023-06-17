@@ -2,6 +2,7 @@ using StatsBase
 using Dates
 using LinearAlgebra
 using Random
+using Statistics
 
 tests = ["aqua",
          "weights",
