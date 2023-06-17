@@ -874,7 +874,7 @@ end
 Compute summary statistics for a real-valued array `a`. Returns a
 `SummaryStats` object containing the number of observations,
 number of missing observations, standard deviation, mean, minimum,
-25th percentile, median, 75th percentile, and maxmimum.
+25th percentile, median, 75th percentile, and maximum.
 """
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the

@@ -338,7 +338,7 @@ s = summarystats(1:5)
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
-@test s.sd     ≈ 1.5 atol=1e-1
+@test s.sd     ≈ 1.5811388300841898
 
 # Issue #631
 s = summarystats([-2, -1, 0, 1, 2, missing])
@@ -351,7 +351,7 @@ s = summarystats([-2, -1, 0, 1, 2, missing])
 @test s.median ≈ 0.0
 @test s.q25    ≈ -1.0
 @test s.q75    ≈ +1.0
-@test s.sd ≈ 1.6 atol=1e-1
+@test s.sd ≈ 1.5811388300841898
 
 # Issue #631
 s = summarystats(zeros(10))
