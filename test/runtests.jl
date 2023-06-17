@@ -3,7 +3,7 @@ using Dates
 using LinearAlgebra
 using Random
 
-tests = ["ambiguous",
+tests = ["aqua",
          "weights",
          "moments",
          "scalarstats",
