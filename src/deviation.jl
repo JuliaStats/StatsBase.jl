@@ -12,7 +12,7 @@ function counteq(a::AbstractArray, b::AbstractArray)
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    for i in eachindex(a, b)
+    for i = 1:n
         @inbounds if a[i] == b[i]
             c += 1
         end
@@ -31,7 +31,7 @@ function countne(a::AbstractArray, b::AbstractArray)
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    for i in eachindex(a, b)
+    for i = 1:n
         @inbounds if a[i] != b[i]
             c += 1
         end
@@ -50,7 +50,7 @@ function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for i in eachindex(a, b)
+    for i = 1:n
         @inbounds r += abs2(a[i] - b[i])
     end
     return r
@@ -78,7 +78,7 @@ function L1dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for i in eachindex(a, b)
+    for i = 1:n
         @inbounds r += abs(a[i] - b[i])
     end
     return r
@@ -97,7 +97,7 @@ function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     n = length(a)
     length(b) == n || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for i in eachindex(a, b)
+    for i = 1:n
         @inbounds v = abs(a[i] - b[i])
         if r < v
             r = v
@@ -118,7 +118,7 @@ Efficient equivalent of `sum(a*log(a/b)-a+b)`.
 function gkldiv(a::AbstractArray{T}, b::AbstractArray{T}) where T<:AbstractFloat
     n = length(a)
     r = 0.0
-    for i in eachindex(a, b)
+    for i = 1:n
         @inbounds ai = a[i]
         @inbounds bi = b[i]
         if ai > 0
