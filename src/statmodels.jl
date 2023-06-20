@@ -79,9 +79,18 @@ end
 struct TestStat
     v::Real
 end
+TestStat(x::TestStat) = x
 
 show(io::IO, x::TestStat) = @printf(io, "%.2f", x.v)
-TestStat(x::TestStat) = x
+
+# Better alignment when printing tables
+# Adapted from alignment(::IO, ::Real) (https://github.com/JuliaLang/julia/blob/0da46e25c865a390b5c2de20c2d40afb41fcac0a/base/show.jl#L3022-L3027)
+function Base.alignment(io::IO, x::Union{PValue,TestStat})
+    s = sprint(show, x)
+    m = match(r"^(.*?)((?:[\.eEfF].*)?)$", s)
+    m === nothing ? (textwidth(s), 0) :
+                    (textwidth(m.captures[1]), textwidth(m.captures[2]))
+end
 
 """Wrap a string so that show omits quotes"""
 struct NoQuote
