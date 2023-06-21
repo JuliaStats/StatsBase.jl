@@ -380,6 +380,10 @@ Fit a histogram to `data`.
   the edges of the bins along each dimension. If no edges are provided, they are chosen
   so that approximately `nbins` bins of equal width are constructed along each dimension.
 
+!!! note
+    In most cases, the number of bins will be `nbins`. However, to ensure that the bins have
+    equal width, more or fewer than `nbins` bins may be used.
+
 # Keyword arguments
 
 * `closed`: if `:left` (the default), the bin intervals are left-closed [a,b);
