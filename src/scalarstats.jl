@@ -881,7 +881,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # return type to populate the `SummaryStats` structure.
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
-    stdev = std(s)
+    stdev = std(s, mean=m)
     R = typeof(m)
     n = length(a)
     ns = length(s)
