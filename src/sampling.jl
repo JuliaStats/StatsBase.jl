@@ -105,12 +105,12 @@ Draw a pair of distinct integers between 1 and `n` without replacement.
 Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
-function samplepair(rng::AbstractRNG, n::Int)
-    i1 = rand(rng, 1:n)
-    i2 = rand(rng, 1:n-1)
+function samplepair(rng::AbstractRNG, n::Integer)
+    i1 = rand(rng, Base.OneTo(n))
+    i2 = rand(rng, Base.OneTo(n - one(n)))
     return (i1, ifelse(i2 == i1, n, i2))
 end
-samplepair(n::Int) = samplepair(Random.GLOBAL_RNG, n)
+samplepair(n::Integer) = samplepair(Random.GLOBAL_RNG, n)
 
 """
     samplepair([rng], a)
