@@ -92,7 +92,9 @@ test_rng_use(sample, 1:10, 10)
     @test samplepair(rng, [3, 4, 2, 6, 8]) === (3, 8)
     @test samplepair(rng, [1, 2])          === (1, 2)
 
-    @test extrema(samplepair(rng, UInt128(2))) == UInt128.((1, 2))
+    onetwo = samplepair(rng, UInt128(2))
+    @test extrema(onetwo) == (1, 2)
+    @test eltype(onetwo) === UInt128
 end
 
 test_rng_use(samplepair, 1000)
@@ -273,9 +275,21 @@ end
     for T in [Int8, Int16, Int32, Int64, Int128, BigInt], f in [identity, unsigned]
         T == BigInt && f == unsigned && continue
         T = f(T)
-        samp = sample(T(1):T(10), T(2); replace=false, ordered=false)
-        @test all(x -> x isa T, samp)
-        @test all(x -> T(1) <= x <= T(10), samp)
-        @test length(samp) == 2
+        # The type of the second argument should not affect the return type
+        let samp = sample(T(1):T(10), T(2); replace=false, ordered=false)
+            @test all(x -> x isa T, samp)
+            @test all(x -> T(1) <= x <= T(10), samp)
+            @test length(samp) == 2
+        end
+        let samp = sample(T(1):T(10), 2; replace=false, ordered=false)
+            @test all(x -> x isa T, samp)
+            @test all(x -> T(1) <= x <= T(10), samp)
+            @test length(samp) == 2
+        end
+        let samp = sample(1:10, T(2); replace=false, ordered=false)
+            @test all(x -> x isa Int, samp)
+            @test all(x -> 1 <= x <= 10, samp)
+            @test length(samp) == 2
+        end
     end
 end
