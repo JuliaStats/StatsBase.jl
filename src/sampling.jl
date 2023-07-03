@@ -106,8 +106,8 @@ Optionally specify a random number generator `rng` as the first argument
 (defaults to `Random.GLOBAL_RNG`).
 """
 function samplepair(rng::AbstractRNG, n::Integer)
-    i1 = rand(rng, Base.OneTo(n))
-    i2 = rand(rng, Base.OneTo(n - one(n)))
+    i1 = rand(rng, one(n):n)
+    i2 = rand(rng, one(n):(n - one(n)))
     return (i1, ifelse(i2 == i1, n, i2))
 end
 samplepair(n::Integer) = samplepair(Random.GLOBAL_RNG, n)
