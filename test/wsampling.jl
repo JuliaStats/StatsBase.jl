@@ -143,6 +143,7 @@ end
     oz = OffsetArray(z, -4:5)
 
     @test_throws ArgumentError sample(weights(ox))
+    @test_throws DimensionMismatch sample(x, weights(1:5))
 
     for f in (sample!, wsample!, naive_wsample_norep!, efraimidis_a_wsample_norep!,
             efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!)
@@ -158,6 +159,17 @@ end
         @test_throws ArgumentError f(x, weights(x), x)
         @test_throws ArgumentError f(y, weights(view(x, 3:5)), view(x, 2:4))
         @test_throws ArgumentError f(view(x, 2:4), weights(view(x, 3:5)), view(x, 1:2))
+
+        # Test that source and weight lengths agree
+        @test_throws DimensionMismatch f(x, weights(1:5), z)
+
+        # Test that sampling without replacement can't draw more than what's available
+        if endswith(String(nameof(f)), "_norep!")
+            @test_throws DimensionMismatch f(x, weights(y), vcat(z, z))
+        else
+            @test_throws DimensionMismatch f(x, weights(y), vcat(z, z); replace=false)
+        end
+
         # This corner case should theoretically succeed
         # but it currently fails as Base.mightalias is not smart enough
         @test_broken f(y, weights(view(x, 5:6)), view(x, 2:4))
