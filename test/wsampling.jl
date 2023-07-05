@@ -93,45 +93,29 @@ end
 import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
                   efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!
 
-n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6])
+@testset "Weighted sampling without replacement" begin
+    n = 10^5
+    wv = weights([0.2, 0.8, 0.4, 0.6])
 
-a = zeros(Int, 3, n)
-for j = 1:n
-    naive_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(naive_wsample_norep!, 4:7, wv, zeros(Int, 2))
+    @testset "$f" for f in (naive_wsample_norep!, efraimidis_a_wsample_norep!,
+                            efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!)
+        a = zeros(Int, 3, n)
+        for j = 1:n
+            f(4:7, wv, view(a,:,j))
+        end
+        check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+        test_rng_use(f, 4:7, wv, zeros(Int, 2))
+    end
 
-a = zeros(Int, 3, n)
-for j = 1:n
-    efraimidis_a_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(efraimidis_a_wsample_norep!, 4:7, wv, zeros(Int, 2))
+    a = sample(4:7, wv, 3; replace=false, ordered=false)
+    check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
 
-a = zeros(Int, 3, n)
-for j = 1:n
-    efraimidis_ares_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(efraimidis_ares_wsample_norep!, 4:7, wv, zeros(Int, 2))
-
-a = zeros(Int, 3, n)
-for j = 1:n
-    efraimidis_aexpj_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(efraimidis_aexpj_wsample_norep!, 4:7, wv, zeros(Int, 2))
-
-a = sample(4:7, wv, 3; replace=false, ordered=false)
-check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
-
-for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
-    r = rev ? reverse(4:7) : (4:7)
-    r = T===Int ? r : T.(r)
-    aa = Int.(sample(r, wv, 3; replace=false, ordered=true))
-    check_wsample_norep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
+    for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
+        r = rev ? reverse(4:7) : (4:7)
+        r = T===Int ? r : T.(r)
+        aa = Int.(sample(r, wv, 3; replace=false, ordered=true))
+        check_wsample_norep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
+    end
 end
 
 @testset "validation of inputs" begin
