@@ -7,7 +7,7 @@
 
 using Random: Sampler
 
-@static if VERSION < v"1.3"
+if VERSION < v"1.3.0-DEV.565"
     default_rng() = Random.GLOBAL_RNG
 else
     using Random: default_rng
