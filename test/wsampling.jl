@@ -105,6 +105,11 @@ import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
         end
         check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
         test_rng_use(f, 4:7, wv, zeros(Int, 2))
+        # Check that the function is using the weight vector's own indexing method(s)
+        # by trying with `UnitWeights`, which doesn't store an underlying array and thus
+        # doesn't have a `values` field to access. Here we're effectively just ensuring
+        # there's no error thrown.
+        @test length(f(rand(4), uweights(Float64, 4), zeros(2))) == 2
     end
 
     a = sample(4:7, wv, 3; replace=false, ordered=false)

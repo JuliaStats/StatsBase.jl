@@ -760,7 +760,7 @@ function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     # calculate keys for all items
     keys = randexp(rng, n)
     for i in 1:n
-        @inbounds keys[i] = wv.values[i]/keys[i]
+        @inbounds keys[i] = wv[i]/keys[i]
     end
 
     # return items with largest keys
@@ -797,7 +797,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     s = 0
     @inbounds for _s in 1:n
         s = _s
-        w = wv.values[s]
+        w = wv[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
         if w > 0
             i += 1
@@ -812,7 +812,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     @inbounds threshold = pq[1].first
 
     @inbounds for i in s+1:n
-        w = wv.values[i]
+        w = wv[i]
         w < 0 && error("Negative weight found in weight vector at index $i")
         w > 0 || continue
         key = w/randexp(rng)
@@ -862,7 +862,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     s = 0
     @inbounds for _s in 1:n
         s = _s
-        w = wv.values[s]
+        w = wv[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
         if w > 0
             i += 1
@@ -878,7 +878,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     X = threshold*randexp(rng)
 
     @inbounds for i in s+1:n
-        w = wv.values[i]
+        w = wv[i]
         w < 0 && error("Negative weight found in weight vector at index $i")
         w > 0 || continue
         X -= w
