@@ -24,7 +24,7 @@ function test_rng_use(func, non_rng_args...)
     Random.seed!(47)
     y = func(Random.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
-    if VERSION >= v"1.3"
+    if VERSION >= v"1.3.0-DEV.565"
         Random.seed!(47)
         y = func(Random.default_rng(), deepcopy(non_rng_args)...)
         @test x == y
