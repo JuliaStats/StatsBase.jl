@@ -14,7 +14,8 @@ function _validate_sample_inputs(input::AbstractArray, output::AbstractArray, re
     n = length(input)
     k = length(output)
     if !replace && k > n
-        throw(DimensionMismatch("cannot draw $k samples of $n values without replacement"))
+        throw(DimensionMismatch("cannot draw a sample of $k values from an array " *
+                                "with $n values without replacement"))
     end
     return (n, k)
 end
