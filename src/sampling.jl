@@ -17,7 +17,7 @@ function _validate_sample_inputs(input::AbstractArray, output::AbstractArray, re
         throw(DimensionMismatch("cannot draw a sample of $k values from an array " *
                                 "with $n values without replacement"))
     end
-    return (n, k)
+    return nothing
 end
 
 function _validate_sample_inputs(input::AbstractArray, weights::AbstractWeights,
@@ -25,7 +25,8 @@ function _validate_sample_inputs(input::AbstractArray, weights::AbstractWeights,
     mightalias(output, weights) &&
         throw(ArgumentError("destination array must not share memory with weights array"))
     _validate_sample_inputs(input, weights)
-    return _validate_sample_inputs(input, output, replace)
+    _validate_sample_inputs(input, output, replace)
+    return nothing
 end
 
 function _validate_sample_inputs(input::AbstractArray, weights::AbstractWeights)
@@ -33,7 +34,7 @@ function _validate_sample_inputs(input::AbstractArray, weights::AbstractWeights)
     n = length(input)
     nw = length(weights)
     nw == n || throw(DimensionMismatch("source and weight arrays must have the same length, got $n and $nw"))
-    return n
+    return nothing
 end
 
 ###########################################################
@@ -47,8 +48,9 @@ using Random: Sampler, Random.GLOBAL_RNG
 ### Algorithms for sampling with replacement
 
 function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, true)
-    s = Sampler(rng, 1:n)
+    _validate_sample_inputs(a, x, true)
+    k = length(x)
+    s = Sampler(rng, 1:length(a))
     b = a[1] - 1
     if b == 0
         for i = 1:k
@@ -72,9 +74,9 @@ and set `x[j] = a[i]`, with `n=length(a)` and `k=length(x)`.
 This algorithm consumes `k` random numbers.
 """
 function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, true)
-    s = Sampler(rng, 1:n)
-    for i = 1:k
+    _validate_sample_inputs(a, x, true)
+    s = Sampler(rng, 1:length(a))
+    for i = 1:length(x)
         @inbounds x[i] = a[rand(rng, s)]
     end
     return x
@@ -94,7 +96,9 @@ storeindices(n, k, T) = false
 
 # order results of a sampler that does not order automatically
 function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, true)
+    _validate_sample_inputs(a, x, true)
+    n = length(a)
+    k = length(x)
     # todo: if eltype(x) <: Real && eltype(a) <: Real,
     #       in some cases it might be faster to check
     #       issorted(a) to see if we can just sort x
@@ -169,7 +173,9 @@ memory space. Suitable for the case where memory is tight.
 """
 function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                         initshuffle::Bool=true)
-    n, k = _validate_sample_inputs(a, x, false)
+    _validate_sample_inputs(a, x, false)
+    n = length(a)
+    k = length(x)
 
     # initialize
     for i = 1:k
@@ -223,7 +229,9 @@ faster than Knuth's algorithm especially when `n` is greater than `k`.
 It is ``O(n)`` for initialization, plus ``O(k)`` for random shuffling
 """
 function fisher_yates_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, false)
+    _validate_sample_inputs(a, x, false)
+    n = length(a)
+    k = length(x)
 
     inds = Vector{Int}(undef, n)
     for i = 1:n
@@ -257,7 +265,9 @@ However, if `k` is large and approaches ``n``, the rejection rate would increase
 drastically, resulting in poorer performance.
 """
 function self_avoid_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, false)
+    _validate_sample_inputs(a, x, false)
+    n = length(a)
+    k = length(x)
 
     s = Set{Int}()
     sizehint!(s, k)
@@ -293,7 +303,9 @@ This algorithm consumes ``O(n)`` random numbers, with `n=length(a)`.
 The outputs are ordered.
 """
 function seqsample_a!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, false)
+    _validate_sample_inputs(a, x, false)
+    n = length(a)
+    k = length(x)
 
     i = 0
     j = 0
@@ -329,7 +341,9 @@ This algorithm consumes ``O(k^2)`` random numbers, with `k=length(x)`.
 The outputs are ordered.
 """
 function seqsample_c!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, x, false)
+    _validate_sample_inputs(a, x, false)
+    n = length(a)
+    k = length(x)
 
     i = 0
     j = 0
@@ -369,7 +383,9 @@ This algorithm consumes ``O(k)`` random numbers, with `k=length(x)`.
 The outputs are ordered.
 """
 function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
-    N, n = _validate_sample_inputs(a, x, false)
+    _validate_sample_inputs(a, x, false)
+    N = length(a)
+    n = length(x)
 
     i = 0
     j = 0
@@ -478,8 +494,10 @@ nor share memory with them, or the result may be incorrect.
 """
 function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
-    n, k = _validate_sample_inputs(a, x, replace)
+    _validate_sample_inputs(a, x, replace)
+    k = length(x)
     k == 0 && return x
+    n = length(a)
 
     if replace  # with replacement
         if ordered
@@ -603,8 +621,8 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm:
 """
 function direct_sample!(rng::AbstractRNG, a::AbstractArray,
                         wv::AbstractWeights, x::AbstractArray)
-    _, k = _validate_sample_inputs(a, wv, x, true)
-    for i = 1:k
+    _validate_sample_inputs(a, wv, x, true)
+    for i = 1:length(x)
         x[i] = a[sample(rng, wv)]
     end
     return x
@@ -685,7 +703,9 @@ Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n \\log n)`` ti
 for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
 """
 function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, wv, x, true)
+    _validate_sample_inputs(a, wv, x, true)
+    n = length(a)
+    k = length(x)
 
     # create alias table
     ap = Vector{Float64}(undef, n)
@@ -716,8 +736,10 @@ and has overall time complexity ``O(n k)``.
 """
 function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                               wv::AbstractWeights, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, wv, x, false)
+    _validate_sample_inputs(a, wv, x, false)
+    k = length(x)
     k > 0 || return x
+    n = length(a)
 
     w = Vector{Float64}(undef, n)
     copyto!(w, wv)
@@ -755,8 +777,10 @@ processing time to draw ``k`` elements. It consumes ``n`` random numbers.
 """
 function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                      wv::AbstractWeights, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, wv, x, false)
+    _validate_sample_inputs(a, wv, x, false)
+    k = length(x)
     k > 0 || return x
+    n = length(a)
 
     # calculate keys for all items
     keys = randexp(rng, n)
@@ -789,8 +813,10 @@ processing time to draw ``k`` elements. It consumes ``n`` random numbers.
 """
 function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                         wv::AbstractWeights, x::AbstractArray)
-    n, k = _validate_sample_inputs(a, wv, x, false)
+    _validate_sample_inputs(a, wv, x, false)
+    k = length(x)
     k > 0 || return x
+    n = length(a)
 
     # initialize priority queue
     pq = Vector{Pair{Float64,Int}}(undef, k)
@@ -854,8 +880,10 @@ processing time to draw ``k`` elements. It consumes ``O(k \\log(n / k))`` random
 function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
                                          wv::AbstractWeights, x::AbstractArray;
                                          ordered::Bool=false)
-    n, k = _validate_sample_inputs(a, wv, x, false)
+    _validate_sample_inputs(a, wv, x, false)
+    k = length(x)
     k > 0 || return x
+    n = length(a)
 
     # initialize priority queue
     pq = Vector{Pair{Float64,Int}}(undef, k)
@@ -914,8 +942,10 @@ efraimidis_aexpj_wsample_norep!(a::AbstractArray, wv::AbstractWeights, x::Abstra
 
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray;
                  replace::Bool=true, ordered::Bool=false)
-    n, k = _validate_sample_inputs(a, wv, x, replace)
+    _validate_sample_inputs(a, wv, x, replace)
+    k = length(x)
     k > 0 || return x
+    n = length(a)
 
     if replace
         if ordered
