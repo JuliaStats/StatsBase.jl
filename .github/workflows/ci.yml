@@ -45,6 +45,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: nightly  # needed until https://github.com/JuliaLang/julia/issues/49620 is in a release
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-docdeploy@v1
         env:
