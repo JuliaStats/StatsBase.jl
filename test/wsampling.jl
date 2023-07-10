@@ -93,45 +93,34 @@ end
 import StatsBase: naive_wsample_norep!, efraimidis_a_wsample_norep!,
                   efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!
 
-n = 10^5
-wv = weights([0.2, 0.8, 0.4, 0.6])
+@testset "Weighted sampling without replacement" begin
+    n = 10^5
+    wv = weights([0.2, 0.8, 0.4, 0.6])
 
-a = zeros(Int, 3, n)
-for j = 1:n
-    naive_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(naive_wsample_norep!, 4:7, wv, zeros(Int, 2))
+    @testset "$f" for f in (naive_wsample_norep!, efraimidis_a_wsample_norep!,
+                            efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!)
+        a = zeros(Int, 3, n)
+        for j = 1:n
+            f(4:7, wv, view(a,:,j))
+        end
+        check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
+        test_rng_use(f, 4:7, wv, zeros(Int, 2))
+        # Check that the function is using the weight vector's own indexing method(s)
+        # by trying with `UnitWeights`, which doesn't store an underlying array and thus
+        # doesn't have a `values` field to access. Here we're effectively just ensuring
+        # there's no error thrown.
+        @test length(f(rand(4), uweights(Float64, 4), zeros(2))) == 2
+    end
 
-a = zeros(Int, 3, n)
-for j = 1:n
-    efraimidis_a_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(efraimidis_a_wsample_norep!, 4:7, wv, zeros(Int, 2))
+    a = sample(4:7, wv, 3; replace=false, ordered=false)
+    check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
 
-a = zeros(Int, 3, n)
-for j = 1:n
-    efraimidis_ares_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(efraimidis_ares_wsample_norep!, 4:7, wv, zeros(Int, 2))
-
-a = zeros(Int, 3, n)
-for j = 1:n
-    efraimidis_aexpj_wsample_norep!(4:7, wv, view(a,:,j))
-end
-check_wsample_norep(a, (4, 7), wv, 5.0e-3; ordered=false)
-test_rng_use(efraimidis_aexpj_wsample_norep!, 4:7, wv, zeros(Int, 2))
-
-a = sample(4:7, wv, 3; replace=false, ordered=false)
-check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
-
-for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
-    r = rev ? reverse(4:7) : (4:7)
-    r = T===Int ? r : T.(r)
-    aa = Int.(sample(r, wv, 3; replace=false, ordered=true))
-    check_wsample_norep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
+    for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
+        r = rev ? reverse(4:7) : (4:7)
+        r = T===Int ? r : T.(r)
+        aa = Int.(sample(r, wv, 3; replace=false, ordered=true))
+        check_wsample_norep(aa, (4, 7), wv, -1; ordered=true, rev=rev)
+    end
 end
 
 @testset "validation of inputs" begin
@@ -143,6 +132,7 @@ end
     oz = OffsetArray(z, -4:5)
 
     @test_throws ArgumentError sample(weights(ox))
+    @test_throws DimensionMismatch sample(x, weights(1:5))
 
     for f in (sample!, wsample!, naive_wsample_norep!, efraimidis_a_wsample_norep!,
             efraimidis_ares_wsample_norep!, efraimidis_aexpj_wsample_norep!)
@@ -158,6 +148,17 @@ end
         @test_throws ArgumentError f(x, weights(x), x)
         @test_throws ArgumentError f(y, weights(view(x, 3:5)), view(x, 2:4))
         @test_throws ArgumentError f(view(x, 2:4), weights(view(x, 3:5)), view(x, 1:2))
+
+        # Test that source and weight lengths agree
+        @test_throws DimensionMismatch f(x, weights(1:5), z)
+
+        # Test that sampling without replacement can't draw more than what's available
+        if endswith(String(nameof(f)), "_norep!")
+            @test_throws DimensionMismatch f(x, weights(y), vcat(z, z))
+        else
+            @test_throws DimensionMismatch f(x, weights(y), vcat(z, z); replace=false)
+        end
+
         # This corner case should theoretically succeed
         # but it currently fails as Base.mightalias is not smart enough
         @test_broken f(y, weights(view(x, 5:6)), view(x, 2:4))
