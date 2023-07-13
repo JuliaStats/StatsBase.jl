@@ -9,6 +9,7 @@ n = 100000
 # a) if the same rng is passed to a sample function twice,
 #    the results should be the same (repeatability)
 # b) not specifying a rng should be the same as specifying Random.GLOBAL_RNG
+#    and Random.default_rng() on Julia >= 1.3
 function test_rng_use(func, non_rng_args...)
     # some sampling methods mutate a passed array and return it
     # so that the tests don't pass trivially, we need to copy those
@@ -17,12 +18,17 @@ function test_rng_use(func, non_rng_args...)
     # repeatability
     @test func(MersenneTwister(1), deepcopy(non_rng_args)...) ==
           func(MersenneTwister(1), deepcopy(non_rng_args)...)
-    # default RNG is Random.GLOBAL_RNG
+    # default RNG is Random.GLOBAL_RNG/Random.default_rng()
     Random.seed!(47)
     x = func(deepcopy(non_rng_args)...)
     Random.seed!(47)
     y = func(Random.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
+    if VERSION >= v"1.3.0-DEV.565"
+        Random.seed!(47)
+        y = func(Random.default_rng(), deepcopy(non_rng_args)...)
+        @test x == y
+    end
 end
 
 #### sample with replacement
