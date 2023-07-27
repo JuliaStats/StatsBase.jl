@@ -152,10 +152,10 @@ end
 @test_throws DimensionMismatch corspearman([1], [1, 2])
 @test_throws DimensionMismatch corspearman([1], [1 2; 3 4])
 @test_throws DimensionMismatch corspearman([1 2; 3 4], [1])
-@test_throws DimensionMismatch corspearman([1 2; 3 4: 4 6], [1 2; 3 4])
+@test_throws (VERSION < v"1.10-" ?  ArgumentError : DimensionMismatch) corspearman([1 2; 3 4: 4 6], [1 2; 3 4])
 
 # TODO: fix corkendall to match corspearman (PR#659)
 @test_throws ErrorException corkendall([1], [1, 2])
 @test_throws ErrorException corkendall([1], [1 2; 3 4])
 @test_throws ErrorException corkendall([1 2; 3 4], [1])
-@test_throws DimensionMismatch corkendall([1 2; 3 4: 4 6], [1 2; 3 4])
+@test_throws (VERSION < v"1.10-" ?  ArgumentError : DimensionMismatch) corkendall([1 2; 3 4: 4 6], [1 2; 3 4])
