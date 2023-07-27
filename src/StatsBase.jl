@@ -14,7 +14,6 @@ using Statistics
 using LinearAlgebra
 using Random
 using Printf
-using SparseArrays
 import Random: rand, rand!
 import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
@@ -269,5 +268,9 @@ include("statmodels.jl")
 include("transformations.jl")
 
 include("deprecates.jl")
+
+@static if !isdefined(Base, :get_extension)
+    include("../ext/StatsBaseSparseArraysExt.jl")
+end
 
 end # module
