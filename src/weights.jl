@@ -682,6 +682,31 @@ function mean(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
     return mean(A, dims=dims)
 end
 
+"""
+    mean(f, A::AbstractArray, w::AbstractWeights[, dims::Int])
+
+Compute the weighted mean of array `A`, after transforming it'S
+contents with the function `f`, with weight vector `w` (of type
+`AbstractWeights`). If `dim` is provided, compute the
+weighted mean along dimension `dims`.
+
+# Examples
+```julia
+n = 20
+x = rand(n)
+w = rand(n)
+mean(√, x, weights(w))
+```
+"""
+mean(f, A::AbstractArray, w::AbstractWeights; dims::Union{Colon,Int}=:) =
+    _mean(f.(A), w, dims)
+
+function mean(f, A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
+    a = (dims === :) ? length(A) : size(A, dims)
+    a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return mean(f.(A), dims=dims)
+end
+
 ##### Weighted quantile #####
 
 """

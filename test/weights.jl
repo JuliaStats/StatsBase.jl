@@ -270,6 +270,17 @@ end
         @test mean(a, f(wt), dims=3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)/sum(wt)
         @test_throws ErrorException mean(a, f(wt), dims=4)
     end
+
+    @test mean(√, [1:3;], f([1.0, 1.0, 0.5])) ≈ 1.3120956
+    @test mean(√, 1:3, f([1.0, 1.0, 0.5]))    ≈ 1.3120956
+    @test mean(√, [1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ 1.60824421 + 0.88948688im
+
+    for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
+        @test mean(√, a, f(wt), dims=1) ≈ sum(sqrt.(a).*reshape(wt, length(wt), 1, 1), dims=1)/sum(wt)
+        @test mean(√, a, f(wt), dims=2) ≈ sum(sqrt.(a).*reshape(wt, 1, length(wt), 1), dims=2)/sum(wt)
+        @test mean(√, a, f(wt), dims=3) ≈ sum(sqrt.(a).*reshape(wt, 1, 1, length(wt)), dims=3)/sum(wt)
+        @test_throws ErrorException mean(√, a, f(wt), dims=4)
+    end
 end
 
 @testset "Quantile fweights" begin
