@@ -281,6 +281,16 @@ end
         @test mean(√, a, f(wt), dims=3) ≈ sum(sqrt.(a).*reshape(wt, 1, 1, length(wt)), dims=3)/sum(wt)
         @test_throws ErrorException mean(√, a, f(wt), dims=4)
     end
+
+    b = reshape(1.0:9.0, 3, 3)
+    w = UnitWeights{Float64}(3)
+    @test mean(√, b, w; dims=1) ≈ reshape(w, :, 3) * sqrt.(b) / sum(w)
+    @test mean(√, b, w; dims=2) ≈ sqrt.(b) * w / sum(w)
+
+    c = 1.0:9.0
+    w = UnitWeights{Float64}(9)
+    @test mean(√, c, w) ≈ sum(sqrt.(c)) / length(c)
+    @test_throws DimensionMismatch mean(√, c, UnitWeights{Float64}(6))
 end
 
 @testset "Quantile fweights" begin
