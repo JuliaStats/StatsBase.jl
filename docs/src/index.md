@@ -23,7 +23,7 @@ To load the package, use the command:
 using StatsBase
 ```
 
-## Available methods
+## Available Features
 
 ```@contents
 Pages = ["weights.md", "scalarstats.md", "robust.md", "deviation.md", "cov.md", "counts.md", "ranking.md", "sampling.md", "empirical.md", "signalcorr.md", "misc.md", "statmodels.md", "transformations.md"]
