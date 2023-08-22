@@ -17,8 +17,8 @@ To install StatsBase through the Julia REPL, you can type `] add StatsBase` or:
 using Pkg
 Pkg.add("StatsBase")
 ```
-To load the package, use the command:
 
+To load the package, use the command:
 ```
 using StatsBase
 ```
