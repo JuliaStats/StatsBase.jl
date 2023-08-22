@@ -1,6 +1,6 @@
 # Correlation Analysis of Signals
 
-The package provides functions to perform correlation analysis of sequential signals. 
+The package provides functions to perform correlation analysis of sequential signals.
 
 ## Autocovariance and Autocorrelation
 
@@ -18,7 +18,7 @@ crosscov
 crosscov!
 crosscor
 crosscor!
-```  
+```
 
 ## Partial Autocorrelation Function
 

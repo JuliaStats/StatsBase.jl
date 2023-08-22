@@ -81,7 +81,6 @@ end
 
 function _pairwise!(::Val{:listwise}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
     check_vectors(x, y, :listwise)
-    m, n = size(dest)
     nminds = .!ismissing.(first(x))
     @inbounds for xi in Iterators.drop(x, 1)
         nminds .&= .!ismissing.(xi)

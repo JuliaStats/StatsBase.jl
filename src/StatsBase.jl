@@ -66,6 +66,7 @@ export
     skewness,       # (standardized) skewness
     kurtosis,       # (excessive) kurtosis
     moment,         # central moment of given order
+    cumulant,       # cumulant of given order
     mean_and_var,   # (mean, var)
     mean_and_std,   # (mean, std)
     mean_and_cov,   # (mean, cov)
@@ -90,7 +91,7 @@ export
     variation,   # ratio of standard deviation to mean
     sem,         # standard error of the mean, i.e. sqrt(var / n)
     mad,         # median absolute deviation
-    iqr,         # interquatile range
+    iqr,         # interquartile range
 
     genvar,      # generalized variance
     totalvar,    # total variation

@@ -232,24 +232,24 @@ nquantile(x, n::Integer) = quantile(x, (0:n)/n)
 Compute the quantile position in the [0, 1] interval of `value` relative to collection `itr`.
 
 Different definitions can be chosen via the `method` keyword argument.
-Let `count_less` be the number of elements of `itr` that are less than `value`, 
-`count_equal` the number of elements of `itr` that are equal to `value`, `n` the length of `itr`, 
-`greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`. 
+Let `count_less` be the number of elements of `itr` that are less than `value`,
+`count_equal` the number of elements of `itr` that are equal to `value`, `n` the length of `itr`,
+`greatest_smaller` the highest value below `value` and `smallest_greater` the lowest value above `value`.
 Then `method` supports the following definitions:
 
-- `:inc` (default): Return a value in the range 0 to 1 inclusive. 
-Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on 
+- `:inc` (default): Return a value in the range 0 to 1 inclusive.
+Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on
 definition 7 of quantile in Hyndman and Fan (1996)
 (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
 This definition corresponds to the lower semi-continuous inverse of
 [`quantile`](@ref) with its default parameters.
 
 - `:exc`: Return a value in the range 0 to 1 exclusive.
-Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation 
+Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation
 based on definition 6 of quantile in Hyndman and Fan (1996)
 (equivalent to Excel `PERCENTRANK.EXC`).
 
-- `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise 
+- `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise
 return `(count_less - 1) / (n - 1)`, without interpolation
 (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
 
@@ -361,12 +361,12 @@ function quantilerank(itr, value; method::Symbol=:inc)
     elseif method == :compete
         if value > maximum(itr)
             return 1.0
-        elseif value ≤ minimum(itr) 
+        elseif value ≤ minimum(itr)
             return 0.0
         else
             value ∈ itr && (count_less += 1)
             return (count_less - 1) / (n - 1)
-        end 
+        end
     elseif method == :tied
         return (count_less + count_equal/2) / n
     elseif method == :strict
@@ -404,14 +404,17 @@ span(x) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 """
-    variation(x, m=mean(x))
+    variation(x, m=mean(x); corrected=true)
 
 Return the coefficient of variation of collection `x`, optionally specifying
-a precomputed mean `m`. The coefficient of variation is the ratio of the
-standard deviation to the mean.
+a precomputed mean `m`, and the optional correction parameter `corrected`.
+The coefficient of variation is the ratio of the
+standard deviation to the mean. If `corrected` is `false`,
+then `std` is calculated with denominator `n`. Else, the `std` is
+calculated with denominator `n-1`.
 """
-variation(x, m) = stdm(x, m) / m
-variation(x) = ((m, s) = mean_and_std(x); s/m)
+variation(x, m; corrected::Bool=true) = stdm(x, m; corrected=corrected) / m
+variation(x; corrected::Bool=true) = ((m, s) = mean_and_std(x; corrected=corrected); s/m)
 
 # Standard error of the mean: std / sqrt(len)
 # Code taken from var in the Statistics stdlib module
@@ -428,7 +431,7 @@ Return the standard error of the mean for a collection `x`.
 A pre-computed `mean` may be provided.
 
 When not using weights, this is the (sample) standard deviation
-divided by the sample size. If weights are used, the 
+divided by the sample size. If weights are used, the
 variance of the sample mean is calculated as follows:
 
 * `AnalyticWeights`: Not implemented.
@@ -480,7 +483,7 @@ function sem(x; mean=nothing)
     return sqrt(variance / n)
 end
 
-function sem(x::AbstractArray; mean=nothing) 
+function sem(x::AbstractArray; mean=nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)
@@ -532,31 +535,7 @@ If `normalize` is set to `true`, the MAD is multiplied by
 of the standard deviation under the assumption that the data is normally distributed.
 """
 function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constant=nothing)
-    isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
-    T = eltype(x)
-    # Knowing the eltype allows allocating a single array able to hold both original values
-    # and differences from the center, instead of two arrays
-    S = isconcretetype(T) ? promote_type(T, typeof(middle(zero(T)))) : T
-    x2 = x isa AbstractArray ? copyto!(similar(x, S), x) : collect(S, x)
-    c = center === nothing ? median!(x2) : center
-    if isconcretetype(T)
-        x2 .= abs.(x2 .- c)
-    else
-        x2 = abs.(x2 .- c)
-    end
-    m = median!(x2)
-    if normalize isa Nothing
-        Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
-        normalize = true
-    end
-    if !isa(constant, Nothing)
-        Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
-        m * constant
-    elseif normalize
-        m * mad_constant
-    else
-        m
-    end
+    mad!(Base.copymutable(x); center=center, normalize=normalize, constant=constant)
 end
 
 """
@@ -564,9 +543,6 @@ end
 
 Compute the median absolute deviation (MAD) of array `x` around `center`
 (by default, around the median), overwriting `x` in the process.
-`x` must be able to hold values of generated by calling `middle` on its elements
-(for example an integer vector is not appropriate since `middle` can produce
-non-integer values).
 
 If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
@@ -577,8 +553,12 @@ function mad!(x::AbstractArray;
               normalize::Union{Bool,Nothing}=true,
               constant=nothing)
     isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
-    x .= abs.(x .- center)
-    m = median!(x)
+    c = center === nothing ? median!(x) : center
+    T = promote_type(typeof(c), eltype(x))
+    U = eltype(x)
+    x2 = U == T ? x : isconcretetype(U) && isconcretetype(T) && sizeof(U) == sizeof(T) ? reinterpret(T, x) : similar(x, T)
+    x2 .= abs.(x .- c)
+    m = median!(x2)
     if normalize isa Nothing
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
         normalize = true
@@ -877,6 +857,7 @@ kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
 
 struct SummaryStats{T<:Union{AbstractFloat,Missing}}
     mean::T
+    sd::T
     min::T
     q25::T
     median::T
@@ -891,14 +872,16 @@ end
     summarystats(a)
 
 Compute summary statistics for a real-valued array `a`. Returns a
-`SummaryStats` object containing the mean, minimum, 25th percentile,
-median, 75th percentile, and maxmimum.
+`SummaryStats` object containing the number of observations,
+number of missing observations, standard deviation, mean, minimum,
+25th percentile, median, 75th percentile, and maximum.
 """
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
+    stdev = std(s, mean=m)
     R = typeof(m)
     n = length(a)
     ns = length(s)
@@ -909,7 +892,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     else
         quantile(s, [0.00, 0.25, 0.50, 0.75, 1.00])
     end
-    SummaryStats{R}(m, qs..., n, n - ns)
+    SummaryStats{R}(m, stdev, qs..., n, n - ns)
 end
 
 function Base.show(io::IO, ss::SummaryStats)
@@ -918,6 +901,7 @@ function Base.show(io::IO, ss::SummaryStats)
     ss.nobs > 0 || return
     @printf(io, "Missing Count:  %i\n", ss.nmiss)
     @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std. Deviation: %.6f\n", ss.sd)
     @printf(io, "Minimum:        %.6f\n", ss.min)
     @printf(io, "1st Quartile:   %.6f\n", ss.q25)
     @printf(io, "Median:         %.6f\n", ss.median)

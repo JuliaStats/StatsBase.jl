@@ -107,6 +107,10 @@ end
     @test l <= typemin(Int)
     @test h >= typemax(Int)
 
+    # Issue 616/667
+    @test StatsBase.histrange([1.0 for i in 1:100], 10, :left) == 1.0:1.0:2.0
+    @test StatsBase.histrange([1.05 for i in 1:100], 10, :left) == 1.05:1.0:2.05
+
     @test_throws ArgumentError StatsBase.histrange([1, 10], 0, :left)
     @test_throws ArgumentError StatsBase.histrange([1, 10], -1, :left)
     @test_throws ArgumentError StatsBase.histrange([1.0, 10.0], 0, :left)

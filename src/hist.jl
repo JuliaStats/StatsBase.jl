@@ -96,7 +96,9 @@ function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
             len += one(F)
         end
     end
-    Base.floatrange(start,step,Int(len),divisor)
+    StepRangeLen(Base.TwicePrecision{Float64}((start, divisor)),
+                 Base.TwicePrecision{Float64}((step, divisor)),
+                 Int(len))
 end
 
 histrange(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) where {N} =
@@ -361,7 +363,7 @@ fit(::Type{Histogram{T}}, vs::NTuple{N,AbstractVector}, wv::AbstractWeights; clo
     fit(Histogram{T}, vs, wv, histrange(vs,_nbins_tuple(vs, nbins),closed); closed=closed)
 
 """
-    fit(Histogram, data[, weight][, edges]; closed=:left, nbins)
+    fit(Histogram, data[, weight][, edges]; closed=:left[, nbins])
 
 Fit a histogram to `data`.
 
@@ -375,8 +377,12 @@ Fit a histogram to `data`.
   bin. If no weight vector is supplied, each observation has weight 1.
 
 * `edges`: a vector (typically an `AbstractRange` object), or tuple of vectors, that gives
-  the edges of the bins along each dimension. If no edges are provided, these
-  are determined from the data.
+  the edges of the bins along each dimension. If no edges are provided, they are chosen
+  so that approximately `nbins` bins of equal width are constructed along each dimension.
+
+!!! note
+    In most cases, the number of bins will be `nbins`. However, to ensure that the bins have
+    equal width, more or fewer than `nbins` bins may be used.
 
 # Keyword arguments
 
@@ -385,6 +391,8 @@ Fit a histogram to `data`.
 
 * `nbins`: if no `edges` argument is supplied, the approximate number of bins to use
   along each dimension (can be either a single integer, or a tuple of integers).
+  If omitted, it is computed using Sturges's formula, i.e. `ceil(log2(length(n))) + 1`
+  with `n` the number of data points.
 
 # Examples
 

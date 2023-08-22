@@ -11,8 +11,10 @@ Count the number of indices at which the elements of the arrays
 function counteq(a::AbstractArray, b::AbstractArray)
     length(a) == length(b) || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    for (ai, bi) = zip(a, b)
-        c += (ai == bi)
+    for i in eachindex(a, b)
+        @inbounds if a[i] == b[i]
+            c += 1
+        end
     end
     return c
 end
@@ -27,8 +29,10 @@ Count the number of indices at which the elements of the arrays
 function countne(a::AbstractArray, b::AbstractArray)
     length(a) == length(b) || throw(DimensionMismatch("Inconsistent lengths."))
     c = 0
-    for (ai, bi) = zip(a, b)
-        c += (ai != bi)
+    for i in eachindex(a, b)
+        @inbounds if a[i] != b[i]
+            c += 1
+        end
     end
     return c
 end
@@ -38,13 +42,13 @@ end
     sqL2dist(a, b)
 
 Compute the squared L2 distance between two arrays: ``\\sum_{i=1}^n |a_i - b_i|^2``.
-Efficient equivalent of `sumabs2(a - b)`.
+Efficient equivalent of `sum(abs2, a - b)`.
 """
 function sqL2dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for (ai, bi) = zip(a, b)
-        r += abs2(ai - bi)
+    for i in eachindex(a, b)
+        @inbounds r += abs2(a[i] - b[i])
     end
     return r
 end
@@ -55,7 +59,7 @@ end
     L2dist(a, b)
 
 Compute the L2 distance between two arrays: ``\\sqrt{\\sum_{i=1}^n |a_i - b_i|^2}``.
-Efficient equivalent of `sqrt(sumabs2(a - b))`.
+Efficient equivalent of `sqrt(sum(abs2, a - b))`.
 """
 L2dist(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = sqrt(sqL2dist(a, b))
 
@@ -70,8 +74,8 @@ Efficient equivalent of `sum(abs, a - b)`.
 function L1dist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for (ai, bi) = zip(a, b)
-        r += abs(ai - bi)
+    for i in eachindex(a, b)
+        @inbounds r += abs(a[i] - b[i])
     end
     return r
 end
@@ -88,8 +92,8 @@ Efficient equivalent of `maxabs(a - b)`.
 function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number
     length(a) == length(b) || throw(DimensionMismatch("Input dimension mismatch"))
     r = 0.0
-    for (ai, bi) = zip(a, b)
-        v = abs(ai - bi)
+    for i in eachindex(a, b)
+        @inbounds v = abs(a[i] - b[i])
         if r < v
             r = v
         end
@@ -109,7 +113,9 @@ Efficient equivalent of `sum(a*log(a/b)-a+b)`.
 function gkldiv(a::AbstractArray{T}, b::AbstractArray{T}) where T<:AbstractFloat
     n = length(a)
     r = 0.0
-    for (ai, bi) = zip(a, b)
+    for i in eachindex(a, b)
+        @inbounds ai = a[i]
+        @inbounds bi = b[i]
         if ai > 0
             r += (ai * log(ai / bi) - ai + bi)
         else
@@ -124,7 +130,7 @@ end
 """
     meanad(a, b)
 
-Return the mean absolute deviation between two arrays: `mean(abs(a - b))`.
+Return the mean absolute deviation between two arrays: `mean(abs, a - b)`.
 """
 meanad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
     L1dist(a, b) / length(a)
@@ -143,7 +149,7 @@ maxad(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} = Linfdist(a, 
 """
     msd(a, b)
 
-Return the mean squared deviation between two arrays: `mean(abs2(a - b))`.
+Return the mean squared deviation between two arrays: `mean(abs2, a - b)`.
 """
 msd(a::AbstractArray{T}, b::AbstractArray{T}) where {T<:Number} =
     sqL2dist(a, b) / length(a)

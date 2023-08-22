@@ -50,7 +50,7 @@ function scattermat end
 
 
 """
-    cov(X, w::AbstractWeights, vardim=1; mean=nothing,  corrected=false)
+    cov(X, w::AbstractWeights, vardim=1; mean=nothing, corrected=false)
 
 Compute the weighted covariance matrix. Similar to `var` and `std` the biased covariance
 matrix (`corrected=false`) is computed by multiplying `scattermat(X, w)` by
@@ -91,11 +91,11 @@ _scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
 
 ## weighted cov
 covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
-     corrected::DepBool=nothing) =
+     corrected::Union{Bool, Nothing}=nothing) =
     rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, :corrected, corrected)))
 
 
-cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::DepBool=nothing) =
+cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::Union{Bool, Nothing}=nothing) =
     covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, :corrected, corrected))
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
@@ -118,18 +118,19 @@ function mean_and_cov(x::DenseMatrix, dims::Int=1; corrected::Bool=true)
     return m, covm(x, m, dims, corrected=corrected)
 end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
-                      corrected::DepBool=nothing)
+                      corrected::Union{Bool, Nothing}=nothing)
     m = mean(x, wv, dims=dims)
     return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, :corrected, corrected))
 end
 
-"""
-    cov2cor(C, s)
 
-Compute the correlation matrix from the covariance matrix `C` and a vector of standard
-deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
 """
-cov2cor(C::AbstractMatrix, s::AbstractArray) = cov2cor!(copy(C), s)
+    cov2cor(C::AbstractMatrix, [s::AbstractArray])
+
+Compute the correlation matrix from the covariance matrix `C` and, optionally, a vector
+of standard deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
+"""
+cov2cor(C::AbstractMatrix, s::AbstractArray=sqrt.(view(C, diagind(C)))) = cov2cor!(copy(C), s)
 
 """
     cor2cov(C, s)
@@ -153,6 +154,15 @@ function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     end
     return C
 end
+
+"""
+    _cov2cor!(C)
+
+Compute the correlation matrix from the covariance matrix `C`, in-place.
+
+The leading diagonal is used to determine the standard deviations by which to normalise.
+"""
+_cov2cor!(C::AbstractMatrix) = cov2cor!(C, sqrt.(diag(C)))
 
 """
     CovarianceEstimator
@@ -197,6 +207,60 @@ cov(ce::CovarianceEstimator, X::AbstractMatrix; mean=nothing, dims::Int=1) =
 
 cov(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; mean=nothing, dims::Int=1) =
     error("cov is not defined for $(typeof(ce)), $(typeof(X)) and $(typeof(w))")
+
+"""
+    var(ce::CovarianceEstimator, x::AbstractVector; mean=nothing)
+
+Compute the variance of the vector `x` using the estimator `ce`.
+"""
+var(ce::CovarianceEstimator, x::AbstractVector; kwargs...) = cov(ce, x; kwargs...)
+
+"""
+    std(ce::CovarianceEstimator, x::AbstractVector; mean=nothing)
+
+Compute the standard deviation of the vector `x` using the estimator `ce`.
+"""
+std(ce::CovarianceEstimator, x::AbstractVector; kwargs...) = sqrt(var(ce, x; kwargs...))
+
+"""
+    cor(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
+
+Compute the correlation of the vectors `x` and `y` using estimator `ce`.
+"""
+function cor(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
+    # Here we allow `ce` to see both `x` and `y` simultaneously, and allow it to compute
+    # a full covariance matrix, from which we will extract the correlation.
+    #
+    # Whilst in some cases it might be equivalent (and possibly more efficient) to use:
+    #   cov(ce, x, y) / (std(ce, x) * std(ce, y)),
+    # this need not apply in general.
+    return cor(ce, hcat(x, y))[1, 2]
+end
+
+"""
+    cor(
+        ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights];
+        mean=nothing, dims::Int=1
+    )
+
+Compute the correlation matrix of the matrix `X` along dimension `dims`
+using estimator `ce`. A weighting vector `w` can be specified.
+The keyword argument `mean` can be:
+
+* `nothing` (default) in which case the mean is estimated and subtracted
+  from the data `X`,
+* a precalculated mean in which case it is subtracted from the data `X`.
+  Assuming `size(X)` is `(N,M)`, `mean` can either be:
+  * when `dims=1`, an `AbstractMatrix` of size `(1,M)`,
+  * when `dims=2`, an `AbstractVector` of length `N` or an `AbstractMatrix`
+    of size `(N,1)`.
+"""
+function cor(ce::CovarianceEstimator, X::AbstractMatrix; kwargs...)
+    return _cov2cor!(cov(ce, X; kwargs...))
+end
+function cor(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; kwargs...)
+    return _cov2cor!(cov(ce, X, w; kwargs...))
+end
 
 """
     SimpleCovariance(;corrected::Bool=false)
