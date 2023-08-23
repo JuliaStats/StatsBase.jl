@@ -698,13 +698,13 @@ w = rand(n)
 mean(√, x, weights(w))
 ```
 """
-mean(f, A::AbstractArray, w::AbstractWeights; kwargs...) =
-    mean(collect(Iterators.map(f, A)), w; kwargs...)
+mean(f, A, w::AbstractWeights; kwargs...) =
+    mean(broadcast(f, A), w; kwargs...)
 
 function mean(f, A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
     a = (dims === :) ? length(A) : size(A, dims)
     a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return mean(collect(Iterators.map(f, A)), dims=dims)
+    return mean(broadcast(f, A), dims=dims)
 end
 
 ##### Weighted quantile #####
