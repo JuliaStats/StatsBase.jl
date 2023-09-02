@@ -252,8 +252,8 @@ If a weighting vector `wv` is specified, the sum of the weights is used rather t
 raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:c
-- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` and
-                     `length(x) > 100` then use `:radixsort`, otherwise use `:dict`.
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
+                     `:radixsort`, otherwise use `:dict`.
 
 - `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
                      [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
@@ -273,7 +273,7 @@ addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
 function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
-    if radixsort_safe(T) && ((alg == :auto && length(x) > 100) || alg == :radixsort)
+    if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
         addcounts_radixsort!(cm, x)
     elseif alg == :radixsort
         throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
@@ -427,8 +427,8 @@ If a weighting vector `wv` is specified, the sum of weights is used rather than 
 raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
-- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` and
-                     `length(x) > 100` then use `:radixsort`, otherwise use `:dict`.
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` and then use
+                     `:radixsort`, otherwise use `:dict`.
 
 - `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
                      [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
