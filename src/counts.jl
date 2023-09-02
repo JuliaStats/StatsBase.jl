@@ -427,7 +427,7 @@ If a weighting vector `wv` is specified, the sum of weights is used rather than 
 raw counts.
 
 `alg` is only allowed for unweighted counting and can be one of:
-- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` and then use
+- `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
                      `:radixsort`, otherwise use `:dict`.
 
 - `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
