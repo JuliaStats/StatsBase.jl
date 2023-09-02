@@ -265,8 +265,7 @@ raw counts.
 
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM, is safe for any data type, is faster for small arrays, and
-                     is faster when `length(x)` is less than about 5 times
-                     `length(unique(x))`.
+                     is faster when there are not many duplicates.
 """
 addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
 
@@ -440,8 +439,7 @@ raw counts.
 
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
                      RAM, is safe for any data type, is faster for small arrays, and
-                     is faster when `length(x)` is less than about 5 times
-                     `length(unique(x))`.
+                     is faster when there are not many duplicates.
 """
 countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
