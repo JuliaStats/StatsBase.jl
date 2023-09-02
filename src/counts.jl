@@ -251,7 +251,7 @@ Add counts based on `x` to a count map. New entries will be added if new values 
 If a weighting vector `wv` is specified, the sum of the weights is used rather than the
 raw counts.
 
-`alg` is only allowed for unweighted counting and can be one of:c
+`alg` is only allowed for unweighted counting and can be one of:
 - `:auto` (default): if `StatsBase.radixsort_safe(eltype(x)) == true` then use
                      `:radixsort`, otherwise use `:dict`.
 
