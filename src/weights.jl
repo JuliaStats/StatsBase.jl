@@ -698,8 +698,12 @@ w = rand(n)
 mean(√, x, weights(w))
 ```
 """
-mean(f, A, w::AbstractWeights; kwargs...) =
-    mean(broadcast(f, A), w; kwargs...)
+function mean(f, A, w::AbstractWeights; kwargs...)
+    functionweightedsum = sum(Broadcast.instantiate(Broadcast.broadcasted(f, A, w) do f, x_i, w
+        return f(x_i) * w
+    end); kwargs...)
+    return functionweightedsum / sum(w)
+end
 
 function mean(f, A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
     a = (dims === :) ? length(A) : size(A, dims)
