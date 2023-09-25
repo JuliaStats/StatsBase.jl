@@ -28,12 +28,6 @@ isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
 Base.axes(wv::AbstractWeights) = Base.axes(wv.values)
 
-# https://github.com/JuliaLang/julia/pull/43354
-if VERSION >= v"1.8.0-DEV.1494" # 98e60ffb11ee431e462b092b48a31a1204bd263d
-    Base.allequal(wv::AbstractWeights) = allequal(wv.values)
-end
-Base.allunique(wv::AbstractWeights) = allunique(wv.values)
-
 Base.IndexStyle(::Type{<:AbstractWeights{S,T,V}}) where {S,T,V} = IndexStyle(V)
 
 Base.dataids(wv::AbstractWeights) = Base.dataids(wv.values)
@@ -319,12 +313,6 @@ length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = tuple(length(wv))
 Base.axes(wv::UnitWeights) = tuple(Base.OneTo(length(wv)))
 
-# https://github.com/JuliaLang/julia/pull/43354
-if VERSION >= v"1.8.0-DEV.1494" # 98e60ffb11ee431e462b092b48a31a1204bd263d
-    Base.allequal(::UnitWeights) = true
-end
-Base.allunique(wv::UnitWeights) = length(wv) <= 1
-
 Base.dataids(::UnitWeights) = ()
 Base.convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
@@ -396,6 +384,14 @@ Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.len == y.len)
 
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
 Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
+
+# https://github.com/JuliaLang/julia/pull/43354
+if VERSION >= v"1.8.0-DEV.1494" # 98e60ffb11ee431e462b092b48a31a1204bd263d
+    Base.allequal(wv::AbstractWeights) = allequal(wv.values)
+    Base.allequal(::UnitWeights) = true
+end
+Base.allunique(wv::AbstractWeights) = allunique(wv.values)
+Base.allunique(wv::UnitWeights) = length(wv) <= 1
 
 ##### Weighted sum #####
 
