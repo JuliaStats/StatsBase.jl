@@ -385,6 +385,14 @@ Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.len == y.len)
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
 Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
+# https://github.com/JuliaLang/julia/pull/43354
+if VERSION >= v"1.8.0-DEV.1494" # 98e60ffb11ee431e462b092b48a31a1204bd263d
+    Base.allequal(wv::AbstractWeights) = allequal(wv.values)
+    Base.allequal(::UnitWeights) = true
+end
+Base.allunique(wv::AbstractWeights) = allunique(wv.values)
+Base.allunique(wv::UnitWeights) = length(wv) <= 1
+
 ##### Weighted sum #####
 
 ## weighted sum over vectors
