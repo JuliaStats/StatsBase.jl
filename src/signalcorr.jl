@@ -629,3 +629,77 @@ end
 function pacf(x::AbstractVector{<:Real}, lags::AbstractVector{<:Integer}; method::Symbol=:regression)
     vec(pacf(reshape(x, length(x), 1), lags, method=method))
 end
+
+
+"""
+    yule_walker(x::Vector{<:Real};
+                order::Int64=1,
+                method="adjusted",
+                df::Union{Nothing,Int64}=nothing,
+                inv=false,
+                demean=true,
+    )
+
+Estimate AutoRegressive (AR) parameters using the Yule-Walker equations. This function
+estimates AR parameters using the Yule-Walker equations. It supports different ACF
+estimation methods (adjusted or maximum likelihood) and can optionally return the inverse
+of the Toeplitz matrix.
+
+Example:
+```julia
+data = [0.1, 0.2, 0.3, 0.4, 0.5]
+order = 2
+rho, sigma = yule_walker(data, order=order, method="mle")
+```
+"""
+function yule_walker(
+    x::Vector{<:Real};
+    order::Int64=1,
+    method="adjusted",
+    df::Union{Nothing,Int64}=nothing,
+    inv=false,
+    demean=true,
+)
+    method in ("adjusted", "mle") ||
+        throw(ArgumentError("ACF estimation method must be 'adjusted' or 'MLE'"))
+
+    x = copy(x)
+    if demean
+        x .-= mean(x)
+    end
+    n = isnothing(df) ? length(x) : df
+
+    adj_needed = method == "adjusted"
+
+    if ndims(x) > 1 || size(x, 2) != 1
+        throw(ArgumentError("Expecting a vector to estimate AR parameters"))
+    end
+
+    r = zeros(Float64, order + 1)
+    r[1] = sum(x .^ 2) / n
+    for k in 1:order
+        r[k + 1] = sum(x[1:(end - k)] .* x[(k + 1):end]) / (n - k * adj_needed)
+    end
+    R = Toeplitz(r[1:(end - 1)], conj(r[1:(end - 1)]))
+
+    rho = 0
+    try
+        rho = R \ r[2:end]
+    catch err
+        if occursin("Singular matrix", string(err))
+            @warn "Matrix is singular. Using pinv."
+            rho = pinv(R) * r[2:end]
+        else
+            throw(err)
+        end
+    end
+
+    sigmasq = r[1] - dot(r[2:end], rho)
+    sigma = isnan(sigmasq) || sigmasq <= 0 ? NaN : sqrt(sigmasq)
+
+    if inv
+        return rho, sigma, inv(R)
+    else
+        return rho, sigma
+    end
+end
