@@ -8,7 +8,7 @@
 
 function _check_randparams(rks, x, p)
     n = length(rks)
-    length(x) == length(p) == n || raise_dimerror()
+    @assert length(x) == length(p) == n
     return n
 end
 

@@ -59,7 +59,7 @@ run lengths.
 """
 function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) where T
     m = length(vals)
-    length(lens) == m || raise_dimerror()
+    length(lens) == m || throw(DimensionMismatch("`vals` and `lens` must be of the same length"))
     n = sum(lens)
     n >= 0 || throw(ArgumentError("lengths must be non-negative"))
 
