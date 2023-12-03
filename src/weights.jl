@@ -701,9 +701,9 @@ mean(f, A::AbstractArray, w::AbstractWeights) =
 _funcweightedmean(f, A, w)
 
 function _funcweightedmean(f, A::AbstractArray, w::AbstractWeights)
-    return sum(Broadcast.broadcasted(f, A, w) do f, a_i, wg
+    return sum(Broadcast.instantiate(Broadcast.broadcasted(A, w) do a_i, wg
         return f(a_i) * wg
-    end) / sum(w)
+    end)) / sum(w)
 end
 
 function mean(f, A::AbstractArray, w::UnitWeights)
