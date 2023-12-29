@@ -70,6 +70,20 @@ using Test
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
 
+    # zero standard deviations
+    X = ones(5, 8)
+    t = fit(ZScoreTransform, X, dims=2)
+    Y = transform(t, X)
+    @test length(t.mean) == 5
+    @test length(t.scale) == 5
+    @test Y ≈ zeros(5, 8)
+    @test reconstruct(t, Y) ≈ X
+    @test Y ≈ standardize(ZScoreTransform, X, dims=2)
+    @test transform!(t, X) === X
+    @test isequal(X, Y)
+    @test reconstruct!(t, Y) === Y
+    @test Y ≈ ones(5, 8)
+
     X = copy(X_)
     t = fit(UnitRangeTransform, X, dims=1, unit=false)
     Y = transform(t, X)
