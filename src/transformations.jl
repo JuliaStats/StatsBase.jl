@@ -123,9 +123,21 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
-    return ZScoreTransform(l, dims, (center ? vec(m) : similar(m, 0)),
-                                    (scale ? vec(s) : similar(s, 0)))
+    if scale
+        s_vec = vec(s)
+        # avoid z-score transforming when sigma=0
+        if any(s_vec .== 0.0)
+            zero_variance_indices = s_vec .== 0.0
+            s_vec[zero_variance_indices] .= 1.0
+        end
+    else
+        s_vec = similar(s, 0)
+    end
+
+    return ZScoreTransform(l, dims, (center ? vec(m) : similar(m, 0)), s_vec)
 end
+
+
 
 function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
              dims::Integer=1, center::Bool=true, scale::Bool=true)
