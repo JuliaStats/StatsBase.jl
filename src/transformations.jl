@@ -137,8 +137,6 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
     return ZScoreTransform(l, dims, (center ? vec(m) : similar(m, 0)), s_vec)
 end
 
-
-
 function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
              dims::Integer=1, center::Bool=true, scale::Bool=true)
     if dims != 1
