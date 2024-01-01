@@ -101,6 +101,29 @@ sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray,
         sampler!(rng, a, wv, x)
     end
 
+"""
+This algorithm generates a sorted sample with replacement by
+adapting the classic result that the cumulative sum of n+1 
+exponentially-distributed random numbers divided by the overall sum 
+(dropping the last) is a sorted sample from a uniform[0,1]
+"""
+function uniform_orderstat_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
+    1 == firstindex(a) == firstindex(x) ||
+        throw(ArgumentError("non 1-based arrays are not supported"))
+    Base.mightalias(a, x) &&
+        throw(ArgumentError("output array x must not share memory with input array a"))
+    n = length(a)
+    k = length(x)
+    exp_rands = randexp(rng, k)
+    sorted_rands = accumulate!(+, exp_rands, exp_rands)
+    cum_step = (sorted_rands[end] + randexp(rng)) / n
+    @inbounds for i in eachindex(x)
+        j = ceil(Int, sorted_rands[i] / cum_step)
+        x[i] = a[j]
+    end
+    return x
+end
+
 ### draw a pair of distinct integers in [1:n]
 
 """
@@ -499,7 +522,11 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
 
     if replace  # with replacement
         if ordered
-            sample_ordered!(direct_sample!, rng, a, x)
+            if k < 10
+                sample_ordered!(direct_sample!, rng, a, x)
+            else
+                uniform_orderstat_sample!(rng, a, x)
+            end
         else
             direct_sample!(rng, a, x)
         end
