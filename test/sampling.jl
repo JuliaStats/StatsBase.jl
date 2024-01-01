@@ -77,11 +77,11 @@ check_sample_wrep(a, (3, 12), 5.0e-3; ordered=false)
 for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
     r = rev ? reverse(3:12) : (3:12)
     r = T===Int ? r : T.(r)
-    aa = Int.(sample(r, n; ordered=true))
-    check_sample_wrep(aa, (3, 12), 5.0e-3; ordered=true, rev=rev)
-
     aa = Int.(sample(r, 10; ordered=true))
     check_sample_wrep(aa, (3, 12), 0; ordered=true, rev=rev)
+    
+    aa = Int.(sample(r, n; ordered=true))
+    check_sample_wrep(aa, (3, 12), 5.0e-3; ordered=true, rev=rev)
 end
 
 @test StatsBase._storeindices(1, 1, BigFloat) == StatsBase._storeindices(1, 1, BigFloat) == false
