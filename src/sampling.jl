@@ -522,7 +522,11 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
 
     if replace  # with replacement
         if ordered
-            uniform_orderstat_sample!(rng, a, x)
+            if k <= 10
+                sample_ordered!(direct_sample!, rng, a, x)
+            else
+                uniform_orderdist_sample!(rng, a, x)
+            end        
         else
             direct_sample!(rng, a, x)
         end
