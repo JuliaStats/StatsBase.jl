@@ -85,7 +85,7 @@ for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64
         bb = Int.(sample(r, 10; ordered=true))
         append!(aa, bb)
     end
-    check_sample_wrep(aa, (3, 12), 5.0e-3; ordered=false, rev=rev)
+    check_sample_wrep(sort!(aa), (3, 12), 5.0e-3; ordered=true, rev=rev)
 end
 
 @test StatsBase._storeindices(1, 1, BigFloat) == StatsBase._storeindices(1, 1, BigFloat) == false
