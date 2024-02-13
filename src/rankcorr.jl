@@ -75,8 +75,9 @@ end
 """
     tiedrank_nan(X::AbstractMatrix)
 
-Replace each column of `X` by its tied rank, unless the column contains NaN in which case
-set all elements of the column to NaN.
+Return a matrix with of same dimensions as `X` whose entries indicate the tied rank
+of the corresponding entry in `X` relative to its column.
+If the column contains `NaN`, set all elements of the column to `NaN`.
 """
 function tiedrank_nan(X::AbstractMatrix{<:Real})
     Z = similar(X, Float64)
