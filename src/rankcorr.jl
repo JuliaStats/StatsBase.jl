@@ -69,7 +69,7 @@ end
 function corspearman(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
     size(X, 1) == size(Y, 1) ||
         throw(ArgumentError("number of rows in each array must match"))
-    return (cor(tiedrank_nan(X), tiedrank_nan(Y)))
+    return cor(tiedrank_nan(X), tiedrank_nan(Y))
 end
 
 """
