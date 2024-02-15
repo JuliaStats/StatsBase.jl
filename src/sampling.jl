@@ -724,7 +724,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     # create alias table
     ap = Vector{Float64}(undef, n)
     alias = Vector{Int}(undef, n)
-    make_alias_table!(wv, s, ap, alias)
+    make_alias_table!(wv, wsum, ap, alias)
 
     # sampling
     s = Sampler(rng, 1:n)
@@ -757,7 +757,7 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
     wsum = sum(wv)
-    isfinite(s) || throw(ArgumentError("only finite weights are supported"))
+    isfinite(wsum) || throw(ArgumentError("only finite weights are supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
