@@ -729,7 +729,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
     # sampling
     s = Sampler(rng, 1:n)
     for i = 1:length(x)
-        j = rand(rng, wsum)
+        j = rand(rng, s)
         x[i] = rand(rng) < ap[j] ? a[j] : a[alias[j]]
     end
     return x
