@@ -60,11 +60,14 @@ run lengths.
 function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) where T
     m = length(vals)
     length(lens) == m || raise_dimerror()
+    n = sum(lens)
+    n >= 0 || throw(ArgumentError("lengths must be non-negative"))
 
-    r = Vector{T}(undef, sum(lens))
+    r = Vector{T}(undef, n)
     p = 0
     @inbounds for i = 1 : m
         j = lens[i]
+        j >= 0 || throw(ArgumentError("lengths must be non-negative"))
         v = vals[i]
         while j > 0
             r[p+=1] = v

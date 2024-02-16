@@ -91,7 +91,7 @@ export
     variation,   # ratio of standard deviation to mean
     sem,         # standard error of the mean, i.e. sqrt(var / n)
     mad,         # median absolute deviation
-    iqr,         # interquatile range
+    iqr,         # interquartile range
 
     genvar,      # generalized variance
     totalvar,    # total variation

@@ -158,4 +158,4 @@ end
 @test_throws ErrorException corkendall([1], [1, 2])
 @test_throws ErrorException corkendall([1], [1 2; 3 4])
 @test_throws ErrorException corkendall([1 2; 3 4], [1])
-@test_throws ArgumentError corkendall([1 2; 3 4: 4 6], [1 2; 3 4])
+@test_throws ErrorException corkendall([1 2; 3 4; 4 6], [1 2; 3 4])

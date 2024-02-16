@@ -163,7 +163,13 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test span(skipmissing([1, missing, 5, missing])) == 1:5
 
 @test variation([1:5;]) ≈ 0.527046276694730
+@test variation([1:5;]; corrected=false) ≈ 0.471404520791032
 @test variation(skipmissing([missing; 1:5; missing])) ≈ 0.527046276694730
+@test isnan(variation(1))
+@test variation(1; corrected=false) == 0
+# Possibly deprecated
+@test variation([1:5;],4) ≈ 0.4841229182759271
+@test variation([1:5;],4; corrected=false) ≈ 0.4330127018922193
 
 @test @inferred(sem([1:5;])) ≈ 0.707106781186548
 @test @inferred(sem(skipmissing([missing; 1:5; missing]))) ≈ 0.707106781186548
@@ -195,8 +201,8 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]); mean=0f0)))
 
 @test @inferred(isnan(sem(skipmissing(Union{Int,Missing}[missing, missing]))))
-@test_throws MethodError sem(Any[])
-@test_throws MethodError sem(skipmissing([missing]))
+@test_throws Exception sem(Any[])
+@test_throws Exception sem(skipmissing([missing]))
 
 @test mad(1:5; center=3, normalize=true) ≈ 1.4826022185056018
 @test mad(skipmissing([missing; 1:5; missing]); center=3, normalize=true) ≈ 1.4826022185056018
@@ -215,7 +221,14 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test_throws ArgumentError mad(Int[], normalize = true)
 @test mad(Iterators.repeated(4, 10)) == 0
 @test mad(Integer[1,2,3,4]) === mad(1:4)
-@test (@benchmark mad((i for i in 1:10000))).allocs < 200
+let itr = (i for i in 1:10000)
+    if VERSION >= v"1.10.0-"
+        # FIXME: Allocations are closer to 10x this on 1.10
+        @test_broken (@benchmark mad($itr)).allocs < 200
+    else
+        @test (@benchmark mad($itr)).allocs < 200
+    end
+end
 
 # Issue 197
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009
@@ -326,30 +339,39 @@ s = summarystats(1:5)
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == 1.0
 @test s.max == 5.0
+@test s.nobs   == 5
+@test s.nmiss  == 0
 @test s.mean   ≈ 3.0
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
+@test s.sd     ≈ 1.5811388300841898
 
 # Issue #631
 s = summarystats([-2, -1, 0, 1, 2, missing])
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == -2.0
 @test s.max == 2.0
+@test s.nobs   == 6
+@test s.nmiss  == 1
 @test s.mean   ≈ 0.0
 @test s.median ≈ 0.0
 @test s.q25    ≈ -1.0
 @test s.q75    ≈ +1.0
+@test s.sd     ≈ 1.5811388300841898
 
 # Issue #631
 s = summarystats(zeros(10))
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == 0.0
 @test s.max == 0.0
+@test s.nobs   == 10
+@test s.nmiss  == 0
 @test s.mean   ≈ 0.0
 @test s.median ≈ 0.0
 @test s.q25    ≈ 0.0
 @test s.q75    ≈ 0.0
+@test s.sd     ≈ 0.0
 
 # Issue #631
 s = summarystats(Union{Float64,Missing}[missing, missing])
@@ -358,3 +380,4 @@ s = summarystats(Union{Float64,Missing}[missing, missing])
 @test s.nmiss == 2
 @test isnan(s.mean)
 @test isnan(s.median)
+@test isnan(s.sd)

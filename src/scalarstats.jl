@@ -404,14 +404,17 @@ span(x) = ((a, b) = extrema(x); a:b)
 
 # Variation coefficient: std / mean
 """
-    variation(x, m=mean(x))
+    variation(x, m=mean(x); corrected=true)
 
 Return the coefficient of variation of collection `x`, optionally specifying
-a precomputed mean `m`. The coefficient of variation is the ratio of the
-standard deviation to the mean.
+a precomputed mean `m`, and the optional correction parameter `corrected`.
+The coefficient of variation is the ratio of the
+standard deviation to the mean. If `corrected` is `false`,
+then `std` is calculated with denominator `n`. Else, the `std` is
+calculated with denominator `n-1`.
 """
-variation(x, m) = stdm(x, m) / m
-variation(x) = ((m, s) = mean_and_std(x); s/m)
+variation(x, m; corrected::Bool=true) = stdm(x, m; corrected=corrected) / m
+variation(x; corrected::Bool=true) = ((m, s) = mean_and_std(x; corrected=corrected); s/m)
 
 # Standard error of the mean: std / sqrt(len)
 # Code taken from var in the Statistics stdlib module
@@ -854,6 +857,7 @@ kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
 
 struct SummaryStats{T<:Union{AbstractFloat,Missing}}
     mean::T
+    sd::T
     min::T
     q25::T
     median::T
@@ -868,14 +872,16 @@ end
     summarystats(a)
 
 Compute summary statistics for a real-valued array `a`. Returns a
-`SummaryStats` object containing the mean, minimum, 25th percentile,
-median, 75th percentile, and maxmimum.
+`SummaryStats` object containing the number of observations,
+number of missing observations, standard deviation, mean, minimum,
+25th percentile, median, 75th percentile, and maximum.
 """
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
+    stdev = std(s, mean=m)
     R = typeof(m)
     n = length(a)
     ns = length(s)
@@ -886,7 +892,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     else
         quantile(s, [0.00, 0.25, 0.50, 0.75, 1.00])
     end
-    SummaryStats{R}(m, qs..., n, n - ns)
+    SummaryStats{R}(m, stdev, qs..., n, n - ns)
 end
 
 function Base.show(io::IO, ss::SummaryStats)
@@ -895,6 +901,7 @@ function Base.show(io::IO, ss::SummaryStats)
     ss.nobs > 0 || return
     @printf(io, "Missing Count:  %i\n", ss.nmiss)
     @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std. Deviation: %.6f\n", ss.sd)
     @printf(io, "Minimum:        %.6f\n", ss.min)
     @printf(io, "1st Quartile:   %.6f\n", ss.q25)
     @printf(io, "Median:         %.6f\n", ss.median)

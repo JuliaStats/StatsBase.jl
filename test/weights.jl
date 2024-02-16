@@ -574,4 +574,40 @@ end
     end
 end
 
+@testset "allequal and allunique" begin
+    # General weights
+    for f in (weights, aweights, fweights, pweights)
+        @test allunique(f(Float64[]))
+        @test allunique(f([0.4]))
+        @test allunique(f([0.4, 0.3]))
+        @test !allunique(f([0.4, 0.4]))
+        @test allunique(f([0.4, 0.3, 0.5]))
+        @test !allunique(f([0.4, 0.4, 0.5]))
+        @test allunique(f([0.4, 0.3, 0.5, 0.35]))
+        @test !allunique(f([0.4, 0.3, 0.5, 0.4]))
+
+        if isdefined(Base, :allequal)
+            @test allequal(f(Float64[]))
+            @test allequal(f([0.4]))
+            @test allequal(f([0.4, 0.4]))
+            @test !allequal(f([0.4, 0.3]))
+            @test allequal(f([0.4, 0.4, 0.4, 0.4]))
+            @test !allunique(f([0.4, 0.4, 0.3, 0.4]))
+        end
+    end
+
+    # Uniform weights
+    @test allunique(uweights(0))
+    @test allunique(uweights(1))
+    @test !allunique(uweights(2))
+    @test !allunique(uweights(5))
+
+    if isdefined(Base, :allequal)
+        @test allequal(uweights(0))
+        @test allequal(uweights(1))
+        @test allequal(uweights(2))
+        @test allequal(uweights(5))
+    end
+end
+
 end # @testset StatsBase.Weights
