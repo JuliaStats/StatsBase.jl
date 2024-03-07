@@ -1,5 +1,7 @@
 module StatsBase
 
+# Hello world.
+
 import Base: length, size, isempty, values, sum, show, maximum, minimum, extrema
 import Base.Cartesian: @nloops, @nref, @nextract
 using Base: @irrational, @propagate_inbounds
