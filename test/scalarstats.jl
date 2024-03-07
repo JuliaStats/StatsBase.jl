@@ -222,12 +222,7 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test mad(Iterators.repeated(4, 10)) == 0
 @test mad(Integer[1,2,3,4]) === mad(1:4)
 let itr = (i for i in 1:10000)
-    if VERSION >= v"1.10.0-"
-        # FIXME: Allocations are closer to 10x this on 1.10
-        @test_broken (@benchmark mad($itr)).allocs < 200
-    else
-        @test (@benchmark mad($itr)).allocs < 200
-    end
+    @test (@benchmark mad($itr)).allocs < 200
 end
 
 # Issue 197
