@@ -41,11 +41,11 @@ jobs:
           # This is a public repo.
           # We are using v4 of the codecov-action.
           # If the PR is from a fork, then Codecov allows us to use
-          # tokenless Codecov uploads.
+          # tokenless Codecov uploads (because the repo is public).
           # If the PR is not from a fork, then Codecov does not allow
           # us to use tokenless Codecov uploads, and thus we must use
-          # the token.
-          # Tokenless Codcov uploads are prone to random failures,
+          # the `CODECOV_TOKEN` token.
+          # Tokenless Codecov uploads are prone to random failures,
           # due to Codecov's servers hitting GitHub rate limits.
           # Therefore:
           # 1. If this CI run is not a PR run, we set `fail_ci_if_error` to `true`.
