@@ -51,7 +51,7 @@ jobs:
           # 1. If this CI run is not a PR run, we set `fail_ci_if_error` to `true`.
           # 2. If this CI run is a PR run and the PR is not from a fork, we set `fail_ci_if_error` to `true`.
           # 3. If this CI run is a PR run and the PR is from a fork, we set `fail_ci_if_error` to `false`.
-          fail_ci_if_error: ${{(github.event_name != 'pull_request') || (github.repository == github.event.pull_request.head.repo.full_name)}}
+          fail_ci_if_error: ${{ (github.event_name != 'pull_request') || (github.repository == github.event.pull_request.head.repo.full_name) }}
           token: ${{ secrets.CODECOV_TOKEN }}
   docs:
     permissions:
