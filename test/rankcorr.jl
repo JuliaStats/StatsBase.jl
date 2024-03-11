@@ -24,7 +24,7 @@ c22 = corspearman(x2, x2)
 @test corspearman(X, X) ≈ [c11 c12; c12 c22]
 @test corspearman(X)    ≈ [c11 c12; c12 c22]
 
-@test corspearman(X, Y) ==
+@test corspearman(X, Y) ≈
      [corspearman(X[:,i], Y[:,j]) for i in axes(X, 2), j in axes(Y, 2)]
 
 # corkendall

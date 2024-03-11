@@ -63,56 +63,36 @@ function corspearman(x::AbstractVector{<:Real}, Y::AbstractMatrix{<:Real})
 end
 
 function corspearman(X::AbstractMatrix{<:Real})
-    n = size(X, 2)
-    C = Matrix{Float64}(I, n, n)
-    anynan = Vector{Bool}(undef, n)
-    for j = 1:n
-        Xj = view(X, :, j)
-        anynan[j] = any(isnan, Xj)
-        if anynan[j]
-            C[:,j] .= NaN
-            C[j,:] .= NaN
-            C[j,j] = 1
-            continue
-        end
-        Xjrank = tiedrank(Xj)
-        for i = 1:(j-1)
-            Xi = view(X, :, i)
-            if anynan[i]
-                C[i,j] = C[j,i] = NaN
-            else
-                Xirank = tiedrank(Xi)
-                C[i,j] = C[j,i] = cor(Xjrank, Xirank)
-            end
-        end
-    end
-    return C
+    return cor(tiedrank_nan(X))
 end
 
 function corspearman(X::AbstractMatrix{<:Real}, Y::AbstractMatrix{<:Real})
     size(X, 1) == size(Y, 1) ||
         throw(ArgumentError("number of rows in each array must match"))
-    nr = size(X, 2)
-    nc = size(Y, 2)
-    C = Matrix{Float64}(undef, nr, nc)
-    for j = 1:nr
+    return cor(tiedrank_nan(X), tiedrank_nan(Y))
+end
+
+"""
+    tiedrank_nan(X::AbstractMatrix)
+
+Return a matrix with of same dimensions as `X` whose entries indicate the tied rank
+of the corresponding entry in `X` relative to its column.
+If the column contains `NaN`, set all elements of the column to `NaN`.
+"""
+function tiedrank_nan(X::AbstractMatrix{<:Real})
+    Z = similar(X, Float64)
+    idxs = Vector{Int}(undef, size(X, 1))
+    for j in axes(X, 2)
         Xj = view(X, :, j)
+        Zj = view(Z, :, j) 
         if any(isnan, Xj)
-            C[j,:] .= NaN
-            continue
-        end
-        Xjrank = tiedrank(Xj)
-        for i = 1:nc
-            Yi = view(Y, :, i)
-            if any(isnan, Yi)
-                C[j,i] = NaN
-            else
-                Yirank = tiedrank(Yi)
-                C[j,i] = cor(Xjrank, Yirank)
-            end
+            fill!(Zj, NaN)
+        else
+            sortperm!(idxs, Xj)
+            _tiedrank!(Zj, Xj, idxs)
         end
     end
-    return C
+    return Z
 end
 
 
