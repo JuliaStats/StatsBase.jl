@@ -2,8 +2,9 @@ using StatsBase
 using Dates
 using LinearAlgebra
 using Random
+using Statistics
 
-tests = ["ambiguous",
+tests = ["aqua",
          "weights",
          "moments",
          "scalarstats",
