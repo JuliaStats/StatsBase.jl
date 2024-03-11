@@ -716,6 +716,7 @@ function quantile(v::AbstractVector{<:Real}{V}, w::AbstractWeights{W}, p::Abstra
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
+    isfinite(sum(w)) || throw(ArgumentError("only finite weights are supported"))
     all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
     w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))

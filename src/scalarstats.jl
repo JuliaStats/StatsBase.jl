@@ -163,6 +163,7 @@ end
 # Weighted mode of arbitrary vectors of values
 function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
         throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
 
@@ -184,6 +185,7 @@ end
 
 function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
         throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
 
