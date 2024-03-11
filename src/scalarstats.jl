@@ -726,21 +726,26 @@ zscore(X::AbstractArray{<:Real}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); z
 #############################
 
 """
-    entropy(p, [b])
+    isprobvec(p::AbstractVector{<:Real}) -> Bool
+
+Checks whether `p` is a probability vector, i.e. p[i] >= 0 for each index i, and sum(p) ≈ 1.
+Taken from `Distributions.isprobvec`.""" 
+isprobvec(p::AbstractVector{<:Real}) = all(x -> x ≥ zero(x), p) && isapprox(sum(p), one(eltype(p)))
+
+"""
+    entropy(p::AbstractVector{<:Real}, [b]; check::Bool=true)
 
 Compute the entropy of a collection of probabilities `p`,
 optionally specifying a real number `b` such that the entropy is scaled by `1/log(b)`.
 Elements with probability 0 or 1 add 0 to the entropy.
-"""
-function entropy(p)
-    if isempty(p)
-        throw(ArgumentError("empty collections are not supported since they do not " *
-                            "represent proper probability distributions"))
-    end
-    return -sum(xlogx, p)
-end
+With `check=false` disable a check whether `p` is indeed a probability vector,
+see `StatsBase.isprobvec`."""
+function entropy(p::AbstractVector{<:Real}; check::Bool = true) 
+    check && (isprobvec(p) || throw(ArgumentError("Not a proper probability distribution")))
+    return -sum(xlogx, p) 
+end 
 
-entropy(p, b::Real) = entropy(p) / log(b)
+entropy(p, b::Real; check::Bool = true) = entropy(p; check) / log(b) 
 
 """
     renyientropy(p, α)
