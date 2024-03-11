@@ -8,7 +8,10 @@
 
 function _check_randparams(rks, x, p)
     n = length(rks)
-    length(x) == length(p) == n || raise_dimerror()
+    nx = length(x)
+    np = length(p)
+    nx == np == n || throw(
+        DimensionMismatch("lengths of x $nx and p $np do not match that of ranks $n"))
     return n
 end
 
