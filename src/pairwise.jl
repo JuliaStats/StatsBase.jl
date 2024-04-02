@@ -5,15 +5,15 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix{V}, x, y,
 
     # Swap x and y for more efficient threaded loop.
     if nr < nc
-        dest′ = reshape(dest, size(dest, 2), size(dest, 1))
-        _pairwise!(Val(:none), f, dest′, y, x, symmetric)
-        dest .= transpose(dest′)
+        dest2 = reshape(dest, size(dest, 2), size(dest, 1))
+        _pairwise!(Val(:none), f, dest2, y, x, symmetric)
+        dest .= transpose(dest2)
         return dest
     end
 
     #cor and friends are special-cased.
-    iscor = (f in (corkendall, corspearman, cor))
-    (iscor || f == cov) && (symmetric = x === y)
+    diag_is_1 = (f in (corkendall, corspearman, cor))
+    (diag_is_1 || f == cov) && (symmetric = x === y)
     #cov(x) is faster than cov(x, x)
     (f == cov) && (f = ((x, y) -> x === y ? cov(x) : cov(x, y)))
 
@@ -21,13 +21,13 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix{V}, x, y,
         for j in subset
             for i = 1:(symmetric ? j : nc)
                 # For performance, diagonal is special-cased
-                if iscor && i==j && y[i] === x[j] && V !== Union{}
+                if diag_is_1 && i == j && y[i] === x[j] && V !== Union{}
                     dest[j, i] = V === Missing ? missing : 1.0
                 else
                     dest[j, i] = f(x[j], y[i])
                 end
-                symmetric && (dest[i, j] = dest[j, i])
             end
+            symmetric && LinearAlgebra.copytri!(dest, 'L')
         end
     end
     return dest
@@ -81,15 +81,15 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix{V}, x, y, symmetri
 
     # Swap x and y for more efficient threaded loop.
     if nr < nc
-        dest′ = reshape(dest, size(dest, 2), size(dest, 1))
-        _pairwise!(Val(:pairwise), f, dest′, y, x, symmetric)
-        dest .= transpose(dest′)
+        dest2 = reshape(dest, size(dest, 2), size(dest, 1))
+        _pairwise!(Val(:pairwise), f, dest2, y, x, symmetric)
+        dest .= transpose(dest2)
         return dest
     end
 
     #cor and friends are special-cased.
-    iscor = (f in (corkendall, corspearman, cor))
-    (iscor || f == cov) && (symmetric = x === y)
+    diag_is_1 = (f in (corkendall, corspearman, cor))
+    (diag_is_1 || f == cov) && (symmetric = x === y)
     #cov(x) is faster than cov(x, x)
     (f == cov) && (f = ((x, y) -> x === y ? cov(x) : cov(x, y)))
 
@@ -97,17 +97,17 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix{V}, x, y, symmetri
     nmty = promoted_nmtype(y)[]
 
     Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
+        scratch_fx = task_local_vector(:scratch_fx, nmtx, m)
+        scratch_fy = task_local_vector(:scratch_fy, nmty, m)
         for j in subset
-            scratch_fx = task_local_vector(:scratch_fx, nmtx, m)
-            scratch_fy = task_local_vector(:scratch_fy, nmty, m)
             for i = 1:(symmetric ? j : nc)
-                if iscor && i == j && y[i] === x[j] && V !== Union{} && V!== Missing
+                if diag_is_1 && i == j && y[i] === x[j] && V !== Union{} && V !== Missing
                     dest[j, i] = 1.0
                 else
-                    dest[j, i] = f(handle_pairwise(x[j], y[i]; scratch_fx = scratch_fx, scratch_fy = scratch_fy)...)
+                    dest[j, i] = f(handle_pairwise(x[j], y[i]; scratch_fx=scratch_fx, scratch_fy=scratch_fy)...)
                 end
-                symmetric && (dest[i, j] = dest[j, i])
             end
+            symmetric && LinearAlgebra.copytri!(dest, 'L')
         end
     end
     return dest
@@ -255,7 +255,7 @@ julia> dest
 ```
 """
 function pairwise!(f, dest::AbstractMatrix, x, y=x;
-                   symmetric::Bool=false, skipmissing::Symbol=:none)
+    symmetric::Bool=false, skipmissing::Symbol=:none)
     check_vectors(x, y, skipmissing, symmetric)
     return _pairwise!(f, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
 end
