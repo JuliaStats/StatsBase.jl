@@ -27,9 +27,9 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix{V}, x, y,
                     dest[j, i] = f(x[j], y[i])
                 end
             end
-            symmetric && LinearAlgebra.copytri!(dest, 'L')
         end
     end
+    symmetric && LinearAlgebra.copytri!(dest, 'L')
     return dest
 end
 
@@ -107,9 +107,9 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix{V}, x, y, symmetri
                     dest[j, i] = f(handle_pairwise(x[j], y[i]; scratch_fx=scratch_fx, scratch_fy=scratch_fy)...)
                 end
             end
-            symmetric && LinearAlgebra.copytri!(dest, 'L')
         end
     end
+    symmetric && LinearAlgebra.copytri!(dest, 'L')
     return dest
 end
 

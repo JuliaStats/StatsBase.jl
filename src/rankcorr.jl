@@ -137,10 +137,10 @@ function _pairwise!(::Val{:pairwise}, f::typeof(corspearman),
                         view(tempx, :, j), view(tempy, :, i), inds, spnmx, spnmy, nmx,
                         nmy, ranksx, ranksy)
                 end
-                symmetric && (dest[i, j] = dest[j, i])
             end
         end
     end
+    symmetric && LinearAlgebra.copytri!(dest, 'L')
     return dest
 end
 
@@ -515,10 +515,10 @@ function corkendall_loop!(skipmissing::Symbol, f::typeof(corkendall), dest::Abst
                         scratch_py=scratch_py, scratch_sy=scratch_sy, scratch_fx=scratch_fx,
                         scratch_fy=scratch_fy)
                 end
-                symmetric && (dest[i, j] = dest[j, i])
             end
         end
     end
+    symmetric && LinearAlgebra.copytri!(dest, 'L')
     return dest
 end
 
