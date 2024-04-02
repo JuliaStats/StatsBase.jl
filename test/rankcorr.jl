@@ -236,11 +236,13 @@ julia> corkendall(Matrix{Union{Missing,Float64}}(missing,5,3)) #DIFFERENT behavi
     @test (f(["a" "z"; "b" "y"; "c" "x"]) ≈ [1.0 -1.0; -1.0 1.0])
     @test (f(["a" 3; "b" 2; "c" 1]) ≈ [1.0 -1.0; -1.0 1.0])
 
-    #Works for zero size input
-    @test isequal(f([;;]), [;;])
-    @test isequal(f([;;], [;;]), [;;])
-    @test isequal(f([;;], [;;], skipmissing=:pairwise), [;;])
-    @test isequal(f([;;], [;;], skipmissing=:listwise), [;;])
+    #Works for zero size input ( [;;] not compatible with Julia 1.0.5)
+    let nada = Array{Any,2}(undef, 0, 0)
+        @test isequal(f(nada), nada)
+        @test isequal(f(nada, nada), nada)
+        @test isequal(f(nada, nada, skipmissing=:pairwise), nada)
+        @test isequal(f(nada, nada, skipmissing=:listwise), nada)
+    end
 
     # Wrong dimensions
     @test_throws DimensionMismatch f([1], [1, 2])
@@ -362,11 +364,11 @@ end
     factor" of 1.2 against the expected size of allocations.
     =#
     @test (@allocated corkendall(x)) < (897_808 + Threads.nthreads() * 58_044) * 1.2
-    @test (@allocated corkendall(xm,skipmissing=:listwise)) < (1_119_392 + Threads.nthreads() * 22_172) * 1.2
-    @test (@allocated corkendall(xm,skipmissing=:pairwise)) < (892_112 + Threads.nthreads() * 61_116) * 1.2
+    @test (@allocated corkendall(xm, skipmissing=:listwise)) < (1_119_392 + Threads.nthreads() * 22_172) * 1.2
+    @test (@allocated corkendall(xm, skipmissing=:pairwise)) < (892_112 + Threads.nthreads() * 61_116) * 1.2
     @test (@allocated corspearman(x)) < (2_678_448 + Threads.nthreads() * 9_128) * 1.2
-    @test (@allocated corspearman(xm,skipmissing=:listwise)) < (1_803_712 + Threads.nthreads() * 3_992) * 1.2
-    @test (@allocated corspearman(xm,skipmissing=:pairwise)) < (1_692_208 + Threads.nthreads() * 67_172) * 1.2
+    @test (@allocated corspearman(xm, skipmissing=:listwise)) < (1_803_712 + Threads.nthreads() * 3_992) * 1.2
+    @test (@allocated corspearman(xm, skipmissing=:pairwise)) < (1_692_208 + Threads.nthreads() * 67_172) * 1.2
 
 end
 # COV_EXCL_STOP

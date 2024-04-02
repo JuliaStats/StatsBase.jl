@@ -104,7 +104,7 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix{V}, x, y, symmetri
                 if iscor && i == j && y[i] === x[j] && V !== Union{} && V!== Missing
                     dest[j, i] = 1.0
                 else
-                    dest[j, i] = f(handle_pairwise(x[j], y[i]; scratch_fx, scratch_fy)...)
+                    dest[j, i] = f(handle_pairwise(x[j], y[i]; scratch_fx = scratch_fx, scratch_fy = scratch_fy)...)
                 end
                 symmetric && (dest[i, j] = dest[j, i])
             end
