@@ -48,7 +48,7 @@ end
 function corspearman(x::AbstractMatrix, y::AbstractMatrix=x;
     skipmissing::Symbol=:none)
     check_rankcor_args(x, y, skipmissing, true)
-    return pairwise(corspearman, _eachcol(x), _eachcol(y); skipmissing=skipmissing)
+    return pairwise(corspearman, eachcol(x), eachcol(y); skipmissing=skipmissing)
 end
 
 function corspearman(x::AbstractVector{T}) where {T}
@@ -414,7 +414,7 @@ Uses multiple threads when either `x` or `y` is a matrix.
 function corkendall(x::AbstractMatrix, y::AbstractMatrix=x;
     skipmissing::Symbol=:none)
     check_rankcor_args(x, y, skipmissing, true)
-    return pairwise(corkendall, _eachcol(x), _eachcol(y); skipmissing=skipmissing)
+    return pairwise(corkendall, eachcol(x), eachcol(y); skipmissing=skipmissing)
 end
 
 function corkendall(x::AbstractVector, y::AbstractVector;
@@ -429,8 +429,6 @@ function corkendall(x::AbstractVector, y::AbstractVector;
         return corkendall_kernel!(x, y, permx, skipmissing)
     end
 end
-
-_eachcol(x) = VERSION >= v"1.1" ? eachcol(x) : [view(x,:,j) for j in axes(x,2)]
 
 #= corkendall returns a vector in this case, inconsistent with with Statistics.cor and
 StatsBase.corspearman, but consistent with StatsBase.corkendall.
