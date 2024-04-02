@@ -381,16 +381,16 @@ function handle_pairwise(x::AbstractVector, y::AbstractVector;
 
     axes(x) == axes(y) || throw(DimensionMismatch("x and y have inconsistent dimensions"))
     lb = first(axes(x, 1))
-    j = lb - 1
+    j = lb
     @inbounds for i in eachindex(x)
         if !(ismissing(x[i]) || ismissing(y[i]))
-            j += 1
             scratch_fx[j] = x[i]
             scratch_fy[j] = y[i]
+            j += 1
         end
     end
 
-    return view(scratch_fx, lb:j), view(scratch_fy, lb:j)
+    return view(scratch_fx, lb:(j-1)), view(scratch_fy, lb:(j-1))
 end
 
 #=Condition a) makes equal_sum_subsets useful for load-balancing the multi-threaded section
