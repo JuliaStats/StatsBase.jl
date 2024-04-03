@@ -4,8 +4,8 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix{V}, x, y,
     nr, nc = size(dest)
 
     # Swap x and y for more efficient threaded loop.
-    if nr < nc
-        dest2 = reshape(dest, size(dest, 2), size(dest, 1))
+    if nc < nr
+        dest2 = similar(dest, size(dest, 2), size(dest, 1))
         _pairwise!(Val(:none), f, dest2, y, x, symmetric)
         dest .= transpose(dest2)
         return dest
@@ -17,14 +17,14 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix{V}, x, y,
     #cov(x) is faster than cov(x, x)
     (f == cov) && (f = ((x, y) -> x === y ? cov(x) : cov(x, y)))
 
-    Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
+    Threads.@threads for subset in equal_sum_subsets(nc, Threads.nthreads())
         for j in subset
-            for i = 1:(symmetric ? j : nc)
+            for i = (symmetric ? j : 1):nr
                 # For performance, diagonal is special-cased
-                if diag_is_1 && i == j && y[i] === x[j] && V !== Union{}
-                    dest[j, i] = V === Missing ? missing : 1.0
+                if diag_is_1 && i == j && x[i] === y[j]
+                    dest[i, j] = V === Missing ? missing : 1.0
                 else
-                    dest[j, i] = f(x[j], y[i])
+                    dest[i, j] = f(x[i], y[j])
                 end
             end
         end
@@ -80,8 +80,8 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix{V}, x, y, symmetri
     m = length(x) == 0 ? 0 : length(first(x))
 
     # Swap x and y for more efficient threaded loop.
-    if nr < nc
-        dest2 = reshape(dest, size(dest, 2), size(dest, 1))
+    if nc < nr
+        dest2 = similar(dest, size(dest, 2), size(dest, 1))
         _pairwise!(Val(:pairwise), f, dest2, y, x, symmetric)
         dest .= transpose(dest2)
         return dest
@@ -96,15 +96,15 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix{V}, x, y, symmetri
     nmtx = promoted_nmtype(x)[]
     nmty = promoted_nmtype(y)[]
 
-    Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
+    Threads.@threads for subset in equal_sum_subsets(nc, Threads.nthreads())
         scratch_fx = task_local_vector(:scratch_fx, nmtx, m)
         scratch_fy = task_local_vector(:scratch_fy, nmty, m)
         for j in subset
-            for i = 1:(symmetric ? j : nc)
-                if diag_is_1 && i == j && y[i] === x[j] && V !== Union{} && V !== Missing
-                    dest[j, i] = 1.0
+            for i = (symmetric ? j : 1):nr
+                if diag_is_1 && i == j && x[i] === y[j] && V !== Missing
+                    dest[i, j] = 1.0
                 else
-                    dest[j, i] = f(handle_pairwise(x[j], y[i]; scratch_fx=scratch_fx, scratch_fy=scratch_fy)...)
+                    dest[i, j] = f(handle_pairwise(x[i], y[j]; scratch_fx=scratch_fx, scratch_fy=scratch_fy)...)
                 end
             end
         end
