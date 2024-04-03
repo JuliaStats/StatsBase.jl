@@ -740,7 +740,13 @@ function entropy(p)
     return -sum(xlogx, p)
 end
 
-entropy(p, b::Real) = entropy(p) / log(b)
+function entropy(p, b::Real)
+    e = entropy(p)
+    # Promote explicitly before applying `log` to avoid undesired promotions
+    # with `log(b)::Float64` arising from `b::Int` (ref: #924)
+    _b = first(promote(b, e))
+    return e / log(_b)
+end
 
 """
     renyientropy(p, α)

@@ -260,6 +260,10 @@ it = (xᵢ for xᵢ in x)
 @test @inferred(entropy([1//2, 1//2], 2))    ≈ 1.0
 @test @inferred(entropy([0.2, 0.3, 0.5], 2)) ≈ 1.4854752972273344
 
+# issue #924
+@test @inferred(entropy([0.5f0, 0.5f0], 2)) isa Float32
+@test @inferred(entropy([0.5f0, 0.5f0], MathConstants.e)) isa Float32
+
 @test_throws ArgumentError @inferred(entropy(Float64[]))
 @test_throws ArgumentError @inferred(entropy(Int[]))
 
@@ -376,3 +380,5 @@ s = summarystats(Union{Float64,Missing}[missing, missing])
 @test isnan(s.mean)
 @test isnan(s.median)
 @test isnan(s.sd)
+
+# Issue 
