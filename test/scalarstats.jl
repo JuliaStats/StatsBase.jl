@@ -380,5 +380,3 @@ s = summarystats(Union{Float64,Missing}[missing, missing])
 @test isnan(s.mean)
 @test isnan(s.median)
 @test isnan(s.sd)
-
-# Issue 
