@@ -1,7 +1,7 @@
 name = "StatsBase"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 authors = ["JuliaStats"]
-version = "0.34.2"
+version = "0.34.3"
 
 [deps]
 DataAPI = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -19,9 +19,13 @@ StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 [compat]
 DataAPI = "1"
 DataStructures = "0.10, 0.11, 0.12, 0.13, 0.14, 0.17, 0.18"
+LinearAlgebra = "<0.0.1, 1"
 LogExpFunctions = "0.3"
 Missings = "0.3, 0.4, 1.0"
+Printf = "<0.0.1, 1"
+Random = "<0.0.1, 1"
 SortingAlgorithms = "0.3, 1.0"
+SparseArrays = "<0.0.1, 1"
 Statistics = "1"
 StatsAPI = "1.2"
 julia = "1"
