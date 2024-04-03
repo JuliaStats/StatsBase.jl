@@ -99,9 +99,9 @@ function _pairwise!(::Val{:pairwise}, f::typeof(corspearman),
 
     # Swap x and y for more efficient threaded loop.
     if nr < nc
-        dest′ = reshape(dest, size(dest, 2), size(dest, 1))
-        _pairwise!(Val(:pairwise), f, dest′, y, x, symmetric)
-        dest .= transpose(dest′)
+        dest2 = similar(dest, size(dest, 2), size(dest, 1))
+        _pairwise!(Val(:pairwise), f, dest2, y, x, symmetric)
+        dest .= transpose(dest2)
         return dest
     end
 
@@ -114,7 +114,7 @@ function _pairwise!(::Val{:pairwise}, f::typeof(corspearman),
     nmty = promoted_nmtype(y)[]
     Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
 
-        for j in subset
+        for i in subset
 
             inds = task_local_vector(:inds, int64, m)
             spnmx = task_local_vector(:spnmx, int64, m)
@@ -124,17 +124,17 @@ function _pairwise!(::Val{:pairwise}, f::typeof(corspearman),
             ranksx = task_local_vector(:ranksx, fl64, m)
             ranksy = task_local_vector(:ranksy, fl64, m)
 
-            for i = 1:(symmetric ? j : nc)
+            for j = 1:(symmetric ? i : nc)
                 # For performance, diagonal is special-cased
-                if x[j] === y[i] && i == j && V !== Union{}
-                    if missing isa V && eltype(x[j]) == Missing
-                        dest[j, i] = missing
+                if x[i] === y[j] && i == j
+                    if missing isa V && eltype(x[i]) == Missing
+                        dest[i, j] = missing
                     else
-                        dest[j, i] = 1.0
+                        dest[i, j] = 1.0
                     end
                 else
-                    dest[j, i] = corspearman_kernel!(x[j], y[i], :pairwise,
-                        view(tempx, :, j), view(tempy, :, i), inds, spnmx, spnmy, nmx,
+                    dest[i, j] = corspearman_kernel!(x[i], y[j], :pairwise,
+                        view(tempx, :, i), view(tempy, :, j), inds, spnmx, spnmy, nmx,
                         nmy, ranksx, ranksy)
                 end
             end
@@ -468,9 +468,9 @@ function corkendall_loop!(skipmissing::Symbol, f::typeof(corkendall), dest::Abst
 
     # Swap x and y for more efficient threaded loop.
     if nr < nc
-        dest′ = reshape(dest, size(dest, 2), size(dest, 1))
-        corkendall_loop!(skipmissing, f, dest′, y, x, symmetric)
-        dest .= transpose(dest′)
+        dest2 = similar(dest, size(dest, 2), size(dest, 1))
+        corkendall_loop!(skipmissing, f, dest2, y, x, symmetric)
+        dest .= transpose(dest2)
         return dest
     end
 
@@ -484,11 +484,11 @@ function corkendall_loop!(skipmissing::Symbol, f::typeof(corkendall), dest::Abst
 
     Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
 
-        for j in subset
+        for i in subset
 
             sortedxj = task_local_vector(:sortedxj, t, m)
             scratch_py = task_local_vector(:scratch_py, u, m)
-            yi = task_local_vector(:yi, u, m)
+            yj = task_local_vector(:yj, u, m)
             permx = task_local_vector(:permx, intvec, m)
             # Ensuring missing is not an element type of scratch_sy, scratch_fx, scratch_fy
             # gives improved performance.
@@ -496,22 +496,22 @@ function corkendall_loop!(skipmissing::Symbol, f::typeof(corkendall), dest::Abst
             scratch_fx = task_local_vector(:scratch_fx, t′, m)
             scratch_fy = task_local_vector(:scratch_fy, t′, m)
 
-            sortperm!(permx, x[j])
+            sortperm!(permx, x[i])
             @inbounds for k in eachindex(sortedxj)
-                sortedxj[k] = x[j][permx[k]]
+                sortedxj[k] = x[i][permx[k]]
             end
 
-            for i = 1:(symmetric ? j : nc)
+            for j = 1:(symmetric ? i : nc)
                 # For performance, diagonal is special-cased
-                if x[j] === y[i] && i == j && V !== Union{}
-                    if missing isa V && eltype(x[j]) == Missing
-                        dest[j, i] = missing
+                if x[i] === y[j] && j == i
+                    if missing isa V && eltype(x[i]) == Missing
+                        dest[i, j] = missing
                     else
-                        dest[j, i] = 1.0
+                        dest[i, j] = 1.0
                     end
                 else
-                    yi .= y[i]
-                    dest[j, i] = corkendall_kernel!(sortedxj, yi, permx, skipmissing;
+                    yj .= y[j]
+                    dest[i, j] = corkendall_kernel!(sortedxj, yj, permx, skipmissing;
                         scratch_py=scratch_py, scratch_sy=scratch_sy, scratch_fx=scratch_fx,
                         scratch_fy=scratch_fy)
                 end
@@ -747,4 +747,3 @@ end
 # is defined, so that rank correlation makes sense.
 _isnan(x::T) where {T<:Number} = isnan(x)
 _isnan(x) = false
-
