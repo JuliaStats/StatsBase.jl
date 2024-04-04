@@ -112,7 +112,7 @@ function _pairwise!(::Val{:pairwise}, f::typeof(corspearman),
     fl64 = Float64[]
     nmtx = promoted_nmtype(x)[]
     nmty = promoted_nmtype(y)[]
-    Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
+    Threads.@threads for subset in EqualSumSubsets(nr, Threads.nthreads())
 
         for i in subset
 
@@ -482,7 +482,7 @@ function corkendall_loop!(skipmissing::Symbol, f::typeof(corkendall), dest::Abst
 
     symmetric = x === y
 
-    Threads.@threads for subset in equal_sum_subsets(nr, Threads.nthreads())
+    Threads.@threads for subset in EqualSumSubsets(nr, Threads.nthreads())
 
         for i in subset
 

@@ -32,9 +32,16 @@ using Test
     @test StatsBase.midpoint(1, 10) == 5
     @test StatsBase.midpoint(1, widen(10)) == 5
 
-    @test StatsBase.equal_sum_subsets(0, 1) == Vector{Int64}[]
-    @test sum.(StatsBase.equal_sum_subsets(100, 5)) == repeat([1010], 5)
-    @test sort(vcat(StatsBase.equal_sum_subsets(500, 7)...)) == collect(1:500)
+    for n in 1:200, nss in 1:7
+        #check is a partition
+        @test sort(vcat([collect(s) for s in StatsBase.EqualSumSubsets(n, nss)]...)) == 1:n
+        #check near-equal lengths
+        lengths = [length(s) for s in StatsBase.EqualSumSubsets(n, nss)]
+        @test (maximum(lengths) - minimum(lengths)) <= 1
+        #check near-equal sums
+        sums = [sum(collect(s)) for s in StatsBase.EqualSumSubsets(n, nss)]
+        @test (maximum(sums) - minimum(sums)) < nss
+    end
 
 end
 
