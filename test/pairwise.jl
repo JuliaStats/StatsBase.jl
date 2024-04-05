@@ -116,7 +116,11 @@ arbitrary_fun(x, y) = cor(x, y)
         @test res ≅ res2
         # Use myskipmissings rather than skipmissings to avoid deprecation warning
         function myskipmissings(x, y)
-            which = @. !(ismissing(x) || ismissing(y))
+            #which = @. !(ismissing(x) || ismissing(y)) # not compatible with Julia 1.6
+            which = similar(x,Bool)
+            for i in eachindex(x)
+                which[i] = !(ismissing(x[i])|| ismissing(y[i]))
+            end
             return x[which], y[which]
         end
 
