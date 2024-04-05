@@ -32,7 +32,7 @@ using Test
     @test StatsBase.midpoint(1, 10) == 5
     @test StatsBase.midpoint(1, widen(10)) == 5
 
-    for n in 1:200, nss in 1:7
+    for n in vcat(1:5, 10:20:90,1000), nss in [1, 4, 8, 20, 32, 64]
         #check is a partition
         @test sort(vcat([collect(s) for s in StatsBase.EqualSumSubsets(n, nss)]...)) == 1:n
         #check near-equal lengths
