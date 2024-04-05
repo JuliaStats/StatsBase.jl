@@ -370,12 +370,12 @@ end
     number of threads, thanks to use of task-local storage. The tests below have a "safety
     factor" of 1.2 against the expected size of allocations.
     =#
-    @test (@allocated corkendall(x)) < (897_808 + Threads.nthreads() * 58_044) * 1.2
-    @test (@allocated corkendall(xm, skipmissing=:listwise)) < (1_119_392 + Threads.nthreads() * 22_172) * 1.2
-    @test (@allocated corkendall(xm, skipmissing=:pairwise)) < (892_112 + Threads.nthreads() * 61_116) * 1.2
+    @test (@allocated corkendall(x)) < (896_144 + Threads.nthreads() * 57_976) * 1.2
+    @test (@allocated corkendall(xm,skipmissing=:listwise)) < (1_117_728 + Threads.nthreads() * 22_104) * 1.2
+    @test (@allocated corkendall(xm,skipmissing=:pairwise)) < (890_448 + Threads.nthreads() * 61_048) * 1.2
     @test (@allocated corspearman(x)) < (2_678_448 + Threads.nthreads() * 9_128) * 1.2
-    @test (@allocated corspearman(xm, skipmissing=:listwise)) < (1_803_712 + Threads.nthreads() * 3_992) * 1.2
-    @test (@allocated corspearman(xm, skipmissing=:pairwise)) < (1_692_208 + Threads.nthreads() * 67_172) * 1.2
-
+    @test (@allocated corspearman(xm,skipmissing=:listwise)) < (1_803_712 + Threads.nthreads() * 3_992) * 1.2
+    @test (@allocated corspearman(xm,skipmissing=:pairwise)) < (1_690_544 + Threads.nthreads() * 67_104) * 1.2
+    
 end
 # COV_EXCL_STOP
