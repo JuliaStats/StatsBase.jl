@@ -48,7 +48,11 @@ end
 function corspearman(x::AbstractMatrix, y::AbstractMatrix=x;
     skipmissing::Symbol=:none)
     check_rankcor_args(x, y, skipmissing, true)
-    return pairwise(corspearman, eachcol(x), eachcol(y); skipmissing=skipmissing)
+    if x === y
+        return pairwise(corspearman, _eachcol(x); skipmissing=skipmissing)    
+    else
+        return pairwise(corspearman, _eachcol(x), _eachcol(y); skipmissing=skipmissing)
+    end
 end
 
 function corspearman(x::AbstractVector{T}) where {T}
@@ -414,7 +418,11 @@ Uses multiple threads when either `x` or `y` is a matrix.
 function corkendall(x::AbstractMatrix, y::AbstractMatrix=x;
     skipmissing::Symbol=:none)
     check_rankcor_args(x, y, skipmissing, true)
-    return pairwise(corkendall, eachcol(x), eachcol(y); skipmissing=skipmissing)
+    if x === y
+        return pairwise(corkendall, _eachcol(x); skipmissing=skipmissing)
+    else
+        return pairwise(corkendall, _eachcol(x), _eachcol(y); skipmissing=skipmissing)
+    end
 end
 
 function corkendall(x::AbstractVector, y::AbstractVector;
@@ -747,3 +755,7 @@ end
 # is defined, so that rank correlation makes sense.
 _isnan(x::T) where {T<:Number} = isnan(x)
 _isnan(x) = false
+
+# eachcol was added in Julia 1.1 but for Julia 1.8, keys(eachcol(x)) fails for any Matrix x
+# which causes `check_vectors` to fail. Solution is to use the comprehension below.
+_eachcol(x) = VERSION < v"1.9" ? [view(x, :, i) for i in axes(x, 2)] : eachcol(x)

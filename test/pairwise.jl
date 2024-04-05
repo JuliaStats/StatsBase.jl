@@ -53,8 +53,8 @@ arbitrary_fun(x, y) = cor(x, y)
 
         @inferred pairwise(f, x, y)
         if throwsforzerolengthinput
-            @test_throws CompositeException pairwise(f, [Int[]], [Int[]])
-            @test_throws CompositeException pairwise!(f, zeros(1, 1), [Int[]], [Int[]])
+            @test_throws Union{CompositeException,TaskFailedException} pairwise(f, [Int[]], [Int[]])
+            @test_throws Union{CompositeException,TaskFailedException} pairwise!(f, zeros(1, 1), [Int[]], [Int[]])
         end
 
         res = pairwise(f, [], [])
@@ -182,12 +182,12 @@ arbitrary_fun(x, y) = cor(x, y)
 
         if VERSION >= v"1.5" # Fails with UndefVarError on Julia 1.0
             if throwsforzerolengthinput
-                @test_throws CompositeException pairwise(f, xm, ym, skipmissing=:pairwise)
-                @test_throws CompositeException pairwise(f, xm, ym, skipmissing=:listwise)
+                @test_throws Union{CompositeException,TaskFailedException} pairwise(f, xm, ym, skipmissing=:pairwise)
+                @test_throws Union{CompositeException,TaskFailedException} pairwise(f, xm, ym, skipmissing=:listwise)
 
                 res = zeros(Union{Float64,Missing}, length(xm), length(ym))
-                @test_throws CompositeException pairwise!(f, res, xm, ym, skipmissing=:pairwise)
-                @test_throws CompositeException pairwise!(f, res, xm, ym, skipmissing=:listwise)
+                @test_throws Union{CompositeException,TaskFailedException} pairwise!(f, res, xm, ym, skipmissing=:pairwise)
+                @test_throws Union{CompositeException,TaskFailedException} pairwise!(f, res, xm, ym, skipmissing=:listwise)
             end
         end
 
@@ -305,7 +305,7 @@ arbitrary_fun(x, y) = cor(x, y)
                     NaN 1.0]
                 if VERSION >= v"1.5"
                     if f == cor
-                        @test_throws CompositeException pairwise(f, [[missing, missing, missing],
+                        @test_throws Union{CompositeException,TaskFailedException} pairwise(f, [[missing, missing, missing],
                                 [missing, missing, missing]],
                             skipmissing=sm)
                     end
