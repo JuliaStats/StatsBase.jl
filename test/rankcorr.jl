@@ -341,7 +341,7 @@ end
                     if !((arg1 isa Vector) && (arg2 isa Vector) && skipmissing == :listwise)
                         copy1 = copy(arg1)
                         copy2 = copy(arg2)
-                        res = f(arg1, arg2; skipmissing)
+                        res = f(arg1, arg2; skipmissing=skipmissing)
                         @test isequal(arg1, copy1)
                         @test isequal(arg2, copy2)
                     end
