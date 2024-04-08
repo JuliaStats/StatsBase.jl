@@ -5,6 +5,7 @@
 #
 ###########################################################
 
+using AliasTables
 using Random: Sampler
 
 if VERSION < v"1.3.0-DEV.565"
@@ -704,29 +705,23 @@ Build an alias table, and sample therefrom.
 Reference: Walker, A. J. "An Efficient Method for Generating Discrete Random Variables
 with General Distributions." *ACM Transactions on Mathematical Software* 3 (3): 253, 1977.
 
-Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n \\log n)`` time
-for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``2 k`` random numbers.
+Noting `k=length(x)` and `n=length(a)`, this algorithm takes ``O(n)`` time
+for building the alias table, and then ``O(1)`` to draw each sample. It consumes ``k`` random numbers.
 """
 function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
     Base.mightalias(a, x) &&
         throw(ArgumentError("output array x must not share memory with input array a"))
-    Base.mightalias(x, wv) &&
-        throw(ArgumentError("output array x must not share memory with weights array wv"))
-    1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
+    1 == firstindex(a) == firstindex(wv) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
-    n = length(a)
-    length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
+    length(wv) == length(a) || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
-    ap = Vector{Float64}(undef, n)
-    alias = Vector{Int}(undef, n)
-    make_alias_table!(wv, sum(wv), ap, alias)
+    at = AliasTable(wv)
 
     # sampling
-    s = Sampler(rng, 1:n)
-    for i = 1:length(x)
-        j = rand(rng, s)
-        x[i] = rand(rng) < ap[j] ? a[j] : a[alias[j]]
+    for i in eachindex(x)
+        j = rand(rng, at)
+        x[i] = a[j]
     end
     return x
 end
