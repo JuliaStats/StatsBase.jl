@@ -21,6 +21,24 @@ using Test
     @test StatsBase.handle_pairwise(x, float.(y)) == ([2, 3, 4], [1.0, 2.0, 4.0])
     @test StatsBase.handle_pairwise(u, v) == (Int64[], Int64[])
 
+    ranksx = [missing missing]
+    ranksy = [1 2]
+    @test isequal(StatsBase._cor(ranksx, ranksy), [NaN NaN; NaN NaN])
+    @test isequal(StatsBase._cor(ranksx, ranksx), [missing NaN; NaN missing])
+    @test isequal(StatsBase._cor(ranksy, ranksy), [1.0 NaN; NaN 1.0])
+
+    ranksx = [missing missing; missing missing]
+    @test isequal(StatsBase._cor(ranksx, ranksx), [missing missing; missing missing])
+
+    Random.seed!(1)
+    ranksx = rand(10,5) ;ranksy = rand(10,6)
+    @test StatsBase._cor(ranksx,ranksx) == cor(ranksx)
+    @test StatsBase._cor(ranksx,ranksy) == cor(ranksx,ranksy)
+
+    ranksx = fill(missing,3,3);ranksy = hcat(ranksx,[1,2,3])
+    @test isequal(StatsBase._cor(ranksx,ranksx),fill(missing,3,3))
+    @test isequal(StatsBase._cor(ranksx,ranksy),fill(missing,3,4))
+
     v = collect(100:-1:1)
     StatsBase.insertion_sort!(v, 1, n)
     @test v == 1:n
@@ -32,7 +50,7 @@ using Test
     @test StatsBase.midpoint(1, 10) == 5
     @test StatsBase.midpoint(1, widen(10)) == 5
 
-    for n in vcat(1:5, 10:20:90,1000), nss in [1, 4, 8, 20, 32, 64]
+    for n in vcat(1:5, 10:20:90, 1000), nss in [1, 4, 8, 20, 32, 64]
         #check is a partition
         @test sort(vcat([collect(s) for s in StatsBase.EqualSumSubsets(n, nss)]...)) == 1:n
         #check near-equal lengths
@@ -215,8 +233,8 @@ julia> corkendall(Matrix{Union{Missing,Float64}}(missing,5,3)) #DIFFERENT behavi
     @test isequal(f([], []), NaN)
     @test isequal(f(fill(1, 0, 2), fill(1, 0, 2)), [NaN NaN; NaN NaN])
     @test isequal(f(fill(1, 0, 2)), [1.0 NaN; NaN 1.0])
-    @test isequal(f(reshape([1],(1,1)), reshape([1],(1,1))), reshape([NaN],(1,1)))
-    @test isequal(f(reshape([1],(1,1))), reshape([1.0],(1,1)))
+    @test isequal(f(reshape([1], (1, 1)), reshape([1], (1, 1))), reshape([NaN], (1, 1)))
+    @test isequal(f(reshape([1], (1, 1))), reshape([1.0], (1, 1)))
     @test isequal(f([missing], [missing]), NaN)
     @test isequal(f([1], [1]), NaN)
     @test isequal(f([NaN], [NaN]), NaN)
@@ -371,11 +389,11 @@ end
     factor" of 1.2 against the expected size of allocations.
     =#
     @test (@allocated corkendall(x)) < (896_144 + Threads.nthreads() * 57_976) * 1.2
-    @test (@allocated corkendall(xm,skipmissing=:listwise)) < (1_117_728 + Threads.nthreads() * 22_104) * 1.2
-    @test (@allocated corkendall(xm,skipmissing=:pairwise)) < (890_448 + Threads.nthreads() * 61_048) * 1.2
+    @test (@allocated corkendall(xm, skipmissing=:listwise)) < (1_117_728 + Threads.nthreads() * 22_104) * 1.2
+    @test (@allocated corkendall(xm, skipmissing=:pairwise)) < (890_448 + Threads.nthreads() * 61_048) * 1.2
     @test (@allocated corspearman(x)) < (2_678_448 + Threads.nthreads() * 9_128) * 1.2
-    @test (@allocated corspearman(xm,skipmissing=:listwise)) < (1_803_712 + Threads.nthreads() * 3_992) * 1.2
-    @test (@allocated corspearman(xm,skipmissing=:pairwise)) < (1_690_544 + Threads.nthreads() * 67_104) * 1.2
-    
+    @test (@allocated corspearman(xm, skipmissing=:listwise)) < (1_803_712 + Threads.nthreads() * 3_992) * 1.2
+    @test (@allocated corspearman(xm, skipmissing=:pairwise)) < (1_690_544 + Threads.nthreads() * 67_104) * 1.2
+
 end
 # COV_EXCL_STOP
