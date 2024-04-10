@@ -85,6 +85,10 @@ arbitrary_fun(x, y) = cor(x, y)
         @test_throws DimensionMismatch pairwise!(f, zeros(1, 2), [], [])
         @test_throws DimensionMismatch pairwise!(f, zeros(0, 0),
             [], [[1, 2], [2, 3]])
+
+        @test pairwise(f, x, y) == (pairwise(f, y, x))'
+        @test pairwise(f, x, y, skipmissing=:pairwise) == (pairwise(f, y, x, skipmissing=:pairwise))'
+        @test pairwise(f, x, y, skipmissing=:listwise) == (pairwise(f, y, x, skipmissing=:listwise))'
     end
 
     if f in (cor, corkendall, corspearman)
@@ -117,9 +121,9 @@ arbitrary_fun(x, y) = cor(x, y)
         # Use myskipmissings rather than skipmissings to avoid deprecation warning
         function myskipmissings(x, y)
             #which = @. !(ismissing(x) || ismissing(y)) # not compatible with Julia 1.6
-            which = similar(x,Bool)
+            which = similar(x, Bool)
             for i in eachindex(x)
-                which[i] = !(ismissing(x[i])|| ismissing(y[i]))
+                which[i] = !(ismissing(x[i]) || ismissing(y[i]))
             end
             return x[which], y[which]
         end
