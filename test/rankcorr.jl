@@ -1,5 +1,4 @@
-using StatsBase, Random
-using Test
+using StatsBase, Random, Test
 
 @testset "rank_correlation_auxiliary_fns" begin
 
