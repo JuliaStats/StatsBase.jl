@@ -115,7 +115,7 @@ function uniform_orderstat_sample!(rng::AbstractRNG, a::AbstractArray, x::Abstra
     n = length(a)
     k = length(x)
     exp_rands = randexp(rng, k)
-    sorted_rands = accumulate!(+, exp_rands, exp_rands)
+    sorted_rands = cumsum(exp_rands)
     cum_step = (sorted_rands[end] + randexp(rng)) / n
     @inbounds for i in eachindex(x)
         j = ceil(Int, sorted_rands[i] / cum_step)
