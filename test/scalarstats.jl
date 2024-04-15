@@ -222,12 +222,7 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test mad(Iterators.repeated(4, 10)) == 0
 @test mad(Integer[1,2,3,4]) === mad(1:4)
 let itr = (i for i in 1:10000)
-    if VERSION >= v"1.10.0-"
-        # FIXME: Allocations are closer to 10x this on 1.10
-        @test_broken (@benchmark mad($itr)).allocs < 200
-    else
-        @test (@benchmark mad($itr)).allocs < 200
-    end
+    @test (@benchmark mad($itr)).allocs < 200
 end
 
 # Issue 197
@@ -264,6 +259,10 @@ it = (xᵢ for xᵢ in x)
 @test @inferred(entropy([0.5, 0.5], 2))      ≈ 1.0
 @test @inferred(entropy([1//2, 1//2], 2))    ≈ 1.0
 @test @inferred(entropy([0.2, 0.3, 0.5], 2)) ≈ 1.4854752972273344
+
+# issue #924
+@test @inferred(entropy([0.5f0, 0.5f0], 2)) isa Float32
+@test @inferred(entropy([0.5f0, 0.5f0], MathConstants.e)) isa Float32
 
 @test_throws ArgumentError @inferred(entropy(Float64[]))
 @test_throws ArgumentError @inferred(entropy(Int[]))
