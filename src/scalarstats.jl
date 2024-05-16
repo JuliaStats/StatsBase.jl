@@ -433,7 +433,7 @@ Return the standard error of the mean for a collection `x`.
 A pre-computed `mean` may be provided.
 
 When not using weights, this is the (sample) standard deviation
-divided by the sample size. If weights are used, the
+divided by the square root of the sample size. If weights are used, the
 variance of the sample mean is calculated as follows:
 
 * `AnalyticWeights`: Not implemented.
@@ -742,7 +742,13 @@ function entropy(p)
     return -sum(xlogx, p)
 end
 
-entropy(p, b::Real) = entropy(p) / log(b)
+function entropy(p, b::Real)
+    e = entropy(p)
+    # Promote explicitly before applying `log` to avoid undesired promotions
+    # with `log(b)::Float64` arising from `b::Int` (ref: #924)
+    _b = first(promote(b, e))
+    return e / log(_b)
+end
 
 """
     renyientropy(p, α)

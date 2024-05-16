@@ -46,3 +46,65 @@ end
 @deprecate stdm(x::AbstractArray{<:Real}, w::AbstractWeights, m::AbstractArray{<:Real}, dim::Int; corrected::Union{Bool, Nothing}=nothing) std(x, w, dim, mean=m, corrected=corrected) false
 @deprecate varm(x::AbstractArray{<:Real}, w::AbstractWeights, m::AbstractArray{<:Real}, dim::Int; corrected::Union{Bool, Nothing}=nothing) var(x, w, dim, mean=m, corrected=corrected) false
 @deprecate varm!(R::AbstractArray, x::AbstractArray{<:Real}, w::AbstractWeights, m::AbstractArray{<:Real}, dim::Int; corrected::Union{Bool, Nothing}=nothing) var!(R, x, w, dim, mean=m, corrected=corrected) false
+
+### This was never part of the public API
+### Deprecated April 2024
+function make_alias_table!(w::AbstractVector, wsum,
+                           a::AbstractVector{Float64},
+                           alias::AbstractVector{Int})
+    Base.depwarn("make_alias_table! is both internal and deprecated, use AliasTables.jl instead", :make_alias_table!)
+    # Arguments:
+    #
+    #   w [in]:         input weights
+    #   wsum [in]:      pre-computed sum(w)
+    #
+    #   a [out]:        acceptance probabilities
+    #   alias [out]:    alias table
+    #
+    # Note: a and w can be the same array, then that array will be
+    #       overwritten inplace by acceptance probabilities
+    #
+    # Returns nothing
+    #
+
+    n = length(w)
+    length(a) == length(alias) == n ||
+        throw(DimensionMismatch("Inconsistent array lengths."))
+
+    ac = n / wsum
+    for i = 1:n
+        @inbounds a[i] = w[i] * ac
+    end
+
+    larges = Vector{Int}(undef, n)
+    smalls = Vector{Int}(undef, n)
+    kl = 0  # actual number of larges
+    ks = 0  # actual number of smalls
+
+    for i = 1:n
+        @inbounds ai = a[i]
+        if ai > 1.0
+            larges[kl+=1] = i  # push to larges
+        elseif ai < 1.0
+            smalls[ks+=1] = i  # push to smalls
+        end
+    end
+
+    while kl > 0 && ks > 0
+        s = smalls[ks]; ks -= 1  # pop from smalls
+        l = larges[kl]; kl -= 1  # pop from larges
+        @inbounds alias[s] = l
+        @inbounds al = a[l] = (a[l] - 1.0) + a[s]
+        if al > 1.0
+            larges[kl+=1] = l  # push to larges
+        else
+            smalls[ks+=1] = l  # push to smalls
+        end
+    end
+
+    # this loop should be redundant, except for rounding
+    for i = 1:ks
+        @inbounds a[smalls[i]] = 1.0
+    end
+    nothing
+end

@@ -55,6 +55,9 @@ for wv in (
     check_wsample_wrep(a, (4, 7), wv, 5.0e-3; ordered=false)
 end
 
+@test_throws ArgumentError alias_sample!(rand(10), weights(fill(0, 10)), rand(10))
+@test_throws ArgumentError alias_sample!(rand(100), weights(randn(100)), rand(10))
+
 for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
     r = rev ? reverse(4:7) : (4:7)
     r = T===Int ? r : T.(r)
