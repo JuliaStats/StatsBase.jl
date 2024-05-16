@@ -610,4 +610,17 @@ end
     end
 end
 
+@testset "custom weight types" begin
+    struct MyWeights <: AbstractWeights{Float64, Float64, Vector{Float64}}
+        values::Vector{Float64}
+        sum::Float64
+    end
+    MyWeights(values) = MyWeights(values, sum(values))
+
+    @test mean([1, 2, 3], MyWeights([1, 4, 10])) ≈ 2.6
+    @test mean([1, 2, 3], MyWeights([NaN, 4, 10])) |> isnan
+    @test mode([1, 2, 3], MyWeights([1, 4, 10])) == 3
+    @test_throws ArgumentError mode([1, 2, 3], MyWeights([NaN, 4, 10]))
+end
+
 end # @testset StatsBase.Weights
