@@ -4,7 +4,23 @@ on:
     branches: [master]
     tags: ["*"]
   pull_request:
+  merge_group: # GitHub Merge Queue
 jobs:
+  finalize:
+    timeout-minutes: 10
+    needs: [test, docs]
+    if: always() # Important: Make sure that this job runs even if the tests fail.
+    runs-on: ubuntu-latest # GitHub-hosted runners
+    steps:
+      - run: |
+          echo test: ${{ needs.test.result }}
+          echo docs: ${{ needs.docs.result }}
+      - run: exit 1
+        # Every line except the last line must end with `||`.
+        # The last line must NOT end with `||`.
+        if: |
+          (needs.test.result != 'success') ||
+          (needs.docs.result != 'success')
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
