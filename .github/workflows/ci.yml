@@ -30,7 +30,6 @@ jobs:
         version:
           - '1.0'
           - '1' # automatically expands to the latest stable 1.x release of Julia
-          # - 'nightly'
         os:
           - ubuntu-latest
           - macOS-latest
@@ -46,6 +45,7 @@ jobs:
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
+          include-all-prereleases: true
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
