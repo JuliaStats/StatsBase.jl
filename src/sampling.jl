@@ -591,7 +591,9 @@ Optionally specify a random number generator `rng` as the first argument
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     1 == firstindex(wv) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
-    t = rand(rng) * sum(wv)
+    wsum = sum(wv)
+    isfinite(wsum) || throw(ArgumentError("only finite weights are supported"))
+    t = rand(rng) * wsum
     n = length(wv)
     i = 1
     cw = wv[1]
@@ -654,6 +656,7 @@ function alias_sample!(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights, 
         throw(ArgumentError("output array x must not share memory with input array a"))
     1 == firstindex(a) == firstindex(wv) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(wv) == length(a) || throw(DimensionMismatch("Inconsistent lengths."))
 
     # create alias table
@@ -688,13 +691,14 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         throw(ArgumentError("output array x must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
+    wsum = sum(wv)
+    isfinite(wsum) || throw(ArgumentError("only finite weights are supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("Inconsistent lengths."))
     k = length(x)
 
     w = Vector{Float64}(undef, n)
     copyto!(w, wv)
-    wsum = sum(wv)
 
     for i = 1:k
         u = rand(rng) * wsum
@@ -734,6 +738,7 @@ function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         throw(ArgumentError("output array x must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -775,6 +780,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         throw(ArgumentError("output array x must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
@@ -848,6 +854,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         throw(ArgumentError("output array x must not share memory with weights array wv"))
     1 == firstindex(a) == firstindex(wv) == firstindex(x) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     n = length(a)
     length(wv) == n || throw(DimensionMismatch("a and wv must be of same length (got $n and $(length(wv)))."))
     k = length(x)
