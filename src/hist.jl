@@ -475,11 +475,12 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
 
         if mode == :none
             # nothing to do
-        elseif mode == :pdf || mode == :density || mode == :probability
+        elseif mode == :pdf || mode == :density || mode == :probability || mode == :percentage
             if h.isdensity
-                if mode == :pdf || mode == :probability
+                if mode == :pdf || mode == :probability || mode == :percentage
                     # histogram already represents a density, just divide weights by norm
-                    s = 1/norm(h)
+                    multiplier = mode == :percentage ? 100.0 : 1.0
+                    s = 1 / norm(h) * multiplier
                     weights .*= s
                     for A in aux_weights
                         A .*= s
@@ -502,7 +503,8 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                 else
                     # :probability - divide weights by sum of weights
                     nf = inv(sum(weights))
-                    weights .*= nf
+                    multiplier = mode == :percentage ? 100.0 : 1.0
+                    weights .*= nf * multiplier
                     for A in aux_weights
                         A .*= nf
                     end
@@ -531,7 +533,8 @@ Valid values for `mode` are:
 * `:probability`: Normalize by sum of weights only. Resulting histogram
    represents the fraction of probability mass for each bin and does not have
    norm 1.
-*  `:none`: Leaves histogram unchanged. Useful to simplify code that has to
+* `:percentage`: Normalize as a percentage of the sum of weights. 
+* `:none`: Leaves histogram unchanged. Useful to simplify code that has to
    conditionally apply different modes of normalization.
 
 Successive application of both `:probability` and `:density` normalization (in
