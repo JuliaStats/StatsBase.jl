@@ -4,8 +4,7 @@
 
 - **Build & Testing Status:**
   [![Build status](https://github.com/JuliaStats/StatsBase.jl/workflows/CI/badge.svg)](https://github.com/JuliaStats/StatsBase.jl/actions?query=workflow%3ACI+branch%3Amaster)
-  [![Coverage Status](https://coveralls.io/repos/JuliaStats/StatsBase.jl/badge.svg?branch=master)](https://coveralls.io/r/JuliaStats/StatsBase.jl?branch=master)
-  [![Coverage Status](http://codecov.io/github/JuliaStats/StatsBase.jl/coverage.svg?branch=master)](http://codecov.io/github/JuliaStats/StatsBase.jl?branch=master)
+  [![codecov](https://codecov.io/github/JuliaStats/StatsBase.jl/graph/badge.svg?token=XhM6RcXdrB)](https://codecov.io/github/JuliaStats/StatsBase.jl)
 
 - **Documentation**: [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url]
 
