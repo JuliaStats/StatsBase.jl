@@ -3,7 +3,7 @@
 *StatsBase.jl* is a Julia package that provides basic support for statistics. Particularly, it implements a variety of statistics-related functions, such as scalar statistics, high-order moment computation, counting, ranking, covariances, sampling, and empirical density estimation.
 
 - **Build & Testing Status:**
-  [![Build status](https://github.com/JuliaStats/StatsBase.jl/workflows/CI/badge.svg)](https://github.com/JuliaStats/StatsBase.jl/actions?query=workflow%3ACI+branch%3Amaster)
+  [![CI](https://github.com/JuliaStats/StatsBase.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaStats/StatsBase.jl/actions/workflows/ci.yml)
   [![codecov](https://codecov.io/github/JuliaStats/StatsBase.jl/graph/badge.svg?token=XhM6RcXdrB)](https://codecov.io/github/JuliaStats/StatsBase.jl)
 
 - **Documentation**: [![][docs-stable-img]][docs-stable-url] [![][docs-latest-img]][docs-latest-url]
