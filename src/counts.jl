@@ -99,9 +99,9 @@ Equivalent to `counts(x, levels) / length(x)`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) = counts(x, levels) .* inv(length(x))
+proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) = counts(x, levels) / length(x)
 proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}, wv::AbstractWeights) =
-    counts(x, levels, wv) .* inv(sum(wv))
+    counts(x, levels, wv) / sum(wv)
 
 """
     proportions(x, k::Integer, [wv::AbstractWeights])
@@ -204,9 +204,9 @@ counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}) = counts(x, y, 
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, wv::AbstractWeights) = counts(x, y, (span(x), span(y)), wv)
 
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}) =
-    counts(x, y, levels) .* inv(length(x))
+    counts(x, y, levels) / length(x)
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}, wv::AbstractWeights) =
-    counts(x, y, levels, wv) .* inv(sum(wv))
+    counts(x, y, levels, wv) / sum(wv)
 
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}) =
     proportions(x, y, (1:ks[1], 1:ks[2]))
