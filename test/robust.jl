@@ -1,5 +1,5 @@
 using StatsBase
-using Test
+using Test, Random
 
 ### Trimming outliers
 
@@ -53,3 +53,11 @@ using Test
 
 @test mean(trim([-Inf,1,2,3,4], count=1)) == 2
 @test mean(winsor([-Inf,1,2,3,4], count=1)) == 2
+
+Random.seed!(1234)
+for n in 2100:2120, c in 0:1000
+    x = randperm(n)
+    @test sort!(collect(winsor(x, count=c))) ==
+          reverse!(collect(winsor(n:-1:1, count=c))) ==
+          collect(winsor(1:n, count=c))
+end

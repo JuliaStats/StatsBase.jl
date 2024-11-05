@@ -37,3 +37,6 @@ s = ["c", "a", "b", "d", "d", "b", "e", "d"] # s is a vector of strings ordered 
 @test tiedrank(s) == tiedrank(x)
 @test tiedrank(x, rev = true) == tiedrank(-x)
 @test tiedrank(x, lt = (x, y) -> isless(y, x)) == tiedrank(-x)
+
+
+@test_throws DimensionMismatch StatsBase._check_randparams([1,2], [1,2], [1])

@@ -21,10 +21,9 @@ function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     end
 
     # indices for lowest count values
-    x2 = copy(x)
-    lo = partialsort!(x2, 1:count+1)[end]
-    # indices for largest count values
-    up = partialsort!(x2, n-count:n)[1]
+    x2 = Base.copymutable(x)
+    lo = partialsort!(x2, count+1)
+    up = partialsort!(x2, n-count)
 
     up, lo
 end
@@ -74,10 +73,10 @@ end
 Return an iterator of all elements of `x` that replaces either `count` or
 proportion `prop` of the highest elements with the previous-highest element
 and an equal number of the lowest elements with the next-lowest element.
-                        
+
 The number of replaced elements could be smaller than specified if several
 elements equal the lower or upper bound.
-                        
+
 To compute the Winsorized mean of `x` use `mean(winsor(x))`.
 
 # Example

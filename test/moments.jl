@@ -20,11 +20,13 @@ w = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
     @testset "Variance" begin
         @test var(x, wv; corrected=false)           ≈ expected_var
         @test var(x, wv; mean=m, corrected=false)   ≈ expected_var
+        @test varm(x, wv, m; corrected=false)       ≈ expected_var
     end
 
     @testset "Standard Deviation" begin
         @test std(x, wv; corrected=false)           ≈ expected_std
         @test std(x, wv; mean=m, corrected=false)   ≈ expected_std
+        @test stdm(x, wv, m; corrected=false)       ≈ expected_std
     end
 
     @testset "Mean and Variance" begin
@@ -62,6 +64,7 @@ expected_std = sqrt.(expected_var)
         else
             @test var(x, wv; corrected=true)           ≈ expected_var[i]
             @test var(x, wv; mean=m, corrected=true)   ≈ expected_var[i]
+            @test varm(x, wv, m; corrected=true)       ≈ expected_var[i]
         end
     end
 
@@ -71,6 +74,7 @@ expected_std = sqrt.(expected_var)
         else
             @test std(x, wv; corrected=true)           ≈ expected_std[i]
             @test std(x, wv; mean=m, corrected=true)   ≈ expected_std[i]
+            @test stdm(x, wv, m; corrected=true)       ≈ expected_std[i]
         end
     end
 
@@ -119,10 +123,12 @@ w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
     expected_std2 = sqrt.(expected_var2)
 
     @testset "Variance" begin
-        @test var(x, wv1, 1; corrected=false) ≈ expected_var1
-        @test var(x, wv2, 2; corrected=false) ≈ expected_var2
+        @test var(x, wv1, 1; corrected=false)          ≈ expected_var1
+        @test var(x, wv2, 2; corrected=false)          ≈ expected_var2
         @test var(x, wv1, 1; mean=m1, corrected=false) ≈ expected_var1
         @test var(x, wv2, 2; mean=m2, corrected=false) ≈ expected_var2
+        @test varm(x, wv1, m1, 1; corrected=false)     ≈ expected_var1
+        @test varm(x, wv2, m2, 2; corrected=false)     ≈ expected_var2
     end
 
     @testset "Standard Deviation" begin
@@ -130,6 +136,8 @@ w2 = [3.84, 2.70, 8.29, 8.91, 9.71, 0.0]
         @test std(x, wv2, 2; corrected=false)          ≈ expected_std2
         @test std(x, wv1, 1; mean=m1, corrected=false) ≈ expected_std1
         @test std(x, wv2, 2; mean=m2, corrected=false) ≈ expected_std2
+        @test stdm(x, wv1, m1, 1; corrected=false)     ≈ expected_std1
+        @test stdm(x, wv2, m2, 2; corrected=false)     ≈ expected_std2
     end
 
     @testset "Mean and Variance" begin
@@ -182,10 +190,12 @@ end
         if isa(wv1, Weights)
             @test_throws ArgumentError var(x, wv1, 1; corrected=true)
         else
-            @test var(x, wv1, 1; corrected=true) ≈ expected_var1
-            @test var(x, wv2, 2; corrected=true) ≈ expected_var2
+            @test var(x, wv1, 1; corrected=true)          ≈ expected_var1
+            @test var(x, wv2, 2; corrected=true)          ≈ expected_var2
             @test var(x, wv1, 1; mean=m1, corrected=true) ≈ expected_var1
             @test var(x, wv2, 2; mean=m2, corrected=true) ≈ expected_var2
+            @test varm(x, wv1, m1, 1; corrected=true)     ≈ expected_var1
+            @test varm(x, wv2, m2, 2; corrected=true)     ≈ expected_var2
         end
     end
 
@@ -197,6 +207,8 @@ end
             @test std(x, wv2, 2; corrected=true)          ≈ expected_std2
             @test std(x, wv1, 1; mean=m1, corrected=true) ≈ expected_std1
             @test std(x, wv2, 2; mean=m2, corrected=true) ≈ expected_std2
+            @test stdm(x, wv1, m1, 1; corrected=true)     ≈ expected_std1
+            @test stdm(x, wv2, m2, 2; corrected=true)     ≈ expected_std2
         end
     end
 
@@ -276,6 +288,56 @@ end
     @test moment(x, 3, w) ≈ sum((x2 .- 4).^3) / 5
     @test moment(x, 4, w) ≈ sum((x2 .- 4).^4) / 5
     @test moment(x, 5, w) ≈ sum((x2 .- 4).^5) / 5
+end
+
+@testset "Cumulants with $f" for f in weight_funcs
+    x = collect(2.0:8.0)
+    @test cumulant(x, 2) ≈ moment(x, 2)
+    @test cumulant(x, 3) ≈ moment(x, 3)
+    @test cumulant(x, 4) ≈ moment(x, 4) - 3*moment(x, 2)^2
+    @test cumulant(x, 5) ≈ moment(x, 5) - 10*moment(x, 3)*moment(x, 2)
+    @test cumulant(x, 6) ≈
+        moment(x, 6) - 15*moment(x, 4)*moment(x, 2) - 10*moment(x, 3)^2 + 30*moment(x, 2)^3
+
+    @test cumulant(x, 1:6) == [cumulant(x, i) for i in 1:6]
+
+    @test cumulant(x, 2, 4.0) ≈ moment(x, 2, 4.0)
+    @test cumulant(x, 3, 4.0) ≈ moment(x, 3, 4.0)
+    @test cumulant(x, 4, 4.0) ≈ moment(x, 4, 4.0) - 3*moment(x, 2, 4.0)^2
+    @test cumulant(x, 5, 4.0) ≈ moment(x, 5, 4.0) - 10*moment(x, 3, 4.0)*moment(x,2, 4.0)
+    @test cumulant(x, 6, 4.0) ≈
+        moment(x, 6, 4.0) - 15*moment(x, 4, 4.0)*moment(x,2, 4.0) -
+        10*moment(x, 3, 4.0)^2 + 30*moment(x, 2, 4.0)^3
+
+    @test cumulant(x, 1:6, 4.0) == [cumulant(x, i, 4.0) for i in 1:6]
+
+    w1 = f([1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0])
+    x2 = collect(2.0:6.0)
+    @test cumulant(x, 2, w) ≈ moment(x2, 2)
+    @test cumulant(x, 3, w) ≈ moment(x2, 3)
+    @test cumulant(x, 4, w) ≈ moment(x2, 4) - 3*moment(x2, 2)^2
+    @test cumulant(x, 5, w) ≈ moment(x2, 5) - 10*moment(x2,3)*moment(x2,2)
+    @test cumulant(x, 6, w) ≈
+        moment(x2, 6) - 15*moment(x2,4)*moment(x2,2) + 10*moment(x2,3)^2 + 30*moment(x2,2)^3
+
+    @test cumulant(x, 1:6, w) == [cumulant(x2, i) for i in 1:6]
+
+    x3 = collect(2:8)
+    @test cumulant(x3, 6) ≈
+        moment(x3, 6) - 15*moment(x3, 4)*moment(x3, 2) - 10*moment(x3, 3)^2 +
+        30*moment(x3, 2)^3
+
+    w2 = f([1, 1, 1, 1, 1, 0, 0])
+    x4 = collect(2:6)
+    @test cumulant(x3, 6, w) ≈
+        moment(x4, 6) - 15*moment(x4, 4)*moment(x4, 2) +
+        10*moment(x4, 3)^2 + 30*moment(x4, 2)^3
+
+    @test_throws ArgumentError cumulant(x, -1)
+    @test_throws ArgumentError cumulant(x, 0)
+    @test_throws ArgumentError cumulant(x, 0:3)
+    @test_throws ArgumentError cumulant(x, -1:3)
+    @test_throws ArgumentError cumulant(x, 1:0)
 end
 
 end # @testset "StatsBase.Moments"

@@ -5,14 +5,19 @@ abstract type AbstractWeights{S<:Real, T<:Real, V<:AbstractVector{T}} <: Abstrac
     @weights name
 
 Generates a new generic weight type with specified `name`, which subtypes `AbstractWeights`
-and stores the `values` (`V<:RealVector`) and `sum` (`S<:Real`).
+and stores the `values` (`V<:AbstractVector{<:Real}`) and `sum` (`S<:Real`).
 """
 macro weights(name)
     return quote
         mutable struct $name{S<:Real, T<:Real, V<:AbstractVector{T}} <: AbstractWeights{S, T, V}
             values::V
             sum::S
+            function $(esc(name)){S, T, V}(values, sum) where {S<:Real, T<:Real, V<:AbstractVector{T}}
+                isfinite(sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
+                return new{S, T, V}(values, sum)
+            end
         end
+        $(esc(name))(values::AbstractVector{T}, sum::S) where {S<:Real, T<:Real} = $(esc(name)){S, T, typeof(values)}(values, sum)
         $(esc(name))(values::AbstractVector{<:Real}) = $(esc(name))(values, sum(values))
     end
 end
@@ -21,6 +26,11 @@ length(wv::AbstractWeights) = length(wv.values)
 sum(wv::AbstractWeights) = wv.sum
 isempty(wv::AbstractWeights) = isempty(wv.values)
 size(wv::AbstractWeights) = size(wv.values)
+Base.axes(wv::AbstractWeights) = Base.axes(wv.values)
+
+Base.IndexStyle(::Type{<:AbstractWeights{S,T,V}}) where {S,T,V} = IndexStyle(V)
+
+Base.dataids(wv::AbstractWeights) = Base.dataids(wv.values)
 
 Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
@@ -39,8 +49,10 @@ Base.getindex(wv::W, ::Colon) where {W <: AbstractWeights} = W(copy(wv.values), 
 
 @propagate_inbounds function Base.setindex!(wv::AbstractWeights, v::Real, i::Int)
     s = v - wv[i]
+    sum = wv.sum + s
+    isfinite(sum) || throw(ArgumentError("weights cannot contain Inf or NaN values"))
     wv.values[i] = v
-    wv.sum += s
+    wv.sum = sum
     v
 end
 
@@ -68,13 +80,13 @@ and [`ProbabilityWeights`](@ref).
 """ Weights
 
 """
-    weights(vs)
+    weights(vs::AbstractArray{<:Real})
 
 Construct a `Weights` vector from array `vs`.
 See the documentation for [`Weights`](@ref) for more details.
 """
-weights(vs::RealVector) = Weights(vs)
-weights(vs::RealArray) = Weights(vec(vs))
+weights(vs::AbstractArray{<:Real}) = Weights(vec(vs))
+weights(vs::AbstractVector{<:Real}) = Weights(vs)
 
 """
     varcorrection(w::Weights, corrected=false)
@@ -108,8 +120,8 @@ being weighted are aggregate values (e.g., averages) with differing variances.
 Construct an `AnalyticWeights` vector from array `vs`.
 See the documentation for [`AnalyticWeights`](@ref) for more details.
 """
-aweights(vs::RealVector) = AnalyticWeights(vs)
-aweights(vs::RealArray) = AnalyticWeights(vec(vs))
+aweights(vs::AbstractVector{<:Real}) = AnalyticWeights(vs)
+aweights(vs::AbstractArray{<:Real}) = AnalyticWeights(vec(vs))
 
 """
     varcorrection(w::AnalyticWeights, corrected=false)
@@ -146,8 +158,8 @@ was observed. These weights may also be referred to as case weights or repeat we
 Construct a `FrequencyWeights` vector from a given array.
 See the documentation for [`FrequencyWeights`](@ref) for more details.
 """
-fweights(vs::RealVector) = FrequencyWeights(vs)
-fweights(vs::RealArray) = FrequencyWeights(vec(vs))
+fweights(vs::AbstractVector{<:Real}) = FrequencyWeights(vs)
+fweights(vs::AbstractArray{<:Real}) = FrequencyWeights(vec(vs))
 
 """
     varcorrection(w::FrequencyWeights, corrected=false)
@@ -184,8 +196,8 @@ These weights may also be referred to as sampling weights.
 Construct a `ProbabilityWeights` vector from a given array.
 See the documentation for [`ProbabilityWeights`](@ref) for more details.
 """
-pweights(vs::RealVector) = ProbabilityWeights(vs)
-pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
+pweights(vs::AbstractVector{<:Real}) = ProbabilityWeights(vs)
+pweights(vs::AbstractArray{<:Real}) = ProbabilityWeights(vec(vs))
 
 """
     varcorrection(w::ProbabilityWeights, corrected=false)
@@ -205,16 +217,22 @@ pweights(vs::RealArray) = ProbabilityWeights(vec(vs))
 end
 
 """
-    eweights(t::AbstractVector{<:Integer}, λ::Real)
-    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real) where T
-    eweights(n::Integer, λ::Real)
+    eweights(t::AbstractArray{<:Integer}, λ::Real; scale=false)
+    eweights(t::AbstractVector{T}, r::StepRange{T}, λ::Real; scale=false) where T
+    eweights(n::Integer, λ::Real; scale=false)
 
 Construct a [`Weights`](@ref) vector which assigns exponentially decreasing weights to past
-observations, which in this case corresponds to larger integer values `i` in `t`.
-If an integer `n` is provided, weights are generated for values from 1 to `n`
-(equivalent to `t = 1:n`).
+observations (larger integer values `i` in `t`).
+The integer value `n` represents the number of past observations to consider.
+`n` defaults to `maximum(t) - minimum(t) + 1` if only `t` is passed in
+and the elements are integers, and to `length(r)` if a superset range `r` is also passed in.
+If `n` is explicitly passed instead of `t`, `t` defaults to `1:n`.
 
-For each element `i` in `t` the weight value is computed as:
+If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
+
+``(1 - λ)^{n - i}``
+
+If `scale` is `false` then each value is computed as:
 
 ``λ (1 - λ)^{1 - i}``
 
@@ -222,42 +240,59 @@ For each element `i` in `t` the weight value is computed as:
 
 - `t::AbstractVector`: temporal indices or timestamps
 - `r::StepRange`: a larger range to use when constructing weights from a subset of timestamps
-- `n::Integer`: if provided instead of `t`, temporal indices are taken to be `1:n`
+- `n::Integer`: the number of past events to consider
 - `λ::Real`: a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
   As this value approaches 0, the resulting weights will be almost equal,
   while values closer to 1 will put greater weight on the tail elements of the vector.
 
+# Keyword arguments
+
+- `scale::Bool`: Return the weights scaled to between 0 and 1 (default: false)
+
 # Examples
 ```julia-repl
-julia> eweights(1:10, 0.3)
+julia> eweights(1:10, 0.3; scale=true)
 10-element Weights{Float64,Float64,Array{Float64,1}}:
- 0.3
- 0.42857142857142855
- 0.6122448979591837
- 0.8746355685131197
- 1.249479383590171
- 1.7849705479859588
- 2.549957925694227
- 3.642797036706039
- 5.203995766722913
- 7.434279666747019
+ 0.04035360699999998
+ 0.05764800999999997
+ 0.08235429999999996
+ 0.11764899999999996
+ 0.16806999999999994
+ 0.24009999999999995
+ 0.3429999999999999
+ 0.48999999999999994
+ 0.7
+ 1.0
 ```
+# Links
+- https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
+- https://en.wikipedia.org/wiki/Exponential_smoothing
 """
-function eweights(t::AbstractVector{T}, λ::Real) where T<:Integer
+function eweights(t::AbstractArray{<:Integer}, λ::Real; kwargs...)
+    isempty(t) && return Weights(copy(t), 0)
+    (lo, hi) = extrema(t)
+    return _eweights(t, λ, hi - lo + 1; kwargs...)
+end
+
+eweights(n::Integer, λ::Real; kwargs...) = _eweights(1:n, λ, n; kwargs...)
+eweights(t::AbstractVector, r::AbstractRange, λ::Real; kwargs...) =
+    _eweights(something.(indexin(t, r)), λ, length(r); kwargs...)
+
+function _eweights(t::AbstractArray{<:Integer}, λ::Real, n::Integer; scale::Union{Bool, Nothing}=nothing)
     0 < λ <= 1 || throw(ArgumentError("Smoothing factor must be between 0 and 1"))
+    f = depcheck(:eweights, :scale, scale) ? _scaled_eweight : _unscaled_eweight
 
     w0 = map(t) do i
         i > 0 || throw(ArgumentError("Time indices must be non-zero positive integers"))
-        λ * (1 - λ)^(1 - i)
+        f(i, λ, n)
     end
 
     s = sum(w0)
     Weights(w0, s)
 end
 
-eweights(n::Integer, λ::Real) = eweights(1:n, λ)
-eweights(t::AbstractVector, r::AbstractRange, λ::Real) =
-    eweights(something.(indexin(t, r)), λ)
+_unscaled_eweight(i, λ, n) = λ * (1 - λ)^(1 - i)
+_scaled_eweight(i, λ, n) = (1 - λ)^(n - i)
 
 # NOTE: no variance correction is implemented for exponential weights
 
@@ -276,7 +311,9 @@ sum(wv::UnitWeights{T}) where T = convert(T, length(wv))
 isempty(wv::UnitWeights) = iszero(wv.len)
 length(wv::UnitWeights) = wv.len
 size(wv::UnitWeights) = tuple(length(wv))
+Base.axes(wv::UnitWeights) = tuple(Base.OneTo(length(wv)))
 
+Base.dataids(::UnitWeights) = ()
 Base.convert(::Type{Vector}, wv::UnitWeights{T}) where {T} = ones(T, length(wv))
 
 @propagate_inbounds function Base.getindex(wv::UnitWeights{T}, i::Integer) where T
@@ -310,7 +347,7 @@ julia> uweights(3)
  1
  1
  1
- 
+
 julia> uweights(Float64, 3)
 3-element UnitWeights{Float64}:
  1.0
@@ -324,7 +361,7 @@ uweights(::Type{T}, s::Int) where {T<:Real} = UnitWeights{T}(s)
 """
     varcorrection(w::UnitWeights, corrected=false)
 
-* `corrected=true`: ``\\frac{n}{n - 1}``, where ``n`` is the length of the weight vector
+* `corrected=true`: ``\\frac{1}{n - 1}``, where ``n`` is the length of the weight vector
 * `corrected=false`: ``\\frac{1}{n}``, where ``n`` is the length of the weight vector
 
 This definition is equivalent to the correction applied to unweighted data.
@@ -348,6 +385,14 @@ Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.len == y.len)
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
 Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
+# https://github.com/JuliaLang/julia/pull/43354
+if VERSION >= v"1.8.0-DEV.1494" # 98e60ffb11ee431e462b092b48a31a1204bd263d
+    Base.allequal(wv::AbstractWeights) = allequal(wv.values)
+    Base.allequal(::UnitWeights) = true
+end
+Base.allunique(wv::AbstractWeights) = allunique(wv.values)
+Base.allunique(wv::UnitWeights) = length(wv) <= 1
+
 ##### Weighted sum #####
 
 ## weighted sum over vectors
@@ -357,9 +402,19 @@ Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
 
 Compute the weighted sum of an array `v` with weights `w`, optionally over the dimension `dim`.
 """
-wsum(v::AbstractVector, w::AbstractVector) = dot(v, w)
-wsum(v::AbstractArray, w::AbstractVector) = dot(vec(v), w)
-wsum(v::AbstractArray, w::AbstractVector, dims::Colon) = wsum(v, w)
+wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = transpose(w) * vec(v)
+
+# Optimized methods (to ensure we use BLAS when possible)
+for W in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
+    @eval begin
+        wsum(v::AbstractArray, w::$W, dims::Colon) = transpose(w.values) * vec(v)
+    end
+end
+
+function wsum(A::AbstractArray, w::UnitWeights, dims::Colon)
+    length(A) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
+    return sum(A)
+end
 
 ## wsum along dimension
 #
@@ -537,7 +592,7 @@ wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
 
 """
     wsum!(R::AbstractArray, A::AbstractArray,
-          w::AbstractWeights{<:Real}, dim::Int;
+          w::AbstractVector, dim::Int;
           init::Bool=true)
 Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
 the result in `R`. If `init=false`, the sum is added to `R` rather than starting
@@ -576,19 +631,13 @@ Base.sum!(R::AbstractArray, A::AbstractArray, w::AbstractWeights{<:Real}, dim::I
     wsum!(R, A, w, dim; init=init)
 
 """
-    sum(v::AbstractArray, w::AbstractVector{<:Real}; [dims])
+    sum(v::AbstractArray, w::AbstractWeights{<:Real}; [dims])
 
 Compute the weighted sum of an array `v` with weights `w`,
 optionally over the dimension `dims`.
 """
 Base.sum(A::AbstractArray, w::AbstractWeights{<:Real}; dims::Union{Colon,Int}=:) =
     wsum(A, w, dims)
-
-function Base.sum(A::AbstractArray, w::UnitWeights; dims::Union{Colon,Int}=:)
-    a = (dims === :) ? length(A) : size(A, dims)
-    a != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
-    return sum(A, dims=dims)
-end
 
 ##### Weighted means #####
 
@@ -656,24 +705,24 @@ With [`FrequencyWeights`](@ref), the function returns the same result as
 `quantile` for a vector with repeated values. Weights must be integers.
 
 With non `FrequencyWeights`,  denote ``N`` the length of the vector, ``w`` the vector of weights,
-``h = p (\\sum_{i<= N} w_i - w_1) + w_1`` the cumulative weight corresponding to the
-probability ``p`` and ``S_k = \\sum_{i<=k} w_i`` the cumulative weight for each
+``h = p (\\sum_{i \\leq N} w_i - w_1) + w_1`` the cumulative weight corresponding to the
+probability ``p`` and ``S_k = \\sum_{i \\leq k} w_i`` the cumulative weight for each
 observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
 is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} - v_k)``
 with  ``\\gamma = (h - S_k)/(S_{k+1} - S_k)``. In particular, when all weights are equal,
 the function returns the same result as the unweighted `quantile`.
 """
-function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where {V,W<:Real}
+function quantile(v::AbstractVector{<:Real}{V}, w::AbstractWeights{W}, p::AbstractVector{<:Real}) where {V,W<:Real}
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
+    isfinite(sum(w)) || throw(ArgumentError("only finite weights are supported"))
     all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
     w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))
     length(v) == length(w) || throw(ArgumentError("data and weight vectors must be the same size," *
         "got $(length(v)) and $(length(w))"))
     for x in w.values
-        isnan(x) && throw(ArgumentError("weight vector cannot contain NaN entries"))
         x < 0 && throw(ArgumentError("weight vector cannot contain negative entries"))
     end
 
@@ -730,19 +779,19 @@ function quantile(v::RealVector{V}, w::AbstractWeights{W}, p::RealVector) where 
     return out
 end
 
-function quantile(v::RealVector, w::UnitWeights, p::RealVector)
+function quantile(v::AbstractVector{<:Real}, w::UnitWeights, p::AbstractVector{<:Real})
     length(v) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return quantile(v, p)
 end
 
-quantile(v::RealVector, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
+quantile(v::AbstractVector{<:Real}, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
 
 ##### Weighted median #####
 
 """
-    median(v::RealVector, w::AbstractWeights)
+    median(v::AbstractVector{<:Real}, w::AbstractWeights)
 
 Compute the weighted median of `v` with weights `w`
 (of type `AbstractWeights`). See the documentation for [`quantile`](@ref) for more details.
 """
-median(v::RealVector, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
+median(v::AbstractVector{<:Real}, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)

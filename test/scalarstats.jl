@@ -2,6 +2,7 @@ using StatsBase
 using Test
 using DelimitedFiles
 using Statistics
+using BenchmarkTools: @benchmark
 
 ##### Location
 
@@ -98,6 +99,63 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test percentile(skipmissing([missing, 2, 5, missing]), 25) ≈ 2.75
 @test percentile(skipmissing([missing, 2, 5, missing]), [25, 50, 75]) ≈ [2.75, 3.5, 4.25]
 
+@testset "quantilerank and percentilerank" begin
+     @testset "value as number and array" begin
+         @testset ":inc and :exc" begin
+             v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13]
+             v2 = [1, 2, 3, 6, 6, 6, 7, 8, 9]
+             v3 = [1, 2, 4, 3, 4]
+             v4 = [1, 2, 1, 3, 4]
+             @test quantilerank(v1, 2, method=:inc)    == 1/3
+             @test quantilerank(v1, 4, method=:inc)    == 5/9
+             @test quantilerank(v1, 8, method=:inc)    == 2/3
+             @test quantilerank(v1, 5, method=:inc)    == 7/12
+             @test quantilerank(v2, 7, method=:exc)    == 0.7
+             @test quantilerank(v2, 5.43, method=:exc) == 0.381
+             @test quantilerank(v3, 4, method=:exc)    == 6/9
+             @test quantilerank(v3, 4, method=:inc)    == 3/4
+             @test quantilerank(v4, 1, method=:exc)    == 1/6
+             @test quantilerank(v4, -100, method=:inc) == 0.0
+             @test quantilerank(v4,  100, method=:inc) == 1.0
+             @test quantilerank(v4, -100, method=:exc) == 0.0
+             @test quantilerank(v4,  100, method=:exc) == 1.0
+             @test percentilerank(v1, 2)               == 100 * quantilerank(v1, 2)
+             @test percentilerank(v2, 7, method=:exc)  == 100 * quantilerank(v2, 7, method=:exc)
+         end
+         @testset ":compete" begin
+             v = [0, 0, 1, 1, 2, 2, 2, 2, 4, 4]
+             @test quantilerank(v, 1, method=:compete)    == 2/9
+             @test quantilerank(v, 2, method=:compete)    == 4/9
+             @test quantilerank(v, 4, method=:compete)    == 8/9
+             @test quantilerank(v, -100, method=:compete) == 0.0
+             @test quantilerank(v,  100, method=:compete) == 1.0
+         end
+         @testset ":strict, :weak and :tied" begin
+             v = [7, 8, 2, 1, 3, 4, 5, 4, 6, 9]
+             for (method, res1, res2) in [(:tied, .4, [.4, .85]),
+                                          (:strict, .3, [.3, .8]),
+                                          (:weak, .5, [.5, .9])]
+                 @test quantilerank(v, 4, method=method) == res1
+             end
+         end
+     end
+     @testset "errors" begin
+         v1 = [1, 2, 3, 5, 6, missing, 8]
+         v2 = [missing, missing]
+         v3 = [1, 2, 3, 5, 6, NaN, 8]
+         v4 = [1, 2, 3, 3, 4]
+         for method in (:tied, :strict, :weak)
+             @test_throws ArgumentError quantilerank(v1, 4, method=method)
+             @test_throws ArgumentError quantilerank(v2, 4, method=method)
+             @test_throws ArgumentError quantilerank(v3, 4, method=method)
+         end
+         @test_throws ArgumentError quantilerank(v4, 3, method=:wrongargument)
+         @test_throws ArgumentError quantilerank(v4, NaN)
+         @test_throws ArgumentError quantilerank(v4, missing)
+         @test_throws ArgumentError quantilerank([], 3)
+         @test_throws ArgumentError quantilerank([1], 3)
+     end
+ end
 
 ##### Dispersion
 
@@ -105,14 +163,46 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test span(skipmissing([1, missing, 5, missing])) == 1:5
 
 @test variation([1:5;]) ≈ 0.527046276694730
+@test variation([1:5;]; corrected=false) ≈ 0.471404520791032
 @test variation(skipmissing([missing; 1:5; missing])) ≈ 0.527046276694730
+@test isnan(variation(1))
+@test variation(1; corrected=false) == 0
+# Possibly deprecated
+@test variation([1:5;],4) ≈ 0.4841229182759271
+@test variation([1:5;],4; corrected=false) ≈ 0.4330127018922193
 
-@test sem([1:5;]) ≈ 0.707106781186548
-@test sem(skipmissing([missing; 1:5; missing])) ≈ 0.707106781186548
-@test sem(Int[]) === NaN
-@test sem(skipmissing(Union{Int,Missing}[missing, missing])) === NaN
-@test_throws MethodError sem(Any[])
-@test_throws MethodError sem(skipmissing([missing]))
+@test @inferred(sem([1:5;])) ≈ 0.707106781186548
+@test @inferred(sem(skipmissing([missing; 1:5; missing]))) ≈ 0.707106781186548
+@test @inferred(sem(skipmissing([missing; 1:5; missing]), mean=3.0)) ≈ 0.707106781186548
+@test @inferred(sem([1:5;], UnitWeights{Int}(5))) ≈ 0.707106781186548
+@test @inferred(sem([1:5;], UnitWeights{Int}(5); mean=mean(1:5))) ≈ 0.707106781186548
+@test_throws DimensionMismatch sem(1:5, UnitWeights{Int}(4))
+@test @inferred(sem([1:5;], ProbabilityWeights([1:5;]))) ≈ 0.6166 rtol=.001
+μ = mean(1:5, ProbabilityWeights([1:5;]))
+@test @inferred(sem([1:5;], ProbabilityWeights([1:5;]); mean=μ)) ≈ 0.6166 rtol=.001
+@test @inferred(sem([10; 1:5;], ProbabilityWeights([0; 1:5;]); mean=μ)) ≈ 0.6166 rtol=.001
+x = sort!(vcat([5:-1:i for i in 1:5]...))
+μ = mean(x)
+@test @inferred(sem([1:5;], FrequencyWeights([1:5;]))) ≈ sem(x)
+@test @inferred(sem([1:5;], FrequencyWeights([1:5;]); mean=μ)) ≈ sem(x)
+
+@inferred sem([1:5f0;]; mean=μ) ≈ sem(x)
+@inferred sem([1:5f0;], ProbabilityWeights([1:5;]); mean=μ)
+@inferred sem([1:5f0;], FrequencyWeights([1:5;]); mean=μ)
+# Broken: Bug to do with Statistics.jl's implementation of `var`
+# @inferred sem([1:5f0;], UnitWeights{Int}(5); mean=μ)
+
+@test @inferred(isnan(sem(Int[])))
+@test @inferred(isnan(sem(Int[], FrequencyWeights(Int[]))))
+@test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]))))
+
+@test @inferred(isnan(sem(Int[]; mean=0f0)))
+@test @inferred(isnan(sem(Int[], FrequencyWeights(Int[]); mean=0f0)))
+@test @inferred(isnan(sem(Int[], ProbabilityWeights(Int[]); mean=0f0)))
+
+@test @inferred(isnan(sem(skipmissing(Union{Int,Missing}[missing, missing]))))
+@test_throws Exception sem(Any[])
+@test_throws Exception sem(skipmissing([missing]))
 
 @test mad(1:5; center=3, normalize=true) ≈ 1.4826022185056018
 @test mad(skipmissing([missing; 1:5; missing]); center=3, normalize=true) ≈ 1.4826022185056018
@@ -129,6 +219,11 @@ z2 = [8. 2. 3. 1.; 24. 10. -1. -1.; 20. 12. 1. -2.]
 @test mad(Any[1, 2.1], normalize=false) ≈ 0.55
 @test mad(Union{Int,Missing}[1, 2], normalize=false) ≈ 0.5
 @test_throws ArgumentError mad(Int[], normalize = true)
+@test mad(Iterators.repeated(4, 10)) == 0
+@test mad(Integer[1,2,3,4]) === mad(1:4)
+let itr = (i for i in 1:10000)
+    @test (@benchmark mad($itr)).allocs < 200
+end
 
 # Issue 197
 @test mad(1:2, normalize=true) ≈ 0.7413011092528009
@@ -154,12 +249,23 @@ it = (xᵢ for xᵢ in x)
 
 ##### entropy
 
-@test entropy([0.5, 0.5])      ≈ 0.6931471805599453
-@test entropy([0.2, 0.3, 0.5]) ≈ 1.0296530140645737
+@test @inferred(entropy([0.5, 0.5]))      ≈ 0.6931471805599453
+@test @inferred(entropy([1//2, 1//2]))    ≈ 0.6931471805599453
+@test @inferred(entropy([0.5f0, 0.5f0])) isa Float32
+@test @inferred(entropy([0.2, 0.3, 0.5])) ≈ 1.0296530140645737
+@test iszero(@inferred(entropy([0, 1])))
+@test iszero(@inferred(entropy([0.0, 1.0])))
 
-@test entropy([0.5, 0.5],2)       ≈ 1.0
-@test entropy([0.2, 0.3, 0.5], 2) ≈ 1.4854752972273344
-@test entropy([1.0, 0.0]) ≈ 0.0
+@test @inferred(entropy([0.5, 0.5], 2))      ≈ 1.0
+@test @inferred(entropy([1//2, 1//2], 2))    ≈ 1.0
+@test @inferred(entropy([0.2, 0.3, 0.5], 2)) ≈ 1.4854752972273344
+
+# issue #924
+@test @inferred(entropy([0.5f0, 0.5f0], 2)) isa Float32
+@test @inferred(entropy([0.5f0, 0.5f0], MathConstants.e)) isa Float32
+
+@test_throws ArgumentError @inferred(entropy(Float64[]))
+@test_throws ArgumentError @inferred(entropy(Int[]))
 
 ##### Renyi entropies
 # Generate a random probability distribution
@@ -200,12 +306,31 @@ scale = rand()
 @test renyientropy(udist * scale, order) ≈ renyientropy(udist, order) - log(scale)
 
 ##### Cross entropy
-@test crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3])    ≈ 1.1176681825904018
-@test crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) ≈ 1.6124543443825532
+@test @inferred(crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 1.1176681825904018
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 1.1176681825904018
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0])) isa Float32
+@test @inferred(crossentropy([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 1.6124543443825532
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 1.6124543443825532
+@test @inferred(crossentropy([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
+
+# deprecated, should throw an `ArgumentError` at some point
+logpattern = (:warn, "support for empty collections will be removed since they do not represent proper probability distributions")
+@test iszero(@test_logs logpattern @inferred(crossentropy(Float64[], Float64[])))
+@test iszero(@test_logs logpattern @inferred(crossentropy(Int[], Int[])))
 
 ##### KL divergence
-@test kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3])    ≈ 0.08801516852582819
-@test kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2) ≈ 0.12697904715521868
+@test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3]))     ≈ 0.08801516852582819
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3])) ≈ 0.08801516852582819
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0])) isa Float32
+@test @inferred(kldivergence([0.2, 0.3, 0.5], [0.3, 0.4, 0.3], 2))     ≈ 0.12697904715521868
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3, 0.4, 0.3], 2)) ≈ 0.12697904715521868
+@test @inferred(kldivergence([1//5, 3//10, 1//2], [0.3f0, 0.4f0, 0.3f0], 2f0)) isa Float32
+@test iszero(@inferred(kldivergence([0, 1], [0f0, 1f0])))
+
+# deprecated, should throw an `ArgumentError` at some point
+logpattern = (:warn, "support for empty collections will be removed since they do not represent proper probability distributions")
+@test iszero(@test_logs logpattern @inferred(kldivergence(Float64[], Float64[])))
+@test iszero(@test_logs logpattern @inferred(kldivergence(Int[], Int[])))
 
 ##### summarystats
 
@@ -213,30 +338,39 @@ s = summarystats(1:5)
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == 1.0
 @test s.max == 5.0
+@test s.nobs   == 5
+@test s.nmiss  == 0
 @test s.mean   ≈ 3.0
 @test s.median ≈ 3.0
 @test s.q25    ≈ 2.0
 @test s.q75    ≈ 4.0
+@test s.sd     ≈ 1.5811388300841898
 
 # Issue #631
 s = summarystats([-2, -1, 0, 1, 2, missing])
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == -2.0
 @test s.max == 2.0
+@test s.nobs   == 6
+@test s.nmiss  == 1
 @test s.mean   ≈ 0.0
 @test s.median ≈ 0.0
 @test s.q25    ≈ -1.0
 @test s.q75    ≈ +1.0
+@test s.sd     ≈ 1.5811388300841898
 
 # Issue #631
 s = summarystats(zeros(10))
 @test isa(s, StatsBase.SummaryStats)
 @test s.min == 0.0
 @test s.max == 0.0
+@test s.nobs   == 10
+@test s.nmiss  == 0
 @test s.mean   ≈ 0.0
 @test s.median ≈ 0.0
 @test s.q25    ≈ 0.0
 @test s.q75    ≈ 0.0
+@test s.sd     ≈ 0.0
 
 # Issue #631
 s = summarystats(Union{Float64,Missing}[missing, missing])
@@ -245,3 +379,4 @@ s = summarystats(Union{Float64,Missing}[missing, missing])
 @test s.nmiss == 2
 @test isnan(s.mean)
 @test isnan(s.median)
+@test isnan(s.sd)

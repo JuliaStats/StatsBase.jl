@@ -57,14 +57,19 @@ Reconstruct a vector from its run-length encoding (see [`rle`](@ref)).
 `vals` is a vector of the values and `lens` is a vector of the corresponding
 run lengths.
 """
-function inverse_rle(vals::AbstractVector{T}, lens::IntegerVector) where T
+function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) where T
     m = length(vals)
-    length(lens) == m || raise_dimerror()
+    mlens = length(lens)
+    mlens == m || throw(DimensionMismatch(
+                        "number of vals ($m) does not match the number of lens ($mlens)"))
+    n = sum(lens)
+    n >= 0 || throw(ArgumentError("lengths must be non-negative"))
 
-    r = Vector{T}(undef, sum(lens))
+    r = Vector{T}(undef, n)
     p = 0
     @inbounds for i = 1 : m
         j = lens[i]
+        j >= 0 || throw(ArgumentError("lengths must be non-negative"))
         v = vals[i]
         while j > 0
             r[p+=1] = v
@@ -131,7 +136,7 @@ julia> indicatormat([1 2 2], 2)
  0  1  1
 ```
 """
-function indicatormat(x::IntegerArray, k::Integer; sparse::Bool=false)
+function indicatormat(x::AbstractArray{<:Integer}, k::Integer; sparse::Bool=false)
     sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
 end
 
@@ -151,7 +156,7 @@ indicatormat(x::AbstractArray; sparse::Bool=false) =
     indicatormat(x, sort!(unique(x)); sparse=sparse)
 
 
-function _indicatormat_dense(x::IntegerArray, k::Integer)
+function _indicatormat_dense(x::AbstractArray{<:Integer}, k::Integer)
     n = length(x)
     r = zeros(Bool, k, n)
     for i = 1 : n
@@ -174,7 +179,7 @@ function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
     return r
 end
 
-_indicatormat_sparse(x::IntegerArray, k::Integer) = (n = length(x); sparse(x, 1:n, true, k, n))
+_indicatormat_sparse(x::AbstractArray{<:Integer}, k::Integer) = (n = length(x); sparse(x, 1:n, true, k, n))
 
 function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
     d = indexmap(c)
@@ -187,4 +192,3 @@ function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
     end
     return sparse(rinds, 1:n, true, m, n)
 end
-

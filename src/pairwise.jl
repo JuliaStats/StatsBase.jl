@@ -81,7 +81,6 @@ end
 
 function _pairwise!(::Val{:listwise}, f, dest::AbstractMatrix, x, y, symmetric::Bool)
     check_vectors(x, y, :listwise)
-    m, n = size(dest)
     nminds = .!ismissing.(first(x))
     @inbounds for xi in Iterators.drop(x, 1)
         nminds .&= .!ismissing.(xi)
@@ -122,6 +121,33 @@ function _pairwise!(f, dest::AbstractMatrix, x, y;
     return _pairwise!(Val(skipmissing), f, dest, x′, y′, symmetric)
 end
 
+if VERSION >= v"1.6.0-DEV"
+    # Function has moved in Julia 1.7
+    if isdefined(Base, :typejoin_union_tuple)
+        using Base: typejoin_union_tuple
+    else
+        using Base.Broadcast: typejoin_union_tuple
+    end
+else
+    typejoin_union_tuple(::Type) = Any
+end
+
+# Identical to `Base.promote_typejoin` except that it uses `promote_type`
+# instead of `typejoin` to combine members of `Union` types
+function promote_type_union(::Type{T}) where T
+    if T === Union{}
+        return Union{}
+    elseif T isa UnionAll
+        return Any # TODO: compute more precise bounds
+    elseif T isa Union
+        return promote_type(promote_type_union(T.a), promote_type_union(T.b))
+    elseif T <: Tuple
+        return typejoin_union_tuple(T)
+    else
+        return T
+    end
+end
+
 function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmissing}
     x′ = x isa Union{AbstractArray, Tuple, NamedTuple} ? x : collect(x)
     y′ = y isa Union{AbstractArray, Tuple, NamedTuple} ? y : collect(y)
@@ -148,10 +174,11 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
     if isconcretetype(eltype(dest))
         return dest
     else
-        # Final eltype depends on actual contents (consistent with map and broadcast)
+        # Final eltype depends on actual contents (consistent with `map` and `broadcast`
+        # but using `promote_type` rather than `promote_typejoin`)
         U = mapreduce(typeof, promote_type, dest)
         # V is inferred (contrary to U), but it only gives an upper bound for U
-        V = promote_type(T, Tsm)
+        V = promote_type_union(Union{T, Tsm})
         return convert(Matrix{U}, dest)::Matrix{<:V}
     end
 end

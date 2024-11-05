@@ -1,5 +1,5 @@
 using StatsBase
-using Test, Random, StableRNGs
+using Test, Random, StableRNGs, OffsetArrays
 
 Random.seed!(1234)
 
@@ -9,6 +9,7 @@ n = 100000
 # a) if the same rng is passed to a sample function twice,
 #    the results should be the same (repeatability)
 # b) not specifying a rng should be the same as specifying Random.GLOBAL_RNG
+#    and Random.default_rng() on Julia >= 1.3
 function test_rng_use(func, non_rng_args...)
     # some sampling methods mutate a passed array and return it
     # so that the tests don't pass trivially, we need to copy those
@@ -17,12 +18,17 @@ function test_rng_use(func, non_rng_args...)
     # repeatability
     @test func(MersenneTwister(1), deepcopy(non_rng_args)...) ==
           func(MersenneTwister(1), deepcopy(non_rng_args)...)
-    # default RNG is Random.GLOBAL_RNG
+    # default RNG is Random.GLOBAL_RNG/Random.default_rng()
     Random.seed!(47)
     x = func(deepcopy(non_rng_args)...)
     Random.seed!(47)
     y = func(Random.GLOBAL_RNG, deepcopy(non_rng_args)...)
     @test x == y
+    if VERSION >= v"1.3.0-DEV.565"
+        Random.seed!(47)
+        y = func(Random.default_rng(), deepcopy(non_rng_args)...)
+        @test x == y
+    end
 end
 
 #### sample with replacement
@@ -91,6 +97,10 @@ test_rng_use(sample, 1:10, 10)
 
     @test samplepair(rng, [3, 4, 2, 6, 8]) === (3, 8)
     @test samplepair(rng, [1, 2])          === (1, 2)
+
+    onetwo = samplepair(rng, UInt128(2))
+    @test extrema(onetwo) == (1, 2)
+    @test eltype(onetwo) === UInt128
 end
 
 test_rng_use(samplepair, 1000)
@@ -245,3 +255,47 @@ test_same(replace=true, ordered=true)
 test_same(replace=false, ordered=true)
 test_same(replace=true, ordered=false)
 test_same(replace=false, ordered=false)
+
+@testset "validation of inputs" begin
+    for f in (sample!, knuths_sample!, fisher_yates_sample!, self_avoid_sample!,
+            seqsample_a!, seqsample_c!, seqsample_d!)
+        x = rand(10)
+        y = rand(10)
+        ox = OffsetArray(x, -4:5)
+        oy = OffsetArray(y, -4:5)
+
+        # Test that offset arrays throw an error
+        @test_throws ArgumentError f(ox, y)
+        @test_throws ArgumentError f(x, oy)
+        @test_throws ArgumentError f(ox, oy)
+
+        # Test that an error is thrown when output shares memory with inputs
+        @test_throws ArgumentError f(x, x)
+        @test_throws ArgumentError f(view(x, 2:4), view(x, 3:5))
+        # This corner case should succeed
+        f(view(x, 2:4), view(x, 5:6))
+    end
+end
+
+@testset "issue #872" begin
+    for T in [Int8, Int16, Int32, Int64, Int128, BigInt], f in [identity, unsigned]
+        T == BigInt && f == unsigned && continue
+        T = f(T)
+        # The type of the second argument should not affect the return type
+        let samp = sample(T(1):T(10), T(2); replace=false, ordered=false)
+            @test all(x -> x isa T, samp)
+            @test all(x -> T(1) <= x <= T(10), samp)
+            @test length(samp) == 2
+        end
+        let samp = sample(T(1):T(10), 2; replace=false, ordered=false)
+            @test all(x -> x isa T, samp)
+            @test all(x -> T(1) <= x <= T(10), samp)
+            @test length(samp) == 2
+        end
+        let samp = sample(1:10, T(2); replace=false, ordered=false)
+            @test all(x -> x isa Int, samp)
+            @test all(x -> 1 <= x <= 10, samp)
+            @test length(samp) == 2
+        end
+    end
+end

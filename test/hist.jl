@@ -107,6 +107,10 @@ end
     @test l <= typemin(Int)
     @test h >= typemax(Int)
 
+    # Issue 616/667
+    @test StatsBase.histrange([1.0 for i in 1:100], 10, :left) == 1.0:1.0:2.0
+    @test StatsBase.histrange([1.05 for i in 1:100], 10, :left) == 1.05:1.0:2.05
+
     @test_throws ArgumentError StatsBase.histrange([1, 10], 0, :left)
     @test_throws ArgumentError StatsBase.histrange([1, 10], -1, :left)
     @test_throws ArgumentError StatsBase.histrange([1.0, 10.0], 0, :left)
@@ -222,6 +226,46 @@ end
 @testset "midpoints" begin
     @test StatsBase.midpoints([1, 2, 4]) == [1.5, 3.0]
     @test StatsBase.midpoints(range(0, stop = 1, length = 5)) == 0.125:0.25:0.875
+end
+
+@testset "histogram with -0.0" begin
+    @test fit(Histogram, [-0.0, 1.0]) == fit(Histogram, [0.0, 1.0])
+    @test fit(Histogram, [-0.0, 1.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], closed=:right)
+    @test fit(Histogram, [-0.0, -1.0]) == fit(Histogram, [0.0, -1.0])
+    @test fit(Histogram, [-0.0, -1.0], closed=:right) ==
+        fit(Histogram, [0.0, -1.0], closed=:right)
+
+    @test fit(Histogram, [-0.0, 1.0], [-0.0, 0.5]) ==
+        fit(Histogram, [0.0, 1.0], [0.0, 0.5]) ==
+        fit(Histogram, [-0.0, 1.0], [0.0, 0.5]) ==
+        fit(Histogram, [0.0, 1.0], [-0.0, 0.5]) ==
+        fit(Histogram, [0.0, 1.0], 0.0:0.5:0.5) ==
+        fit(Histogram, [-0.0, 1.0], 0.0:0.5:0.5)
+    @test fit(Histogram, [-0.0, 1.0], [-0.5, -0.0]) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, -0.0]) ==
+        fit(Histogram, [-0.0, 1.0], [-0.5, 0.0]) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, 0.0]) ==
+        fit(Histogram, [-0.0, 1.0], -0.5:0.5:0.0) ==
+        fit(Histogram, [0.0, 1.0], -0.5:0.5:0.0)
+    @test fit(Histogram, [-0.0, 1.0], [-0.5, -0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, 0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], -0.5:0.5:0.0, closed=:right)
+    @test fit(Histogram, [-0.0, 1.0], [-0.0, 0.5], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [0.0, 0.5], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.0, 0.5], closed=:right) ==
+        fit(Histogram, [-0.0, 1.0], [0.0, 0.5], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], 0.0:0.5:0.5, closed=:right) ==
+        fit(Histogram, [-0.0, 1.0], 0.0:0.5:0.5, closed=:right)
+    @test fit(Histogram, [-0.0, 1.0], [-0.5, -0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, 0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], [-0.5, -0.0], closed=:right) ==
+        fit(Histogram, [-0.0, 1.0], [-0.5, 0.0], closed=:right) ==
+        fit(Histogram, [0.0, 1.0], -0.5:0.5:0.0, closed=:right) ==
+        fit(Histogram, [-0.0, 1.0], -0.5:0.5:0.0, closed=:right)
+
+    @test_throws ArgumentError fit(Histogram, [-0.5], LinRange(-1.0, -0.0, 3))
+    @test_throws ArgumentError fit(Histogram, [-0.5], UnitRange(-0.0, 1.0))
 end
 
 end # @testset "StatsBase.Histogram"

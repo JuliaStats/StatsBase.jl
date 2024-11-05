@@ -122,6 +122,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
             @testset "cov2cor" begin
                 @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
                 @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
+                @test cov2cor(cov1) ≈ cor1
+                @test cov2cor(cov2) ≈ cor2
                 @test cov2cor(cov1, std1) ≈ cor1
                 @test cov2cor(cov2, std2) ≈ cor2
             end
@@ -288,12 +290,26 @@ end
 
     x = rand(8)
     y = rand(8)
+    wv = fweights(rand(8))
+    X = hcat(x, y)
 
     for corrected ∈ (false, true)
         @test_throws MethodError SimpleCovariance(corrected)
         scc = SimpleCovariance(corrected=corrected)
         @test cov(scc, x) ≈ cov(x; corrected=corrected)
         @test cov(scc, x, y) ≈ cov(x, y; corrected=corrected)
+        @test cov(scc, X) ≈ cov(X; corrected=corrected)
+        @test cov(scc, X, wv) ≈ cov(X, wv; corrected=corrected)
+
+        @test var(scc, x) ≈ var(x; corrected=corrected)
+        @test std(scc, x) ≈ std(x; corrected=corrected)
+
+        # NB That we should get the same correlation regardless of `corrected`, since it
+        #   only affects the overall scale of the covariance. This cancels out when turning
+        #   it into a correlation matrix.
+        @test cor(scc, x, y) ≈ cor(x, y)
+        @test cor(scc, X) ≈ cor(X)
+        @test cor(scc, X, wv) ≈ cor(X, wv)
     end
 end
 end # @testset "StatsBase.Covariance"

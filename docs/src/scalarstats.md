@@ -23,7 +23,7 @@ harmmean
 genmean
 ```
 
-## Moments
+## Moments and cumulants
 
 ```@docs
 var
@@ -33,6 +33,7 @@ mean_and_std
 skewness
 kurtosis
 moment
+cumulant
 ```
 
 ## Measurements of Variation
@@ -68,7 +69,9 @@ percentile
 iqr
 nquantile
 quantile
-Statistics.median(v::StatsBase.RealVector, w::AbstractWeights{<:Real})
+Statistics.median(v::AbstractVector{<:Real}, w::AbstractWeights{<:Real})
+quantilerank
+percentilerank
 ```
 
 ## Mode and Modes

@@ -1,4 +1,4 @@
-using Documenter, StatsBase, Statistics, Random, LinearAlgebra
+using Documenter, StatsBase, StatsAPI, Statistics, Random, LinearAlgebra
 
 # Workaround for JuliaLang/julia/pull/28625
 if Base.HOME_PROJECT[] !== nothing
@@ -7,7 +7,7 @@ end
 
 makedocs(
     sitename = "StatsBase.jl",
-    modules = [StatsBase],
+    modules = [StatsBase, StatsAPI],
     pages = ["index.md",
              "weights.md",
              "scalarstats.md",

@@ -8,7 +8,10 @@
 
 function _check_randparams(rks, x, p)
     n = length(rks)
-    length(x) == length(p) == n || raise_dimerror()
+    nx = length(x)
+    np = length(p)
+    nx == np == n || throw(
+        DimensionMismatch("lengths of x $nx and p $np do not match that of ranks $n"))
     return n
 end
 
@@ -31,7 +34,7 @@ function _rank(f!, x::AbstractArray{>: Missing}, R::Type=Int; sortkwargs...)
 end
 
 # Ordinal ranking ("1234 ranking") -- use the literal order resulted from sort
-function _ordinalrank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
+function _ordinalrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     _check_randparams(rks, x, p)
     @inbounds for i in eachindex(p)
         rks[p[i]] = i
@@ -54,7 +57,7 @@ ordinalrank(x::AbstractArray; sortkwargs...) =
 
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
-function _competerank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
+function _competerank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     n = _check_randparams(rks, x, p)
 
     @inbounds if n > 0
@@ -91,7 +94,7 @@ competerank(x::AbstractArray; sortkwargs...) =
 
 
 # Dense ranking ("1223" ranking) -- resolve tied ranks using min
-function _denserank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
+function _denserank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     n = _check_randparams(rks, x, p)
 
     @inbounds if n > 0
@@ -128,7 +131,7 @@ denserank(x::AbstractArray; sortkwargs...) =
 
 
 # Tied ranking ("1 2.5 2.5 4" ranking) -- resolve tied ranks using average
-function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::IntegerArray)
+function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     n = _check_randparams(rks, x, p)
 
     @inbounds if n > 0

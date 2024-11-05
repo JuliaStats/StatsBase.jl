@@ -2,7 +2,6 @@ using StatsBase
 using Dates
 using LinearAlgebra
 using Random
-using Statistics
 
 tests = ["ambiguous",
          "weights",

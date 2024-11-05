@@ -1,6 +1,15 @@
 using StatsBase
 using LinearAlgebra, Random, SparseArrays, Test
 
+
+# minimal custom weights type for tests below
+struct MyWeights <: AbstractWeights{Float64, Float64, Vector{Float64}}
+    values::Vector{Float64}
+    sum::Float64
+end
+MyWeights(values) = MyWeights(values, sum(values))
+
+
 @testset "StatsBase.Weights" begin
 weight_funcs = (weights, aweights, fweights, pweights)
 
@@ -13,6 +22,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test isempty(f(Float64[]))
     @test size(f([1, 2, 3])) == (3,)
+    @test axes(f([1, 2, 3])) == (Base.OneTo(3),)
+    @test IndexStyle(f([1, 2, 3])) == IndexLinear()
 
     w  = [1., 2., 3.]
     wv = f(w)
@@ -21,6 +32,8 @@ weight_funcs = (weights, aweights, fweights, pweights)
     @test wv ==  w
     @test sum(wv) === 6.0
     @test !isempty(wv)
+    @test Base.mightalias(w, wv)
+    @test !Base.mightalias([1], wv)
 
     b  = trues(3)
     bv = f(b)
@@ -35,6 +48,10 @@ weight_funcs = (weights, aweights, fweights, pweights)
 
     @test sum(ba, wv) === 4.0
     @test sum(sa, wv) === 7.0
+
+    @test_throws ArgumentError f([0.1, Inf])
+    @test_throws ArgumentError f([0.1, NaN])
+
 end
 
 @testset "$f, setindex!" for f in weight_funcs
@@ -58,6 +75,9 @@ end
     @test wv[2] === 5.
     @test sum(wv) === 11.
     @test wv == [3., 5., 3.]   # Test state of all values
+
+    @test_throws ArgumentError wv[1] = Inf
+    @test_throws ArgumentError wv[1] = NaN
 
     # Test failed setindex! due to conversion error
     w = [1, 2, 3]
@@ -86,11 +106,6 @@ end
         @test x != y
     end
 
-    x = f([1, 2, NaN]) # isequal and == treat NaN differently
-    y = f([1, 2, NaN])
-    @test isequal(x, y)
-    @test x != y
-
     x = f([1.0, 2.0, 0.0]) # isequal and == treat ±0.0 differently
     y = f([1.0, 2.0, -0.0])
     @test !isequal(x, y)
@@ -105,6 +120,7 @@ end
     @test !isempty(wv)
     @test length(wv) === 3
     @test size(wv) === (3,)
+    @test axes(wv) === (Base.OneTo(3),)
     @test sum(wv) === 3.
     @test wv == fill(1.0, 3)
     @test StatsBase.varcorrection(wv) == 1/3
@@ -113,6 +129,9 @@ end
     @test wv != fweights(fill(1.0, 3))
     @test wv == uweights(3)
     @test wv[[true, false, false]] == uweights(Float64, 1)
+    @test convert(Vector, wv) == ones(3)
+    @test !Base.mightalias(wv, uweights(Float64, 3))
+    @test Base.dataids(wv) == ()
 end
 
 ## wsum
@@ -239,6 +258,8 @@ a = reshape(1.0:27.0, 3, 3, 3)
 @testset "Sum $f" for f in weight_funcs
     @test sum([1.0, 2.0, 3.0], f([1.0, 0.5, 0.5])) ≈ 3.5
     @test sum(1:3, f([1.0, 1.0, 0.5]))             ≈ 4.5
+    @test sum([1 + 2im, 2 + 3im], f([1.0, 0.5])) ≈ 2 + 3.5im
+    @test sum([[1, 2], [3, 4]], f([2, 3])) == [11, 16]
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
         @test sum(a, f(wt), dims=1)  ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)
@@ -250,6 +271,7 @@ end
 @testset "Mean $f" for f in weight_funcs
     @test mean([1:3;], f([1.0, 1.0, 0.5])) ≈ 1.8
     @test mean(1:3, f([1.0, 1.0, 0.5]))    ≈ 1.8
+    @test mean([1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ 2 + 3im
 
     for wt in ([1.0, 1.0, 1.0], [1.0, 0.2, 0.0], [0.2, 0.0, 1.0])
         @test mean(a, f(wt), dims=1) ≈ sum(a.*reshape(wt, length(wt), 1, 1), dims=1)/sum(wt)
@@ -473,7 +495,7 @@ end
 @testset "Sum, mean, quantiles and variance for unit weights" begin
     wt = uweights(Float64, 3)
 
-    @test sum([1.0, 2.0, 3.0], wt) ≈ 6.0
+    @test sum([1.0, 2.0, 3.0], wt) ≈ wsum([1.0, 2.0, 3.0], wt) ≈ 6.0
     @test mean([1.0, 2.0, 3.0], wt) ≈ 2.0
 
     @test sum(a, wt, dims=1) ≈ sum(a, dims=1)
@@ -502,54 +524,106 @@ end
 end
 
 @testset "Exponential Weights" begin
+    λ = 0.2
     @testset "Usage" begin
-        θ = 5.25
-        λ = 1 - exp(-1 / θ)     # simple conversion for the more common/readable method
-        v = [λ*(1-λ)^(1-i) for i = 1:4]
+        v = [(1 - λ) ^ (4 - i) for i = 1:4]
         w = Weights(v)
 
-        @test round.(w, digits=4) == [0.1734, 0.2098, 0.2539, 0.3071]
+        @test round.(w, digits=4) == [0.512, 0.64, 0.8, 1.0]
 
         @testset "basic" begin
-            @test eweights(1:4, λ) ≈ w
+            @test eweights(1:4, λ; scale=true) ≈ w
         end
 
         @testset "1:n" begin
-            @test eweights(4, λ) ≈ w
+            @test eweights(4, λ; scale=true) ≈ w
         end
 
         @testset "indexin" begin
-            v = [λ*(1-λ)^(1-i) for i = 1:10]
+            v = [(1 - λ) ^ (10 - i) for i = 1:10]
 
             # Test that we should be able to skip indices easily
-            @test eweights([1, 3, 5, 7], 1:10, λ) ≈ Weights(v[[1, 3, 5, 7]])
+            @test eweights([1, 3, 5, 7], 1:10, λ; scale=true) ≈ Weights(v[[1, 3, 5, 7]])
 
             # This should also work with actual time types
             t1 = DateTime(2019, 1, 1, 1)
             tx = t1 + Hour(7)
-            tn = DateTime(2019, 1, 2, 1)
+            tn = DateTime(2019, 1, 1, 10)
 
-            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ) ≈ Weights(v[[1, 3, 5, 7]])
+            @test eweights(t1:Hour(2):tx, t1:Hour(1):tn, λ; scale=true) ≈ Weights(v[[1, 3, 5, 7]])
         end
     end
 
     @testset "Empty" begin
-        @test eweights(0, 0.3) == Weights(Float64[])
-        @test eweights(1:0, 0.3) == Weights(Float64[])
-        @test eweights(Int[], 1:10, 0.4) == Weights(Float64[])
+        @test eweights(0, 0.3; scale=true) == Weights(Float64[])
+        @test eweights(1:0, 0.3; scale=true) == Weights(Float64[])
+        @test eweights(Int[], 1:10, 0.4; scale=true) == Weights(Float64[])
     end
 
     @testset "Failure Conditions" begin
         # λ > 1.0
-        @test_throws ArgumentError eweights(1, 1.1)
+        @test_throws ArgumentError eweights(1, 1.1; scale=true)
 
         # time indices are not all positive non-zero integers
-        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3)
+        @test_throws ArgumentError eweights([0, 1, 2, 3], 0.3; scale=true)
 
         # Passing in an array of bools will work because Bool <: Integer,
         # but any `false` values will trigger the same argument error as 0.0
-        @test_throws ArgumentError eweights([true, false, true, true], 0.3)
+        @test_throws ArgumentError eweights([true, false, true, true], 0.3; scale=true)
     end
+
+    @testset "scale=false" begin
+        v = [λ * (1 - λ)^(1 - i) for i = 1:4]
+        w = Weights(v)
+
+        @test round.(w, digits=4) == [0.2, 0.25, 0.3125, 0.3906]
+
+        wv = eweights(1:10, λ; scale=false)
+        @test eweights(1:10, λ; scale=true) ≈ wv / maximum(wv)
+    end
+end
+
+@testset "allequal and allunique" begin
+    # General weights
+    for f in (weights, aweights, fweights, pweights)
+        @test allunique(f(Float64[]))
+        @test allunique(f([0.4]))
+        @test allunique(f([0.4, 0.3]))
+        @test !allunique(f([0.4, 0.4]))
+        @test allunique(f([0.4, 0.3, 0.5]))
+        @test !allunique(f([0.4, 0.4, 0.5]))
+        @test allunique(f([0.4, 0.3, 0.5, 0.35]))
+        @test !allunique(f([0.4, 0.3, 0.5, 0.4]))
+
+        if isdefined(Base, :allequal)
+            @test allequal(f(Float64[]))
+            @test allequal(f([0.4]))
+            @test allequal(f([0.4, 0.4]))
+            @test !allequal(f([0.4, 0.3]))
+            @test allequal(f([0.4, 0.4, 0.4, 0.4]))
+            @test !allunique(f([0.4, 0.4, 0.3, 0.4]))
+        end
+    end
+
+    # Uniform weights
+    @test allunique(uweights(0))
+    @test allunique(uweights(1))
+    @test !allunique(uweights(2))
+    @test !allunique(uweights(5))
+
+    if isdefined(Base, :allequal)
+        @test allequal(uweights(0))
+        @test allequal(uweights(1))
+        @test allequal(uweights(2))
+        @test allequal(uweights(5))
+    end
+end
+
+@testset "custom weight types" begin
+    @test mean([1, 2, 3], MyWeights([1, 4, 10])) ≈ 2.6
+    @test mean([1, 2, 3], MyWeights([NaN, 4, 10])) |> isnan
+    @test mode([1, 2, 3], MyWeights([1, 4, 10])) == 3
+    @test_throws ArgumentError mode([1, 2, 3], MyWeights([NaN, 4, 10]))
 end
 
 end # @testset StatsBase.Weights
