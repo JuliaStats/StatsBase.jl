@@ -1,5 +1,5 @@
 using StatsBase
-using Random, Test, OffsetArrays
+using Random, Test, OffsetArrays, SparseArrays
 
 Random.seed!(1234)
 
@@ -41,6 +41,7 @@ for wv in (
     weights([0.2, 0.8, 0.4, 0.6]),
     weights([2, 8, 4, 6]),
     weights(Float32[0.2, 0.8, 0.4, 0.6]),
+    weights(sparsevec([0, 8, 0, 6])),
     Weights(Float32[0.2, 0.8, 0.4, 0.6], 2),
     Weights([2, 8, 4, 6], 20.0),
 )
