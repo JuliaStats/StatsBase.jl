@@ -23,7 +23,6 @@ makedocs(
              "misc.md",
              "statmodels.md",
              "transformations.md"],
-    strict=true,
     checkdocs=:exports
 )
 
