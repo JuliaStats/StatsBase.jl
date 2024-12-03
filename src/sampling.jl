@@ -608,6 +608,11 @@ sample(wv::AbstractWeights) = sample(default_rng(), wv)
 sample(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights) = a[sample(rng, wv)]
 sample(a::AbstractArray, wv::AbstractWeights) = sample(default_rng(), a, wv)
 
+function sample(rng::AbstractRNG, wv::AbstractWeights{<:Real,T,V}) where {T<:Real,V<:SparseVector{T}}
+    i = sample(rng, Weights(nonzeros(wv.values), sum(wv)))
+    return SparseArrays.nonzeroinds(wv.values)[i]
+end
+
 """
     direct_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
 
