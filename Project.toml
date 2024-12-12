@@ -28,7 +28,7 @@ Printf = "<0.0.1, 1"
 Random = "<0.0.1, 1"
 SortingAlgorithms = "0.3, 1.0"
 SparseArrays = "<0.0.1, 1"
-Statistics = "1"
+Statistics = "<0.0.1, 1"
 StatsAPI = "1.2"
 julia = "1"
 
