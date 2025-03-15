@@ -47,6 +47,8 @@ reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
     vec(reconstruct(t, reshape(y, :, 1)))
 
 """
+    ZScoreTransform <: AbstractDataTransform
+
 Standardization (Z-score transformation)
 """
 struct ZScoreTransform{T<:Real, U<:AbstractVector{T}} <: AbstractDataTransform
@@ -201,6 +203,8 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::Abstract
 end
 
 """
+    UnitRangeTransform  <: AbstractDataTransform
+
 Unit range normalization
 """
 struct UnitRangeTransform{T<:Real, U<:AbstractVector}  <: AbstractDataTransform
