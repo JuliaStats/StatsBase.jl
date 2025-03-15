@@ -155,7 +155,7 @@ closed: right
 isdensity: false
 ```
 ## Example illustrating `isdensity`
-```julia
+```jldoctest
 julia> using StatsBase, LinearAlgebra
 
 julia> bins = [0,1,7]; # a small and a large bin
@@ -163,7 +163,7 @@ julia> bins = [0,1,7]; # a small and a large bin
 julia> obs = [0.5, 1.5, 1.5, 2.5]; # one observation in the small bin and three in the large
 
 julia> h = fit(Histogram, obs, bins)
-Histogram{Int64,1,Tuple{Array{Int64,1}}}
+Histogram{Int64, 1, Tuple{Vector{Int64}}}
 edges:
   [0, 1, 7]
 weights: [1, 3]
@@ -173,7 +173,7 @@ isdensity: false
 julia> # observe isdensity = false and the weights field records the number of observations in each bin
 
 julia> normalize(h, mode=:density)
-Histogram{Float64,1,Tuple{Array{Int64,1}}}
+Histogram{Float64, 1, Tuple{Vector{Int64}}}
 edges:
   [0, 1, 7]
 weights: [1.0, 0.5]

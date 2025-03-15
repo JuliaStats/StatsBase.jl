@@ -1,3 +1,8 @@
+```@meta
+DocTestSetup = quote
+    using StatsBase
+end
+```
 # Weight Vectors
 
 In statistical applications, it is not uncommon to assign weights to samples. To facilitate the use of weight vectors, we introduce the abstract type `AbstractWeights` for the purpose of representing weight vectors, which has two advantages:
@@ -75,9 +80,9 @@ As this value approaches 0, the resulting weights will be almost equal,
 while values closer to 1 will put greater weight on the tail elements of the vector.
 
 For example, the following call generates exponential weights for ten observations with ``λ = 0.3``.
-```julia-repl
+```jldoctest
 julia> eweights(1:10, 0.3)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
+10-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
  0.42857142857142855
  0.6122448979591837
@@ -92,9 +97,9 @@ julia> eweights(1:10, 0.3)
 
 Simply passing the number of observations `n` is equivalent to passing in `1:n`.
 
-```julia-repl
+```jldoctest
 julia> eweights(10, 0.3)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
+10-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
  0.42857142857142855
  0.6122448979591837
@@ -117,7 +122,7 @@ julia> r
 2019-01-01T01:00:00:1 hour:2019-01-02T01:00:00
 
 julia> eweights(t, r, 0.3)
-3-element Weights{Float64,Float64,Array{Float64,1}}:
+3-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
  0.6122448979591837
  1.249479383590171

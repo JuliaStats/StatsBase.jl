@@ -250,9 +250,9 @@ If `scale` is `false` then each value is computed as:
 - `scale::Bool`: Return the weights scaled to between 0 and 1 (default: false)
 
 # Examples
-```julia-repl
+```jldoctest
 julia> eweights(1:10, 0.3; scale=true)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
+10-element Weights{Float64, Float64, Vector{Float64}}:
  0.04035360699999998
  0.05764800999999997
  0.08235429999999996
