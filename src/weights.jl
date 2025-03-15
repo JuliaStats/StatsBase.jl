@@ -269,8 +269,8 @@ julia> eweights(1:10, 0.3; scale=true)
  1.0
 ```
 # Links
-- https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
-- https://en.wikipedia.org/wiki/Exponential_smoothing
+- <https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average>
+- <https://en.wikipedia.org/wiki/Exponential_smoothing>
 """
 function eweights(t::AbstractArray{<:Integer}, λ::Real; kwargs...)
     isempty(t) && return Weights(copy(t), 0)
