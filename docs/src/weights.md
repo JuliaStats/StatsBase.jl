@@ -73,7 +73,9 @@ weights to past observations.
 
 If `t` is a vector of temporal indices then for each index `i` we compute the weight as:
 
-``λ (1 - λ)^{1 - i}``
+```math
+λ (1 - λ)^{1 - i}
+```
 
 ``λ`` is a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
 As this value approaches 0, the resulting weights will be almost equal,

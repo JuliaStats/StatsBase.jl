@@ -230,11 +230,15 @@ If `n` is explicitly passed instead of `t`, `t` defaults to `1:n`.
 
 If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
 
-``(1 - λ)^{n - i}``
+```math
+(1 - λ)^{n - i}
+```
 
 If `scale` is `false` then each value is computed as:
 
-``λ (1 - λ)^{1 - i}``
+```math
+λ (1 - λ)^{1 - i}
+```
 
 # Arguments
 
