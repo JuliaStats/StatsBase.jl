@@ -188,7 +188,7 @@ knuths_sample!(a::AbstractArray, x::AbstractArray; initshuffle::Bool=true) =
 Fisher-Yates shuffling (with early termination).
 
 Pseudo-code:
-```
+```julia
 n = length(a)
 k = length(x)
 

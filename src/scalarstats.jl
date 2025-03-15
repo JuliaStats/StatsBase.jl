@@ -279,7 +279,7 @@ Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
 *The American Statistician*, Vol. 50, No. 4, pp. 361-365.
 
 # Examples
-```julia
+```julia-repl
 julia> using StatsBase
 
 julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];
