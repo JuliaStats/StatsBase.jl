@@ -341,8 +341,8 @@ end
 """
     standardize(DT, X; dims=nothing, kwargs...)
 
- Return a standardized copy of vector or matrix `X` along dimensions `dims`
- using transformation `DT` which is a subtype of `AbstractDataTransform`:
+Return a standardized copy of vector or matrix `X` along dimensions `dims`
+using transformation `DT` which is a subtype of `AbstractDataTransform`:
 
 - `ZScoreTransform`
 - `UnitRangeTransform`
