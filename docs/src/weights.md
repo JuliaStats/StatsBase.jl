@@ -135,13 +135,11 @@ julia> eweights(t, r, 0.3)
 ## Methods
 
 `AbstractWeights` implements the following methods:
-```
-eltype
-length
-isempty
-values
-sum
-```
+- `eltype`
+- `length`
+- `isempty`
+- `values`
+- `sum`
 
 The following constructors are provided:
 ```@docs
