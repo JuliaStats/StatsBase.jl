@@ -128,8 +128,9 @@ julia> eweights(t, r, 0.3)
  1.249479383590171
 ```
 
-NOTE: This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
-Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
+!!! note
+    This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
+    Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
 
 ## Methods
 
