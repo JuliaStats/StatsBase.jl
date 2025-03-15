@@ -237,7 +237,7 @@ and return a `UnitRangeTransform` transformation object.
 # Keyword arguments
 
 * `dims`: if `1` fit standardization parameters in column-wise fashion;
- if `2` fit in row-wise fashion. The default is `nothing`.
+  if `2` fit in row-wise fashion. The default is `nothing`.
 
 * `unit`: if `true` (the default) shift the minimum data to zero.
 
