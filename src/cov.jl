@@ -130,7 +130,14 @@ end
 Compute the correlation matrix from the covariance matrix `C` and, optionally, a vector
 of standard deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
 """
-cov2cor(C::AbstractMatrix, s::AbstractArray=sqrt.(view(C, diagind(C)))) = cov2cor!(copy(C), s)
+cov2cor(C::AbstractMatrix, s::AbstractArray) = cov2cor!(copyto!(similar(C), C), s)
+function cov2cor(C::LinearAlgebra.HermOrSym, s::AbstractArray)
+    D = copyto!(similar(C), C)
+    cov2cor!(parent(D), s)
+    return D
+end
+
+cov2cor(C::AbstractMatrix) = cov2cor(C, map(sqrt, view(C, diagind(C))))
 
 """
     cor2cov(C, s)
@@ -138,7 +145,12 @@ cov2cor(C::AbstractMatrix, s::AbstractArray=sqrt.(view(C, diagind(C)))) = cov2co
 Compute the covariance matrix from the correlation matrix `C` and a vector of standard
 deviations `s`. Use `StatsBase.cor2cov!` for an in-place version.
 """
-cor2cov(C::AbstractMatrix, s::AbstractArray) = cor2cov!(copy(C), s)
+cor2cov(C::AbstractMatrix, s::AbstractArray) = cor2cov!(copyto!(similar(C), C), s)
+function cor2cov(C::LinearAlgebra.HermOrSym, s::AbstractArray)
+    D = copyto!(similar(C), C)
+    cor2cov!(parent(D), s)
+    return D
+end
 
 """
     cor2cov!(C, s)

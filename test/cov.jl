@@ -120,18 +120,22 @@ weight_funcs = (weights, aweights, fweights, pweights)
             cor2 = cor(X, wv2, 2)
 
             @testset "cov2cor" begin
-                @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
-                @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                @test cov2cor(cov1) ≈ cor1
-                @test cov2cor(cov2) ≈ cor2
-                @test cov2cor(cov1, std1) ≈ cor1
-                @test cov2cor(cov2, std2) ≈ cor2
+                for wrapper in (identity, Symmetric, Hermitian)
+                    @test cov2cor(wrapper(cov(X, dims = 1)), std(X, dims = 1)) ≈ cor(X, dims = 1)
+                    @test cov2cor(wrapper(cov(X, dims = 2)), std(X, dims = 2)) ≈ cor(X, dims = 2)
+                    @test cov2cor(wrapper(cov1)) ≈ cor1
+                    @test cov2cor(wrapper(cov2)) ≈ cor2
+                    @test cov2cor(wrapper(cov1), std1) ≈ cor1
+                    @test cov2cor(wrapper(cov2), std2) ≈ cor2
+                end
             end
             @testset "cor2cov" begin
-                @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
-                @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
-                @test cor2cov(cor1, std1) ≈ cov1
-                @test cor2cov(cor2, std2) ≈ cov2
+                for wrapper in (identity, Symmetric, Hermitian)
+                    @test cor2cov(wrapper(cor(X, dims = 1)), std(X, dims = 1)) ≈ cov(X, dims = 1)
+                    @test cor2cov(wrapper(cor(X, dims = 2)), std(X, dims = 2)) ≈ cov(X, dims = 2)
+                    @test cor2cov(wrapper(cor1), std1) ≈ cov1
+                    @test cor2cov(wrapper(cor2), std2) ≈ cov2
+                end
             end
         end
     end
@@ -198,10 +202,12 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 cor2 = cor(X, wv2, 2)
 
                 @testset "cov2cor" begin
-                    @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
-                    @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                    @test cov2cor(cov1, std1) ≈ cor1
-                    @test cov2cor(cov2, std2) ≈ cor2
+                    for wrapper in (identity, Symmetric, Hermitian)
+                        @test cov2cor(wrapper(cov(X, dims = 1)), std(X, dims = 1)) ≈ cor(X, dims = 1)
+                        @test cov2cor(wrapper(cov(X, dims = 2)), std(X, dims = 2)) ≈ cor(X, dims = 2)
+                        @test cov2cor(wrapper(cov1), std1) ≈ cor1
+                        @test cov2cor(wrapper(cov2), std2) ≈ cor2
+                    end
                 end
 
                 @testset "cov2cor!" begin
@@ -217,10 +223,12 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 end
 
                 @testset "cor2cov" begin
-                    @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
-                    @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
-                    @test cor2cov(cor1, std1) ≈ cov1
-                    @test cor2cov(cor2, std2) ≈ cov2
+                    for wrapper in (identity, Symmetric, Hermitian)
+                        @test cor2cov(wrapper(cor(X, dims = 1)), std(X, dims = 1)) ≈ cov(X, dims = 1)
+                        @test cor2cov(wrapper(cor(X, dims = 2)), std(X, dims = 2)) ≈ cov(X, dims = 2)
+                        @test cor2cov(wrapper(cor1), std1) ≈ cov1
+                        @test cor2cov(wrapper(cor2), std2) ≈ cov2
+                    end
                 end
 
                 @testset "cor2cov!" begin
