@@ -128,53 +128,124 @@ end
     cov2cor(C::AbstractMatrix, [s::AbstractArray])
 
 Compute the correlation matrix from the covariance matrix `C` and, optionally, a vector
-of standard deviations `s`. Use `StatsBase.cov2cor!` for an in-place version.
+of standard deviations `s`. Use [`StatsBase.cov2cor!`](@ref) for an in-place version.
 """
-cov2cor(C::AbstractMatrix, s::AbstractArray) = cov2cor!(copyto!(similar(C), C), s)
-function cov2cor(C::LinearAlgebra.HermOrSym, s::AbstractArray)
-    D = copyto!(similar(C), C)
-    cov2cor!(parent(D), s)
-    return D
+function cov2cor(C::AbstractMatrix, s::AbstractArray = map(sqrt, view(C, diagind(C))))
+    zs = zero(eltype(s))
+    T = typeof(zero(eltype(C)) / (zs * zs))
+    return cov2cor!(copyto!(similar(C, T), C), s)
 end
 
-cov2cor(C::AbstractMatrix) = cov2cor(C, map(sqrt, view(C, diagind(C))))
-
+# Original implementation: https://github.com/JuliaStats/Statistics.jl/blob/22dee82f9824d6045e87aa4b97e1d64fe6f01d8d/src/Statistics.jl#L633-L657
 """
-    cor2cov(C, s)
+    cov2cor!(C::AbstractMatrix, [s::AbstractArray])
 
-Compute the covariance matrix from the correlation matrix `C` and a vector of standard
-deviations `s`. Use `StatsBase.cor2cov!` for an in-place version.
-"""
-cor2cov(C::AbstractMatrix, s::AbstractArray) = cor2cov!(copyto!(similar(C), C), s)
-function cor2cov(C::LinearAlgebra.HermOrSym, s::AbstractArray)
-    D = copyto!(similar(C), C)
-    cor2cov!(parent(D), s)
-    return D
-end
-
-"""
-    cor2cov!(C, s)
-
-Converts the correlation matrix `C` to a covariance matrix in-place using a vector of
+Convert the covariance matrix `C` to a correlation matrix in-place, optionally using a vector of
 standard deviations `s`.
 """
-function cor2cov!(C::AbstractMatrix, s::AbstractArray)
+function cov2cor!(C::AbstractMatrix, s::AbstractArray = map(sqrt, view(C, diagind(C))))
+    Base.require_one_based_indexing(C, s)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
-    for i in CartesianIndices(size(C))
-        @inbounds C[i] *= s[i[1]] * s[i[2]]
+    for j = 1:n
+        sj = s[j]
+        for i = 1:(j-1)
+            C[i,j] = adjoint(C[j,i])
+        end
+        C[j,j] = oneunit(C[j,j])
+        for i = (j+1):n
+            C[i,j] = _clampcor(C[i,j] / (s[i] * sj))
+        end
+    end
+    return C
+end
+_clampcor(x::Real) = clamp(x, -1, 1)
+_clampcor(x) = x
+
+# Preserve structure of Symmetric and Hermitian covariance matrices
+function cov2cor!(C::Union{Symmetric{<:Real},Hermitian}, s::AbstractArray)
+    n = length(s)
+    size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
+    A = parent(C)
+    if C.uplo === 'U'
+        for j = 1:n
+            sj = s[j]
+            for i = 1:(j-1)
+                A[i,j] = _clampcor(A[i,j] / (s[i] * sj))
+            end
+            A[j,j] = oneunit(A[j,j])
+        end
+    else
+        for j = 1:n
+            sj = s[j]
+            A[j,j] = oneunit(A[j,j])
+            for i = (j+1):n
+                A[i,j] = _clampcor(A[i,j] / (s[i] * sj))
+            end
+        end
     end
     return C
 end
 
 """
-    _cov2cor!(C)
+    cor2cov(C, s)
 
-Compute the correlation matrix from the covariance matrix `C`, in-place.
-
-The leading diagonal is used to determine the standard deviations by which to normalise.
+Compute the covariance matrix from the correlation matrix `C` and a vector of standard
+deviations `s`. Use [`StatsBase.cor2cov!`](@ref) for an in-place version.
 """
-_cov2cor!(C::AbstractMatrix) = cov2cor!(C, sqrt.(diag(C)))
+function cor2cov(C::AbstractMatrix, s::AbstractArray)
+    zs = zero(eltype(s))
+    T = typeof(zero(eltype(C)) * (zs * zs))
+    return cor2cov!(copyto!(similar(C, T), C), s)
+end
+
+"""
+    cor2cov!(C, s)
+
+Convert the correlation matrix `C` to a covariance matrix in-place using a vector of
+standard deviations `s`.
+"""
+function cor2cov!(C::AbstractMatrix, s::AbstractArray)
+    Base.require_one_based_indexing(C, s)
+    n = length(s)
+    size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
+    for j in 1:n
+        sj = s[j]
+        for i in 1:(j-1)
+            C[i,j] = adjoint(C[j,i])
+        end
+        C[j,j] = sj^2
+        for i in (j+1):n
+            C[i,j] *= s[i] * sj
+        end
+    end
+    return C
+end
+
+# Preserve structure of Symmetric and Hermitian correlation matrices
+function cor2cov!(C::Union{Symmetric{<:Real},Hermitian}, s::AbstractArray)
+    n = length(s)
+    size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
+    A = parent(C)
+    if C.uplo === 'U'
+        for j in 1:n
+            sj = s[j]
+            for i in 1:(j-1)
+                A[i,j] *= s[i] * sj
+            end
+            A[j,j] = sj^2
+        end
+    else
+        for j in 1:n
+            sj = s[j]
+            A[j,j] = sj^2
+            for i in (j+1):n
+                A[i,j] *= s[i] * sj
+            end
+        end
+    end
+    return C
+end
 
 """
     CovarianceEstimator
@@ -268,10 +339,10 @@ The keyword argument `mean` can be:
     of size `(N,1)`.
 """
 function cor(ce::CovarianceEstimator, X::AbstractMatrix; kwargs...)
-    return _cov2cor!(cov(ce, X; kwargs...))
+    return cov2cor!(cov(ce, X; kwargs...))
 end
 function cor(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; kwargs...)
-    return _cov2cor!(cov(ce, X, w; kwargs...))
+    return cov2cor!(cov(ce, X, w; kwargs...))
 end
 
 """
