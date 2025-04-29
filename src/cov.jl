@@ -23,11 +23,7 @@ end
 
 ## scatter matrix
 
-_unscaled_covzm(x::DenseMatrix, dims::Colon)   = unscaled_covzm(x)
 _unscaled_covzm(x::DenseMatrix, dims::Integer) = unscaled_covzm(x, dims)
-
-_unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Colon)   =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, wv)))
 _unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer) =
     _symmetrize!(unscaled_covzm(x, _scalevars(x, wv, dims), dims))
 

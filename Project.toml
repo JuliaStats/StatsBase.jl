@@ -21,6 +21,7 @@ StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 AliasTables = "1"
 DataAPI = "1"
 DataStructures = "0.10, 0.11, 0.12, 0.13, 0.14, 0.17, 0.18"
+JET = "0.9.18, 0.10"
 LinearAlgebra = "<0.0.1, 1"
 LogExpFunctions = "0.3"
 Missings = "0.3, 0.4, 1.0"
@@ -35,9 +36,10 @@ julia = "1.10"
 [extras]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+JET = "c3a54625-cd67-489e-a8e7-0a5a0ff4e31b"
 OffsetArrays = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Dates", "DelimitedFiles", "OffsetArrays", "StableRNGs", "Test"]
+test = ["Dates", "DelimitedFiles", "JET", "OffsetArrays", "StableRNGs", "Test"]

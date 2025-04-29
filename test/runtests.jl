@@ -23,7 +23,9 @@ tests = ["ambiguous",
          "wsampling",
          "statmodels",
          "partialcor",
-         "transformations"]
+         "transformations",
+         # Test with JET after all other tests since it has side effects
+         "jet"] 
          #"statquiz"]
 
 println("Running tests:")
