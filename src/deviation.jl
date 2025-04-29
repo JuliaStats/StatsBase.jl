@@ -90,7 +90,7 @@ end
     Linfdist(a, b)
 
 Compute the L∞ distance, also called the Chebyshev distance, between
-two arrays: ``\\max_{i\\in1:n} |a_i - b_i|``.
+two arrays: ``\\max_{1≤i≤n} |a_i - b_i|``.
 Efficient equivalent of `maxabs(a - b)`.
 """
 function Linfdist(a::AbstractArray{T}, b::AbstractArray{T}) where T<:Number

@@ -5,3 +5,6 @@ StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 
 [compat]
 Documenter = "1"
+
+[sources.StatsBase]
+path = ".."
