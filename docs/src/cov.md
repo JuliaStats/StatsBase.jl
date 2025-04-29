@@ -13,7 +13,9 @@ std(::CovarianceEstimator, ::AbstractVector)
 cor
 mean_and_cov
 cov2cor
+StatsBase.cov2cor!
 cor2cov
+StatsBase.cor2cov!
 CovarianceEstimator
 SimpleCovariance
 ```
