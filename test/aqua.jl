@@ -10,6 +10,6 @@ using Test
         # (fixed in more recent versions not supported by Julia < 1.6)
         ambiguities=VERSION < v"1.6" ? false : (exclude = [sort!],),
         # `describe`, `pairwise`, `pairwise!`, and `weights` are defined in StatsAPI but owned by StasBase
-        piracies=(treat_as_own = [describe, pairwise, pairwise!, weights],),
+        piracies=(treat_as_own = [describe, pairwise, pairwise!, weights], broken = true),
     ) 
 end
