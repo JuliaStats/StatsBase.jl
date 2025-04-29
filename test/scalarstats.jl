@@ -2,7 +2,6 @@ using StatsBase
 using Test
 using DelimitedFiles
 using Statistics
-using BenchmarkTools: @benchmark
 
 ##### Location
 
@@ -221,8 +220,10 @@ x = sort!(vcat([5:-1:i for i in 1:5]...))
 @test_throws ArgumentError mad(Int[], normalize = true)
 @test mad(Iterators.repeated(4, 10)) == 0
 @test mad(Integer[1,2,3,4]) === mad(1:4)
+mad_allocs(itr) = @allocations(mad(itr))
 let itr = (i for i in 1:10000)
-    @test (@benchmark mad($itr)).allocs < 200
+    mad_allocs(itr)
+    @test mad_allocs(itr) < 50
 end
 
 # Issue 197
