@@ -1,3 +1,8 @@
+```@meta
+DocTestSetup = quote
+    using StatsBase
+end
+```
 # Weight Vectors
 
 In statistical applications, it is not uncommon to assign weights to samples. To facilitate the use of weight vectors, we introduce the abstract type `AbstractWeights` for the purpose of representing weight vectors, which has two advantages:
@@ -68,23 +73,25 @@ weights to past observations.
 
 If `t` is a vector of temporal indices then for each index `i` we compute the weight as:
 
-``λ (1 - λ)^{1 - i}``
+```math
+λ (1 - λ)^{1 - i}
+```
 
 ``λ`` is a smoothing factor or rate parameter such that ``0 < λ ≤ 1``.
 As this value approaches 0, the resulting weights will be almost equal,
 while values closer to 1 will put greater weight on the tail elements of the vector.
 
 For example, the following call generates exponential weights for ten observations with ``λ = 0.3``.
-```julia-repl
+```jldoctest
 julia> eweights(1:10, 0.3)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
+10-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
  0.42857142857142855
  0.6122448979591837
  0.8746355685131197
  1.249479383590171
  1.7849705479859588
- 2.549957925694227
+ 2.5499579256942266
  3.642797036706039
  5.203995766722913
  7.434279666747019
@@ -92,16 +99,16 @@ julia> eweights(1:10, 0.3)
 
 Simply passing the number of observations `n` is equivalent to passing in `1:n`.
 
-```julia-repl
+```jldoctest
 julia> eweights(10, 0.3)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
+10-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
  0.42857142857142855
  0.6122448979591837
  0.8746355685131197
  1.249479383590171
  1.7849705479859588
- 2.549957925694227
+ 2.5499579256942266
  3.642797036706039
  5.203995766722913
  7.434279666747019
@@ -117,25 +124,24 @@ julia> r
 2019-01-01T01:00:00:1 hour:2019-01-02T01:00:00
 
 julia> eweights(t, r, 0.3)
-3-element Weights{Float64,Float64,Array{Float64,1}}:
+3-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
  0.6122448979591837
  1.249479383590171
 ```
 
-NOTE: This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
-Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
+!!! note
+    This is equivalent to `eweights(something.(indexin(t, r)), 0.3)`, which is saying that for each value in `t` return the corresponding index for that value in `r`.
+    Since `indexin` returns `nothing` if there is no corresponding value from `t` in `r` we use `something` to eliminate that possibility.
 
 ## Methods
 
 `AbstractWeights` implements the following methods:
-```
-eltype
-length
-isempty
-values
-sum
-```
+- `eltype`
+- `length`
+- `isempty`
+- `values`
+- `sum`
 
 The following constructors are provided:
 ```@docs

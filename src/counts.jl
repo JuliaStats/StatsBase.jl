@@ -99,9 +99,9 @@ Equivalent to `counts(x, levels) / length(x)`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) = counts(x, levels) .* inv(length(x))
+proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) = counts(x, levels) / length(x)
 proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}, wv::AbstractWeights) =
-    counts(x, levels, wv) .* inv(sum(wv))
+    counts(x, levels, wv) / sum(wv)
 
 """
     proportions(x, k::Integer, [wv::AbstractWeights])
@@ -204,9 +204,9 @@ counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}) = counts(x, y, 
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, wv::AbstractWeights) = counts(x, y, (span(x), span(y)), wv)
 
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}) =
-    counts(x, y, levels) .* inv(length(x))
+    counts(x, y, levels) / length(x)
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}, wv::AbstractWeights) =
-    counts(x, y, levels, wv) .* inv(sum(wv))
+    counts(x, y, levels, wv) / sum(wv)
 
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}) =
     proportions(x, y, (1:ks[1], 1:ks[2]))
@@ -258,12 +258,14 @@ raw counts.
 - `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
                      [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
                      algorithm to sort the input vector which will generally lead to
-                     shorter running time. However the radix sort algorithm creates a
-                     copy of the input vector and hence uses more RAM. Choose `:dict`
-                     if the amount of available RAM is a limitation.
+                     shorter running time for large `x` with many duplicates. However
+                     the radix sort algorithm creates a copy of the input vector and
+                     hence uses more RAM. Choose `:dict` if the amount of available
+                     RAM is a limitation.
 
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
-                     RAM and is safe for any data type.
+                     RAM, is safe for any data type, is faster for small arrays, and
+                     is faster when there are not many duplicates.
 """
 addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
 
@@ -430,12 +432,14 @@ raw counts.
 - `:radixsort`:      if `radixsort_safe(eltype(x)) == true` then use the
                      [radix sort](https://en.wikipedia.org/wiki/Radix_sort)
                      algorithm to sort the input vector which will generally lead to
-                     shorter running time. However the radix sort algorithm creates a
-                     copy of the input vector and hence uses more RAM. Choose `:dict`
-                     if the amount of available RAM is a limitation.
+                     shorter running time for large `x` with many duplicates. However
+                     the radix sort algorithm creates a copy of the input vector and
+                     hence uses more RAM. Choose `:dict` if the amount of available
+                     RAM is a limitation.
 
 - `:dict`:           use `Dict`-based method which is generally slower but uses less
-                     RAM and is safe for any data type.
+                     RAM, is safe for any data type, is faster for small arrays, and
+                     is faster when there are not many duplicates.
 """
 countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
 countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)

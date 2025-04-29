@@ -163,6 +163,7 @@ end
 # Weighted mode of arbitrary vectors of values
 function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
         throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
 
@@ -184,6 +185,7 @@ end
 
 function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+    isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
         throw(ArgumentError("data and weight vectors must be the same size, got $(length(a)) and $(length(wv))"))
 
@@ -238,30 +240,30 @@ Let `count_less` be the number of elements of `itr` that are less than `value`,
 Then `method` supports the following definitions:
 
 - `:inc` (default): Return a value in the range 0 to 1 inclusive.
-Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on
-definition 7 of quantile in Hyndman and Fan (1996)
-(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
-This definition corresponds to the lower semi-continuous inverse of
-[`quantile`](@ref) with its default parameters.
+  Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on
+  definition 7 of quantile in Hyndman and Fan (1996)
+  (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
+  This definition corresponds to the lower semi-continuous inverse of
+  [`quantile`](@ref) with its default parameters.
 
 - `:exc`: Return a value in the range 0 to 1 exclusive.
-Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation
-based on definition 6 of quantile in Hyndman and Fan (1996)
-(equivalent to Excel `PERCENTRANK.EXC`).
+  Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation
+  based on definition 6 of quantile in Hyndman and Fan (1996)
+  (equivalent to Excel `PERCENTRANK.EXC`).
 
 - `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise
-return `(count_less - 1) / (n - 1)`, without interpolation
-(equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
+  return `(count_less - 1) / (n - 1)`, without interpolation
+  (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
 
 - `:tied`: Return `(count_less + count_equal/2) / n`, without interpolation.
-Based on the definition in Roscoe, J. T. (1975)
-(equivalent to `"mean"` kind of SciPy `percentileofscore`).
+  Based on the definition in Roscoe, J. T. (1975)
+  (equivalent to `"mean"` kind of SciPy `percentileofscore`).
 
 - `:strict`: Return `count_less / n`, without interpolation
-(equivalent to `"strict"` kind of SciPy `percentileofscore`).
+  (equivalent to `"strict"` kind of SciPy `percentileofscore`).
 
 - `:weak`: Return `(count_less + count_equal) / n`, without interpolation
-(equivalent to `"weak"` kind of SciPy `percentileofscore`).
+  (equivalent to `"weak"` kind of SciPy `percentileofscore`).
 
 !!! note
     An `ArgumentError` is thrown if `itr` contains `NaN` or `missing` values
@@ -277,7 +279,7 @@ Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
 *The American Statistician*, Vol. 50, No. 4, pp. 361-365.
 
 # Examples
-```julia
+```julia-repl
 julia> using StatsBase
 
 julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];
@@ -431,7 +433,7 @@ Return the standard error of the mean for a collection `x`.
 A pre-computed `mean` may be provided.
 
 When not using weights, this is the (sample) standard deviation
-divided by the sample size. If weights are used, the
+divided by the square root of the sample size. If weights are used, the
 variance of the sample mean is calculated as follows:
 
 * `AnalyticWeights`: Not implemented.
@@ -740,7 +742,13 @@ function entropy(p)
     return -sum(xlogx, p)
 end
 
-entropy(p, b::Real) = entropy(p) / log(b)
+function entropy(p, b::Real)
+    e = entropy(p)
+    # Promote explicitly before applying `log` to avoid undesired promotions
+    # with `log(b)::Float64` arising from `b::Int` (ref: #924)
+    _b = first(promote(b, e))
+    return e / log(_b)
+end
 
 """
     renyientropy(p, α)
@@ -857,6 +865,7 @@ kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
 
 struct SummaryStats{T<:Union{AbstractFloat,Missing}}
     mean::T
+    sd::T
     min::T
     q25::T
     median::T
@@ -871,14 +880,16 @@ end
     summarystats(a)
 
 Compute summary statistics for a real-valued array `a`. Returns a
-`SummaryStats` object containing the mean, minimum, 25th percentile,
-median, 75th percentile, and maxmimum.
+`SummaryStats` object containing the number of observations,
+number of missing observations, standard deviation, mean, minimum,
+25th percentile, median, 75th percentile, and maximum.
 """
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
+    stdev = std(s, mean=m)
     R = typeof(m)
     n = length(a)
     ns = length(s)
@@ -889,7 +900,7 @@ function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     else
         quantile(s, [0.00, 0.25, 0.50, 0.75, 1.00])
     end
-    SummaryStats{R}(m, qs..., n, n - ns)
+    SummaryStats{R}(m, stdev, qs..., n, n - ns)
 end
 
 function Base.show(io::IO, ss::SummaryStats)
@@ -898,6 +909,7 @@ function Base.show(io::IO, ss::SummaryStats)
     ss.nobs > 0 || return
     @printf(io, "Missing Count:  %i\n", ss.nmiss)
     @printf(io, "Mean:           %.6f\n", ss.mean)
+    @printf(io, "Std. Deviation: %.6f\n", ss.sd)
     @printf(io, "Minimum:        %.6f\n", ss.min)
     @printf(io, "1st Quartile:   %.6f\n", ss.q25)
     @printf(io, "Median:         %.6f\n", ss.median)

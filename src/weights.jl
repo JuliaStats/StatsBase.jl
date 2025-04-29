@@ -230,11 +230,15 @@ If `n` is explicitly passed instead of `t`, `t` defaults to `1:n`.
 
 If `scale` is `true` then for each element `i` in `t` the weight value is computed as:
 
-``(1 - λ)^{n - i}``
+```math
+(1 - λ)^{n - i}
+```
 
 If `scale` is `false` then each value is computed as:
 
-``λ (1 - λ)^{1 - i}``
+```math
+λ (1 - λ)^{1 - i}
+```
 
 # Arguments
 
@@ -250,9 +254,9 @@ If `scale` is `false` then each value is computed as:
 - `scale::Bool`: Return the weights scaled to between 0 and 1 (default: false)
 
 # Examples
-```julia-repl
+```jldoctest
 julia> eweights(1:10, 0.3; scale=true)
-10-element Weights{Float64,Float64,Array{Float64,1}}:
+10-element Weights{Float64, Float64, Vector{Float64}}:
  0.04035360699999998
  0.05764800999999997
  0.08235429999999996
@@ -265,8 +269,8 @@ julia> eweights(1:10, 0.3; scale=true)
  1.0
 ```
 # Links
-- https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average
-- https://en.wikipedia.org/wiki/Exponential_smoothing
+- <https://en.wikipedia.org/wiki/Moving_average#Exponential_moving_average>
+- <https://en.wikipedia.org/wiki/Exponential_smoothing>
 """
 function eweights(t::AbstractArray{<:Integer}, λ::Real; kwargs...)
     isempty(t) && return Weights(copy(t), 0)
@@ -384,6 +388,14 @@ Base.:(==)(x::UnitWeights, y::UnitWeights)   = (x.len == y.len)
 
 Base.isequal(x::AbstractWeights, y::AbstractWeights) = false
 Base.:(==)(x::AbstractWeights, y::AbstractWeights)   = false
+
+# https://github.com/JuliaLang/julia/pull/43354
+if VERSION >= v"1.8.0-DEV.1494" # 98e60ffb11ee431e462b092b48a31a1204bd263d
+    Base.allequal(wv::AbstractWeights) = allequal(wv.values)
+    Base.allequal(::UnitWeights) = true
+end
+Base.allunique(wv::AbstractWeights) = allunique(wv.values)
+Base.allunique(wv::UnitWeights) = length(wv) <= 1
 
 ##### Weighted sum #####
 
@@ -586,6 +598,7 @@ wsumtype(::Type{T}, ::Type{T}) where {T<:BlasReal} = T
     wsum!(R::AbstractArray, A::AbstractArray,
           w::AbstractVector, dim::Int;
           init::Bool=true)
+
 Compute the weighted sum of `A` with weights `w` over the dimension `dim` and store
 the result in `R`. If `init=false`, the sum is added to `R` rather than starting
 from zero.
@@ -697,17 +710,18 @@ With [`FrequencyWeights`](@ref), the function returns the same result as
 `quantile` for a vector with repeated values. Weights must be integers.
 
 With non `FrequencyWeights`,  denote ``N`` the length of the vector, ``w`` the vector of weights,
-``h = p (\\sum_{i<= N} w_i - w_1) + w_1`` the cumulative weight corresponding to the
-probability ``p`` and ``S_k = \\sum_{i<=k} w_i`` the cumulative weight for each
+``h = p (\\sum_{i ≤ N} w_i - w_1) + w_1`` the cumulative weight corresponding to the
+probability ``p`` and ``S_k = \\sum_{i \\leq k} w_i`` the cumulative weight for each
 observation, define ``v_{k+1}`` the smallest element of `v` such that ``S_{k+1}``
-is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + \\gamma (v_{k+1} - v_k)``
-with  ``\\gamma = (h - S_k)/(S_{k+1} - S_k)``. In particular, when all weights are equal,
+is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + γ (v_{k+1} - v_k)``
+with ``γ = (h - S_k)/(S_{k+1} - S_k)``. In particular, when all weights are equal,
 the function returns the same result as the unweighted `quantile`.
 """
 function quantile(v::AbstractVector{<:Real}{V}, w::AbstractWeights{W}, p::AbstractVector{<:Real}) where {V,W<:Real}
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
+    isfinite(sum(w)) || throw(ArgumentError("only finite weights are supported"))
     all(x -> 0 <= x <= 1, p) || throw(ArgumentError("input probability out of [0,1] range"))
 
     w.sum == 0 && throw(ArgumentError("weight vector cannot sum to zero"))

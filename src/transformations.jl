@@ -47,6 +47,8 @@ reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
     vec(reconstruct(t, reshape(y, :, 1)))
 
 """
+    ZScoreTransform <: AbstractDataTransform
+
 Standardization (Z-score transformation)
 """
 struct ZScoreTransform{T<:Real, U<:AbstractVector{T}} <: AbstractDataTransform
@@ -201,6 +203,8 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::Abstract
 end
 
 """
+    UnitRangeTransform  <: AbstractDataTransform
+
 Unit range normalization
 """
 struct UnitRangeTransform{T<:Real, U<:AbstractVector}  <: AbstractDataTransform
@@ -237,7 +241,7 @@ and return a `UnitRangeTransform` transformation object.
 # Keyword arguments
 
 * `dims`: if `1` fit standardization parameters in column-wise fashion;
- if `2` fit in row-wise fashion. The default is `nothing`.
+  if `2` fit in row-wise fashion. The default is `nothing`.
 
 * `unit`: if `true` (the default) shift the minimum data to zero.
 
@@ -341,8 +345,8 @@ end
 """
     standardize(DT, X; dims=nothing, kwargs...)
 
- Return a standardized copy of vector or matrix `X` along dimensions `dims`
- using transformation `DT` which is a subtype of `AbstractDataTransform`:
+Return a standardized copy of vector or matrix `X` along dimensions `dims`
+using transformation `DT` which is a subtype of `AbstractDataTransform`:
 
 - `ZScoreTransform`
 - `UnitRangeTransform`

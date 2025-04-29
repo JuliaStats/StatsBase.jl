@@ -9,6 +9,7 @@ z = [1, 1, 2, 2, 2, 3, 1, 2, 2, 3, 3, 3, 3]
 @test lens == [2, 3, 1, 1, 2, 4]
 @test inverse_rle(vals, lens) == z
 @test_throws ArgumentError inverse_rle(vals, fill(-1, length(lens)))
+@test_throws DimensionMismatch inverse_rle(vals, [1])
 
 z = [true, true, false, false, true, false, true, true, true]
 vals, lens = rle(z)
@@ -55,6 +56,7 @@ describe(io, collect(1:10))
                            Length:         10
                            Missing Count:  0
                            Mean:           5.500000
+                           Std. Deviation: 3.027650
                            Minimum:        1.000000
                            1st Quartile:   3.250000
                            Median:         5.500000
@@ -69,6 +71,7 @@ describe(io, Union{Float32,Missing}[1.0, 4.5, missing, missing, 33.1])
                            Length:         5
                            Missing Count:  2
                            Mean:           12.866666
+                           Std. Deviation: 17.609751
                            Minimum:        1.000000
                            1st Quartile:   2.750000
                            Median:         4.500000

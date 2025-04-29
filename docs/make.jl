@@ -5,6 +5,8 @@ if Base.HOME_PROJECT[] !== nothing
     Base.HOME_PROJECT[] = abspath(Base.HOME_PROJECT[])
 end
 
+DocMeta.setdocmeta!(StatsBase, :DocTestSetup, :(using StatsBase))
+
 makedocs(
     sitename = "StatsBase.jl",
     modules = [StatsBase, StatsAPI],
@@ -23,7 +25,6 @@ makedocs(
              "misc.md",
              "statmodels.md",
              "transformations.md"],
-    strict=true,
     checkdocs=:exports
 )
 
