@@ -121,16 +121,7 @@ function _pairwise!(f, dest::AbstractMatrix, x, y;
     return _pairwise!(Val(skipmissing), f, dest, x′, y′, symmetric)
 end
 
-if VERSION >= v"1.6.0-DEV"
-    # Function has moved in Julia 1.7
-    if isdefined(Base, :typejoin_union_tuple)
-        using Base: typejoin_union_tuple
-    else
-        using Base.Broadcast: typejoin_union_tuple
-    end
-else
-    typejoin_union_tuple(::Type) = Any
-end
+using Base: typejoin_union_tuple
 
 # Identical to `Base.promote_typejoin` except that it uses `promote_type`
 # instead of `typejoin` to combine members of `Union` types
