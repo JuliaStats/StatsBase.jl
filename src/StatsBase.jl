@@ -242,14 +242,6 @@ export
     CronbachAlpha,        # the type to represent Cronbach's alpha scores
     cronbachalpha         # function to compute Cronbach's alpha scores
 
-# https://github.com/JuliaLang/julia/pull/30630
-if VERSION < v"1.2.0-DEV.125" # 1da48c2e4028c1514ed45688be727efbef1db884
-    require_one_based_indexing(A...) = !Base.has_offset_axes(A...) || throw(ArgumentError(
-        "offset arrays are not supported but got an array with index other than 1"))
-else
-    using Base: require_one_based_indexing
-end
-
 # source files
 
 include("common.jl")

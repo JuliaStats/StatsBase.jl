@@ -144,7 +144,7 @@ Convert the covariance matrix `C` to a correlation matrix in-place, optionally u
 standard deviations `s`.
 """
 function cov2cor!(C::AbstractMatrix, s::AbstractArray = map(sqrt, view(C, diagind(C))))
-    require_one_based_indexing(C, s)
+    Base.require_one_based_indexing(C, s)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
     for j = 1:n
@@ -206,7 +206,7 @@ Convert the correlation matrix `C` to a covariance matrix in-place using a vecto
 standard deviations `s`.
 """
 function cor2cov!(C::AbstractMatrix, s::AbstractArray)
-    require_one_based_indexing(C, s)
+    Base.require_one_based_indexing(C, s)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
     for j in 1:n
