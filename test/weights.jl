@@ -468,10 +468,8 @@ end
     @test_throws ArgumentError median(Float64[], f(Float64[]))
     wt = [1, 2, 3, 4, 5]
     @test_throws ArgumentError median(data, f(wt))
-    if VERSION >= v"1.0"
-        @test_throws MethodError median([4 3 2 1 0], f(wt))
-        @test_throws MethodError median([[1 2] ; [4 5] ; [7 8] ; [10 11] ; [13 14]], f(wt))
-    end
+    @test_throws MethodError median([4 3 2 1 0], f(wt))
+    @test_throws MethodError median([[1 2] ; [4 5] ; [7 8] ; [10 11] ; [13 14]], f(wt))
     data = [1, 3, 2, NaN, 2]
     @test isnan(median(data, f(wt)))
     wt = [1, 2, NaN, 4, 5]
