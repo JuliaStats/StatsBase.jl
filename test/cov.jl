@@ -6,6 +6,27 @@ struct EmptyCovarianceEstimator <: CovarianceEstimator end
 @testset "StatsBase.Covariance" begin
 weight_funcs = (weights, aweights, fweights, pweights)
 
+function test_isapprox_preserves_symherm_structure(f::F, x::AbstractMatrix, y::AbstractMatrix, args...) where F
+    for wrapper in (identity, x -> Symmetric(x, :U), x -> Symmetric(x, :L), x -> Hermitian(x, :U), x -> Hermitian(x, :L))
+        A = wrapper(copy(x))
+        fA = @inferred(f(A, args...))
+        @test fA ≈ y
+        if f === StatsBase.cov2cor! || f === StatsBase.cor2cov!
+            @test fA === A
+            if A isa Union{Symmetric,Hermitian}
+                @test parent(fA) != fA # only active triangle is written to
+            end
+        else
+            @test fA !== A
+            if A isa Union{Symmetric,Hermitian}
+                @test fA isa (A isa Symmetric ? Symmetric : Hermitian)
+                @test fA.uplo == A.uplo
+                @test parent(fA) != fA # only active triangle is written to
+            end
+        end
+    end
+end
+
 @testset "$f" for f in weight_funcs
     X = randn(3, 8)
 
@@ -120,18 +141,32 @@ weight_funcs = (weights, aweights, fweights, pweights)
             cor2 = cor(X, wv2, 2)
 
             @testset "cov2cor" begin
-                @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
-                @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                @test cov2cor(cov1) ≈ cor1
-                @test cov2cor(cov2) ≈ cor2
-                @test cov2cor(cov1, std1) ≈ cor1
-                @test cov2cor(cov2, std2) ≈ cor2
+                test_isapprox_preserves_symherm_structure(cov2cor, cov(X, dims = 1), cor(X, dims = 1), std(X, dims = 1))
+                test_isapprox_preserves_symherm_structure(cov2cor, cov(X, dims = 2), cor(X, dims = 2), std(X, dims = 2))
+                test_isapprox_preserves_symherm_structure(cov2cor, cov1, cor1)
+                test_isapprox_preserves_symherm_structure(cov2cor, cov2, cor2)
+                test_isapprox_preserves_symherm_structure(cov2cor, cov1, cor1, std1)
+                test_isapprox_preserves_symherm_structure(cov2cor, cov2, cor2, std2)
+            end
+            @testset "StatsBase.cov2cor!" begin
+                test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov(X, dims = 1), cor(X, dims = 1), std(X, dims = 1))
+                test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov(X, dims = 2), cor(X, dims = 2), std(X, dims = 2))
+                test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov1, cor1)
+                test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov2, cor2)
+                test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov1, cor1, std1)
+                test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov2, cor2, std2)
             end
             @testset "cor2cov" begin
-                @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
-                @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
-                @test cor2cov(cor1, std1) ≈ cov1
-                @test cor2cov(cor2, std2) ≈ cov2
+                test_isapprox_preserves_symherm_structure(cor2cov, cor(X, dims = 1), cov(X, dims = 1), std(X, dims = 1))
+                test_isapprox_preserves_symherm_structure(cor2cov, cor(X, dims = 2), cov(X, dims = 2), std(X, dims = 2))
+                test_isapprox_preserves_symherm_structure(cor2cov, cor1, cov1, std1)
+                test_isapprox_preserves_symherm_structure(cor2cov, cor2, cov2, std2)
+            end
+            @testset "StatsBase.cor2cov!" begin
+                test_isapprox_preserves_symherm_structure(StatsBase.cor2cov!, cor(X, dims = 1), cov(X, dims = 1), std(X, dims = 1))
+                test_isapprox_preserves_symherm_structure(StatsBase.cor2cov!, cor(X, dims = 2), cov(X, dims = 2), std(X, dims = 2))
+                test_isapprox_preserves_symherm_structure(StatsBase.cor2cov!, cor1, cov1, std1)
+                test_isapprox_preserves_symherm_structure(StatsBase.cor2cov!, cor2, cov2, std2)
             end
         end
     end
@@ -198,41 +233,24 @@ weight_funcs = (weights, aweights, fweights, pweights)
                 cor2 = cor(X, wv2, 2)
 
                 @testset "cov2cor" begin
-                    @test cov2cor(cov(X, dims = 1), std(X, dims = 1)) ≈ cor(X, dims = 1)
-                    @test cov2cor(cov(X, dims = 2), std(X, dims = 2)) ≈ cor(X, dims = 2)
-                    @test cov2cor(cov1, std1) ≈ cor1
-                    @test cov2cor(cov2, std2) ≈ cor2
+                    test_isapprox_preserves_symherm_structure(cov2cor, cov1, cor1)
+                    test_isapprox_preserves_symherm_structure(cov2cor, cov2, cor2)
+                    test_isapprox_preserves_symherm_structure(cov2cor, cov1, cor1, std1)
+                    test_isapprox_preserves_symherm_structure(cov2cor, cov2, cor2, std2)
                 end
-
-                @testset "cov2cor!" begin
-                    tmp_cov1 = copy(cov1)
-                    @test !(tmp_cov1 ≈ cor1)
-                    StatsBase.cov2cor!(tmp_cov1, std1)
-                    @test tmp_cov1 ≈ cor1
-
-                    tmp_cov2 = copy(cov2)
-                    @test !(tmp_cov2 ≈ cor2)
-                    StatsBase.cov2cor!(tmp_cov2, std2)
-                    @test tmp_cov2 ≈ cor2
+                @testset "StatsBase.cov2cor!" begin
+                    test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov1, cor1)
+                    test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov2, cor2)
+                    test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov1, cor1, std1)
+                    test_isapprox_preserves_symherm_structure(StatsBase.cov2cor!, cov2, cor2, std2)
                 end
-
                 @testset "cor2cov" begin
-                    @test cor2cov(cor(X, dims = 1), std(X, dims = 1)) ≈ cov(X, dims = 1)
-                    @test cor2cov(cor(X, dims = 2), std(X, dims = 2)) ≈ cov(X, dims = 2)
-                    @test cor2cov(cor1, std1) ≈ cov1
-                    @test cor2cov(cor2, std2) ≈ cov2
+                    test_isapprox_preserves_symherm_structure(cor2cov, cor1, cov1, std1)
+                    test_isapprox_preserves_symherm_structure(cor2cov, cor2, cov2, std2)
                 end
-
-                @testset "cor2cov!" begin
-                    tmp_cor1 = copy(cor1)
-                    @test !(tmp_cor1 ≈ cov1)
-                    StatsBase.cor2cov!(tmp_cor1, std1)
-                    @test tmp_cor1 ≈ cov1
-
-                    tmp_cor2 = copy(cor2)
-                    @test !(tmp_cor2 ≈ cov2)
-                    StatsBase.cor2cov!(tmp_cor2, std2)
-                    @test tmp_cor2 ≈ cov2
+                @testset "StatsBase.cor2cov!" begin
+                    test_isapprox_preserves_symherm_structure(StatsBase.cor2cov!, cor1, cov1, std1)
+                    test_isapprox_preserves_symherm_structure(StatsBase.cor2cov!, cor2, cov2, std2)
                 end
             end
         end
