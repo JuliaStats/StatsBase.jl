@@ -84,11 +84,7 @@ ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
 
 @test sprint(show, PValue(1.0)) == "1.0000"
 @test sprint(show, PValue(1e-1)) == "0.1000"
-if VERSION > v"1.6.0-DEV"
-    @test sprint(show, PValue(1e-5)) == "<1e-04"
-else
-    @test sprint(show, PValue(1e-5)) == "<1e-4"
-end
+@test sprint(show, PValue(1e-5)) == "<1e-04"
 @test sprint(show, PValue(NaN)) == "NaN"
 @test_throws ErrorException PValue(-0.1)
 @test_throws ErrorException PValue(1.1)

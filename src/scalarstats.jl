@@ -240,30 +240,30 @@ Let `count_less` be the number of elements of `itr` that are less than `value`,
 Then `method` supports the following definitions:
 
 - `:inc` (default): Return a value in the range 0 to 1 inclusive.
-Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on
-definition 7 of quantile in Hyndman and Fan (1996)
-(equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
-This definition corresponds to the lower semi-continuous inverse of
-[`quantile`](@ref) with its default parameters.
+  Return `count_less / (n - 1)` if `value ∈ itr`, otherwise apply interpolation based on
+  definition 7 of quantile in Hyndman and Fan (1996)
+  (equivalent to Excel `PERCENTRANK` and `PERCENTRANK.INC`).
+  This definition corresponds to the lower semi-continuous inverse of
+  [`quantile`](@ref) with its default parameters.
 
 - `:exc`: Return a value in the range 0 to 1 exclusive.
-Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation
-based on definition 6 of quantile in Hyndman and Fan (1996)
-(equivalent to Excel `PERCENTRANK.EXC`).
+  Return `(count_less + 1) / (n + 1)` if `value ∈ itr` otherwise apply interpolation
+  based on definition 6 of quantile in Hyndman and Fan (1996)
+  (equivalent to Excel `PERCENTRANK.EXC`).
 
 - `:compete`: Return `count_less / (n - 1)` if `value ∈ itr`, otherwise
-return `(count_less - 1) / (n - 1)`, without interpolation
-(equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
+  return `(count_less - 1) / (n - 1)`, without interpolation
+  (equivalent to MariaDB `PERCENT_RANK`, dplyr `percent_rank`).
 
 - `:tied`: Return `(count_less + count_equal/2) / n`, without interpolation.
-Based on the definition in Roscoe, J. T. (1975)
-(equivalent to `"mean"` kind of SciPy `percentileofscore`).
+  Based on the definition in Roscoe, J. T. (1975)
+  (equivalent to `"mean"` kind of SciPy `percentileofscore`).
 
 - `:strict`: Return `count_less / n`, without interpolation
-(equivalent to `"strict"` kind of SciPy `percentileofscore`).
+  (equivalent to `"strict"` kind of SciPy `percentileofscore`).
 
 - `:weak`: Return `(count_less + count_equal) / n`, without interpolation
-(equivalent to `"weak"` kind of SciPy `percentileofscore`).
+  (equivalent to `"weak"` kind of SciPy `percentileofscore`).
 
 !!! note
     An `ArgumentError` is thrown if `itr` contains `NaN` or `missing` values
@@ -279,7 +279,7 @@ Hyndman, R.J and Fan, Y. (1996) "[Sample Quantiles in Statistical Packages]
 *The American Statistician*, Vol. 50, No. 4, pp. 361-365.
 
 # Examples
-```julia
+```julia-repl
 julia> using StatsBase
 
 julia> v1 = [1, 1, 1, 2, 3, 4, 8, 11, 12, 13];

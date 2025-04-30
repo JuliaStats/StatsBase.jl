@@ -155,7 +155,7 @@ closed: right
 isdensity: false
 ```
 ## Example illustrating `isdensity`
-```julia
+```jldoctest
 julia> using StatsBase, LinearAlgebra
 
 julia> bins = [0,1,7]; # a small and a large bin
@@ -163,7 +163,7 @@ julia> bins = [0,1,7]; # a small and a large bin
 julia> obs = [0.5, 1.5, 1.5, 2.5]; # one observation in the small bin and three in the large
 
 julia> h = fit(Histogram, obs, bins)
-Histogram{Int64,1,Tuple{Array{Int64,1}}}
+Histogram{Int64, 1, Tuple{Vector{Int64}}}
 edges:
   [0, 1, 7]
 weights: [1, 3]
@@ -173,7 +173,7 @@ isdensity: false
 julia> # observe isdensity = false and the weights field records the number of observations in each bin
 
 julia> normalize(h, mode=:density)
-Histogram{Float64,1,Tuple{Array{Int64,1}}}
+Histogram{Float64, 1, Tuple{Vector{Int64}}}
 edges:
   [0, 1, 7]
 weights: [1.0, 0.5]
@@ -459,7 +459,8 @@ float(h::Histogram{T,N}) where {T,N} = Histogram(h.edges, float(h.weights), h.cl
 
 
 """
-    normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N}
+    normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...;
+               mode::Symbol=:pdf) where {T<:AbstractFloat,N}
 
 Normalize the histogram `h` and optionally scale one or more auxiliary weight
 arrays appropriately. See description of `normalize` for details. Returns `h`.

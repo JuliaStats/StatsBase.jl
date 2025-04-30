@@ -41,9 +41,9 @@ To compute the trimmed mean of `x` use `mean(trim(x))`;
 to compute the variance use `trimvar(x)` (see [`trimvar`](@ref)).
 
 # Example
-```julia
+```jldoctest
 julia> collect(trim([5,2,4,3,1], prop=0.2))
-3-element Array{Int64,1}:
+3-element Vector{Int64}:
  2
  4
  3
@@ -80,9 +80,9 @@ elements equal the lower or upper bound.
 To compute the Winsorized mean of `x` use `mean(winsor(x))`.
 
 # Example
-```julia
+```jldoctest
 julia> collect(winsor([5,2,3,4,1], prop=0.2))
-5-element Array{Int64,1}:
+5-element Vector{Int64}:
  4
  2
  3

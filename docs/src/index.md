@@ -19,7 +19,7 @@ Pkg.add("StatsBase")
 ```
 
 To load the package, use the command:
-```
+```julia
 using StatsBase
 ```
 

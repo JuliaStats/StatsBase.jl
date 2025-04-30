@@ -110,21 +110,19 @@ arbitrary_fun(x, y) = cor(x, y)
         @test isapprox(res, [f(view(xi, nminds), view(yi, nminds)) for xi in xm, yi in ym],
                        rtol=1e-6)
 
-        if VERSION >= v"1.6.0-DEV"
-            # inference of cor fails so use an inferrable function
-            # to check that pairwise itself is inferrable
-            for skipmissing in (:none, :pairwise, :listwise)
-                g(x, y=x) = pairwise((x, y) -> x[1] * y[1], x, y, skipmissing=skipmissing)
-                @test Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}}}) ==
-                    Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}},
-                                                    Vector{Vector{Union{Float64, Missing}}}}) ==
-                    Matrix{<: Union{Float64, Missing}}
-                if skipmissing in (:pairwise, :listwise)
-                    @test_broken Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}}}) ==
-                        Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}},
-                                                        Vector{Vector{Union{Float64, Missing}}}}) ==
-                        Matrix{Float64}
-                end
+        # inference of cor fails so use an inferrable function
+        # to check that pairwise itself is inferrable
+        for skipmissing in (:none, :pairwise, :listwise)
+            g(x, y=x) = pairwise((x, y) -> x[1] * y[1], x, y, skipmissing=skipmissing)
+            @test Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}}}) ==
+                  Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}},
+                                                     Vector{Vector{Union{Float64, Missing}}}}) ==
+                  Matrix{<: Union{Float64, Missing}}
+            if skipmissing in (:pairwise, :listwise)
+                @test_broken Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}}}) ==
+                             Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}},
+                                                                Vector{Vector{Union{Float64, Missing}}}}) ==
+                             Matrix{Float64}
             end
         end
 
@@ -143,14 +141,12 @@ arbitrary_fun(x, y) = cor(x, y)
         @test pairwise!(f, res2, xm, ym) === res2
         @test res ≅ res2 ≅ [f(xi, yi) for xi in xm, yi in ym]
 
-        if VERSION >= v"1.5" # Fails with UndefVarError on Julia 1.0
-            @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym, skipmissing=:pairwise)
-            @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym, skipmissing=:listwise)
+        @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym, skipmissing=:pairwise)
+        @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym, skipmissing=:listwise)
 
-            res = zeros(Union{Float64, Missing}, length(xm), length(ym))
-            @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym, skipmissing=:pairwise)
-            @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym, skipmissing=:listwise)
-        end
+        res = zeros(Union{Float64, Missing}, length(xm), length(ym))
+        @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym, skipmissing=:pairwise)
+        @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym, skipmissing=:listwise)
 
         for sm in (:pairwise, :listwise)
             @test_throws ArgumentError pairwise(f, [[1, 2]], [1], skipmissing=sm)
@@ -237,25 +233,21 @@ arbitrary_fun(x, y) = cor(x, y)
         @test res isa Matrix{Union{Float64, Missing}}
         @test res ≅ [1.0 missing
                      missing 1.0]
-        if VERSION >= v"1.5"
-            # except when eltype is Missing
-            res = pairwise(cor, [[missing, missing, missing],
-                                 [missing, missing, missing]])
-            @test res isa Matrix{Missing}
-            @test res ≅ [missing missing
-                         missing missing]
-        end
+        # except when eltype is Missing
+        res = pairwise(cor, [[missing, missing, missing],
+                             [missing, missing, missing]])
+        @test res isa Matrix{Missing}
+        @test res ≅ [missing missing
+                     missing missing]
 
         for sm in (:pairwise, :listwise)
             res = pairwise(cor, [[1, 2, NaN, 4], [1, 5, 5, missing]], skipmissing=sm)
             @test res isa Matrix{Float64}
             @test res ≅ [1.0 NaN
                          NaN 1.0]
-            if VERSION >= v"1.5"
-                @test_throws ArgumentError pairwise(cor, [[missing, missing, missing],
-                                                          [missing, missing, missing]],
-                                                    skipmissing=sm)
-            end
+            @test_throws ArgumentError pairwise(cor, [[missing, missing, missing],
+                                                      [missing, missing, missing]],
+                                                skipmissing=sm)
         end
     end
 
@@ -267,13 +259,8 @@ arbitrary_fun(x, y) = cor(x, y)
         @test StatsBase.promote_type_union(Union{Int, String}) === Any
         @test StatsBase.promote_type_union(Vector) === Any
         @test StatsBase.promote_type_union(Union{}) === Union{}
-        if VERSION >= v"1.6.0-DEV"
-            @test StatsBase.promote_type_union(Tuple{Union{Int, Float64}}) ===
-                Tuple{Real}
-        else
-            @test StatsBase.promote_type_union(Tuple{Union{Int, Float64}}) ===
-                Any
-        end
+        @test StatsBase.promote_type_union(Tuple{Union{Int, Float64}}) ===
+              Tuple{Real}
     end
 
     @testset "type-unstable corner case (#771)" begin

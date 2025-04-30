@@ -271,7 +271,8 @@ cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector) =
     error("cov is not defined for $(typeof(ce)), $(typeof(x)) and $(typeof(y))")
 
 """
-    cov(ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights]; mean=nothing, dims::Int=1)
+    cov(ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights];
+        mean=nothing, dims::Int=1)
 
 Compute the covariance matrix of the matrix `X` along dimension `dims`
 using estimator `ce`. A weighting vector `w` can be specified.
@@ -321,10 +322,8 @@ function cor(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
 end
 
 """
-    cor(
-        ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights];
-        mean=nothing, dims::Int=1
-    )
+    cor(ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights];
+        mean=nothing, dims::Int=1)
 
 Compute the correlation matrix of the matrix `X` along dimension `dims`
 using estimator `ce`. A weighting vector `w` can be specified.
