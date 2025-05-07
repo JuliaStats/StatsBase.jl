@@ -94,3 +94,16 @@ describe(io, fill("s", 3))
                            Type:           String
                            Number Unique:  1
                            """
+describe(io, reshape(collect(1:100), (10, 10)))
+@test String(take!(io)) == """
+                           Summary Stats:
+                           Length:         100
+                           Missing Count:  0
+                           Mean:           50.500000
+                           Minimum:        1.000000
+                           1st Quartile:   25.750000
+                           Median:         50.500000
+                           3rd Quartile:   75.250000
+                           Maximum:        100.000000
+                           Type:           $Int
+                           """
