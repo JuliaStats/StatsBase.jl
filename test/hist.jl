@@ -173,6 +173,7 @@ end
     @test normalize(h_density, mode = :pdf).weights ≈ h_pdf.weights
     @test normalize(h_density, mode = :density) == h_density
     @test normalize(h_density, mode = :probability).weights ≈ h_pdf.weights
+    @test normalize(h_density, mode = :percentage).weights ≈ h_pdf.weights * 100
 
     h_fraction = normalize(h, mode = :probability)
     @test sum(h_fraction.weights) ≈ 1
@@ -180,6 +181,7 @@ end
     @test normalize(h_fraction, mode = :pdf).weights ≈ h_pdf.weights
     @test normalize(h_fraction, mode = :density).weights ≈ h_pdf.weights
     @test normalize(h_fraction, mode = :probability).weights ≈ h_fraction.weights
+    @test normalize(h_fraction, mode = :percentage).weights ≈ h_fraction.weights * 100
 
     h_copy = deepcopy(float(h))
     @test @inferred(normalize!(h_copy, mode = :density)) == h_copy
