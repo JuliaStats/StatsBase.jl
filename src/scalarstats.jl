@@ -536,7 +536,7 @@ If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing)
+function mad(x; center=nothing, normalize::Bool=false)
     mad!(Base.copymutable(x); center=center, normalize=normalize)
 end
 
@@ -552,19 +552,14 @@ of the standard deviation under the assumption that the data is normally distrib
 """
 function mad!(x::AbstractArray;
               center=median!(x),
-              normalize::Union{Bool,Nothing}=false)
+              normalize::Bool=false)
     isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
-    c = center === nothing ? median!(x) : center
-    T = promote_type(typeof(c), eltype(x))
+    T = promote_type(typeof(center), eltype(x))
     U = eltype(x)
     x2 = U == T ? x : isconcretetype(U) && isconcretetype(T) && sizeof(U) == sizeof(T) ? reinterpret(T, x) : similar(x, T)
-    x2 .= abs.(x .- c)
+    x2 .= abs.(x .- center)
     m = median!(x2)
-    if normalize === true
-        m * mad_to_std_multiplier
-    else
-        m
-    end
+    normalize ? m * mad_to_std_multiplier : m
 end
 
 # Interquartile range
