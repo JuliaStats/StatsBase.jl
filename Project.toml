@@ -20,7 +20,7 @@ StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 [compat]
 AliasTables = "1"
 DataAPI = "1"
-DataStructures = "0.10, 0.11, 0.12, 0.13, 0.14, 0.17, 0.18"
+DataStructures = "0.10, 0.11, 0.12, 0.13, 0.14, 0.17, 0.18, 0.19"
 JET = "0.9.18, 0.10"
 LinearAlgebra = "<0.0.1, 1"
 LogExpFunctions = "0.3"
