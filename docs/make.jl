@@ -10,6 +10,7 @@ DocMeta.setdocmeta!(StatsBase, :DocTestSetup, :(using StatsBase))
 makedocs(
     sitename = "StatsBase.jl",
     modules = [StatsBase, StatsAPI],
+    format = Documenter.HTML(assets = ["assets/favicon.ico"]),
     pages = ["index.md",
              "weights.md",
              "scalarstats.md",
