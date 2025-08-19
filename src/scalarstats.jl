@@ -887,6 +887,7 @@ number of missing observations, standard deviation, mean, minimum,
 function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
+    a = length(size(a)) != 1 ? a[:] : a
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
     stdev = std(s, mean=m)
