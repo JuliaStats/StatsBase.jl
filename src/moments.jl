@@ -161,86 +161,56 @@ end
 
 ##### General central moment
 function _moment2(v::AbstractArray{<:Real}, m::Real; corrected=false)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        s += z * z
-    end
-    varcorrection(n, corrected) * s
+    s = sum(x->abs2(x-m), v, init=zero(m))
+    return varcorrection(length(v), corrected) * s
 end
 
 function _moment2(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real; corrected=false)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += (z * z) * wv[i]
-    end
-
-    varcorrection(wv, corrected) * s
+    s = sum(i -> (@inbounds abs2(v[i] - m) * wv[i]), eachindex(v), init=zero(m))
+    return varcorrection(wv, corrected) * s
 end
 
 function _moment3(v::AbstractArray{<:Real}, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        s += z * z * z
-    end
-    s / n
+    s = sum(x->(x-m)^3, v, init=zero(m))
+    return s/length(v)
 end
 
 function _moment3(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += (z * z * z) * wv[i]
-    end
-    s / sum(wv)
+    s = sum(
+        i -> (@inbounds (z = (v[i] - m); z * z * z * wv[i])),
+        eachindex(v),
+        init=zero(m),
+    )
+    return s/sum(wv)
 end
 
 function _moment4(v::AbstractArray{<:Real}, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        s += abs2(z * z)
-    end
-    s / n
+    s = sum(x-> (z = x-m; abs2(z*z)), v, init=zero(m))
+    return s/length(v)
 end
 
 function _moment4(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += abs2(z * z) * wv[i]
-    end
-    s / sum(wv)
+    s = sum(
+        i -> (@inbounds (z = (v[i] - m); abs2(z * z) * wv[i])),
+        eachindex(v),
+        init=zero(m),
+    )
+    return s/sum(wv)
 end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        s += (z ^ k)
-    end
-    s / n
+    s = sum(x -> (x - m)^k, v, init=zero(m))
+    return s/length(v)
 end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += (z ^ k) * wv[i]
-    end
-    s / sum(wv)
+    s = sum(
+        i -> (@inbounds (z = (v[i] - m); z^k * wv[i])),
+        eachindex(v),
+        init=zero(m),
+    )
+    return s/sum(wv)
 end
-
 
 """
     moment(v, k, [wv::AbstractWeights], m=mean(v))
