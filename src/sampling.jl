@@ -603,6 +603,9 @@ sample(wv::AbstractWeights) = sample(default_rng(), wv)
 sample(rng::AbstractRNG, a::AbstractArray, wv::AbstractWeights) = a[sample(rng, wv)]
 sample(a::AbstractArray, wv::AbstractWeights) = sample(default_rng(), a, wv)
 
+# Specialization for `UnitWeights`
+sample(rng::AbstractRNG, wv::UnitWeights) = rand(rng, 1:length(wv))
+
 """
     direct_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
 
@@ -632,6 +635,14 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray,
 end
 direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(default_rng(), a, wv, x)
+
+# Specialization for `UnitWeights`
+function direct_sample!(rng::AbstractRNG, a::AbstractArray, wv::UnitWeights, x::AbstractArray)
+    if length(a) != length(wv)
+        throw(DimensionMismatch(lazy"Number of samples ($(length(a))) and sample weights ($(length(wv))) must be equal."))
+    end
+    return direct_sample!(rng, a, x)
+end
 
 """
     alias_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
@@ -741,7 +752,7 @@ function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     # calculate keys for all items
     keys = randexp(rng, n)
     for i in 1:n
-        @inbounds keys[i] = wv.values[i]/keys[i]
+        @inbounds keys[i] = wv[i]/keys[i]
     end
 
     # return items with largest keys
@@ -787,7 +798,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     s = 0
     @inbounds for _s in 1:n
         s = _s
-        w = wv.values[s]
+        w = wv[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
         if w > 0
             i += 1
@@ -802,7 +813,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     @inbounds threshold = pq[1].first
 
     @inbounds for i in s+1:n
-        w = wv.values[i]
+        w = wv[i]
         w < 0 && error("Negative weight found in weight vector at index $i")
         w > 0 || continue
         key = w/randexp(rng)
@@ -861,7 +872,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     s = 0
     @inbounds for _s in 1:n
         s = _s
-        w = wv.values[s]
+        w = wv[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
         if w > 0
             i += 1
@@ -877,7 +888,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     X = threshold*randexp(rng)
 
     @inbounds for i in s+1:n
-        w = wv.values[i]
+        w = wv[i]
         w < 0 && error("Negative weight found in weight vector at index $i")
         w > 0 || continue
         X -= w
@@ -957,6 +968,14 @@ sample(rng::AbstractRNG, a::AbstractArray{T}, wv::AbstractWeights, dims::Dims;
 sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
        replace::Bool=true, ordered::Bool=false) =
     sample(default_rng(), a, wv, dims; replace=replace, ordered=ordered)
+
+# Specialization for `UnitWeights`
+function sample!(rng::AbstractRNG, a::AbstractArray, wv::UnitWeights, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
+    if length(a) != length(wv)
+        throw(DimensionMismatch(lazy"Number of samples ($(length(a))) and sample weights ($(length(wv))) must be equal."))
+    end
+    return sample!(rng, a, x; replace, ordered)
+end
 
 # wsample interface
 

@@ -297,3 +297,51 @@ end
         end
     end
 end
+
+# Custom unit weights without `values` field
+struct YAUnitWeights <: StatsBase.AbstractWeights{Int, Int, Vector{Int}}
+    n::Int
+end
+Base.sum(wv::YAUnitWeights) = wv.n
+Base.length(wv::YAUnitWeights) = wv.n
+Base.isempty(wv::YAUnitWeights) = iszero(wv.n)
+Base.size(wv::YAUnitWeights) = (wv.n,)
+Base.axes(wv::YAUnitWeights) = (Base.OneTo(wv.n),)
+function Base.getindex(wv::YAUnitWeights, i::Int)
+    @boundscheck checkbounds(wv, i)
+    return 1
+end
+
+@testset "issue #950" begin
+    # Sampling with unit weights behaves the same as sampling without weights
+    Random.seed!(123)
+    xs = sample(1:100, uweights(100), 10; replace=false)
+    Random.seed!(123)
+    @test xs == sample(1:100, 10; replace=false)
+
+    Random.seed!(123)
+    x = sample(uweights(100))
+    Random.seed!(123)
+    @test x == sample(1:100)
+
+    Random.seed!(123)
+    xs = direct_sample!(1:100, uweights(100), Vector{Int}(undef, 10))
+    Random.seed!(123)
+    @test xs == direct_sample!(1:100, Vector{Int}(undef, 10))
+
+    # Errors
+    @test_throws DimensionMismatch("Number of samples (100) and sample weights (99) must be equal.") sample(1:100, uweights(99), 10; replace=false)
+    @test_throws DimensionMismatch("Number of samples (80) and sample weights (53) must be equal.") direct_sample!(1:80, uweights(53), Vector{Int}(undef, 10))
+
+    # Custom units don't error and behave the same as sampling with `Weights`
+    Random.seed!(123)
+    xs = sample(1:100, YAUnitWeights(100), 10; replace=false)
+    Random.seed!(123)
+    @test xs == sample(1:100, weights(ones(Int, 100)), 10; replace=false)
+    for f in (StatsBase.efraimidis_a_wsample_norep!, StatsBase.efraimidis_ares_wsample_norep!, StatsBase.efraimidis_aexpj_wsample_norep!)
+        Random.seed!(123)
+        xs = f(1:100, YAUnitWeights(100), Vector{Int}(undef, 10))
+        Random.seed!(123)
+        @test xs == f(1:100, weights(ones(Int, 100)), Vector{Int}(undef, 10))
+    end
+end
