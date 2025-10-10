@@ -42,7 +42,7 @@ function (ecdf::ECDF)(v::AbstractVector{<:Real})
 end
 
 """
-    ecdf(X; weights::AbstractWeights)
+    ecdf(X[; weights::AbstractVector{<:Real}])
 
 Return an empirical cumulative distribution function (ECDF) based on a vector of samples
 given in `X`. Optionally providing `weights` returns a weighted ECDF.
@@ -53,12 +53,17 @@ evaluate CDF values on other samples.
 `extrema`, `minimum`, and `maximum` are supported to for obtaining the range over which
 function is inside the interval ``(0,1)``; the function is defined for the whole real line.
 """
-function ecdf(X::AbstractVector{<:Real}; weights::AbstractVector{<:Real}=Weights(Float64[]))
+function ecdf(X::AbstractVector{<:Real}; weights::AbstractVector{<:Real}=weights(Float64[]))
     any(isnan, X) && throw(ArgumentError("ecdf can not include NaN values"))
-    isempty(weights) || length(X) == length(weights) || throw(ArgumentError("data and weight vectors must be the same size," *
-        "got $(length(X)) and $(length(weights))"))
-    ord = sortperm(X)
-    ECDF(X[ord], isempty(weights) ? weights : Weights(weights[ord]))
+    _weights = weights isa AbstractWeights ? weights : StatsBase.weights(weights)
+    if isempty(_weights)
+        return ECDF(sort(X), _weights)
+    else
+        length(X) == length(_weights) || throw(ArgumentError("data and weight vectors must be the same size," *
+            "got $(length(X)) and $(length(_weights))"))
+        ord = sortperm(X)
+        ECDF(X[ord], _weights[ord])
+    end
 end
 
 minimum(ecdf::ECDF) = first(ecdf.sorted_values)
