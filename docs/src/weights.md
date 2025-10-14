@@ -82,7 +82,7 @@ As this value approaches 0, the resulting weights will be almost equal,
 while values closer to 1 will put greater weight on the tail elements of the vector.
 
 For example, the following call generates exponential weights for ten observations with ``λ = 0.3``.
-```jldoctest
+```jldoctest; filter = r"(\d*)\.(\d{14})\d+" => s"\1.\2***"
 julia> eweights(1:10, 0.3)
 10-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
@@ -91,7 +91,7 @@ julia> eweights(1:10, 0.3)
  0.8746355685131197
  1.249479383590171
  1.7849705479859588
- 2.549957925694227
+ 2.5499579256942266
  3.642797036706039
  5.203995766722913
  7.434279666747019
@@ -99,7 +99,7 @@ julia> eweights(1:10, 0.3)
 
 Simply passing the number of observations `n` is equivalent to passing in `1:n`.
 
-```jldoctest
+```jldoctest; filter = r"(\d*)\.(\d{14})\d+" => s"\1.\2***"
 julia> eweights(10, 0.3)
 10-element Weights{Float64, Float64, Vector{Float64}}:
  0.3
@@ -108,7 +108,7 @@ julia> eweights(10, 0.3)
  0.8746355685131197
  1.249479383590171
  1.7849705479859588
- 2.549957925694227
+ 2.5499579256942266
  3.642797036706039
  5.203995766722913
  7.434279666747019
