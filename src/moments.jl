@@ -162,7 +162,7 @@ end
 ##### General central moment
 function _moment2(v::AbstractArray{<:Real}, m::Real; corrected=false)
     n = length(v)
-    s = 0.0
+    s = zero(m * m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z
@@ -172,7 +172,7 @@ end
 
 function _moment2(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real; corrected=false)
     n = length(v)
-    s = 0.0
+    s = zero(m * m)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z) * wv[i]
@@ -183,7 +183,7 @@ end
 
 function _moment3(v::AbstractArray{<:Real}, m::Real)
     n = length(v)
-    s = 0.0
+    s = zero(m * m * m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += z * z * z
@@ -193,7 +193,7 @@ end
 
 function _moment3(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
     n = length(v)
-    s = 0.0
+    s = zero(m * m * m)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z * z * z) * wv[i]
@@ -203,7 +203,7 @@ end
 
 function _moment4(v::AbstractArray{<:Real}, m::Real)
     n = length(v)
-    s = 0.0
+    s = zero(m * m * m * m)
     for i = 1:n
         @inbounds z = v[i] - m
         s += abs2(z * z)
@@ -213,7 +213,7 @@ end
 
 function _moment4(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
     n = length(v)
-    s = 0.0
+    s = zero(m * m * m * m)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += abs2(z * z) * wv[i]
@@ -223,7 +223,7 @@ end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, m::Real)
     n = length(v)
-    s = 0.0
+    s = zero(m ^ k)
     for i = 1:n
         @inbounds z = v[i] - m
         s += (z ^ k)
@@ -233,7 +233,7 @@ end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real)
     n = length(v)
-    s = 0.0
+    s = zero(m ^ k)
     for i = 1:n
         @inbounds z = v[i] - m
         @inbounds s += (z ^ k) * wv[i]
