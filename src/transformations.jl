@@ -283,7 +283,7 @@ function _compute_extrema(X::AbstractMatrix, dims::Integer)
     tmin = similar(X, l)
     tmax = similar(X, l)
     for i in 1:l
-        @inbounds tmin[i], tmax[i] = extrema(@view(X[:, i]))
+        tmin[i], tmax[i] = extrema(@view(X[:, i]))
     end
     return tmin, tmax
 end

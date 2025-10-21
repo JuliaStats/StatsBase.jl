@@ -36,12 +36,12 @@ Base.convert(::Type{Vector}, wv::AbstractWeights) = convert(Vector, wv.values)
 
 @propagate_inbounds function Base.getindex(wv::AbstractWeights, i::Integer)
     @boundscheck checkbounds(wv, i)
-    @inbounds wv.values[i]
+    wv.values[i]
 end
 
 @propagate_inbounds function Base.getindex(wv::W, i::AbstractArray) where W <: AbstractWeights
     @boundscheck checkbounds(wv, i)
-    @inbounds v = wv.values[i]
+    v = wv.values[i]
     W(v, sum(v))
 end
 
@@ -447,11 +447,11 @@ end
             @nextract $N sizeR d->size(R,d)
             sizA1 = size(A, 1)
             @nloops $N i d->(d>1 ? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
-                @inbounds r = (@nref $N R j)
+                r = (@nref $N R j)
                 for i_1 = 1:sizA1
-                    @inbounds r += f(@nref $N A i) * w[i_1]
+                    r += f(@nref $N A i) * w[i_1]
                 end
-                @inbounds (@nref $N R j) = r
+                (@nref $N R j) = r
             end
         else
             @nloops $N i A d->(if d == dim
@@ -459,7 +459,7 @@ end
                                    j_d = 1
                                else
                                    j_d = i_d
-                               end) @inbounds (@nref $N R j) += f(@nref $N A i) * wi
+                               end) (@nref $N R j) += f(@nref $N A i) * wi
         end
         return R
     end
@@ -475,12 +475,12 @@ end
             @nextract $N sizeR d->size(R,d)
             sizA1 = size(A, 1)
             @nloops $N i d->(d>1 ? (1:size(A,d)) : (1:1)) d->(j_d = sizeR_d==1 ? 1 : i_d) begin
-                @inbounds r = (@nref $N R j)
-                @inbounds m = (@nref $N means j)
+                r = (@nref $N R j)
+                m = (@nref $N means j)
                 for i_1 = 1:sizA1
-                    @inbounds r += f((@nref $N A i) - m) * w[i_1]
+                    r += f((@nref $N A i) - m) * w[i_1]
                 end
-                @inbounds (@nref $N R j) = r
+                (@nref $N R j) = r
             end
         else
             @nloops $N i A d->(if d == dim
@@ -488,7 +488,7 @@ end
                                    j_d = 1
                                else
                                    j_d = i_d
-                               end) @inbounds (@nref $N R j) += f((@nref $N A i) - (@nref $N means j)) * wi
+                               end) (@nref $N R j) += f((@nref $N A i) - (@nref $N means j)) * wi
         end
         return R
     end
@@ -655,7 +655,7 @@ function quantile(v::AbstractVector{<:Real}{V}, w::AbstractWeights{W}, p::Abstra
     out = Vector{typeof(zero(V)/1)}(undef, length(p))
     fill!(out, vw[end][1])
 
-    @inbounds for x in v
+    for x in v
         isnan(x) && return fill!(out, x)
     end
 

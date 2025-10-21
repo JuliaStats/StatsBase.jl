@@ -29,7 +29,7 @@ function rle(v::AbstractVector{T}) where T
     cl = 1
 
     i = 2
-    @inbounds while i <= n
+    while i <= n
         vi = v[i]
         if isequal(vi, cv)
             cl += 1
@@ -67,7 +67,7 @@ function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) w
 
     r = Vector{T}(undef, n)
     p = 0
-    @inbounds for i = 1 : m
+    for i = 1 : m
         j = lens[i]
         j >= 0 || throw(ArgumentError("lengths must be non-negative"))
         v = vals[i]
@@ -89,7 +89,7 @@ the index of its first occurrence in `a`.
 function indexmap(a::AbstractArray{T}) where T
     d = Dict{T,Int}()
     for i = 1 : length(a)
-        @inbounds k = a[i]
+        k = a[i]
         if !haskey(d, k)
             d[k] = i
         end
@@ -108,7 +108,7 @@ function levelsmap(a::AbstractArray{T}) where T
     d = Dict{T,Int}()
     index = 1
     for i = 1 : length(a)
-        @inbounds k = a[i]
+        k = a[i]
         if !haskey(d, k)
             d[k] = index
             index += 1
@@ -171,7 +171,7 @@ function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
     n = length(x)
     r = zeros(Bool, m, n)
     o = 0
-    @inbounds for i = 1 : n
+    for i = 1 : n
         xi = x[i]
         r[o + d[xi]] = true
         o += m
@@ -187,7 +187,7 @@ function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
     n = length(x)
 
     rinds = Vector{Int}(undef, n)
-    @inbounds for i = 1 : n
+    for i = 1 : n
         rinds[i] = d[x[i]]
     end
     return sparse(rinds, 1:n, true, m, n)
