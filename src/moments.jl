@@ -165,7 +165,7 @@ function _moment2(v::AbstractArray{<:Real}, m::Real; corrected=false)
     zt = zero(promote_type(eltype(v), typeof(m)))   # zero-unit of common type
     s = zt * zt
     for i = 1:n
-        @inbounds z = v[i] - m
+        z = v[i] - m
         s += z * z
     end
     varcorrection(n, corrected) * s
@@ -176,8 +176,8 @@ function _moment2(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real; correc
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt * zt
     for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += (z * z) * wv[i]
+        z = v[i] - m
+        s += (z * z) * wv[i]
     end
 
     varcorrection(wv, corrected) * s
@@ -188,7 +188,7 @@ function _moment3(v::AbstractArray{<:Real}, m::Real)
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt * zt * zt
     for i = 1:n
-        @inbounds z = v[i] - m
+        z = v[i] - m
         s += z * z * z
     end
     s / n
@@ -199,8 +199,8 @@ function _moment3(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt * zt * zt
     for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += (z * z * z) * wv[i]
+        z = v[i] - m
+        s += (z * z * z) * wv[i]
     end
     s / sum(wv)
 end
@@ -210,7 +210,7 @@ function _moment4(v::AbstractArray{<:Real}, m::Real)
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt * zt * zt * zt
     for i = 1:n
-        @inbounds z = v[i] - m
+        z = v[i] - m
         s += abs2(z * z)
     end
     s / n
@@ -221,8 +221,8 @@ function _moment4(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt * zt * zt * zt
     for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += abs2(z * z) * wv[i]
+        z = v[i] - m
+        s += abs2(z * z) * wv[i]
     end
     s / sum(wv)
 end
@@ -232,7 +232,7 @@ function _momentk(v::AbstractArray{<:Real}, k::Int, m::Real)
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt ^ k
     for i = 1:n
-        @inbounds z = v[i] - m
+        z = v[i] - m
         s += (z ^ k)
     end
     s / n
@@ -243,8 +243,8 @@ function _momentk(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real
     zt = zero(promote_type(eltype(v), typeof(m)))
     s = zt ^ k
     for i = 1:n
-        @inbounds z = v[i] - m
-        @inbounds s += (z ^ k) * wv[i]
+        z = v[i] - m
+        s += (z ^ k) * wv[i]
     end
     s / sum(wv)
 end
@@ -291,7 +291,7 @@ function skewness(v::AbstractArray{<:Real}, m::Real)
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment
     for i = 1:n
-        @inbounds z = v[i] - m
+        z = v[i] - m
         z2 = z * z
 
         cm2 += z2
@@ -308,7 +308,7 @@ function skewness(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
     cm2 = 0.0   # empirical 2nd centered moment (variance)
     cm3 = 0.0   # empirical 3rd centered moment
 
-    @inbounds for i = 1:n
+    for i = 1:n
         x_i = v[i]
         w_i = wv[i]
         z = x_i - m
@@ -338,7 +338,7 @@ function kurtosis(v::AbstractArray{<:Real}, m::Real)
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
     for i = 1:n
-        @inbounds z = v[i] - m
+        z = v[i] - m
         z2 = z * z
         cm2 += z2
         cm4 += z2 * z2
@@ -354,7 +354,7 @@ function kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
     cm2 = 0.0  # empirical 2nd centered moment (variance)
     cm4 = 0.0  # empirical 4th centered moment
 
-    @inbounds for i = 1 : n
+    for i = 1 : n
         x_i = v[i]
         w_i = wv[i]
         z = x_i - m

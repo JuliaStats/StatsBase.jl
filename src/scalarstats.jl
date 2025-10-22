@@ -62,9 +62,9 @@ function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     mc = 0    # maximum count
     mv = r0   # a value corresponding to maximum count
     for i = 1:len
-        @inbounds x = a[i]
+        x = a[i]
         if r0 <= x <= r1
-            @inbounds c = (cnts[x - r0 + 1] += 1)
+            c = (cnts[x - r0 + 1] += 1)
             if c > mc
                 mc = c
                 mv = x
@@ -89,9 +89,9 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     # find the maximum count
     mc = 0
     for i = 1:length(a)
-        @inbounds x = a[i]
+        x = a[i]
         if r0 <= x <= r1
-            @inbounds c = (cnts[x - r0 + 1] += 1)
+            c = (cnts[x - r0 + 1] += 1)
             if c > mc
                 mc = c
             end
@@ -100,7 +100,7 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     # find all values corresponding to maximum count
     ms = T[]
     for i = 1:n
-        @inbounds if cnts[i] == mc
+        if cnts[i] == mc
             push!(ms, r[i])
         end
     end
@@ -623,11 +623,11 @@ function _zscore!(Z::AbstractArray, X::AbstractArray, μ::Real, σ::Real)
     iσ = inv(σ)
     if μ == zero(μ)
         for i = 1 : length(X)
-            @inbounds Z[i] = X[i] * iσ
+            Z[i] = X[i] * iσ
         end
     else
         for i = 1 : length(X)
-            @inbounds Z[i] = (X[i] - μ) * iσ
+            Z[i] = (X[i] - μ) * iσ
         end
     end
     return Z
@@ -764,7 +764,7 @@ function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
 
     if α ≈ 0
         for i = 1:length(p)
-            @inbounds pi = p[i]
+            pi = p[i]
             if pi > z
                 s += 1
             end
@@ -772,7 +772,7 @@ function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
         s = log(s / scale)
     elseif α ≈ 1
         for i = 1:length(p)
-            @inbounds pi = p[i]
+            pi = p[i]
             if pi > z
                 s -= pi * log(pi)
             end
@@ -782,7 +782,7 @@ function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
         s = -log(maximum(p))
     else # a normal Rényi entropy
         for i = 1:length(p)
-            @inbounds pi = p[i]
+            pi = p[i]
             if pi > z
                 s += pi ^ α
             end

@@ -139,7 +139,7 @@ function corkendall!(x::AbstractVector{<:Real}, y::AbstractVector{<:Real}, permx
     ntiesx = ndoubleties = nswaps = widen(0)
     k = 0
 
-    @inbounds for i = 2:n
+    for i = 2:n
         if x[i - 1] == x[i]
             k += 1
         elseif k > 0
@@ -224,7 +224,7 @@ function countties(x::AbstractVector, lo::Integer, hi::Integer)
     # length(x) exceeds 2^16 (32 bit) or 2^32 (64 bit)
     thistiecount = result = widen(0)
     checkbounds(x, lo:hi)
-    @inbounds for i = (lo + 1):hi
+    for i = (lo + 1):hi
         if x[i] == x[i - 1]
             thistiecount += 1
         elseif thistiecount > 0
@@ -255,7 +255,7 @@ function merge_sort!(v::AbstractVector, lo::Integer, hi::Integer, t::AbstractVec
     # Use of widen below prevents possible overflow errors when
     # length(v) exceeds 2^16 (32 bit) or 2^32 (64 bit)
     nswaps = widen(0)
-    @inbounds if lo < hi
+    if lo < hi
         hi - lo <= SMALL_THRESHOLD && return insertion_sort!(v, lo, hi)
 
         m = midpoint(lo, hi)
@@ -306,7 +306,7 @@ This method is a copy-paste-edit of sort! in base/sort.jl, amended to return the
 function insertion_sort!(v::AbstractVector, lo::Integer, hi::Integer)
     if lo == hi return widen(0) end
     nswaps = widen(0)
-    @inbounds for i = lo + 1:hi
+    for i = lo + 1:hi
         j = i
         x = v[i]
         while j > lo
