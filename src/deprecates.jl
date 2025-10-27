@@ -71,7 +71,7 @@ function make_alias_table!(w::AbstractVector, wsum,
 
     ac = n / wsum
     for i = 1:n
-        @inbounds a[i] = w[i] * ac
+        a[i] = w[i] * ac
     end
 
     larges = Vector{Int}(undef, n)
@@ -80,7 +80,7 @@ function make_alias_table!(w::AbstractVector, wsum,
     ks = 0  # actual number of smalls
 
     for i = 1:n
-        @inbounds ai = a[i]
+        ai = a[i]
         if ai > 1.0
             larges[kl+=1] = i  # push to larges
         elseif ai < 1.0
@@ -91,8 +91,8 @@ function make_alias_table!(w::AbstractVector, wsum,
     while kl > 0 && ks > 0
         s = smalls[ks]; ks -= 1  # pop from smalls
         l = larges[kl]; kl -= 1  # pop from larges
-        @inbounds alias[s] = l
-        @inbounds al = a[l] = (a[l] - 1.0) + a[s]
+        alias[s] = l
+        al = a[l] = (a[l] - 1.0) + a[s]
         if al > 1.0
             larges[kl+=1] = l  # push to larges
         else
@@ -102,7 +102,7 @@ function make_alias_table!(w::AbstractVector, wsum,
 
     # this loop should be redundant, except for rounding
     for i = 1:ks
-        @inbounds a[smalls[i]] = 1.0
+        a[smalls[i]] = 1.0
     end
     nothing
 end

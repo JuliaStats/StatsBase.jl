@@ -6,7 +6,7 @@ function _symmetrize!(a::DenseMatrix)
     m, n = size(a)
     m == n || error("a must be a square matrix.")
     for j = 1:n
-        @inbounds for i = j+1:n
+        for i = j+1:n
             vl = a[i,j]
             vr = a[j,i]
             a[i,j] = a[j,i] = middle(vl, vr)

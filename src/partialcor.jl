@@ -37,7 +37,7 @@ function _partialcor(x::AbstractVector, μx, y::AbstractVector, μy, z::Abstract
     Σzy = zero(Σzz * Σyy)
 
     # We only want to make one pass over all of the arrays
-    @inbounds begin
+    begin
         @simd for i in eachindex(x, y, z)
             xi = x[i] - μx
             yi = y[i] - μy
