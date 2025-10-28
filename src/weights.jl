@@ -409,7 +409,10 @@ wsum(v::AbstractArray, w::AbstractVector, dims::Colon=:) = transpose(w) * vec(v)
 # Optimized methods (to ensure we use BLAS when possible)
 for W in (AnalyticWeights, FrequencyWeights, ProbabilityWeights, Weights)
     @eval begin
-        wsum(v::AbstractArray, w::$W, dims::Colon) = transpose(w.values) * vec(v)
+        function wsum(v::AbstractArray, w::$W, dims::Colon)
+            length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+            return transpose(w.values) * vec(v)
+        end
     end
 end
 
