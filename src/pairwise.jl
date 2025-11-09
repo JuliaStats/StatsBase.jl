@@ -4,8 +4,7 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix, x, y, symmetric::Bool
 
         # For performance, diagonal is special-cased
         if f === cor && eltype(dest) !== Union{} && i == j && xi === yj
-            # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
-            dest[i, j] = float(cor(xi))
+            dest[i, j] = cor(xi)
         else
             dest[i, j] = f(xi, yj)
         end
@@ -57,8 +56,7 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::
                 ynm = view(yj, ynminds)
                 # For performance, diagonal is special-cased
                 if f === cor && eltype(dest) !== Union{} && i == j
-                    # TODO: float() will not be needed after JuliaLang/Statistics.jl#61
-                    dest[i, j] = float(cor(xi))
+                    dest[i, j] = cor(xi)
                 else
                     dest[i, j] = f(ynm, ynm)
                 end
