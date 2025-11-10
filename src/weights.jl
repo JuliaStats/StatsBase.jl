@@ -623,7 +623,7 @@ is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + Î
 with ``Î³ = (h - S_k)/(S_{k+1} - S_k)``. In particular, when all weights are equal,
 the function returns the same result as the unweighted `quantile`.
 """
-function quantile(v::AbstractVector{<:Real}{V}, w::AbstractWeights{W}, p::AbstractVector{<:Real}) where {V,W<:Real}
+function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector{<:Real}) where {V<:Real,W<:Real}
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
