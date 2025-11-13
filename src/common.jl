@@ -9,3 +9,5 @@ function depcheck(fname::Symbol, varname::Symbol, b::Union{Bool, Nothing})
         b
     end
 end
+
+_add((x1, x2)::Tuple{<:Real,<:Real}, (y1, y2)::Tuple{<:Real,<:Real}) = (x1 + y1, x2 + y2)
