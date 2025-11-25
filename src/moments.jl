@@ -20,13 +20,18 @@ replacing ``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights
 """
 function var(v::AbstractArray{<:Real}, w::AbstractWeights; mean=nothing,
                   corrected::Union{Bool, Nothing}=nothing)
+    length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
     corrected = depcheck(:var, :corrected, corrected)
-
-    if mean == nothing
-        _moment2(v, w, Statistics.mean(v, w); corrected=corrected)
-    else
-        _moment2(v, w, mean; corrected=corrected)
+    if mean === nothing
+        mean = Statistics.mean(v, w)
     end
+    return _moment2(v, w, mean; corrected)
+end
+function var(v::AbstractArray{<:Real}, w::UnitWeights; mean=nothing,
+                  corrected::Union{Bool, Nothing}=nothing)
+    length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    corrected = depcheck(:var, :corrected, corrected)
+    return var(v; mean, corrected)
 end
 
 ## var along dim
@@ -58,8 +63,19 @@ end
 function var(A::AbstractArray{<:Real}, w::AbstractWeights, dim::Int; mean=nothing,
                   corrected::Union{Bool, Nothing}=nothing)
     corrected = depcheck(:var, :corrected, corrected)
-    var!(similar(A, Float64, Base.reduced_indices(axes(A), dim)), A, w, dim;
+    if mean === nothing
+        z = (zero(eltype(w)) * zero(eltype(A))^2) / zero(eltype(w))
+    else
+        z = (zero(eltype(w)) * zero(zero(eltype(A)) - zero(eltype(mean)))^2) / zero(eltype(w))
+    end
+    var!(similar(A, typeof(z), Base.reduced_indices(axes(A), dim)), A, w, dim;
          mean=mean, corrected=corrected)
+end
+function var(v::AbstractArray{<:Real}, w::UnitWeights, dim::Int; mean=nothing,
+                  corrected::Union{Bool, Nothing}=nothing)
+    length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    corrected = depcheck(:var, :corrected, corrected)
+    return var(v; mean, corrected, dims=dim)
 end
 
 ## std
@@ -160,83 +176,130 @@ end
 
 
 ##### General central moment
-function _moment2(v::AbstractArray{<:Real}, m::Real; corrected=false)
+function _moment2(v::AbstractArray{<:Real}, m::Real; corrected::Bool)
     n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += z * z
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        s = z^2
+    else
+        s = let m = m
+            sum(v) do vi
+                zi = vi - m
+                return zi^2
+            end
+        end
     end
-    varcorrection(n, corrected) * s
+    return oftype(float(s), varcorrection(n, corrected)) * s
 end
 
-function _moment2(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real; corrected=false)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += (z * z) * wv[i]
+function _moment2(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real; corrected::Bool)
+    if isempty(v)
+        z = zero(zero(eltype(v)) - m)
+        s = z^2 * zero(eltype(wv))
+    else
+        broadcasted = let m = m
+            Broadcast.broadcasted(vec(v), wv) do vi, wvi
+                zi = vi - m
+                return zi^2 * wvi
+            end
+        end
+        s = sum(Broadcast.instantiate(broadcasted))
     end
-
-    varcorrection(wv, corrected) * s
+    return oftype(float(s), varcorrection(wv, corrected)) * s
 end
 
 function _moment3(v::AbstractArray{<:Real}, m::Real)
     n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += z * z * z
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        s = z^3
+    else
+        s = let m = m
+            sum(v) do vi
+                zi = vi - m
+                return zi^3
+            end
+        end
     end
     s / n
 end
 
 function _moment3(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += (z * z * z) * wv[i]
+    if isempty(v)
+        z = zero(zero(eltype(v)) - m)
+        s = zero(z^3 * zero(eltype(wv)))
+    else
+        broadcasted = let m = m
+            Broadcast.broadcasted(vec(v), wv) do vi, wvi
+                zi = vi - m
+                return zi^3 * wvi
+            end
+        end
+        s = sum(Broadcast.instantiate(broadcasted)) 
     end
     s / sum(wv)
 end
 
 function _moment4(v::AbstractArray{<:Real}, m::Real)
     n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += abs2(z * z)
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        s = zero(z^4)
+    else
+        s = let m = m
+            sum(v) do vi
+                zi = vi - m
+                return zi^4
+            end
+        end
     end
     s / n
 end
 
 function _moment4(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += abs2(z * z) * wv[i]
+    if isempty(v)
+        z = zero(zero(eltype(v)) - m)
+        s = zero(z^4 * zero(eltype(wv)))
+    else
+        broadcasted = let m = m
+            Broadcast.broadcasted(vec(v), wv) do vi, wvi
+                zi = vi - m
+                return zi^4 * wvi
+            end
+        end
+        s = sum(Broadcast.instantiate(broadcasted))
     end
     s / sum(wv)
 end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, m::Real)
     n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += (z ^ k)
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        s = zero(z^k)
+    else
+        s = let m = m, k = k
+            sum(v) do vi
+                zi = vi - m
+                return zi^k
+            end
+        end
     end
     s / n
 end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real)
-    n = length(v)
-    s = 0.0
-    for i = 1:n
-        z = v[i] - m
-        s += (z ^ k) * wv[i]
+    if isempty(v)
+        z = zero(zero(eltype(v)) - m)
+        s = zero(z^k * zero(eltype(wv)))
+    else
+        broadcasted = let m = m, k = k
+            Broadcast.broadcasted(vec(v), wv) do vi, wvi
+                zi = vi - m
+                return zi^k * wvi
+            end
+        end
+        s = sum(Broadcast.instantiate(broadcasted))
     end
     s / sum(wv)
 end
@@ -248,25 +311,24 @@ end
 Return the `k`th order central moment of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function moment(v::AbstractArray{<:Real}, k::Int, m::Real)
-    k == 2 ? _moment2(v, m) :
+function moment(v::AbstractArray{<:Real}, k::Int, m::Real=mean(v))
+    k == 2 ? _moment2(v, m; corrected = false) :
     k == 3 ? _moment3(v, m) :
     k == 4 ? _moment4(v, m) :
     _momentk(v, k, m)
 end
 
-function moment(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real)
-    k == 2 ? _moment2(v, wv, m) :
+function moment(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real=mean(v, wv))
+    length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    k == 2 ? _moment2(v, wv, m; corrected = false) :
     k == 3 ? _moment3(v, wv, m) :
     k == 4 ? _moment4(v, wv, m) :
     _momentk(v, k, wv, m)
 end
-
-moment(v::AbstractArray{<:Real}, k::Int) = moment(v, k, mean(v))
-function moment(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights)
-    moment(v, k, wv, mean(v, wv))
+function moment(v::AbstractArray{<:Real}, k::Int, wv::UnitWeights, m::Real)
+    length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    return moment(v, k, m)
 end
-
 
 ##### Skewness and Kurtosis
 
@@ -278,44 +340,50 @@ end
 Compute the standardized skewness of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function skewness(v::AbstractArray{<:Real}, m::Real)
+function skewness(v::AbstractArray{<:Real}, m::Real=mean(v))
     n = length(v)
-    cm2 = 0.0   # empirical 2nd centered moment (variance)
-    cm3 = 0.0   # empirical 3rd centered moment
-    for i = 1:n
-        z = v[i] - m
-        z2 = z * z
-
-        cm2 += z2
-        cm3 += z2 * z
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        cm2 = z^2 # empirical 2nd centered moment (variance)
+        cm3 = cm2 * z # empirical 3rd centered moment
+    else
+        cm2, cm3 = let m = m
+            mapreduce(_add, v) do vi
+                zi = vi - m
+                z2i = zi^2
+                z3i = z2i * zi
+                return z2i, z3i
+            end
+        end
     end
-    cm3 /= n
-    cm2 /= n
-    return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
+    return (cm3/n) / sqrt((cm2/n)^3)  # this is much faster than cm2^1.5
 end
 
-function skewness(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
+function skewness(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real=mean(v, wv))
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    cm2 = 0.0   # empirical 2nd centered moment (variance)
-    cm3 = 0.0   # empirical 3rd centered moment
-
-    for i = 1:n
-        x_i = v[i]
-        w_i = wv[i]
-        z = x_i - m
-        z2w = z * z * w_i
-        cm2 += z2w
-        cm3 += z2w * z
+    if iszero(n)    
+        z = zero(zero(eltype(v)) - m)
+        cm2 = z^2 * zero(eltype(wv)) # empirical 2nd centered moment (variance)
+        cm3 = cm2 * z # empirical 3rd centered moment
+    else
+        broadcasted = let m = m
+            Broadcast.broadcasted(vec(v), wv) do vi, wvi
+                zi = vi - m
+                z2wi = zi^2 * wvi
+                z3wi = z2wi * zi
+                return z2wi, z3wi
+            end
+        end
+        cm2, cm3 = reduce(_add, Broadcast.instantiate(broadcasted))
     end
     sw = sum(wv)
-    cm3 /= sw
-    cm2 /= sw
-    return cm3 / sqrt(cm2 * cm2 * cm2)  # this is much faster than cm2^1.5
+    return (cm3/sw) / sqrt((cm2/sw)^3)  # this is much faster than cm2^1.5
 end
-
-skewness(v::AbstractArray{<:Real}) = skewness(v, mean(v))
-skewness(v::AbstractArray{<:Real}, wv::AbstractWeights) = skewness(v, wv, mean(v, wv))
+function skewness(v::AbstractArray{<:Real}, wv::UnitWeights, m::Real)
+    length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    return skewness(v, m)
+end
 
 # (excessive) Kurtosis
 # This is Type 1 definition according to Joanes and Gill (1998)
@@ -325,44 +393,52 @@ skewness(v::AbstractArray{<:Real}, wv::AbstractWeights) = skewness(v, wv, mean(v
 Compute the excess kurtosis of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function kurtosis(v::AbstractArray{<:Real}, m::Real)
+function kurtosis(v::AbstractArray{<:Real}, m::Real=mean(v))
     n = length(v)
-    cm2 = 0.0  # empirical 2nd centered moment (variance)
-    cm4 = 0.0  # empirical 4th centered moment
-    for i = 1:n
-        z = v[i] - m
-        z2 = z * z
-        cm2 += z2
-        cm4 += z2 * z2
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        cm2 = z^2 # empirical 2nd centered moment (variance)
+        cm4 = cm2^2 # empirical 4th centered moment
+    else
+        cm2, cm4 = let m = m
+            mapreduce(_add, v) do vi
+                zi = vi - m
+                z2i = zi^2
+                z4i = z2i^2
+                return z2i, z4i
+            end
+        end
     end
-    cm4 /= n
-    cm2 /= n
-    return (cm4 / (cm2 * cm2)) - 3.0
+    return (cm4/n) / (cm2/n)^2 - 3
 end
 
-function kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
+function kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real=mean(v, wv))
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    cm2 = 0.0  # empirical 2nd centered moment (variance)
-    cm4 = 0.0  # empirical 4th centered moment
-
-    for i = 1 : n
-        x_i = v[i]
-        w_i = wv[i]
-        z = x_i - m
-        z2 = z * z
-        z2w = z2 * w_i
-        cm2 += z2w
-        cm4 += z2w * z2
+    if iszero(n)
+        z = zero(zero(eltype(v)) - m)
+        z2 = z^2
+        cm2 = z2 * zero(eltype(wv)) # empirical 2nd centered moment (variance)
+        cm4 = cm2 * z2 # empirical 4th centered moment
+    else
+        broadcasted = let m = m
+            Broadcast.broadcasted(vec(v), wv) do vi, wvi
+                zi = vi - m
+                z2i = zi^2
+                z2wi = z2i * wvi
+                z4wi = z2wi * z2i
+                return z2wi, z4wi
+            end
+        end
+        cm2, cm4 = reduce(_add, Broadcast.instantiate(broadcasted))
     end
     sw = sum(wv)
-    cm4 /= sw
-    cm2 /= sw
-    return (cm4 / (cm2 * cm2)) - 3.0
+    return (cm4/sw) / (cm2/sw)^2 - 3
 end
-
-kurtosis(v::AbstractArray{<:Real}) = kurtosis(v, mean(v))
-kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights) = kurtosis(v, wv, mean(v, wv))
+function kurtosis(v::AbstractArray{<:Real}, wv::UnitWeights, m::Real)
+    length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    return kurtosis(v, m)
+end
 
 """
     cumulant(v, k, [wv::AbstractWeights], m=mean(v))
@@ -380,19 +456,19 @@ https://doi.org/10.2307/2684642
 """
 function cumulant(v::AbstractArray{<:Real}, krange::Union{Integer, AbstractRange{<:Integer}}, wv::AbstractWeights,
                   m::Real=mean(v, wv))
-    if minimum(krange) <= 0
+    n = length(v)
+    length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
+    kmin, kmax = extrema(krange)
+    if kmin <= 0
         throw(ArgumentError("Cumulant orders must be strictly positive."))
     end
-    k = maximum(krange)
-    cmoms = zeros(typeof(m), k)
-    cumls = zeros(typeof(m), k)
-    cmoms[1] = 0
+    cmoms = [moment(v, i, wv, m) for i in 2:kmax]
+    cumls = Vector{eltype(cmoms)}(undef, kmax)
     cumls[1] = m
-    for i = 2:k
-        kn = wv isa UnitWeights ? moment(v, i, m) : moment(v, i, wv, m)
-        cmoms[i] = kn
-        for j = 2:i-2
-            kn -= binomial(i-1, j)*cmoms[j]*cumls[i-j]
+    for i = 2:kmax
+        kn = cmoms[i-1]
+        for j = 2:(i-2)
+            kn -= binomial(i-1, j)*cmoms[j-1]*cumls[i-j]
         end
         cumls[i] = kn
     end
