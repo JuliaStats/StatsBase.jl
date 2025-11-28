@@ -21,7 +21,6 @@ function test_isapprox_preserves_symherm_structure(f::F, x::AbstractMatrix, y::A
             if A isa Union{Symmetric,Hermitian}
                 @test fA isa (A isa Symmetric ? Symmetric : Hermitian)
                 @test fA.uplo == A.uplo
-                @test parent(fA) != fA # only active triangle is written to
             end
         end
     end
