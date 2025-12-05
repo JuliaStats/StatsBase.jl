@@ -1,7 +1,7 @@
 name = "StatsBase"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 authors = ["JuliaStats"]
-version = "0.34.8"
+version = "0.34.9"
 
 [deps]
 AliasTables = "66dad0bd-aa9a-41b7-9441-69ab47430ed8"
