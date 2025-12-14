@@ -650,10 +650,8 @@ function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector
     vw = sort!(collect(zip(view(v, nz), view(w, nz))))
     N = length(vw)
 
-    # missing is always sorted last
-    if ismissing(vw[end][1])
+    any(ismissing, v) &&
         throw(ArgumentError("quantiles are undefined in presence of missing values"))
-    end
 
     # prepare percentiles
     ppermute = sortperm(p)
@@ -664,10 +662,10 @@ function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector
     out = Vector{typeof(v1 + zero(eltype(p))*zero(W)*zero(v1))}(undef, length(p))
     fill!(out, vw[end][1])
 
-    # NaN is always sorted last in the absence of missing
-    # This behavior isn't consistent with Statistics.quantile, but preserve it for backward compatibility
-    if vw[end][1] isa Number && isnan(vw[end][1])
-        return fill(vw[end][1], length(p))
+    # This behavior isn't consistent with Statistics.quantile,
+    # but preserve it for backward compatibility
+    for x in v
+        x isa Number && isnan(x) && return fill!(out, x)
     end
 
     # loop on quantiles

@@ -467,6 +467,13 @@ end
         quantile([1, 2, 3, 4], f([1, 2, 2, 1]), 0.5)
     @test quantile([Date(2005, 01, 01), Date(2005, 01, 01)], f([1, 1]), 0.5) ==
         Date(2005, 01, 01)
+
+    @test_throws ArgumentError quantile([missing, 1], f([1, 2]), [0.5, 0.75])
+    @test quantile(Union{Float64, Missing}[1, 2, 3, 4], f([1, 2, 2, 1]), [0.5, 0.75]) ==
+        quantile(Any[1, 2, 3, 4], f([1, 2, 2, 1]), [0.5, 0.75]) ==
+        quantile([1, 2, 3, 4], f([1, 2, 2, 1]), [0.5, 0.75])
+    @test quantile(fill(Date(2005, 01, 01), 3), f([1, 1, 1]), [0.5, 0.75]) ==
+        fill(Date(2005, 01, 01), 2)
 end
 
 @testset "Median $f" for f in weight_funcs
@@ -492,6 +499,14 @@ end
     data = [4, 3, 2, 1]
     wt = [1, 2, 3, 4]
     @test median(data, f(wt)) ≈ quantile(data, f(wt), 0.5) atol = 1e-5
+
+    # Test non-Real eltype
+    @test_throws ArgumentError median([missing, 1], f([1, 2]))
+    @test median(Union{Float64, Missing}[1, 2, 3, 4], f([1, 2, 2, 1])) ==
+        median(Any[1, 2, 3, 4], f([1, 2, 2, 1])) ==
+        median([1, 2, 3, 4], f([1, 2, 2, 1]))
+    @test median([Date(2005, 01, 01), Date(2005, 01, 01)], f([1, 1])) ==
+        Date(2005, 01, 01)
 end
 
 @testset "Mismatched eltypes" begin
