@@ -459,6 +459,14 @@ end
     w = [1, 1/3, 1/3, 1/3, 1]
     answer = 6.0
     @test quantile(data[1], f(w), 0.5) ≈ answer atol = 1e-5
+
+    # Test non-Real eltype
+    @test_throws ArgumentError quantile([missing, 1], f([1, 2]), 0.5)
+    @test quantile(Union{Float64, Missing}[1, 2, 3, 4], f([1, 2, 2, 1]), 0.5) ==
+        quantile(Any[1, 2, 3, 4], f([1, 2, 2, 1]), 0.5) ==
+        quantile([1, 2, 3, 4], f([1, 2, 2, 1]), 0.5)
+    @test quantile([Date(2005, 01, 01), Date(2005, 01, 01)], f([1, 1]), 0.5) ==
+        Date(2005, 01, 01)
 end
 
 @testset "Median $f" for f in weight_funcs

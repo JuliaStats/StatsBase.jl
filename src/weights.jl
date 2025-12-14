@@ -626,7 +626,7 @@ is strictly superior to ``h``. The weighted ``p`` quantile is given by ``v_k + Î
 with ``Î³ = (h - S_k)/(S_{k+1} - S_k)``. In particular, when all weights are equal,
 the function returns the same result as the unweighted `quantile`.
 """
-function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector{<:Real}) where {V<:Real,W<:Real}
+function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector{<:Real}) where {V, W<:Real}
     # checks
     isempty(v) && throw(ArgumentError("quantile of an empty array is undefined"))
     isempty(p) && throw(ArgumentError("empty quantile array"))
@@ -650,21 +650,29 @@ function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector
     vw = sort!(collect(zip(view(v, nz), view(w, nz))))
     N = length(vw)
 
+    # missing is always sorted last
+    if ismissing(vw[end][1])
+        throw(ArgumentError("quantiles are undefined in presence of missing values"))
+    end
+
     # prepare percentiles
     ppermute = sortperm(p)
     p = p[ppermute]
 
     # prepare out vector
-    out = Vector{typeof(zero(V)/1)}(undef, length(p))
+    v1 = vw[1][1]
+    out = Vector{typeof(v1 + zero(eltype(p))*zero(W)*zero(v1))}(undef, length(p))
     fill!(out, vw[end][1])
 
-    for x in v
-        isnan(x) && return fill!(out, x)
+    # NaN is always sorted last in the absence of missing
+    # This behavior isn't consistent with Statistics.quantile, but preserve it for backward compatibility
+    if vw[end][1] isa Number && isnan(vw[end][1])
+        return fill(vw[end][1], length(p))
     end
 
     # loop on quantiles
     Sk, Skold = zero(W), zero(W)
-    vk, vkold = zero(V), zero(V)
+    vk, vkold = zero(v1), zero(v1)
     k = 0
 
     w1 = vw[1][2]
@@ -693,19 +701,19 @@ function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector
     return out
 end
 
-function quantile(v::AbstractVector{<:Real}, w::UnitWeights, p::AbstractVector{<:Real})
+function quantile(v::AbstractVector, w::UnitWeights, p::AbstractVector{<:Real})
     length(v) != length(w) && throw(DimensionMismatch("Inconsistent array dimension."))
     return quantile(v, p)
 end
 
-quantile(v::AbstractVector{<:Real}, w::AbstractWeights{<:Real}, p::Number) = quantile(v, w, [p])[1]
+quantile(v::AbstractVector, w::AbstractWeights, p::Real) = quantile(v, w, [p])[1]
 
 ##### Weighted median #####
 
 """
-    median(v::AbstractVector{<:Real}, w::AbstractWeights)
+    median(v::AbstractVector, w::AbstractWeights)
 
 Compute the weighted median of `v` with weights `w`
 (of type `AbstractWeights`). See the documentation for [`quantile`](@ref) for more details.
 """
-median(v::AbstractVector{<:Real}, w::AbstractWeights{<:Real}) = quantile(v, w, 0.5)
+median(v::AbstractVector, w::AbstractWeights) = quantile(v, w, 0.5)
