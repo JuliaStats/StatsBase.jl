@@ -644,14 +644,15 @@ function quantile(v::AbstractVector{V}, w::AbstractWeights{W}, p::AbstractVector
         throw(ArgumentError("The values of the vector of `FrequencyWeights` must be numerically" *
                             "equal to integers. Use `ProbabilityWeights` or `AnalyticWeights` instead."))
 
+    # ::Bool is there to prevent JET from reporting a problem on Julia 1.10
+    any(ismissing, v)::Bool &&
+        throw(ArgumentError("quantiles are undefined in presence of missing values"))
+
     # remove zeros weights and sort
     wsum = sum(w)
     nz = .!iszero.(w)
     vw = sort!(collect(zip(view(v, nz), view(w, nz))))
     N = length(vw)
-
-    any(ismissing, v) &&
-        throw(ArgumentError("quantiles are undefined in presence of missing values"))
 
     # prepare percentiles
     ppermute = sortperm(p)
