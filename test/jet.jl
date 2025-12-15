@@ -17,6 +17,6 @@ if VERSION < v"1.12-"
         println(res)
         reports = JET.get_reports(res)
         @test_broken isempty(reports)
-        @test length(reports) <= 2
+        @test length(reports) <= 1
     end
 end
