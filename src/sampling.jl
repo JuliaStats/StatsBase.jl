@@ -598,7 +598,9 @@ function sample(rng::AbstractRNG, wv::AbstractWeights)
     end
     if cw < t
         # may happen with floating point weights due to numerical inaccuracies
-        return findlast(!iszero, wv) 
+        while iszero(wv[i])
+            i -= 1
+        end
     end
     return i
 end
