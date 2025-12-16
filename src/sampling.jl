@@ -586,7 +586,7 @@ Optionally specify a random number generator `rng` as the first argument
 function sample(rng::AbstractRNG, wv::AbstractWeights)
     1 == firstindex(wv) ||
         throw(ArgumentError("non 1-based arrays are not supported"))
-    wsum = foldl(+, wv)  # instead of sum(wv) for avoiding numerical discrepancies with cw
+    wsum = sum(wv)
     isfinite(wsum) || throw(ArgumentError("only finite weights are supported"))
     t = rand(rng) * wsum
     n = length(wv)
@@ -595,6 +595,10 @@ function sample(rng::AbstractRNG, wv::AbstractWeights)
     while cw < t && i < n
         i += 1
         cw += wv[i]
+    end
+    if cw < t
+        # may happen with floating point weights due to numerical inaccuracies
+        return findlast(!iszero, wv) 
     end
     return i
 end
