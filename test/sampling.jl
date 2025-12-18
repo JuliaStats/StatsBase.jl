@@ -307,8 +307,7 @@ end
     # Without SIMD support, sum(w) == 0.66241294f0 and this test cannot check the
     # resolution of the issue.
     if sum(w) ∉ (0.662413f0, 0.66241294f0)
-        @warn "Issue #982 not triggered and therefore resolution not tested \
-            as no appropriate SIMD support available."
+        @warn "So far unrecognized value for sum(w) encountered."
     end
     rng = StableRNG(889858990530)
     s = sample(rng, Weights(w))
