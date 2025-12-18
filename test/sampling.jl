@@ -302,6 +302,10 @@ end
     w = Float32[0.0437019, 0.04302464, 0.039748967,  0.040406376, 0.042578973, 
         0.040906563, 0.039586294, 0.04302464, 0.042357873, 0.04302464, 0.039262936, 
         0.040406376, 0.040406376, 0.041919112, 0.041484896, 0.04057242, 0.0]
+    if sum(w) != 0.662413f0
+        @warn "Issue #982 not triggered and therefore resolution not tested \
+            as no appropriate SIMD support available."
+    end
     rng = StableRNG(889858990530)
     s = sample(rng, Weights(w))
     @test s == length(w) - 1
