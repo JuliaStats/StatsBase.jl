@@ -79,6 +79,7 @@ percentilerank
 ```@docs
 mode
 modes
+hsm_mode
 ```
 
 ## Summary Statistics
