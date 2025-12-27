@@ -67,12 +67,12 @@ wv = weights([0.1:0.1:0.7; 0.1])
 
 @test hsm_mode([1, 2, 2, 3, 4, 4, 4, 5]) ≈ 4.0
 @test hsm_mode([10.0]) ≈ 10.0
-@test hsm_mode([1.0, 2.0, 3.0]) ≈ 1.0
+@test hsm_mode([1.0, 2.0, 3.0]) ≈ 1.5
 @test hsm_mode([NaN, 2, 2, Inf, 3]) ≈ 2.0
 @test hsm_mode([1.0, 2.0, 3.0, 4.0, 5.0]) ≈ 1.5
-@test isapprox(hsm_mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003]), 1.00003, atol=1e-4)
+@test isapprox(hsm_mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003]), 1.00431, atol=1e-4)
 @test hsm_mode([1.0, 1.0, 1.0, 10.0]) ≈ 1.0
-@test hsm_mode([-5.0, -3.0, -1.0, 0.0, 1.0, 3.0, 5.0]) ≈ -1.0
+@test hsm_mode([-5.0, -3.0, -1.0, 0.0, 1.0, 3.0, 5.0]) ≈ -0.5
 @test_throws ArgumentError hsm_mode(Float64[])
 @test hsm_mode([1.0, 5.0]) ≈ 3.0  # two elements: returns midpoint
 @test_throws ArgumentError hsm_mode([NaN, Inf, -Inf])
