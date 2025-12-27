@@ -204,6 +204,99 @@ function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     return [x for (x, w) in weights if w == mw]
 end
 
+
+#############################
+#
+#   Mode: Half-Sample Mode
+#
+#############################
+
+"""
+    hsm_mode(a::AbstractVector{<:Real})
+
+Compute the half-sample mode (HSM) of a collection of real numbers.
+
+The half-sample mode is a robust estimator of central tendency that iteratively
+identifies the densest half of the data until only two values remain, then returns
+their midpoint. This estimator is particularly useful for skewed or multimodal
+distributions where the traditional mode may be unreliable. Non-finite values
+(NaN, Inf, -Inf) are automatically filtered.
+
+Returns a floating-point value (promoted from input type). Throws `ArgumentError`
+for empty vectors or vectors containing only non-finite values.
+
+# Algorithm
+The method works by iteratively finding the half of the data with minimum width:
+1. Sort and filter non-finite values
+2. While more than 2 elements remain, find the half-window with minimum width
+3. Return the midpoint of the final two elements
+
+Time complexity: O(n log n) due to sorting. Space complexity: O(n).
+
+# Examples
+```julia-repl
+julia> hsm_mode([1, 2, 2, 3, 4, 4, 4, 5])
+4.0
+
+julia> hsm_mode([NaN, 2, 2, Inf, 3])
+2.0
+
+julia> hsm_mode([10.0])
+10.0
+
+julia> hsm_mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003])
+1.00003
+
+julia> data = [1, 1, 1, 2, 2, 100];  # outlier present
+
+julia> mode(data)  # frequency-based mode
+1
+
+julia> hsm_mode(data)  # density-based mode (finds densest region)
+1.0
+```
+
+!!! note
+    This implementation does not support weighted observations or missing values.
+    Use `filter(!ismissing, data)` to handle missing values before calling.
+
+# References
+Robertson, T., & Cryer, J. D. (1974). "An iterative procedure for estimating
+the mode." Journal of the American Statistical Association, 69(348), 1012-1016.
+
+Bickel, D. R., & Fruehwirth, R. (2006). "On a fast, robust estimator of the mode:
+Comparisons to other robust estimators with applications."
+Computational Statistics & Data Analysis, 50(12), 3500-3530.
+
+See also: [`mode`](@ref), [`modes`](@ref)
+"""
+function hsm_mode(a::AbstractVector{T}) where T <: Real
+    a = sort(filter(isfinite, a))
+
+    len = length(a)
+
+    len == 0 && throw(ArgumentError("hsm_mode is not defined for empty vectors"))
+    len == 1 && return a[1]
+
+    while (len > 2)
+        win_size = len ÷ 2
+        best_width = a[end] - a[1]
+        best_start = 1
+
+        for i in 1:(len-win_size+1)
+            width = a[i+win_size-1] - a[i]
+            if (width < best_width)
+                best_width = width
+                best_start = i
+            end
+        end
+        a = collect(view(a, best_start:(best_start+win_size-1)))
+        len = length(a)
+    end
+
+    return (a[1] + a[end]) / 2
+end
+
 #############################
 #
 #   quantile and friends
