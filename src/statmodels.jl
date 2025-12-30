@@ -63,7 +63,7 @@ show(io::IO, n::NoQuote) = print(io, n.s)
 
 ## coefficient tables with specialized show method
 
-mutable struct CoefTable
+struct CoefTable
     cols::Vector
     colnms::Vector
     rownms::Vector
