@@ -78,6 +78,7 @@ export
     middle,      # the mean of two real numbers
     mode,        # find a mode from data (the first one)
     modes,       # find all modes from data
+    hsm_mode,    # half-sample mode (robust estimator)
 
     zscore,      # compute Z-scores
     zscore!,     # compute Z-scores inplace or to a pre-allocated array
