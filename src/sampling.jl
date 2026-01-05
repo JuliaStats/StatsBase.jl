@@ -18,11 +18,11 @@ function direct_sample!(rng::AbstractRNG, a::UnitRange, x::AbstractArray)
     b = a[1] - 1
     if b == 0
         for i = 1:length(x)
-            @inbounds x[i] = rand(rng, s)
+            x[i] = rand(rng, s)
         end
     else
         for i = 1:length(x)
-            @inbounds x[i] = b + rand(rng, s)
+            x[i] = b + rand(rng, s)
         end
     end
     return x
@@ -44,7 +44,7 @@ function direct_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
         throw(ArgumentError("output array x must not share memory with input array a"))
     s = Sampler(rng, 1:length(a))
     for i = 1:length(x)
-        @inbounds x[i] = a[rand(rng, s)]
+        x[i] = a[rand(rng, s)]
     end
     return x
 end
@@ -73,13 +73,13 @@ function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::Abstra
     #       issorted(a) to see if we can just sort x
     if storeindices(n, k, eltype(x))
         sort!(sampler!(rng, Base.OneTo(n), x), by=real, lt=<)
-        @inbounds for i = 1:k
+        for i = 1:k
             x[i] = a[Int(x[i])]
         end
     else
         indices = Array{Int}(undef, k)
         sort!(sampler!(rng, Base.OneTo(n), indices))
-        @inbounds for i = 1:k
+        for i = 1:k
             x[i] = a[indices[i]]
         end
     end
@@ -152,10 +152,10 @@ function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
 
     # initialize
     for i = 1:k
-        @inbounds x[i] = a[i]
+        x[i] = a[i]
     end
     if initshuffle
-        @inbounds for j = 1:k
+        for j = 1:k
             l = rand(rng, j:k)
             if l != j
                 t = x[j]
@@ -169,7 +169,7 @@ function knuths_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
     s = Sampler(rng, 1:k)
     for i = k+1:n
         if rand(rng) * i < k  # keep it with probability k / i
-            @inbounds x[rand(rng, s)] = a[i]
+            x[rand(rng, s)] = a[i]
         end
     end
     return x
@@ -212,10 +212,10 @@ function fisher_yates_sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArr
 
     inds = Vector{Int}(undef, n)
     for i = 1:n
-        @inbounds inds[i] = i
+        inds[i] = i
     end
 
-    @inbounds for i = 1:k
+    for i = 1:k
         j = rand(rng, i:n)
         t = inds[j]
         inds[j] = inds[i]
@@ -302,7 +302,7 @@ function seqsample_a!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
             n -= 1
             q *= (n - k) / n
         end
-        @inbounds x[j+=1] = a[i+=1]
+        x[j+=1] = a[i+=1]
         n -= 1
         k -= 1
     end
@@ -435,7 +435,7 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
 
         j += 1
         i += s+1
-        @inbounds x[j] = a[i]
+        x[j] = a[i]
         N = N - s - 1
         n -= 1
         q1 -= s
@@ -447,7 +447,7 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
         seqsample_a!(rng, a[i+1:end], @view x[j+1:end])
     else
         s = trunc(Int, N * vprime)
-        @inbounds x[j+=1] = a[i+=s+1]
+        x[j+=1] = a[i+=s+1]
     end
 end
 
@@ -511,9 +511,9 @@ function sample!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray;
             end
         else
             if k == 1
-                @inbounds x[1] = sample(rng, a)
+                x[1] = sample(rng, a)
             elseif k == 2
-                @inbounds (x[1], x[2]) = samplepair(rng, a)
+                (x[1], x[2]) = samplepair(rng, a)
             elseif n < k * 24
                 fisher_yates_sample!(rng, a, x)
             else
@@ -594,7 +594,7 @@ function sample(rng::AbstractRNG, wv::AbstractWeights)
     cw = wv[1]
     while cw < t && i < n
         i += 1
-        @inbounds cw += wv[i]
+        cw += wv[i]
     end
     return i
 end
@@ -719,12 +719,12 @@ function naive_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
         j = 1
         c = w[1]
         while c < u && j < n
-            @inbounds c += w[j+=1]
+            c += w[j+=1]
         end
-        @inbounds x[i] = a[j]
+        x[i] = a[j]
 
-        @inbounds wsum -= w[j]
-        @inbounds w[j] = 0.0
+        wsum -= w[j]
+        w[j] = 0.0
     end
     return x
 end
@@ -760,13 +760,13 @@ function efraimidis_a_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     # calculate keys for all items
     keys = randexp(rng, n)
     for i in 1:n
-        @inbounds keys[i] = wv[i]/keys[i]
+        keys[i] = wv[i]/keys[i]
     end
 
     # return items with largest keys
     index = sortperm(keys; alg = PartialQuickSort(k), rev = true)
     for i in 1:k
-        @inbounds x[i] = a[index[i]]
+        x[i] = a[index[i]]
     end
     return x
 end
@@ -804,7 +804,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     pq = Vector{Pair{Float64,Int}}(undef, k)
     i = 0
     s = 0
-    @inbounds for _s in 1:n
+    for _s in 1:n
         s = _s
         w = wv[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
@@ -818,9 +818,9 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     heapify!(pq)
 
     # set threshold
-    @inbounds threshold = pq[1].first
+    threshold = pq[1].first
 
-    @inbounds for i in s+1:n
+    for i in s+1:n
         w = wv[i]
         w < 0 && error("Negative weight found in weight vector at index $i")
         w > 0 || continue
@@ -838,7 +838,7 @@ function efraimidis_ares_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     end
 
     # fill output array with items in descending order
-    @inbounds for i in k:-1:1
+    for i in k:-1:1
         x[i] = a[heappop!(pq).second]
     end
     return x
@@ -878,7 +878,7 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     pq = Vector{Pair{Float64,Int}}(undef, k)
     i = 0
     s = 0
-    @inbounds for _s in 1:n
+    for _s in 1:n
         s = _s
         w = wv[s]
         w < 0 && error("Negative weight found in weight vector at index $s")
@@ -892,10 +892,10 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     heapify!(pq)
 
     # set threshold
-    @inbounds threshold = pq[1].first
+    threshold = pq[1].first
     X = threshold*randexp(rng)
 
-    @inbounds for i in s+1:n
+    for i in s+1:n
         w = wv[i]
         w < 0 && error("Negative weight found in weight vector at index $i")
         w > 0 || continue
@@ -914,12 +914,12 @@ function efraimidis_aexpj_wsample_norep!(rng::AbstractRNG, a::AbstractArray,
     if ordered
         # fill output array with items sorted as in a
         sort!(pq, by=last)
-        @inbounds for i in 1:k
+        for i in 1:k
             x[i] = a[pq[i].second]
         end
     else
         # fill output array with items in descending order
-        @inbounds for i in k:-1:1
+        for i in k:-1:1
             x[i] = a[heappop!(pq).second]
         end
     end

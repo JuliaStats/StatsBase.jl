@@ -312,7 +312,7 @@ function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T,N}
     h.isdensity && error("Density histogram must have float-type weights")
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
-        @inbounds h.weights[idx...] += w
+        h.weights[idx...] += w
     end
     h
 end
@@ -320,7 +320,7 @@ end
 function push!(h::Histogram{T,N},xs::NTuple{N,Real},w::Real) where {T<:AbstractFloat,N}
     idx = binindex(h, xs)
     if checkbounds(Bool, h.weights, idx...)
-        @inbounds h.weights[idx...] += h.isdensity ? w / binvolume(h, idx) : w
+        h.weights[idx...] += h.isdensity ? w / binvolume(h, idx) : w
     end
     h
 end
@@ -329,14 +329,14 @@ push!(h::AbstractHistogram{T,N},xs::NTuple{N,Real}) where {T,N} = push!(h,xs,one
 
 
 function append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}) where {T,N}
-    @inbounds for i in eachindex(vs...)
+    for i in eachindex(vs...)
         xs = _multi_getindex(i, vs...)
         push!(h, xs, one(T))
     end
     h
 end
 function append!(h::AbstractHistogram{T,N}, vs::NTuple{N,AbstractVector}, wv::AbstractVector) where {T,N}
-    @inbounds for i in eachindex(wv, vs...)
+    for i in eachindex(wv, vs...)
         xs = _multi_getindex(i, vs...)
         push!(h, xs, wv[i])
     end
@@ -434,7 +434,7 @@ Calculate the norm of histogram `h` as the absolute value of its integral.
         SumT = norm_type(h)
         v_0 = 1
         s_0 = zero(SumT)
-        @inbounds @nloops(
+        @nloops(
             $N, i, weights,
             d -> begin
                 v_{$N-d+1} = v_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)
@@ -493,7 +493,7 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
                     # Divide weights by bin volume, for :pdf also divide by sum of weights
                     SumT = norm_type(h)
                     vs_0 = (mode == :pdf) ? sum(SumT, weights) : one(SumT)
-                    @inbounds @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
+                    @nloops $N i weights d->(vs_{$N-d+1} = vs_{$N-d} * _edge_binvolume(SumT, edges[d], i_d)) begin
                         (@nref $N weights i) /= $(Symbol("vs_$N"))
                         for A in aux_weights
                             (@nref $N A i) /= $(Symbol("vs_$N"))

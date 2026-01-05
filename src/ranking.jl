@@ -36,7 +36,7 @@ end
 # Ordinal ranking ("1234 ranking") -- use the literal order resulted from sort
 function _ordinalrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     _check_randparams(rks, x, p)
-    @inbounds for i in eachindex(p)
+    for i in eachindex(p)
         rks[p[i]] = i
     end
     return rks
@@ -60,7 +60,7 @@ ordinalrank(x::AbstractArray; sortkwargs...) =
 function _competerank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     n = _check_randparams(rks, x, p)
 
-    @inbounds if n > 0
+    if n > 0
         p1 = p[1]
         v = x[p1]
         rks[p1] = k = 1
@@ -97,7 +97,7 @@ competerank(x::AbstractArray; sortkwargs...) =
 function _denserank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     n = _check_randparams(rks, x, p)
 
-    @inbounds if n > 0
+    if n > 0
         p1 = p[1]
         v = x[p1]
         rks[p1] = k = 1
@@ -134,7 +134,7 @@ denserank(x::AbstractArray; sortkwargs...) =
 function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
     n = _check_randparams(rks, x, p)
 
-    @inbounds if n > 0
+    if n > 0
         v = x[p[1]]
 
         s = 1  # starting index of current range

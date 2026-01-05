@@ -31,7 +31,7 @@ function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::UnitR
     m1 = last(levels)
     b = m0 - firstindex(levels) # firstindex(levels) == 1 because levels::UnitRange{<:Integer}
 
-    @inbounds for xi in x
+    for xi in x
         if m0 <= xi <= m1
             r[xi - b] += 1
         end
@@ -53,7 +53,7 @@ function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::UnitR
     m1 = last(levels)
     b = m0 - 1
 
-    @inbounds for i in eachindex(xv, wv)
+    for i in eachindex(xv, wv)
         xi = xv[i]
         if m0 <= xi <= m1
             r[xi - b] += wv[i]
@@ -287,9 +287,9 @@ function addcounts_dict!(cm::Dict{T}, x) where T
     for v in x
         index = ht_keyindex2!(cm, v)
         if index > 0
-            @inbounds cm.vals[index] += 1
+            cm.vals[index] += 1
         else
-            @inbounds Base._setindex!(cm, 1, v, -index)
+            Base._setindex!(cm, 1, v, -index)
         end
     end
     return cm
@@ -323,7 +323,7 @@ end
 function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
     counts = zeros(Int, 2^(8sizeof(T)))
 
-    @inbounds for xi in x
+    for xi in x
         counts[Int(xi) - typemin(T) + 1] += 1
     end
 
@@ -331,9 +331,9 @@ function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union
         if c != 0
             index = ht_keyindex2!(cm, i)
             if index > 0
-                @inbounds cm.vals[index] += c
+                cm.vals[index] += c
             else
-                @inbounds Base._setindex!(cm, c, i, -index)
+                Base._setindex!(cm, c, i, -index)
             end
         end
     end
@@ -354,7 +354,7 @@ function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
-    @inbounds for i in start_i+1:lastindex(sx)
+    for i in start_i+1:lastindex(sx)
         sxi = sx[i]
         if !isequal(last_sx, sxi)
             cm[last_sx] = get(cm, last_sx, 0) + i - start_i
@@ -397,8 +397,8 @@ function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) whe
     z = zero(W)
 
     for i in eachindex(xv, wv)
-        @inbounds xi = xv[i]
-        @inbounds wi = wv[i]
+        xi = xv[i]
+        wi = wv[i]
         cm[xi] = get(cm, xi, z) + wi
     end
     return cm
