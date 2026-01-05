@@ -67,7 +67,6 @@ function ecdf(X::AbstractVector{<:Real}; weights::AbstractVector{<:Real}=weights
                 length(_weights),
             )))
         end
-            "got $(length(X)) and $(length(_weights))"))
         ord = sortperm(X)
         ECDF(X[ord], _weights[ord])
     end
