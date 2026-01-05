@@ -298,8 +298,8 @@ end
     end
 end
 
-# Custom unit weights without `values` field
-struct YAUnitWeights <: StatsBase.AbstractWeights{Int, Int, Vector{Int}}
+# Custom weights without `values` field
+struct YAUnitWeights <: AbstractWeights{Int, Int, Vector{Int}}
     n::Int
 end
 Base.sum(wv::YAUnitWeights) = wv.n
@@ -333,7 +333,7 @@ end
     @test_throws DimensionMismatch("Number of samples (100) and sample weights (99) must be equal.") sample(1:100, uweights(99), 10; replace=false)
     @test_throws DimensionMismatch("Number of samples (80) and sample weights (53) must be equal.") direct_sample!(1:80, uweights(53), Vector{Int}(undef, 10))
 
-    # Custom units don't error and behave the same as sampling with `Weights`
+    # Custom unit weights don't error and behave the same as sampling with `Weights`
     Random.seed!(123)
     xs = sample(1:100, YAUnitWeights(100), 10; replace=false)
     Random.seed!(123)

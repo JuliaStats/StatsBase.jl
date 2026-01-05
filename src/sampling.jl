@@ -637,9 +637,17 @@ direct_sample!(a::AbstractArray, wv::AbstractWeights, x::AbstractArray) =
     direct_sample!(default_rng(), a, wv, x)
 
 # Specialization for `UnitWeights`
-function direct_sample!(rng::AbstractRNG, a::AbstractArray, wv::UnitWeights, x::AbstractArray)
+function direct_sample!(
+    rng::AbstractRNG, a::AbstractArray, wv::UnitWeights, x::AbstractArray,
+)
     if length(a) != length(wv)
-        throw(DimensionMismatch(lazy"Number of samples ($(length(a))) and sample weights ($(length(wv))) must be equal."))
+        throw(DimensionMismatch(LazyString(
+            "Number of samples (",
+            length(a),
+            ") and sample weights (",
+            length(wv),
+            ") must be equal.",
+        )))
     end
     return direct_sample!(rng, a, x)
 end
@@ -972,7 +980,13 @@ sample(a::AbstractArray, wv::AbstractWeights, dims::Dims;
 # Specialization for `UnitWeights`
 function sample!(rng::AbstractRNG, a::AbstractArray, wv::UnitWeights, x::AbstractArray; replace::Bool=true, ordered::Bool=false)
     if length(a) != length(wv)
-        throw(DimensionMismatch(lazy"Number of samples ($(length(a))) and sample weights ($(length(wv))) must be equal."))
+        throw(DimensionMismatch(LazyString(
+            "Number of samples (",
+            length(a),
+            ") and sample weights (",
+            length(wv),
+            ") must be equal.",
+        )))
     end
     return sample!(rng, a, x; replace, ordered)
 end
