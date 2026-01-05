@@ -1,56 +1,3 @@
-
-## coefficient tables with specialized show method
-
-mutable struct CoefTable
-    cols::Vector
-    colnms::Vector
-    rownms::Vector
-    pvalcol::Int
-    teststatcol::Int
-    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector,
-                       pvalcol::Int=0,teststatcol::Int=0)
-        nc = length(cols)
-        nrs = map(length,cols)
-        nr = nrs[1]
-        length(colnms) in [0,nc] || throw(ArgumentError("colnms should have length 0 or $nc"))
-        length(rownms) in [0,nr] || throw(ArgumentError("rownms should have length 0 or $nr"))
-        all(nrs .== nr) || throw(ArgumentError("Elements of cols should have equal lengths, but got $nrs"))
-        pvalcol in 0:nc || throw(ArgumentError("pvalcol should be between 0 and $nc"))
-        teststatcol in 0:nc || throw(ArgumentError("teststatcol should be between 0 and $nc"))
-        new(cols,colnms,rownms,pvalcol,teststatcol)
-    end
-
-    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,
-                       pvalcol::Int=0,teststatcol::Int=0)
-        nc = size(mat,2)
-        cols = Any[mat[:, i] for i in 1:nc]
-        CoefTable(cols,colnms,rownms,pvalcol,teststatcol)
-    end
-end
-
-Base.length(ct::CoefTable) = length(ct.cols[1])
-function Base.eltype(ct::CoefTable)
-    names = isempty(ct.rownms) ?
-        tuple(Symbol.(ct.colnms)...) :
-        tuple(Symbol("Name"), Symbol.(ct.colnms)...)
-    types = isempty(ct.rownms) ?
-        Tuple{eltype.(ct.cols)...} :
-        Tuple{eltype(ct.rownms), eltype.(ct.cols)...}
-    NamedTuple{names, types}
-end
-
-function Base.iterate(ct::CoefTable, i::Integer=1)
-    if i in 1:length(ct)
-        cols = getindex.(ct.cols, Ref(i))
-        nt = isempty(ct.rownms) ?
-            eltype(ct)(tuple(cols...)) :
-            eltype(ct)(tuple(ct.rownms[i], cols...))
-        (nt, i+1)
-    else
-        nothing
-    end
-end
-
 """
 Show a p-value using 6 characters, either using the standard 0.XXXX
 representation or as <Xe-YY.
@@ -113,7 +60,60 @@ end
 
 show(io::IO, n::NoQuote) = print(io, n.s)
 
-function show(io::IO, ct::CoefTable)
+
+## coefficient tables with specialized show method
+
+mutable struct CoefTable
+    cols::Vector
+    colnms::Vector
+    rownms::Vector
+    pvalcol::Int
+    teststatcol::Int
+    function CoefTable(cols::Vector,colnms::Vector,rownms::Vector,
+                       pvalcol::Int=0,teststatcol::Int=0)
+        nc = length(cols)
+        nrs = map(length,cols)
+        nr = nrs[1]
+        length(colnms) in [0,nc] || throw(ArgumentError("colnms should have length 0 or $nc"))
+        length(rownms) in [0,nr] || throw(ArgumentError("rownms should have length 0 or $nr"))
+        all(nrs .== nr) || throw(ArgumentError("Elements of cols should have equal lengths, but got $nrs"))
+        pvalcol in 0:nc || throw(ArgumentError("pvalcol should be between 0 and $nc"))
+        teststatcol in 0:nc || throw(ArgumentError("teststatcol should be between 0 and $nc"))
+        new(cols,colnms,rownms,pvalcol,teststatcol)
+    end
+
+    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,
+                       pvalcol::Int=0,teststatcol::Int=0)
+        nc = size(mat,2)
+        cols = Any[mat[:, i] for i in 1:nc]
+        CoefTable(cols,colnms,rownms,pvalcol,teststatcol)
+    end
+end
+
+Base.length(ct::CoefTable) = length(ct.cols[1])
+function Base.eltype(ct::CoefTable)
+    names = isempty(ct.rownms) ?
+        tuple(Symbol.(ct.colnms)...) :
+        tuple(Symbol("Name"), Symbol.(ct.colnms)...)
+    types = isempty(ct.rownms) ?
+        Tuple{eltype.(ct.cols)...} :
+        Tuple{eltype(ct.rownms), eltype.(ct.cols)...}
+    NamedTuple{names, types}
+end
+
+function Base.iterate(ct::CoefTable, i::Integer=1)
+    if i in 1:length(ct)
+        cols = getindex.(ct.cols, Ref(i))
+        nt = isempty(ct.rownms) ?
+            eltype(ct)(tuple(cols...)) :
+            eltype(ct)(tuple(ct.rownms[i], cols...))
+        (nt, i+1)
+    else
+        nothing
+    end
+end
+
+function show(io::IO, ::MIME"text/plain", ct::CoefTable)
     cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
     nc = length(cols)
     nr = length(cols[1])
