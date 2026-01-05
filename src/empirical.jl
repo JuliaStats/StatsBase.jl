@@ -59,7 +59,14 @@ function ecdf(X::AbstractVector{<:Real}; weights::AbstractVector{<:Real}=weights
     if isempty(_weights)
         return ECDF(sort(X), _weights)
     else
-        length(X) == length(_weights) || throw(ArgumentError("data and weight vectors must be the same size," *
+        if length(X) != length(_weights)
+            throw(ArgumentError(LazyString(
+                "data and weight vectors must be the same size, got ",
+                length(X),
+                " and ",
+                length(_weights),
+            )))
+        end
             "got $(length(X)) and $(length(_weights))"))
         ord = sortperm(X)
         ECDF(X[ord], _weights[ord])
