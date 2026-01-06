@@ -279,7 +279,7 @@ function hsm_mode(a::AbstractVector{T}) where T <: Real
     len == 1 && return a[1]
 
     while (len > 2)
-        win_size = ceil(Int, len / 2)
+        win_size = div(len, 2)
         best_width = a[end] - a[1]
         best_start = 1
 
