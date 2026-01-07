@@ -11,7 +11,7 @@ using LinearAlgebra, Random, Test
     @test cronbach_X isa CronbachAlpha{Float64}
     @test cronbach_X.alpha ≈ 0.8135593220338981
     @test cronbach_X.dropped ≈
-        [0.75, 0.7605633802816901, 0.7714285714285715, 0.782608695652174]
+          [0.75, 0.7605633802816901, 0.7714285714285715, 0.782608695652174]
 
     # testing Rational
     cov_rational = cov_X .// 1
@@ -19,7 +19,7 @@ using LinearAlgebra, Random, Test
     @test cronbach_rational isa CronbachAlpha{Rational{Int}}
     @test cronbach_rational.alpha == 48 // 59
     @test cronbach_rational.dropped ==
-        [3 // 4, 54 // 71, 27 // 35, 18 // 23]
+          [3 // 4, 54 // 71, 27 // 35, 18 // 23]
 
     # testing BigFloat
     cov_bigfloat = BigFloat.(cov_X)
@@ -27,7 +27,7 @@ using LinearAlgebra, Random, Test
     @test cronbach_bigfloat isa CronbachAlpha{BigFloat}
     @test cronbach_bigfloat.alpha ≈ 0.8135593220338981
     @test cronbach_bigfloat.dropped ≈
-        [0.75, 0.7605633802816901, 0.7714285714285715, 0.782608695652174]
+          [0.75, 0.7605633802816901, 0.7714285714285715, 0.782608695652174]
 
     # testing corner cases
     @test_throws MethodError cronbachalpha([1.0, 2.0])
@@ -56,7 +56,6 @@ using LinearAlgebra, Random, Test
                    missing 1]
     @test_throws MethodError cronbachalpha(cov_missing)
 
-
     # testing Base.show
     cronbach_X = cronbachalpha(cov_X)
     io = IOBuffer()
@@ -76,5 +75,4 @@ using LinearAlgebra, Random, Test
     show(io, cronbach_k2)
     str = String(take!(io))
     @test str == "Cronbach's alpha for all items: 0.7273\n"
-
 end # @testset "Cronbach's Alpha"

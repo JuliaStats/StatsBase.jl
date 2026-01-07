@@ -33,14 +33,16 @@ arbitrary_fun(x, y) = cor(x, y)
         res2 = zeros(AbstractFloat, size(res))
         @test pairwise!(f, res2, Any[[1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]]) === res2
         @test res == res2 ==
-            [f(xi, yi) for xi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]),
-                           yi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0])]
+              [f(xi, yi)
+               for xi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0]),
+                   yi in ([1.0, 2.0, 3.0], [1.0f0, 3.0f0, 10.5f0])]
         @test res isa Matrix{Float64}
 
         @inferred pairwise(f, x, y)
 
         @test_throws Union{ArgumentError,MethodError} pairwise(f, [Int[]], [Int[]])
-        @test_throws Union{ArgumentError,MethodError} pairwise!(f, zeros(1, 1), [Int[]], [Int[]])
+        @test_throws Union{ArgumentError,MethodError} pairwise!(f, zeros(1, 1), [Int[]],
+                                                                [Int[]])
 
         res = pairwise(f, [], [])
         @test size(res) == (0, 0)
@@ -79,13 +81,13 @@ arbitrary_fun(x, y) = cor(x, y)
 
         res = pairwise(f, xm, ym)
         @test res isa Matrix{Missing}
-        res2 = zeros(Union{Float64, Missing}, size(res))
+        res2 = zeros(Union{Float64,Missing}, size(res))
         @test pairwise!(f, res2, xm, ym) === res2
         @test res ≅ res2 ≅ [missing for xi in xm, yi in ym]
 
         res = pairwise(f, xm, ym, skipmissing=:pairwise)
         @test res isa Matrix{Float64}
-        res2 = zeros(Union{Float64, Missing}, size(res))
+        res2 = zeros(Union{Float64,Missing}, size(res))
         @test pairwise!(f, res2, xm, ym, skipmissing=:pairwise) === res2
         @test res ≅ res2
         @test isapprox(res, [f(collect.(skipmissings(xi, yi))...) for xi in xm, yi in ym],
@@ -93,18 +95,18 @@ arbitrary_fun(x, y) = cor(x, y)
 
         res = pairwise(f, ym, zm, skipmissing=:pairwise)
         @test res isa Matrix{Float32}
-        res2 = zeros(Union{Float32, Missing}, size(res))
+        res2 = zeros(Union{Float32,Missing}, size(res))
         @test pairwise!(f, res2, ym, zm, skipmissing=:pairwise) === res2
         @test res ≅ res2
         @test isapprox(res, [f(collect.(skipmissings(yi, zi))...) for yi in ym, zi in zm],
                        rtol=1e-6)
 
         nminds = mapreduce(x -> .!ismissing.(x),
-                        (x, y) -> x .& y,
-                        [xm; ym])
+                           (x, y) -> x .& y,
+                           [xm; ym])
         res = pairwise(f, xm, ym, skipmissing=:listwise)
         @test res isa Matrix{Float64}
-        res2 = zeros(Union{Float64, Missing}, size(res))
+        res2 = zeros(Union{Float64,Missing}, size(res))
         @test pairwise!(f, res2, xm, ym, skipmissing=:listwise) === res2
         @test res ≅ res2
         @test isapprox(res, [f(view(xi, nminds), view(yi, nminds)) for xi in xm, yi in ym],
@@ -114,21 +116,29 @@ arbitrary_fun(x, y) = cor(x, y)
         # to check that pairwise itself is inferrable
         for skipmissing in (:none, :pairwise, :listwise)
             g(x, y=x) = pairwise((x, y) -> x[1] * y[1], x, y, skipmissing=skipmissing)
-            @test Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}}}) ==
-                  Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}},
-                                                     Vector{Vector{Union{Float64, Missing}}}}) ==
-                  Matrix{<: Union{Float64, Missing}}
+            @test Core.Compiler.return_type(g,
+                                            Tuple{Vector{Vector{Union{Float64,Missing}}}}) ==
+                  Core.Compiler.return_type(g,
+                                            Tuple{Vector{Vector{Union{Float64,Missing}}},
+                                                  Vector{Vector{Union{Float64,Missing}}}}) ==
+                  Matrix{<: Union{Float64,Missing}}
             if skipmissing in (:pairwise, :listwise)
-                @test_broken Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}}}) ==
-                             Core.Compiler.return_type(g, Tuple{Vector{Vector{Union{Float64, Missing}}},
-                                                                Vector{Vector{Union{Float64, Missing}}}}) ==
+                @test_broken Core.Compiler.return_type(g,
+                                                       Tuple{Vector{Vector{Union{Float64,
+                                                                                 Missing}}}}) ==
+                             Core.Compiler.return_type(g,
+                                                       Tuple{Vector{Vector{Union{Float64,
+                                                                                 Missing}}},
+                                                             Vector{Vector{Union{Float64,
+                                                                                 Missing}}}}) ==
                              Matrix{Float64}
             end
         end
 
         @test_throws ArgumentError pairwise(f, xm, ym, skipmissing=:something)
-        @test_throws ArgumentError pairwise!(f, zeros(Union{Float64, Missing},
-                                                      length(xm), length(ym)), xm, ym,
+        @test_throws ArgumentError pairwise!(f,
+                                             zeros(Union{Float64,Missing},
+                                                   length(xm), length(ym)), xm, ym,
                                              skipmissing=:something)
 
         # variable with only missings
@@ -136,17 +146,21 @@ arbitrary_fun(x, y) = cor(x, y)
         ym = [rand(10), rand(10)]
 
         res = pairwise(f, xm, ym)
-        @test res isa Matrix{Union{Float64, Missing}}
-        res2 = zeros(Union{Float64, Missing}, size(res))
+        @test res isa Matrix{Union{Float64,Missing}}
+        res2 = zeros(Union{Float64,Missing}, size(res))
         @test pairwise!(f, res2, xm, ym) === res2
         @test res ≅ res2 ≅ [f(xi, yi) for xi in xm, yi in ym]
 
-        @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym, skipmissing=:pairwise)
-        @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym, skipmissing=:listwise)
+        @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym,
+                                                               skipmissing=:pairwise)
+        @test_throws Union{ArgumentError,MethodError} pairwise(f, xm, ym,
+                                                               skipmissing=:listwise)
 
-        res = zeros(Union{Float64, Missing}, length(xm), length(ym))
-        @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym, skipmissing=:pairwise)
-        @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym, skipmissing=:listwise)
+        res = zeros(Union{Float64,Missing}, length(xm), length(ym))
+        @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym,
+                                                                skipmissing=:pairwise)
+        @test_throws Union{ArgumentError,MethodError} pairwise!(f, res, xm, ym,
+                                                                skipmissing=:listwise)
 
         for sm in (:pairwise, :listwise)
             @test_throws ArgumentError pairwise(f, [[1, 2]], [1], skipmissing=sm)
@@ -175,9 +189,9 @@ arbitrary_fun(x, y) = cor(x, y)
         y = (Iterators.drop(v, 1) for v in [rand(10) for _ in 1:4])
 
         @test pairwise((x, y) -> f(collect(x), collect(y)), x, y) ==
-            [f(collect(xi), collect(yi)) for xi in x, yi in y]
+              [f(collect(xi), collect(yi)) for xi in x, yi in y]
         @test pairwise((x, y) -> f(collect(x), collect(y)), x) ==
-            [f(collect(xi1), collect(xi2)) for xi1 in x, xi2 in x]
+              [f(collect(xi1), collect(xi2)) for xi1 in x, xi2 in x]
         @test_throws ArgumentError pairwise((x, y) -> f(collect(x), collect(y)), x, y,
                                             skipmissing=:pairwise)
         @test_throws ArgumentError pairwise((x, y) -> f(collect(x), collect(y)), x, y,
@@ -197,8 +211,8 @@ arbitrary_fun(x, y) = cor(x, y)
         y = [rand(10) for _ in 1:4]
 
         @test pairwise(f, x, x, symmetric=true) ==
-            pairwise(f, x, symmetric=true) ==
-            Symmetric(pairwise(f, x, x), :U)
+              pairwise(f, x, symmetric=true) ==
+              Symmetric(pairwise(f, x, x), :U)
 
         res = zeros(4, 4)
         res2 = zeros(4, 4)
@@ -225,12 +239,13 @@ arbitrary_fun(x, y) = cor(x, y)
 
         # missings are ignored for the diagonal
         res = pairwise(cor, [[1, 2, 7], [1, 5, missing]])
-        @test res isa Matrix{Union{Float64, Missing}}
+        @test res isa Matrix{Union{Float64,Missing}}
         @test res ≅ [1.0 missing
                      missing 1.0]
-        res = pairwise(cor, Vector{Union{Int, Missing}}[[missing, missing, missing],
-                                                        [missing, missing, missing]])
-        @test res isa Matrix{Union{Float64, Missing}}
+        res = pairwise(cor,
+                       Vector{Union{Int,Missing}}[[missing, missing, missing],
+                                                  [missing, missing, missing]])
+        @test res isa Matrix{Union{Float64,Missing}}
         @test res ≅ [1.0 missing
                      missing 1.0]
         # except when eltype is Missing
@@ -245,8 +260,9 @@ arbitrary_fun(x, y) = cor(x, y)
             @test res isa Matrix{Float64}
             @test res ≅ [1.0 NaN
                          NaN 1.0]
-            @test_throws ArgumentError pairwise(cor, [[missing, missing, missing],
-                                                      [missing, missing, missing]],
+            @test_throws ArgumentError pairwise(cor,
+                                                [[missing, missing, missing],
+                                                 [missing, missing, missing]],
                                                 skipmissing=sm)
         end
     end
@@ -254,25 +270,25 @@ arbitrary_fun(x, y) = cor(x, y)
     @testset "promote_type_union" begin
         @test StatsBase.promote_type_union(Int) === Int
         @test StatsBase.promote_type_union(Real) === Real
-        @test StatsBase.promote_type_union(Union{Int, Float64}) === Float64
-        @test StatsBase.promote_type_union(Union{Int, Missing}) === Union{Int, Missing}
-        @test StatsBase.promote_type_union(Union{Int, String}) === Any
+        @test StatsBase.promote_type_union(Union{Int,Float64}) === Float64
+        @test StatsBase.promote_type_union(Union{Int,Missing}) === Union{Int,Missing}
+        @test StatsBase.promote_type_union(Union{Int,String}) === Any
         @test StatsBase.promote_type_union(Vector) === Any
         @test StatsBase.promote_type_union(Union{}) === Union{}
-        @test StatsBase.promote_type_union(Tuple{Union{Int, Float64}}) ===
+        @test StatsBase.promote_type_union(Tuple{Union{Int,Float64}}) ===
               Tuple{Real}
     end
 
     @testset "type-unstable corner case (#771)" begin
-        v = [rand(5) for _=1:10]
+        v = [rand(5) for _ in 1:10]
         function f(v)
             pairwise(v) do x, y
-                (x[1] < 0 ? nothing :
-                    x[1] > y[1] ? 1 : 1.5,
-                 0)
+                return (x[1] < 0 ? nothing :
+                        x[1] > y[1] ? 1 : 1.5,
+                        0)
             end
         end
         res = f(v)
-        @test res isa Matrix{Tuple{Real, Int}}
+        @test res isa Matrix{Tuple{Real,Int}}
     end
 end

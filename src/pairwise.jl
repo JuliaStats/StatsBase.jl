@@ -11,7 +11,7 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix, x, y, symmetric::Bool
     end
     if symmetric
         m, n = size(dest)
-        for j in 1:n, i in (j+1):m
+        for j in 1:n, i in (j + 1):m
             dest[i, j] = dest[j, i]
         end
     end
@@ -70,7 +70,7 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::
     end
     if symmetric
         m, n = size(dest)
-        for j in 1:n, i in (j+1):m
+        for j in 1:n, i in (j + 1):m
             dest[i, j] = dest[j, i]
         end
     end
@@ -106,8 +106,8 @@ function _pairwise!(f, dest::AbstractMatrix, x, y;
         throw(ArgumentError("skipmissing must be one of :none, :pairwise or :listwise"))
     end
 
-    x′ = x isa Union{AbstractArray, Tuple, NamedTuple} ? x : collect(x)
-    y′ = y isa Union{AbstractArray, Tuple, NamedTuple} ? y : collect(y)
+    x′ = x isa Union{AbstractArray,Tuple,NamedTuple} ? x : collect(x)
+    y′ = y isa Union{AbstractArray,Tuple,NamedTuple} ? y : collect(y)
     m = length(x′)
     n = length(y′)
 
@@ -123,7 +123,7 @@ using Base: typejoin_union_tuple
 
 # Identical to `Base.promote_typejoin` except that it uses `promote_type`
 # instead of `typejoin` to combine members of `Union` types
-function promote_type_union(::Type{T}) where T
+function promote_type_union(::Type{T}) where {T}
     if T === Union{}
         return Union{}
     elseif T isa UnionAll
@@ -138,14 +138,14 @@ function promote_type_union(::Type{T}) where T
 end
 
 function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmissing}
-    x′ = x isa Union{AbstractArray, Tuple, NamedTuple} ? x : collect(x)
-    y′ = y isa Union{AbstractArray, Tuple, NamedTuple} ? y : collect(y)
+    x′ = x isa Union{AbstractArray,Tuple,NamedTuple} ? x : collect(x)
+    y′ = y isa Union{AbstractArray,Tuple,NamedTuple} ? y : collect(y)
     m = length(x′)
     n = length(y′)
 
-    T = Core.Compiler.return_type(f, Tuple{eltype(x′), eltype(y′)})
+    T = Core.Compiler.return_type(f, Tuple{eltype(x′),eltype(y′)})
     Tsm = Core.Compiler.return_type((x, y) -> f(disallowmissing(x), disallowmissing(y)),
-                                     Tuple{eltype(x′), eltype(y′)})
+                                    Tuple{eltype(x′),eltype(y′)})
 
     if skipmissing === :none
         dest = Matrix{T}(undef, m, n)
@@ -158,7 +158,7 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
     # Preserve inferred element type
     isempty(dest) && return dest
 
-    _pairwise!(f, dest, x′, y′, symmetric=symmetric, skipmissing=skipmissing)
+    _pairwise!(f, dest, x′, y′; symmetric=symmetric, skipmissing=skipmissing)
 
     if isconcretetype(eltype(dest))
         return dest
@@ -167,7 +167,7 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
         # but using `promote_type` rather than `promote_typejoin`)
         U = mapreduce(typeof, promote_type, dest)
         # V is inferred (contrary to U), but it only gives an upper bound for U
-        V = promote_type_union(Union{T, Tsm})
+        V = promote_type_union(Union{T,Tsm})
         return convert(Matrix{U}, dest)::Matrix{<:V}
     end
 end
@@ -239,7 +239,7 @@ function pairwise!(f, dest::AbstractMatrix, x, y=x;
                             "a single set of variables (x === y)"))
     end
 
-    return _pairwise!(f, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
+    return _pairwise!(f, dest, x, y; symmetric=symmetric, skipmissing=skipmissing)
 end
 
 """
@@ -307,23 +307,29 @@ end
 # cov(x) is faster than cov(x, x)
 _cov(x, y) = x === y ? cov(x) : cov(x, y)
 
-pairwise!(::typeof(cov), dest::AbstractMatrix, x, y;
-          symmetric::Bool=false, skipmissing::Symbol=:none) =
-    pairwise!(_cov, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
+function pairwise!(::typeof(cov), dest::AbstractMatrix, x, y;
+                   symmetric::Bool=false, skipmissing::Symbol=:none)
+    return pairwise!(_cov, dest, x, y; symmetric=symmetric, skipmissing=skipmissing)
+end
 
-pairwise(::typeof(cov), x, y; symmetric::Bool=false, skipmissing::Symbol=:none) =
-    pairwise(_cov, x, y, symmetric=symmetric, skipmissing=skipmissing)
+function pairwise(::typeof(cov), x, y; symmetric::Bool=false, skipmissing::Symbol=:none)
+    return pairwise(_cov, x, y; symmetric=symmetric, skipmissing=skipmissing)
+end
 
-pairwise!(::typeof(cov), dest::AbstractMatrix, x;
-         symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise!(_cov, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
+function pairwise!(::typeof(cov), dest::AbstractMatrix, x;
+                   symmetric::Bool=true, skipmissing::Symbol=:none)
+    return pairwise!(_cov, dest, x, x; symmetric=symmetric, skipmissing=skipmissing)
+end
 
-pairwise(::typeof(cov), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise(_cov, x, x, symmetric=symmetric, skipmissing=skipmissing)
+function pairwise(::typeof(cov), x; symmetric::Bool=true, skipmissing::Symbol=:none)
+    return pairwise(_cov, x, x; symmetric=symmetric, skipmissing=skipmissing)
+end
 
-pairwise!(::typeof(cor), dest::AbstractMatrix, x;
-          symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise!(cor, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
+function pairwise!(::typeof(cor), dest::AbstractMatrix, x;
+                   symmetric::Bool=true, skipmissing::Symbol=:none)
+    return pairwise!(cor, dest, x, x; symmetric=symmetric, skipmissing=skipmissing)
+end
 
-pairwise(::typeof(cor), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise(cor, x, x, symmetric=symmetric, skipmissing=skipmissing)
+function pairwise(::typeof(cor), x; symmetric::Bool=true, skipmissing::Symbol=:none)
+    return pairwise(cor, x, x; symmetric=symmetric, skipmissing=skipmissing)
+end

@@ -20,7 +20,6 @@ function counteq(a::AbstractArray, b::AbstractArray)
     return c
 end
 
-
 """
     countne(a, b)
 
@@ -38,7 +37,6 @@ function countne(a::AbstractArray, b::AbstractArray)
     end
     return c
 end
-
 
 """
     sqL2dist(a, b)
@@ -58,7 +56,6 @@ function sqL2dist(a::AbstractArray{<:Number}, b::AbstractArray{<:Number})
     return r
 end
 
-
 # L2 distance
 """
     L2dist(a, b)
@@ -67,7 +64,6 @@ Compute the L2 distance between two arrays: ``\\sqrt{\\sum_{i=1}^n |a_i - b_i|^2
 Efficient equivalent of `sqrt(sum(abs2, a - b))`.
 """
 L2dist(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}) = sqrt(sqL2dist(a, b))
-
 
 # L1 distance
 """
@@ -88,7 +84,6 @@ function L1dist(a::AbstractArray{<:Number}, b::AbstractArray{<:Number})
     return r
 end
 
-
 # Linf distance
 """
     Linfdist(a, b)
@@ -108,7 +103,6 @@ function Linfdist(a::AbstractArray{<:Number}, b::AbstractArray{<:Number})
     end
     return r
 end
-
 
 # Generalized KL-divergence
 """
@@ -134,7 +128,6 @@ function gkldiv(a::AbstractArray{<:Real}, b::AbstractArray{<:Real})
     return r
 end
 
-
 # MeanAD: mean absolute deviation
 """
     meanad(a, b)
@@ -142,7 +135,6 @@ end
 Return the mean absolute deviation between two arrays: `mean(abs, a - b)`.
 """
 meanad(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}) = L1dist(a, b) / length(a)
-
 
 # MaxAD: maximum absolute deviation
 """
@@ -152,7 +144,6 @@ Return the maximum absolute deviation between two arrays: `maxabs(a - b)`.
 """
 maxad(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}) = Linfdist(a, b)
 
-
 # MSD: mean squared deviation
 """
     msd(a, b)
@@ -160,7 +151,6 @@ maxad(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}) = Linfdist(a, b)
 Return the mean squared deviation between two arrays: `mean(abs2, a - b)`.
 """
 msd(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}) = sqL2dist(a, b) / length(a)
-
 
 # RMSD: root mean squared deviation
 """
@@ -179,7 +169,6 @@ function rmsd(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}; normalize:
         return v
     end
 end
-
 
 # PSNR: peak signal-to-noise ratio
 """

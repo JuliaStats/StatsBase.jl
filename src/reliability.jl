@@ -1,4 +1,4 @@
-struct CronbachAlpha{T <: Real}
+struct CronbachAlpha{T<:Real}
     alpha::T
     dropped::Vector{T}
 end
@@ -57,8 +57,8 @@ function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
                             "If so, call `cronbachalpha(cov(...))` instead."))
     end
     k = size(covmatrix, 2)
-    k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
-    v = vec(sum(covmatrix, dims=1))
+    k > 1 || throw(ArgumentError("Covariance matrix must have more than one column."))
+    v = vec(sum(covmatrix; dims=1))
     σ = sum(v)
     for i in axes(v, 1)
         v[i] -= covmatrix[i, i]
@@ -67,7 +67,9 @@ function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
 
     alpha = k * (1 - σ_diag / σ) / (k - 1)
     if k > 2
-        dropped = typeof(alpha)[(k - 1) * (1 - (σ_diag - covmatrix[i, i]) / (σ - 2*v[i] - covmatrix[i, i])) / (k - 2)
+        dropped = typeof(alpha)[(k - 1) * (1 -
+                                           (σ_diag - covmatrix[i, i]) /
+                                           (σ - 2*v[i] - covmatrix[i, i])) / (k - 2)
                                 for i in 1:k]
     else
         # if k = 2 do not produce dropped; this has to be also
