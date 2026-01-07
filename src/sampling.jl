@@ -608,7 +608,7 @@ sample(rng::AbstractRNG, wv::UnitWeights) = rand(rng, 1:length(wv))
 
 function sample(rng::AbstractRNG, wv::AbstractWeights{<:Real,<:Real,<:SparseVector})
     i = sample(rng, Weights(nonzeros(wv.values), sum(wv)))
-    return SparseArrays.nonzeroinds(wv.values)[i]
+    return rowvals(wv.values)[i]
 end
 
 """
