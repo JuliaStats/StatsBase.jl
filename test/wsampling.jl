@@ -131,9 +131,9 @@ test_rng_use(efraimidis_aexpj_wsample_norep!, 4:7, wv, zeros(Int, 2))
 a = sample(4:7, wv, 3; replace=false, ordered=false)
 check_wsample_norep(a, (4, 7), wv, -1; ordered=false)
 
-wv_sparse = weights(sparsevec([0, 8, 0, 6]))
-a = sample(4:7, wv_sparse, 3; replace=false, ordered=false)
-check_wsample_norep(a, (4, 7), wv_sparse, -1; ordered=false)
+wv_sparse = weights(sparsevec([0, 8, 4, 6]))
+a_sparse = sample(4:7, wv_sparse, 3; replace=false, ordered=false)
+check_wsample_norep(a_sparse, (4, 7), wv_sparse, -1; ordered=false)
 
 for rev in (true, false), T in (Int, Int16, Float64, Float16, BigInt, ComplexF64, Rational{Int})
     r = rev ? reverse(4:7) : (4:7)
