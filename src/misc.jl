@@ -18,12 +18,12 @@ julia> rle([1,1,1,2,2,3,3,3,3,2,2,2])
 ([1, 2, 3, 2], [3, 2, 4, 3])
 ```
 """
-function rle(v::AbstractVector{T}) where T
+function rle(v::AbstractVector{T}) where {T}
     n = length(v)
     vals = T[]
     lens = Int[]
 
-    n>0 || return (vals,lens)
+    n>0 || return (vals, lens)
 
     cv = v[1]
     cl = 1
@@ -57,28 +57,27 @@ Reconstruct a vector from its run-length encoding (see [`rle`](@ref)).
 `vals` is a vector of the values and `lens` is a vector of the corresponding
 run lengths.
 """
-function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) where T
+function inverse_rle(vals::AbstractVector{T}, lens::AbstractVector{<:Integer}) where {T}
     m = length(vals)
     mlens = length(lens)
-    mlens == m || throw(DimensionMismatch(
-                        "number of vals ($m) does not match the number of lens ($mlens)"))
+    mlens == m ||
+        throw(DimensionMismatch("number of vals ($m) does not match the number of lens ($mlens)"))
     n = sum(lens)
     n >= 0 || throw(ArgumentError("lengths must be non-negative"))
 
     r = Vector{T}(undef, n)
     p = 0
-    for i = 1 : m
+    for i in 1:m
         j = lens[i]
         j >= 0 || throw(ArgumentError("lengths must be non-negative"))
         v = vals[i]
         while j > 0
             r[p+=1] = v
-            j -=1
+            j -= 1
         end
     end
     return r
 end
-
 
 """
     indexmap(a)
@@ -86,9 +85,9 @@ end
 Construct a dictionary that maps each unique value in `a` to
 the index of its first occurrence in `a`.
 """
-function indexmap(a::AbstractArray{T}) where T
+function indexmap(a::AbstractArray{T}) where {T}
     d = Dict{T,Int}()
-    for i = 1 : length(a)
+    for i in 1:length(a)
         k = a[i]
         if !haskey(d, k)
             d[k] = i
@@ -97,17 +96,16 @@ function indexmap(a::AbstractArray{T}) where T
     return d
 end
 
-
 """
     levelsmap(a)
 
 Construct a dictionary that maps each of the `n` unique values
 in `a` to a number between 1 and `n`.
 """
-function levelsmap(a::AbstractArray{T}) where T
+function levelsmap(a::AbstractArray{T}) where {T}
     d = Dict{T,Int}()
     index = 1
-    for i = 1 : length(a)
+    for i in 1:length(a)
         k = a[i]
         if !haskey(d, k)
             d[k] = index
@@ -137,9 +135,8 @@ julia> indicatormat([1 2 2], 2)
 ```
 """
 function indicatormat(x::AbstractArray{<:Integer}, k::Integer; sparse::Bool=false)
-    sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
+    return sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
 end
-
 
 """
     indicatormat(x, c=sort(unique(x)); sparse=false)
@@ -149,29 +146,29 @@ Let `ci` be the index of `x[i]` in `c`. Then `I[ci, i] = true` and
 all other elements are `false`.
 """
 function indicatormat(x::AbstractArray, c::AbstractArray; sparse::Bool=false)
-    sparse ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
+    return sparse ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
 end
 
-indicatormat(x::AbstractArray; sparse::Bool=false) =
-    indicatormat(x, sort!(unique(x)); sparse=sparse)
-
+function indicatormat(x::AbstractArray; sparse::Bool=false)
+    return indicatormat(x, sort!(unique(x)); sparse=sparse)
+end
 
 function _indicatormat_dense(x::AbstractArray{<:Integer}, k::Integer)
     n = length(x)
     r = zeros(Bool, k, n)
-    for i = 1 : n
+    for i in 1:n
         r[x[i], i] = true
     end
     return r
 end
 
-function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
+function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where {T}
     d = indexmap(c)
     m = length(c)
     n = length(x)
     r = zeros(Bool, m, n)
     o = 0
-    for i = 1 : n
+    for i in 1:n
         xi = x[i]
         r[o + d[xi]] = true
         o += m
@@ -179,15 +176,17 @@ function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
     return r
 end
 
-_indicatormat_sparse(x::AbstractArray{<:Integer}, k::Integer) = (n = length(x); sparse(x, 1:n, true, k, n))
+function _indicatormat_sparse(x::AbstractArray{<:Integer}, k::Integer)
+    return (n=length(x); sparse(x, 1:n, true, k, n))
+end
 
-function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
+function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where {T}
     d = indexmap(c)
     m = length(c)
     n = length(x)
 
     rinds = Vector{Int}(undef, n)
-    for i = 1 : n
+    for i in 1:n
         rinds[i] = d[x[i]]
     end
     return sparse(rinds, 1:n, true, m, n)

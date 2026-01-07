@@ -5,27 +5,28 @@
 function _symmetrize!(a::DenseMatrix)
     m, n = size(a)
     m == n || error("a must be a square matrix.")
-    for j = 1:n
-        for i = j+1:n
-            vl = a[i,j]
-            vr = a[j,i]
-            a[i,j] = a[j,i] = middle(vl, vr)
+    for j in 1:n
+        for i in (j + 1):n
+            vl = a[i, j]
+            vr = a[j, i]
+            a[i, j] = a[j, i] = middle(vl, vr)
         end
     end
     return a
 end
 
 function _scalevars(x::DenseMatrix, s::AbstractWeights, dims::Int)
-    dims == 1 ? Diagonal(s) * x :
-    dims == 2 ? x * Diagonal(s) :
-    error("dims should be either 1 or 2.")
+    return dims == 1 ? Diagonal(s) * x :
+           dims == 2 ? x * Diagonal(s) :
+           error("dims should be either 1 or 2.")
 end
 
 ## scatter matrix
 
 _unscaled_covzm(x::DenseMatrix, dims::Integer) = unscaled_covzm(x, dims)
-_unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer) =
-    _symmetrize!(unscaled_covzm(x, _scalevars(x, wv, dims), dims))
+function _unscaled_covzm(x::DenseMatrix, wv::AbstractWeights, dims::Integer)
+    return _symmetrize!(unscaled_covzm(x, _scalevars(x, wv, dims), dims))
+end
 
 """
     scattermat(X, [wv::AbstractWeights]; mean=nothing, dims=1)
@@ -44,7 +45,6 @@ the estimate.
 """
 function scattermat end
 
-
 """
     cov(X, w::AbstractWeights, vardim=1; mean=nothing, corrected=false)
 
@@ -59,7 +59,6 @@ matrix (`corrected=false`) is computed by multiplying `scattermat(X, w)` by
 """
 cov
 
-
 """
     mean_and_cov(x, [wv::AbstractWeights,] vardim=1; corrected=false) -> (mean, cov)
 
@@ -71,33 +70,39 @@ Finally, bias correction is applied to the covariance calculation if
 """
 function mean_and_cov end
 
-scattermat(x::DenseMatrix; mean=nothing, dims::Int=1) =
-    _scattermatm(x, mean, dims)
-_scattermatm(x::DenseMatrix, ::Nothing, dims::Int) =
-    _unscaled_covzm(x .- mean(x, dims=dims), dims)
-_scattermatm(x::DenseMatrix, mean, dims::Int=1) =
-    _unscaled_covzm(x .- mean, dims)
+scattermat(x::DenseMatrix; mean=nothing, dims::Int=1) = _scattermatm(x, mean, dims)
+function _scattermatm(x::DenseMatrix, ::Nothing, dims::Int)
+    return _unscaled_covzm(x .- mean(x; dims=dims), dims)
+end
+_scattermatm(x::DenseMatrix, mean, dims::Int=1) = _unscaled_covzm(x .- mean, dims)
 
-scattermat(x::DenseMatrix, wv::AbstractWeights; mean=nothing, dims::Int=1) =
-    _scattermatm(x, wv, mean, dims)
-_scattermatm(x::DenseMatrix, wv::AbstractWeights, ::Nothing, dims::Int) =
-    _unscaled_covzm(x .- mean(x, wv, dims=dims), wv, dims)
-_scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int) =
-    _unscaled_covzm(x .- mean, wv, dims)
+function scattermat(x::DenseMatrix, wv::AbstractWeights; mean=nothing, dims::Int=1)
+    return _scattermatm(x, wv, mean, dims)
+end
+function _scattermatm(x::DenseMatrix, wv::AbstractWeights, ::Nothing, dims::Int)
+    return _unscaled_covzm(x .- mean(x, wv; dims=dims), wv, dims)
+end
+function _scattermatm(x::DenseMatrix, wv::AbstractWeights, mean, dims::Int)
+    return _unscaled_covzm(x .- mean, wv, dims)
+end
 
 ## weighted cov
-covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
-     corrected::Union{Bool, Nothing}=nothing) =
-    rmul!(scattermat(x, w, mean=mean, dims=dims), varcorrection(w, depcheck(:covm, :corrected, corrected)))
+function covm(x::DenseMatrix, mean, w::AbstractWeights, dims::Int=1;
+              corrected::Union{Bool,Nothing}=nothing)
+    return rmul!(scattermat(x, w; mean=mean, dims=dims),
+                 varcorrection(w, depcheck(:covm, :corrected, corrected)))
+end
 
-
-cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1; corrected::Union{Bool, Nothing}=nothing) =
-    covm(x, mean(x, w, dims=dims), w, dims; corrected=depcheck(:cov, :corrected, corrected))
+function cov(x::DenseMatrix, w::AbstractWeights, dims::Int=1;
+             corrected::Union{Bool,Nothing}=nothing)
+    return covm(x, mean(x, w; dims=dims), w, dims;
+                corrected=depcheck(:cov, :corrected, corrected))
+end
 
 function corm(x::DenseMatrix, mean, w::AbstractWeights, vardim::Int=1)
     c = covm(x, mean, w, vardim; corrected=false)
     s = std(x, w, vardim; mean=mean, corrected=false)
-    cov2cor!(c, s)
+    return cov2cor!(c, s)
 end
 
 """
@@ -106,19 +111,19 @@ end
 Compute the Pearson correlation matrix of `X` along the dimension
 `dims` with a weighting `w` .
 """
-cor(x::DenseMatrix, w::AbstractWeights, dims::Int=1) =
-    corm(x, mean(x, w, dims=dims), w, dims)
+function cor(x::DenseMatrix, w::AbstractWeights, dims::Int=1)
+    return corm(x, mean(x, w; dims=dims), w, dims)
+end
 
 function mean_and_cov(x::DenseMatrix, dims::Int=1; corrected::Bool=true)
-    m = mean(x, dims=dims)
-    return m, covm(x, m, dims, corrected=corrected)
+    m = mean(x; dims=dims)
+    return m, covm(x, m, dims; corrected=corrected)
 end
 function mean_and_cov(x::DenseMatrix, wv::AbstractWeights, dims::Int=1;
-                      corrected::Union{Bool, Nothing}=nothing)
-    m = mean(x, wv, dims=dims)
+                      corrected::Union{Bool,Nothing}=nothing)
+    m = mean(x, wv; dims=dims)
     return m, cov(x, wv, dims; corrected=depcheck(:mean_and_cov, :corrected, corrected))
 end
-
 
 """
     cov2cor(C::AbstractMatrix, [s::AbstractArray])
@@ -126,7 +131,7 @@ end
 Compute the correlation matrix from the covariance matrix `C` and, optionally, a vector
 of standard deviations `s`. Use [`StatsBase.cov2cor!`](@ref) for an in-place version.
 """
-function cov2cor(C::AbstractMatrix, s::AbstractArray = map(sqrt, view(C, diagind(C))))
+function cov2cor(C::AbstractMatrix, s::AbstractArray=map(sqrt, view(C, diagind(C))))
     zs = zero(eltype(s))
     T = typeof(zero(eltype(C)) / (zs * zs))
     return cov2cor!(copyto!(similar(C, T), C), s)
@@ -139,18 +144,18 @@ end
 Convert the covariance matrix `C` to a correlation matrix in-place, optionally using a vector of
 standard deviations `s`.
 """
-function cov2cor!(C::AbstractMatrix, s::AbstractArray = map(sqrt, view(C, diagind(C))))
+function cov2cor!(C::AbstractMatrix, s::AbstractArray=map(sqrt, view(C, diagind(C))))
     Base.require_one_based_indexing(C, s)
     n = length(s)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
-    for j = 1:n
+    for j in 1:n
         sj = s[j]
-        for i = 1:(j-1)
-            C[i,j] = adjoint(C[j,i])
+        for i in 1:(j - 1)
+            C[i, j] = adjoint(C[j, i])
         end
-        C[j,j] = oneunit(C[j,j])
-        for i = (j+1):n
-            C[i,j] = _clampcor(C[i,j] / (s[i] * sj))
+        C[j, j] = oneunit(C[j, j])
+        for i in (j + 1):n
+            C[i, j] = _clampcor(C[i, j] / (s[i] * sj))
         end
     end
     return C
@@ -164,19 +169,19 @@ function cov2cor!(C::Union{Symmetric{<:Real},Hermitian}, s::AbstractArray)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
     A = parent(C)
     if C.uplo === 'U'
-        for j = 1:n
+        for j in 1:n
             sj = s[j]
-            for i = 1:(j-1)
-                A[i,j] = _clampcor(A[i,j] / (s[i] * sj))
+            for i in 1:(j - 1)
+                A[i, j] = _clampcor(A[i, j] / (s[i] * sj))
             end
-            A[j,j] = oneunit(A[j,j])
+            A[j, j] = oneunit(A[j, j])
         end
     else
-        for j = 1:n
+        for j in 1:n
             sj = s[j]
-            A[j,j] = oneunit(A[j,j])
-            for i = (j+1):n
-                A[i,j] = _clampcor(A[i,j] / (s[i] * sj))
+            A[j, j] = oneunit(A[j, j])
+            for i in (j + 1):n
+                A[i, j] = _clampcor(A[i, j] / (s[i] * sj))
             end
         end
     end
@@ -207,12 +212,12 @@ function cor2cov!(C::AbstractMatrix, s::AbstractArray)
     size(C) == (n, n) || throw(DimensionMismatch("inconsistent dimensions"))
     for j in 1:n
         sj = s[j]
-        for i in 1:(j-1)
-            C[i,j] = adjoint(C[j,i])
+        for i in 1:(j - 1)
+            C[i, j] = adjoint(C[j, i])
         end
-        C[j,j] = sj^2
-        for i in (j+1):n
-            C[i,j] *= s[i] * sj
+        C[j, j] = sj^2
+        for i in (j + 1):n
+            C[i, j] *= s[i] * sj
         end
     end
     return C
@@ -226,17 +231,17 @@ function cor2cov!(C::Union{Symmetric{<:Real},Hermitian}, s::AbstractArray)
     if C.uplo === 'U'
         for j in 1:n
             sj = s[j]
-            for i in 1:(j-1)
-                A[i,j] *= s[i] * sj
+            for i in 1:(j - 1)
+                A[i, j] *= s[i] * sj
             end
-            A[j,j] = sj^2
+            A[j, j] = sj^2
         end
     else
         for j in 1:n
             sj = s[j]
-            A[j,j] = sj^2
-            for i in (j+1):n
-                A[i,j] *= s[i] * sj
+            A[j, j] = sj^2
+            for i in (j + 1):n
+                A[i, j] *= s[i] * sj
             end
         end
     end
@@ -255,16 +260,18 @@ abstract type CovarianceEstimator end
 
 Compute a variance estimate from the observation vector `x` using the  estimator `ce`.
 """
-cov(ce::CovarianceEstimator, x::AbstractVector; mean=nothing) =
-    error("cov is not defined for $(typeof(ce)) and $(typeof(x))")
+function cov(ce::CovarianceEstimator, x::AbstractVector; mean=nothing)
+    return error("cov is not defined for $(typeof(ce)) and $(typeof(x))")
+end
 
 """
     cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
 
 Compute the covariance of the vectors `x` and `y` using estimator `ce`.
 """
-cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector) =
-    error("cov is not defined for $(typeof(ce)), $(typeof(x)) and $(typeof(y))")
+function cov(ce::CovarianceEstimator, x::AbstractVector, y::AbstractVector)
+    return error("cov is not defined for $(typeof(ce)), $(typeof(x)) and $(typeof(y))")
+end
 
 """
     cov(ce::CovarianceEstimator, X::AbstractMatrix, [w::AbstractWeights];
@@ -282,11 +289,14 @@ The keyword argument `mean` can be:
   * when `dims=2`, an `AbstractVector` of length `N` or an `AbstractMatrix`
     of size `(N,1)`.
 """
-cov(ce::CovarianceEstimator, X::AbstractMatrix; mean=nothing, dims::Int=1) =
-    error("cov is not defined for $(typeof(ce)) and $(typeof(X))")
+function cov(ce::CovarianceEstimator, X::AbstractMatrix; mean=nothing, dims::Int=1)
+    return error("cov is not defined for $(typeof(ce)) and $(typeof(X))")
+end
 
-cov(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; mean=nothing, dims::Int=1) =
-    error("cov is not defined for $(typeof(ce)), $(typeof(X)) and $(typeof(w))")
+function cov(ce::CovarianceEstimator, X::AbstractMatrix, w::AbstractWeights; mean=nothing,
+             dims::Int=1)
+    return error("cov is not defined for $(typeof(ce)), $(typeof(X)) and $(typeof(w))")
+end
 
 """
     var(ce::CovarianceEstimator, x::AbstractVector; mean=nothing)
@@ -349,29 +359,30 @@ where `x`, `y` are vectors, `X` is a matrix and `w` is a weighting vector.
 """
 struct SimpleCovariance <: CovarianceEstimator
     corrected::Bool
-    SimpleCovariance(;corrected::Bool=false) = new(corrected)
+    SimpleCovariance(; corrected::Bool=false) = new(corrected)
 end
 
-cov(sc::SimpleCovariance, x::AbstractVector) =
-    cov(x; corrected=sc.corrected)
+cov(sc::SimpleCovariance, x::AbstractVector) = cov(x; corrected=sc.corrected)
 
-cov(sc::SimpleCovariance, x::AbstractVector, y::AbstractVector) =
-    cov(x, y; corrected=sc.corrected)
+function cov(sc::SimpleCovariance, x::AbstractVector, y::AbstractVector)
+    return cov(x, y; corrected=sc.corrected)
+end
 
 function cov(sc::SimpleCovariance, X::AbstractMatrix; dims::Int=1, mean=nothing)
     dims ∈ (1, 2) || throw(ArgumentError("Argument dims can only be 1 or 2 (given: $dims)"))
     if mean === nothing
         return cov(X; dims=dims, corrected=sc.corrected)
     else
-        return covm(X, mean, dims, corrected=sc.corrected)
+        return covm(X, mean, dims; corrected=sc.corrected)
     end
 end
 
-function cov(sc::SimpleCovariance, X::AbstractMatrix, w::AbstractWeights; dims::Int=1, mean=nothing)
+function cov(sc::SimpleCovariance, X::AbstractMatrix, w::AbstractWeights; dims::Int=1,
+             mean=nothing)
     dims ∈ (1, 2) || throw(ArgumentError("Argument dims can only be 1 or 2 (given: $dims)"))
     if mean === nothing
-        return cov(X, w, dims, corrected=sc.corrected)
+        return cov(X, w, dims; corrected=sc.corrected)
     else
-        return covm(X, mean, w, dims, corrected=sc.corrected)
+        return covm(X, mean, w, dims; corrected=sc.corrected)
     end
 end

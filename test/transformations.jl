@@ -178,5 +178,4 @@ using Test
     @test isequal(X, Y)
     @test reconstruct!(t, Y) === Y
     @test Y ≈ X_
-
 end

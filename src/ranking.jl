@@ -10,8 +10,8 @@ function _check_randparams(rks, x, p)
     n = length(rks)
     nx = length(x)
     np = length(p)
-    nx == np == n || throw(
-        DimensionMismatch("lengths of x $nx and p $np do not match that of ranks $n"))
+    nx == np == n ||
+        throw(DimensionMismatch("lengths of x $nx and p $np do not match that of ranks $n"))
     return n
 end
 
@@ -42,7 +42,6 @@ function _ordinalrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:
     return rks
 end
 
-
 """
     ordinalrank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
@@ -52,9 +51,7 @@ All items in `x` are given distinct, successive ranks based on their position
 in the sorted vector.
 Missing values are assigned rank `missing`.
 """
-ordinalrank(x::AbstractArray; sortkwargs...) =
-    _rank(_ordinalrank!, x; sortkwargs...)
-
+ordinalrank(x::AbstractArray; sortkwargs...) = _rank(_ordinalrank!, x; sortkwargs...)
 
 # Competition ranking ("1224" ranking) -- resolve tied ranks using min
 function _competerank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
@@ -79,7 +76,6 @@ function _competerank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:
     return rks
 end
 
-
 """
     competerank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
@@ -89,9 +85,7 @@ Equal (*"tied"*) items are given the same rank, and the next rank comes after a 
 that is equal to the number of tied items - 1.
 Missing values are assigned rank `missing`.
 """
-competerank(x::AbstractArray; sortkwargs...) =
-    _rank(_competerank!, x; sortkwargs...)
-
+competerank(x::AbstractArray; sortkwargs...) = _rank(_competerank!, x; sortkwargs...)
 
 # Dense ranking ("1223" ranking) -- resolve tied ranks using min
 function _denserank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
@@ -116,7 +110,6 @@ function _denserank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:In
     return rks
 end
 
-
 """
     denserank(x; lt=isless, by=identity, rev::Bool=false, ...)
 
@@ -126,9 +119,7 @@ Equal items receive the same rank, and the next subsequent rank is
 assigned with no gap.
 Missing values are assigned rank `missing`.
 """
-denserank(x::AbstractArray; sortkwargs...) =
-    _rank(_denserank!, x; sortkwargs...)
-
+denserank(x::AbstractArray; sortkwargs...) = _rank(_denserank!, x; sortkwargs...)
 
 # Tied ranking ("1 2.5 2.5 4" ranking) -- resolve tied ranks using average
 function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Integer})
@@ -143,7 +134,7 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Int
             if cx != v
                 # fill average rank to s : e-1
                 ar = (s + e - 1) / 2
-                for i = s : e-1
+                for i in s:(e - 1)
                     rks[p[i]] = ar
                 end
                 # switch to next range
@@ -154,7 +145,7 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Int
 
         # the last range
         ar = (s + n) / 2
-        for i = s : n
+        for i in s:n
             rks[p[i]] = ar
         end
     end
@@ -172,5 +163,4 @@ Equal (*"tied"*) items receive the mean of the ranks they would
 have been assigned under the ordinal ranking (see [`ordinalrank`](@ref)).
 Missing values are assigned rank `missing`.
 """
-tiedrank(x::AbstractArray; sortkwargs...) =
-    _rank(_tiedrank!, x, Float64; sortkwargs...)
+tiedrank(x::AbstractArray; sortkwargs...) = _rank(_tiedrank!, x, Float64; sortkwargs...)

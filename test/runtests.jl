@@ -25,8 +25,8 @@ tests = ["ambiguous",
          "partialcor",
          "transformations",
          # Test with JET after all other tests since it has side effects
-         "jet"] 
-         #"statquiz"]
+         "jet"]
+#"statquiz"]
 
 println("Running tests:")
 

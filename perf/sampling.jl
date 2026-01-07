@@ -51,19 +51,19 @@ tsample!(s::Sample_NoRep, a, x) = sample!(a, x; replace=false, ordered=false)
 mutable struct Sample_NoRep_Ord <: NoRep end
 tsample!(s::Sample_NoRep_Ord, a, x) = sample!(a, x; replace=false, ordered=true)
 
-
 # config is in the form of (n, k)
 
 Base.string(p::SampleProc{Alg}) where {Alg} = lowercase(string(Alg))
 
 Base.length(p::SampleProc, cfg::Tuple{Int,Int}) = cfg[2]
-Base.isvalid(p::SampleProc{<:WithRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= 1 && k >= 1)
-Base.isvalid(p::SampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= k >= 1)
+Base.isvalid(p::SampleProc{<:WithRep}, cfg::Tuple{Int,Int}) = ((n, k)=cfg; n >= 1 && k >= 1)
+Base.isvalid(p::SampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k)=cfg; n >= k >= 1)
 
 Base.start(p::SampleProc, cfg::Tuple{Int,Int}) = Vector{Int}(cfg[2])
-Base.run(p::SampleProc{Alg}, cfg::Tuple{Int,Int}, s::Vector{Int}) where {Alg} = tsample!(Alg(), 1:cfg[1], s)
+function Base.run(p::SampleProc{Alg}, cfg::Tuple{Int,Int}, s::Vector{Int}) where {Alg}
+    return tsample!(Alg(), 1:cfg[1], s)
+end
 Base.done(p::SampleProc, cfg, s) = nothing
-
 
 ### benchmarking
 
@@ -72,10 +72,10 @@ const ks = 2 .^ [1:16]
 
 ## with replacement
 
-const procs1 = Proc[ SampleProc{Direct}(),
-                     SampleProc{Sample_WRep}(),
-                     SampleProc{Xmultinom}(),
-                     SampleProc{Sample_WRep_Ord}() ]
+const procs1 = Proc[SampleProc{Direct}(),
+                    SampleProc{Sample_WRep}(),
+                    SampleProc{Xmultinom}(),
+                    SampleProc{Sample_WRep_Ord}()]
 
 const cfgs1 = vec([(n, k) for k in ks, n in ns])
 
@@ -84,14 +84,14 @@ println()
 
 ## without replacement
 
-const procs2 = Proc[ SampleProc{Knuths}(),
-                     SampleProc{Fisher_Yates}(),
-                     SampleProc{Self_Avoid}(),
-                     SampleProc{Sample_NoRep}(),
-                     SampleProc{Seq_A}(),
-                     SampleProc{Seq_C}(),
-                     SampleProc{Seq_D}(),
-                     SampleProc{Sample_NoRep_Ord}() ]
+const procs2 = Proc[SampleProc{Knuths}(),
+                    SampleProc{Fisher_Yates}(),
+                    SampleProc{Self_Avoid}(),
+                    SampleProc{Sample_NoRep}(),
+                    SampleProc{Seq_A}(),
+                    SampleProc{Seq_C}(),
+                    SampleProc{Seq_D}(),
+                    SampleProc{Sample_NoRep_Ord}()]
 
 const cfgs2 = (Int, Int)[]
 for n in 5 * (2 .^ [0:11]), k in 2 .^ [1:16]

@@ -33,14 +33,15 @@ tsample!(s::Sample_WRep, wv, x) = sample!(1:length(wv), wv, x; ordered=false)
 mutable struct Sample_WRep_Ord <: WithRep end
 tsample!(s::Sample_WRep_Ord, wv, x) = sample!(1:length(wv), wv, x; ordered=true)
 
-
 # config is in the form of (n, k)
 
 Base.string(p::WSampleProc{Alg}) where {Alg} = lowercase(string(Alg))
 
 Base.length(p::WSampleProc, cfg::Tuple{Int,Int}) = cfg[2]
-Base.isvalid(p::WSampleProc{<:WithRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= 1 && k >= 1)
-Base.isvalid(p::WSampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= k >= 1)
+function Base.isvalid(p::WSampleProc{<:WithRep}, cfg::Tuple{Int,Int})
+    return ((n, k)=cfg; n >= 1 && k >= 1)
+end
+Base.isvalid(p::WSampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k)=cfg; n >= k >= 1)
 
 function Base.start(p::WSampleProc, cfg::Tuple{Int,Int})
     n, k = cfg
@@ -49,9 +50,10 @@ function Base.start(p::WSampleProc, cfg::Tuple{Int,Int})
     return (w, x)
 end
 
-Base.run(p::WSampleProc{Alg}, cfg::Tuple{Int,Int}, s) where {Alg} = tsample!(Alg(), s[1], s[2])
+function Base.run(p::WSampleProc{Alg}, cfg::Tuple{Int,Int}, s) where {Alg}
+    return tsample!(Alg(), s[1], s[2])
+end
 Base.done(p::WSampleProc, cfg, s) = nothing
-
 
 ### benchmarking
 
@@ -60,19 +62,18 @@ const ks = 2 .^ [1:16]
 
 ## with replacement
 
-const procs1 = Proc[ WSampleProc{Direct}(),
-                     WSampleProc{Alias}(),
-                     WSampleProc{Xmultinom_S}(),
-                     WSampleProc{Sample_WRep}(),
-                     WSampleProc{Xmultinom}(),
-                     WSampleProc{Direct_S}(),
-                     WSampleProc{Sample_WRep_Ord}() ]
+const procs1 = Proc[WSampleProc{Direct}(),
+                    WSampleProc{Alias}(),
+                    WSampleProc{Xmultinom_S}(),
+                    WSampleProc{Sample_WRep}(),
+                    WSampleProc{Xmultinom}(),
+                    WSampleProc{Direct_S}(),
+                    WSampleProc{Sample_WRep_Ord}()]
 
 const cfgs1 = vec([(n, k) for k in ks, n in ns])
 
 rtable1 = run(procs1, cfgs1; duration=0.2)
 println()
-
 
 ## show results
 
@@ -80,5 +81,3 @@ println("Sampling With Replacement")
 println("===================================")
 show(rtable1; unit=:mps, cfghead="(n, k)")
 println()
-
-

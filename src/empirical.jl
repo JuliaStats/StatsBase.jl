@@ -2,7 +2,7 @@
 
 ## Empirical CDF
 
-struct ECDF{T <: AbstractVector{<:Real}, W <: AbstractWeights{<:Real}}
+struct ECDF{T<:AbstractVector{<:Real},W<:AbstractWeights{<:Real}}
     sorted_values::T
     weights::W
 end
@@ -13,7 +13,7 @@ function (ecdf::ECDF)(x::Real)
     evenweights = isempty(ecdf.weights)
     weightsum = evenweights ? length(ecdf.sorted_values) : sum(ecdf.weights)
     partialsum = evenweights ? n : sum(view(ecdf.weights, 1:n))
-    partialsum / weightsum
+    return partialsum / weightsum
 end
 
 function (ecdf::ECDF)(v::AbstractVector{<:Real})
@@ -55,10 +55,11 @@ function is inside the interval ``(0,1)``; the function is defined for the whole
 """
 function ecdf(X::AbstractVector{<:Real}; weights::AbstractVector{<:Real}=Weights(Float64[]))
     any(isnan, X) && throw(ArgumentError("ecdf can not include NaN values"))
-    isempty(weights) || length(X) == length(weights) || throw(ArgumentError("data and weight vectors must be the same size," *
-        "got $(length(X)) and $(length(weights))"))
+    isempty(weights) || length(X) == length(weights) ||
+        throw(ArgumentError("data and weight vectors must be the same size," *
+                            "got $(length(X)) and $(length(weights))"))
     ord = sortperm(X)
-    ECDF(X[ord], isempty(weights) ? weights : Weights(weights[ord]))
+    return ECDF(X[ord], isempty(weights) ? weights : Weights(weights[ord]))
 end
 
 minimum(ecdf::ECDF) = first(ecdf.sorted_values)

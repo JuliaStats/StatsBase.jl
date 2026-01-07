@@ -37,9 +37,9 @@ b = [true, false, false, true, false, true, true, false]
 
 # indicatormat
 
-II = [false true  false false false;
-      true  false false false true;
-      false false true  true  false]
+II = [false true false false false;
+      true false false false true;
+      false false true true false]
 
 x = [2, 1, 3, 3, 2]
 @test indicatormat(x, 3) == II

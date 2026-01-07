@@ -7,28 +7,24 @@ end
 
 DocMeta.setdocmeta!(StatsBase, :DocTestSetup, :(using StatsBase))
 
-makedocs(
-    sitename = "StatsBase.jl",
-    modules = [StatsBase, StatsAPI],
-    format = Documenter.HTML(assets = ["assets/favicon.ico"]),
-    pages = ["index.md",
-             "weights.md",
-             "scalarstats.md",
-             "robust.md",
-             "deviation.md",
-             "cov.md",
-             "counts.md",
-             "ranking.md",
-             "sampling.md",
-             "empirical.md",
-             "signalcorr.md",
-             "multivariate.md",
-             "misc.md",
-             "statmodels.md",
-             "transformations.md"],
-    checkdocs=:exports
-)
+makedocs(; sitename="StatsBase.jl",
+         modules=[StatsBase, StatsAPI],
+         format=Documenter.HTML(; assets=["assets/favicon.ico"]),
+         pages=["index.md",
+                "weights.md",
+                "scalarstats.md",
+                "robust.md",
+                "deviation.md",
+                "cov.md",
+                "counts.md",
+                "ranking.md",
+                "sampling.md",
+                "empirical.md",
+                "signalcorr.md",
+                "multivariate.md",
+                "misc.md",
+                "statmodels.md",
+                "transformations.md"],
+         checkdocs=:exports)
 
-deploydocs(
-    repo = "github.com/JuliaStats/StatsBase.jl.git"
-)
+deploydocs(; repo="github.com/JuliaStats/StatsBase.jl.git")

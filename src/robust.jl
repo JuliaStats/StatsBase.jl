@@ -17,7 +17,8 @@ function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         count = floor(Int, n * prop)
     else
         prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
-        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
+        0 <= count < n/2 ||
+            throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
     # indices for lowest count values
@@ -25,7 +26,7 @@ function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     lo = partialsort!(x2, count+1)
     up = partialsort!(x2, n-count)
 
-    up, lo
+    return up, lo
 end
 
 """
@@ -52,7 +53,7 @@ julia> collect(trim([5,2,4,3,1], prop=0.2))
 function trim(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     up, lo = uplo(x; prop=prop, count=count)
 
-    (xi for xi in x if lo <= xi <= up)
+    return (xi for xi in x if lo <= xi <= up)
 end
 
 """
@@ -62,7 +63,7 @@ A variant of [`trim`](@ref) that modifies `x` in place.
 """
 function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     up, lo = uplo(x; prop=prop, count=count)
-    ix = (i for (i,xi) in enumerate(x) if lo > xi || xi > up)
+    ix = (i for (i, xi) in enumerate(x) if lo > xi || xi > up)
     deleteat!(x, ix)
     return x
 end
@@ -93,7 +94,7 @@ julia> collect(winsor([5,2,3,4,1], prop=0.2))
 function winsor(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     up, lo = uplo(x; prop=prop, count=count)
 
-    (clamp(xi, lo, up) for xi in x)
+    return (clamp(xi, lo, up) for xi in x)
 end
 
 """
@@ -105,7 +106,6 @@ function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
     copyto!(x, winsor(x; prop=prop, count=count))
     return x
 end
-
 
 #############################
 #
@@ -128,9 +128,10 @@ function trimvar(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
         count = floor(Int, n * prop)
     else
-        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
+        0 <= count < n/2 ||
+            throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
         prop = count/n
     end
 
-    return var(winsor(x, count=count)) / (n * (1 - 2prop)^2)
+    return var(winsor(x; count=count)) / (n * (1 - 2prop)^2)
 end

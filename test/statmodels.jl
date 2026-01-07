@@ -48,18 +48,15 @@ x3    1.56734e-13     Bad     2    0.00  <1e-15
 
 @test length(ct) === 3
 @test eltype(ct) ==
-    NamedTuple{(:Name, :Estimate, :Comments, :df, :t, :p),
-               Tuple{String,Float64,String,Int,Float64,Float64}}
-@test collect(ct) == [
-    (Name = "x1", Estimate = 1.45666, Comments = "Good", df = 1, t = -12.56, p = 0.12)
-    (Name = "x2", Estimate = -23.14, Comments = "Great", df = 56, t = 0.1326, p = 0.3467)
-    (Name = "x3", Estimate = 1.56734e-13, Comments = "Bad", df = 2, t = 2.68e-16, p = 1.345e-16)
-]
+      NamedTuple{(:Name, :Estimate, :Comments, :df, :t, :p),
+                 Tuple{String,Float64,String,Int,Float64,Float64}}
+@test collect(ct) == [(Name="x1", Estimate=1.45666, Comments="Good", df=1, t=-12.56, p=0.12)
+                      (Name="x2", Estimate=-23.14, Comments="Great", df=56, t=0.1326, p=0.3467)
+                      (Name="x3", Estimate=1.56734e-13, Comments="Bad", df=2, t=2.68e-16, p=1.345e-16)]
 
-
-m = [0.11258244478647295  0.05664544616214151  0.38181274408522614  0.8197779704008801
-     0.36831406658084287  0.12078054506961555  0.8151038332483567   0.6699313951612162
-     0.3444540231363058   0.17957407667101322  0.2422083248151139   0.4530583319523316]
+m = [0.11258244478647295 0.05664544616214151 0.38181274408522614 0.8197779704008801
+     0.36831406658084287 0.12078054506961555 0.8151038332483567 0.6699313951612162
+     0.3444540231363058 0.17957407667101322 0.2422083248151139 0.4530583319523316]
 ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
 @test sprint(show, "text/plain", ct) == """
 ──────────────────────────────────────────
@@ -71,16 +68,14 @@ ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
 ──────────────────────────────────────────"""
 @test length(ct) === 3
 @test eltype(ct) ==
-    NamedTuple{(:Estimate, :Stderror, :df, :p),
-               Tuple{Float64,Float64,Float64,Float64}}
-@test collect(ct) == [
-    (Estimate = 0.11258244478647295, Stderror = 0.05664544616214151,
-     df = 0.38181274408522614, p = 0.8197779704008801)
-    (Estimate = 0.36831406658084287, Stderror = 0.12078054506961555,
-     df = 0.8151038332483567, p = 0.6699313951612162)
-    (Estimate = 0.3444540231363058, Stderror = 0.17957407667101322,
-     df = 0.2422083248151139, p = 0.4530583319523316)
-]
+      NamedTuple{(:Estimate, :Stderror, :df, :p),
+                 Tuple{Float64,Float64,Float64,Float64}}
+@test collect(ct) == [(Estimate=0.11258244478647295, Stderror=0.05664544616214151,
+                       df=0.38181274408522614, p=0.8197779704008801)
+                      (Estimate=0.36831406658084287, Stderror=0.12078054506961555,
+                       df=0.8151038332483567, p=0.6699313951612162)
+                      (Estimate=0.3444540231363058, Stderror=0.17957407667101322,
+                       df=0.2422083248151139, p=0.4530583319523316)]
 
 @test sprint(show, PValue(1.0)) == "1.0000"
 @test sprint(show, PValue(1e-1)) == "0.1000"
@@ -95,7 +90,7 @@ ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
 @test sprint(show, TestStat(π)) == "3.14"
 
 @testset "Union{PValue, TestStat} is Real" begin
-    vals = [0.0, Rational(1,3), NaN]
+    vals = [0.0, Rational(1, 3), NaN]
     for T in [PValue, TestStat],
         f in (==, <, ≤, >, ≥, isless, isequal),
         lhs in vals, rhs in vals
@@ -108,24 +103,25 @@ ct = CoefTable(m, ["Estimate", "Stderror", "df", "p"], [], 4)
 
     # the (approximate) equality operators get a bit more attention
     for T in [PValue, TestStat]
-        @test T(Rational(1,3)) ≈ T(1/3)
-        @test Rational(1,3) ≈ T(1/3) atol=0.01
-        @test T(Rational(1,3)) isa Real
+        @test T(Rational(1, 3)) ≈ T(1/3)
+        @test Rational(1, 3) ≈ T(1/3) atol=0.01
+        @test T(Rational(1, 3)) isa Real
         @test T(T(0.05)) === T(0.05)
         @test hash(T(0.05)) == hash(0.05)
         @test hash(T(0.05), UInt(42)) == hash(0.05, UInt(42))
     end
 end
 
-@test sprint(showerror, ConvergenceException(10)) == "failure to converge after 10 iterations."
+@test sprint(showerror, ConvergenceException(10)) ==
+      "failure to converge after 10 iterations."
 
 @test sprint(showerror, ConvergenceException(10, 0.2, 0.1)) ==
-    "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1)."
+      "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1)."
 
 @test sprint(showerror, ConvergenceException(10, 0.2, 0.1, "Try changing maxIter.")) ==
-    "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1). Try changing maxIter."
+      "failure to converge after 10 iterations. Last change (0.2) was greater than tolerance (0.1). Try changing maxIter."
 
-err = @test_throws ArgumentError ConvergenceException(10,.1,.2)
+err = @test_throws ArgumentError ConvergenceException(10, 0.1, 0.2)
 @test err.value.msg == "Change must be greater than tol."
 
 struct MyStatisticalModel <: StatisticalModel
@@ -151,11 +147,11 @@ StatsAPI.nobs(::MyStatisticalModel) = 100
     @test r2(m, :Nagelkerke) ≈ 0.24255074155803877
     @test r2(m, :devianceratio) ≈ 0.375
 
-    @test_throws Union{ErrorException, ArgumentError} r2(m, :err)
+    @test_throws Union{ErrorException,ArgumentError} r2(m, :err)
     @test_throws MethodError r2(m)
     @test adjr2(m, :McFadden) ≈ 1.5
     @test adjr2(m, :devianceratio) ≈ 0.3486842105263158
-    @test_throws Union{ErrorException, ArgumentError} adjr2(m, :err)
+    @test_throws Union{ErrorException,ArgumentError} adjr2(m, :err)
 
     @test r2 === r²
     @test adjr2 === adjr²
