@@ -8,7 +8,7 @@
 
 # Trimmed set
 "Return the upper and lower bound elements used by `trim` and `winsor`"
-function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
+function uplo(x::AbstractVector; prop::Real = 0.0, count::Integer = 0)
     n = length(x)
     n > 0 || throw(ArgumentError("x can not be empty."))
 
@@ -17,15 +17,15 @@ function uplo(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         count = floor(Int, n * prop)
     else
         prop == 0 || throw(ArgumentError("prop and count can not both be > 0."))
-        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
+        0 <= count < n / 2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
     end
 
     # indices for lowest count values
     x2 = Base.copymutable(x)
-    lo = partialsort!(x2, count+1)
-    up = partialsort!(x2, n-count)
+    lo = partialsort!(x2, count + 1)
+    up = partialsort!(x2, n - count)
 
-    up, lo
+    return up, lo
 end
 
 """
@@ -49,10 +49,10 @@ julia> collect(trim([5,2,4,3,1], prop=0.2))
  3
 ```
 """
-function trim(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    up, lo = uplo(x; prop=prop, count=count)
+function trim(x::AbstractVector; prop::Real = 0.0, count::Integer = 0)
+    up, lo = uplo(x; prop = prop, count = count)
 
-    (xi for xi in x if lo <= xi <= up)
+    return (xi for xi in x if lo <= xi <= up)
 end
 
 """
@@ -60,9 +60,9 @@ end
 
 A variant of [`trim`](@ref) that modifies `x` in place.
 """
-function trim!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    up, lo = uplo(x; prop=prop, count=count)
-    ix = (i for (i,xi) in enumerate(x) if lo > xi || xi > up)
+function trim!(x::AbstractVector; prop::Real = 0.0, count::Integer = 0)
+    up, lo = uplo(x; prop = prop, count = count)
+    ix = (i for (i, xi) in enumerate(x) if lo > xi || xi > up)
     deleteat!(x, ix)
     return x
 end
@@ -90,10 +90,10 @@ julia> collect(winsor([5,2,3,4,1], prop=0.2))
  2
 ```
 """
-function winsor(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    up, lo = uplo(x; prop=prop, count=count)
+function winsor(x::AbstractVector; prop::Real = 0.0, count::Integer = 0)
+    up, lo = uplo(x; prop = prop, count = count)
 
-    (clamp(xi, lo, up) for xi in x)
+    return (clamp(xi, lo, up) for xi in x)
 end
 
 """
@@ -101,8 +101,8 @@ end
 
 A variant of [`winsor`](@ref) that modifies vector `x` in place.
 """
-function winsor!(x::AbstractVector; prop::Real=0.0, count::Integer=0)
-    copyto!(x, winsor(x; prop=prop, count=count))
+function winsor!(x::AbstractVector; prop::Real = 0.0, count::Integer = 0)
+    copyto!(x, winsor(x; prop = prop, count = count))
     return x
 end
 
@@ -120,7 +120,7 @@ end
 Compute the variance of the trimmed mean of `x`. This function uses
 the Winsorized variance, as described in Wilcox (2010).
 """
-function trimvar(x::AbstractVector; prop::Real=0.0, count::Integer=0)
+function trimvar(x::AbstractVector; prop::Real = 0.0, count::Integer = 0)
     n = length(x)
     n > 0 || throw(ArgumentError("x can not be empty."))
 
@@ -128,9 +128,9 @@ function trimvar(x::AbstractVector; prop::Real=0.0, count::Integer=0)
         0 <= prop < 0.5 || throw(ArgumentError("prop must satisfy 0 ≤ prop < 0.5."))
         count = floor(Int, n * prop)
     else
-        0 <= count < n/2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
-        prop = count/n
+        0 <= count < n / 2 || throw(ArgumentError("count must satisfy 0 ≤ count < length(x)/2."))
+        prop = count / n
     end
 
-    return var(winsor(x, count=count)) / (n * (1 - 2prop)^2)
+    return var(winsor(x, count = count)) / (n * (1 - 2prop)^2)
 end

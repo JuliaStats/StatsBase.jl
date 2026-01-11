@@ -3,7 +3,7 @@ using Test
 
 @testset "counting (arrays with element types $T1 and $T2)" for T1 in (Int, Float32, Float64), T2 in (Int, Float32, Float64)
     a = T1[1, 2, 3, 4, 5, 6, 7]
-    b = T2[1, 3, 3, 4, 6, 7, 8] 
+    b = T2[1, 3, 3, 4, 6, 7, 8]
     a_offset = OffsetArray(a, -5:1)
     b_offset = OffsetArray(b, -5:1)
     for (a, b) in ((a, b), (a_offset, b_offset))
@@ -37,18 +37,18 @@ end
     b_offset = OffsetArray(b, 5, -10)
     for (a, b) in ((a, b), (a_offset, b_offset))
         @test @inferred(sqL2dist(a, b))::T ≈ sum(abs2.(a - b))
-        @test @inferred(L2dist(a, b))::T   ≈ sqrt(sqL2dist(a, b))
-        @test @inferred(L1dist(a, b))::T   ≈ sum(abs.(a - b))
+        @test @inferred(L2dist(a, b))::T ≈ sqrt(sqL2dist(a, b))
+        @test @inferred(L1dist(a, b))::T ≈ sum(abs.(a - b))
         @test @inferred(Linfdist(a, b))::T ≈ maximum(abs.(a - b))
         @test @inferred(gkldiv(a, b))::T ≈ sum(a .* log.(a ./ b) - a + b)
-        @test @inferred(meanad(a, b))::T               ≈ mean(abs.(a - b))
-        @test @inferred(maxad(a, b))::T                ≈ maximum(abs.(a - b))
-        @test @inferred(msd(a, b))::T                  ≈ mean(abs2.(a - b))
-        @test @inferred(rmsd(a, b))::T                 ≈ sqrt(msd(a, b))
-        @test @inferred(rmsd(a, b; normalize=true))::T ≈ rmsd(a, b) / (maximum(a) - minimum(a))
+        @test @inferred(meanad(a, b))::T ≈ mean(abs.(a - b))
+        @test @inferred(maxad(a, b))::T ≈ maximum(abs.(a - b))
+        @test @inferred(msd(a, b))::T ≈ mean(abs2.(a - b))
+        @test @inferred(rmsd(a, b))::T ≈ sqrt(msd(a, b))
+        @test @inferred(rmsd(a, b; normalize = true))::T ≈ rmsd(a, b) / (maximum(a) - minimum(a))
         for T2 in (Int, Float32, Float64)
             S = promote_type(T, T2)
-            @test @inferred(psnr(a, b, T2(2)))::S              ≈ 10 * log10(4 / msd(a, b))
+            @test @inferred(psnr(a, b, T2(2)))::S ≈ 10 * log10(4 / msd(a, b))
         end
     end
 
@@ -67,7 +67,7 @@ end
         @test iszero(@inferred(maxad(a, b))::T)
         @test isnan(@inferred(msd(a, b))::T)
         @test isnan(@inferred(rmsd(a, b))::T)
-        @test isnan(@inferred(rmsd(a, b; normalize=true))::T)
+        @test isnan(@inferred(rmsd(a, b; normalize = true))::T)
         for T2 in (Int, Float32, Float64)
             S = promote_type(T, T2)
             @test isnan(@inferred(psnr(a, b, T2(2)))::S)
@@ -85,7 +85,7 @@ end
         @test_throws err maxad(a, b)
         @test_throws err msd(a, b)
         @test_throws err rmsd(a, b)
-        @test_throws err rmsd(a, b; normalize=true)
+        @test_throws err rmsd(a, b; normalize = true)
         for T2 in (Int, Float32, Float64)
             @test_throws err psnr(a, b, T2(2))
         end

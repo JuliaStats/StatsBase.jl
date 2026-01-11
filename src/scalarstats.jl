@@ -53,7 +53,7 @@ Return the mode (most common number) of an array, optionally
 over a specified range `r` or weighted via a vector `wv`.
 If several modes exist, the first one (in order of appearance) is returned.
 """
-function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
+function mode(a::AbstractArray{T}, r::UnitRange{T}) where {T <: Integer}
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     len = length(a)
     r0 = r[1]
@@ -61,7 +61,7 @@ function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     cnts = zeros(Int, length(r))
     mc = 0    # maximum count
     mv = r0   # a value corresponding to maximum count
-    for i = 1:len
+    for i in 1:len
         x = a[i]
         if r0 <= x <= r1
             c = (cnts[x - r0 + 1] += 1)
@@ -81,14 +81,14 @@ end
 Return all modes (most common numbers) of an array, optionally over a
 specified range `r` or weighted via vector `wv`.
 """
-function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
+function modes(a::AbstractArray{T}, r::UnitRange{T}) where {T <: Integer}
     r0 = r[1]
     r1 = r[end]
     n = length(r)
     cnts = zeros(Int, n)
     # find the maximum count
     mc = 0
-    for i = 1:length(a)
+    for i in 1:length(a)
         x = a[i]
         if r0 <= x <= r1
             c = (cnts[x - r0 + 1] += 1)
@@ -99,7 +99,7 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     end
     # find all values corresponding to maximum count
     ms = T[]
-    for i = 1:n
+    for i in 1:n
         if cnts[i] == mc
             push!(ms, r[i])
         end
@@ -110,7 +110,7 @@ end
 # compute mode over arbitrary iterable
 function mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
-    cnts = Dict{eltype(a),Int}()
+    cnts = Dict{eltype(a), Int}()
     # first element
     mc = 1
     mv, st = iterate(a)
@@ -136,7 +136,7 @@ end
 
 function modes(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
-    cnts = Dict{eltype(a),Int}()
+    cnts = Dict{eltype(a), Int}()
     # first element
     mc = 1
     x, st = iterate(a)
@@ -161,7 +161,7 @@ function modes(a)
 end
 
 # Weighted mode of arbitrary vectors of values
-function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+function mode(a::AbstractVector, wv::AbstractWeights{T}) where {T <: Real}
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
@@ -183,7 +183,7 @@ function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     return mv
 end
 
-function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+function modes(a::AbstractVector, wv::AbstractWeights{T}) where {T <: Real}
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
@@ -226,7 +226,7 @@ partition `v` into `n` subsets of nearly equal size.
 Equivalent to `quantile(x, [0:n]/n)`. For example, `nquantiles(x, 5)`
 returns a vector of quantiles, respectively at `[0.0, 0.2, 0.4, 0.6, 0.8, 1.0]`.
 """
-nquantile(x, n::Integer) = quantile(x, (0:n)/n)
+nquantile(x, n::Integer) = quantile(x, (0:n) / n)
 
 """
     quantilerank(itr, value; method=:inc)
@@ -305,7 +305,7 @@ julia> quantilerank.(Ref(v3), [4, 8])
  0.8888888888888888
 ```
 """
-function quantilerank(itr, value; method::Symbol=:inc)
+function quantilerank(itr, value; method::Symbol = :inc)
     ((value isa Number && isnan(value)) || ismissing(value)) &&
         throw(ArgumentError("`value` cannot be NaN or missing"))
     any(x -> ismissing(x) || (x isa Number && isnan(x)), itr) &&
@@ -370,7 +370,7 @@ function quantilerank(itr, value; method::Symbol=:inc)
             return (count_less - 1) / (n - 1)
         end
     elseif method == :tied
-        return (count_less + count_equal/2) / n
+        return (count_less + count_equal / 2) / n
     elseif method == :strict
         return count_less / n
     elseif method == :weak
@@ -387,7 +387,7 @@ Return the `q`th percentile of `value` in collection `itr`, i.e. [`quantilerank(
 
 See the [`quantilerank`](@ref) docstring for more details.
 """
-percentilerank(itr, value; method::Symbol=:inc) = quantilerank(itr, value, method=method) * 100
+percentilerank(itr, value; method::Symbol = :inc) = quantilerank(itr, value, method = method) * 100
 
 #############################
 #
@@ -415,15 +415,15 @@ standard deviation to the mean. If `corrected` is `false`,
 then `std` is calculated with denominator `n`. Else, the `std` is
 calculated with denominator `n-1`.
 """
-variation(x, m; corrected::Bool=true) = stdm(x, m; corrected=corrected) / m
-variation(x; corrected::Bool=true) = ((m, s) = mean_and_std(x; corrected=corrected); s/m)
+variation(x, m; corrected::Bool = true) = stdm(x, m; corrected = corrected) / m
+variation(x; corrected::Bool = true) = ((m, s) = mean_and_std(x; corrected = corrected); s / m)
 
 # Standard error of the mean: std / sqrt(len)
 # Code taken from var in the Statistics stdlib module
 
 # faster computation of real(conj(x)*y)
-realXcY(x::Real, y::Real) = x*y
-realXcY(x::Complex, y::Complex) = real(x)*real(y) + imag(x)*imag(y)
+realXcY(x::Real, y::Real) = x * y
+realXcY(x::Complex, y::Complex) = real(x) * real(y) + imag(x) * imag(y)
 
 """
     sem(x; mean=nothing)
@@ -447,7 +447,7 @@ The standard error is then the square root of the above quantities.
 Carl-Erik Särndal, Bengt Swensson, Jan Wretman (1992). Model Assisted Survey Sampling.
 New York: Springer. pp. 51-53.
 """
-function sem(x; mean=nothing)
+function sem(x; mean = nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)
@@ -485,7 +485,7 @@ function sem(x; mean=nothing)
     return sqrt(variance / n)
 end
 
-function sem(x::AbstractArray; mean=nothing)
+function sem(x::AbstractArray; mean = nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
         T = eltype(x)
@@ -493,31 +493,35 @@ function sem(x::AbstractArray; mean=nothing)
         z = abs2(zero(T) - _mean)
         return oftype((z + z) / 2, NaN)
     end
-    return sqrt(var(x; mean=mean, corrected=true) / length(x))
+    return sqrt(var(x; mean = mean, corrected = true) / length(x))
 end
 
-function sem(x::AbstractArray, weights::UnitWeights; mean=nothing)
+function sem(x::AbstractArray, weights::UnitWeights; mean = nothing)
     if length(x) ≠ length(weights)
         throw(DimensionMismatch("array and weights do not have the same length"))
     end
-    return sem(x; mean=mean)
+    return sem(x; mean = mean)
 end
 
 
 # Weighted methods for the above
-sem(x::AbstractArray, weights::FrequencyWeights; mean=nothing) =
-    sqrt(var(x, weights; mean=mean, corrected=true) / sum(weights))
+sem(x::AbstractArray, weights::FrequencyWeights; mean = nothing) =
+    sqrt(var(x, weights; mean = mean, corrected = true) / sum(weights))
 
-function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
+function sem(x::AbstractArray, weights::ProbabilityWeights; mean = nothing)
     if isempty(x)
         # Return the NaN of the type that we would get for a nonempty x
-        return var(x, weights; mean=mean, corrected=true) / 0
+        return var(x, weights; mean = mean, corrected = true) / 0
     else
         _mean = mean === nothing ? Statistics.mean(x, weights) : mean
         # sum of squared errors = sse
-        sse = sum(Broadcast.instantiate(Broadcast.broadcasted(x, weights) do x_i, w
-            return abs2(w * (x_i - _mean))
-        end))
+        sse = sum(
+            Broadcast.instantiate(
+                Broadcast.broadcasted(x, weights) do x_i, w
+                    return abs2(w * (x_i - _mean))
+                end
+            )
+        )
         n = count(!iszero, weights)
         return sqrt(sse * n / (n - 1)) / sum(weights)
     end
@@ -536,8 +540,8 @@ If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad(x; center=nothing, normalize::Union{Bool, Nothing}=nothing, constant=nothing)
-    mad!(Base.copymutable(x); center=center, normalize=normalize, constant=constant)
+function mad(x; center = nothing, normalize::Union{Bool, Nothing} = nothing, constant = nothing)
+    return mad!(Base.copymutable(x); center = center, normalize = normalize, constant = constant)
 end
 
 """
@@ -550,10 +554,12 @@ If `normalize` is set to `true`, the MAD is multiplied by
 `1 / quantile(Normal(), 3/4) ≈ 1.4826`, in order to obtain a consistent estimator
 of the standard deviation under the assumption that the data is normally distributed.
 """
-function mad!(x::AbstractArray;
-              center=median!(x),
-              normalize::Union{Bool,Nothing}=true,
-              constant=nothing)
+function mad!(
+        x::AbstractArray;
+        center = median!(x),
+        normalize::Union{Bool, Nothing} = true,
+        constant = nothing
+    )
     isempty(x) && throw(ArgumentError("mad is not defined for empty arrays"))
     c = center === nothing ? median!(x) : center
     T = promote_type(typeof(c), eltype(x))
@@ -565,7 +571,7 @@ function mad!(x::AbstractArray;
         Base.depwarn("the `normalize` keyword argument will be false by default in future releases: set it explicitly to silence this deprecation", :mad)
         normalize = true
     end
-    if !isa(constant, Nothing)
+    return if !isa(constant, Nothing)
         Base.depwarn("keyword argument `constant` is deprecated, use `normalize` instead or apply the multiplication directly", :mad)
         m * constant
     elseif normalize
@@ -582,7 +588,7 @@ end
 Compute the interquartile range (IQR) of collection `x`, i.e. the 75th percentile
 minus the 25th percentile.
 """
-iqr(x) = (q = quantile(x, [.25, .75]); q[2] - q[1])
+iqr(x) = (q = quantile(x, [0.25, 0.75]); q[2] - q[1])
 
 # Generalized variance
 """
@@ -609,7 +615,7 @@ or other iterable, this is equivalent to the sample variance.
 Otherwise if `X` is a matrix, this is equivalent to the sum of the diagonal elements
 of the covariance matrix of `X`.
 """
-totalvar(X::AbstractMatrix) = sum(var(X, dims=1))
+totalvar(X::AbstractMatrix) = sum(var(X, dims = 1))
 totalvar(itr) = var(itr)
 
 #############################
@@ -622,34 +628,36 @@ function _zscore!(Z::AbstractArray, X::AbstractArray, μ::Real, σ::Real)
     # Z and X are assumed to have the same size
     iσ = inv(σ)
     if μ == zero(μ)
-        for i = 1 : length(X)
+        for i in 1:length(X)
             Z[i] = X[i] * iσ
         end
     else
-        for i = 1 : length(X)
+        for i in 1:length(X)
             Z[i] = (X[i] - μ) * iσ
         end
     end
     return Z
 end
 
-@generated function _zscore!(Z::AbstractArray{S,N}, X::AbstractArray{T,N},
-                             μ::AbstractArray, σ::AbstractArray) where {S,T,N}
-    quote
+@generated function _zscore!(
+        Z::AbstractArray{S, N}, X::AbstractArray{T, N},
+        μ::AbstractArray, σ::AbstractArray
+    ) where {S, T, N}
+    return quote
         # Z and X are assumed to have the same size
         # μ and σ are assumed to have the same size, that is compatible with size(X)
         siz1 = size(X, 1)
-        @nextract $N ud d->size(μ, d)
+        @nextract $N ud d -> size(μ, d)
         if size(μ, 1) == 1 && siz1 > 1
-            @nloops $N i d->(d>1 ? (1:size(X,d)) : (1:1)) d->(j_d = ud_d ==1 ? 1 : i_d) begin
+            @nloops $N i d -> (d > 1 ? (1:size(X, d)) : (1:1)) d -> (j_d = ud_d == 1 ? 1 : i_d) begin
                 v = (@nref $N μ j)
                 c = inv(@nref $N σ j)
-                for i_1 = 1:siz1
+                for i_1 in 1:siz1
                     (@nref $N Z i) = ((@nref $N X i) - v) * c
                 end
             end
         else
-            @nloops $N i X d->(j_d = ud_d ==1 ? 1 : i_d) begin
+            @nloops $N i X d -> (j_d = ud_d == 1 ? 1 : i_d) begin
                 (@nref $N Z i) = ((@nref $N X i) - (@nref $N μ j)) / (@nref $N σ j)
             end
         end
@@ -659,10 +667,11 @@ end
 
 function _zscore_chksize(X::AbstractArray, μ::AbstractArray, σ::AbstractArray)
     size(μ) == size(σ) || throw(DimensionMismatch("μ and σ should have the same size."))
-    for i=1:ndims(X)
-        dμ_i = size(μ,i)
-        (dμ_i == 1 || dμ_i == size(X,i)) || throw(DimensionMismatch("X and μ have incompatible sizes."))
+    for i in 1:ndims(X)
+        dμ_i = size(μ, i)
+        (dμ_i == 1 || dμ_i == size(X, i)) || throw(DimensionMismatch("X and μ have incompatible sizes."))
     end
+    return
 end
 
 
@@ -676,16 +685,18 @@ observation lies, i.e. ``(x - μ) / σ``.
 If a destination array `Z` is provided, the scores are stored
 in `Z` and it must have the same shape as `X`. Otherwise `X` is overwritten.
 """
-function zscore!(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real) where {ZT<:AbstractFloat,T<:Real}
+function zscore!(Z::AbstractArray{ZT}, X::AbstractArray{T}, μ::Real, σ::Real) where {ZT <: AbstractFloat, T <: Real}
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
-    _zscore!(Z, X, μ, σ)
+    return _zscore!(Z, X, μ, σ)
 end
 
-function zscore!(Z::AbstractArray{<:AbstractFloat}, X::AbstractArray{<:Real},
-                 μ::AbstractArray{<:Real}, σ::AbstractArray{<:Real})
+function zscore!(
+        Z::AbstractArray{<:AbstractFloat}, X::AbstractArray{<:Real},
+        μ::AbstractArray{<:Real}, σ::AbstractArray{<:Real}
+    )
     size(Z) == size(X) || throw(DimensionMismatch("Z and X must have the same size."))
     _zscore_chksize(X, μ, σ)
-    _zscore!(Z, X, μ, σ)
+    return _zscore!(Z, X, μ, σ)
 end
 
 zscore!(X::AbstractArray{<:AbstractFloat}, μ::Real, σ::Real) = _zscore!(X, X, μ, σ)
@@ -705,20 +716,19 @@ above the mean that an observation lies, i.e. ``(x - μ) / σ``.
 In particular, when `μ` and `σ` are arrays, they should have the same size, and
 `size(μ, i) == 1  || size(μ, i) == size(X, i)` for each dimension.
 """
-function zscore(X::AbstractArray{T}, μ::Real, σ::Real) where T<:Real
+function zscore(X::AbstractArray{T}, μ::Real, σ::Real) where {T <: Real}
     ZT = typeof((zero(T) - zero(μ)) / one(σ))
-    _zscore!(Array{ZT}(undef, size(X)), X, μ, σ)
+    return _zscore!(Array{ZT}(undef, size(X)), X, μ, σ)
 end
 
-function zscore(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) where {T<:Real,U<:Real,S<:Real}
+function zscore(X::AbstractArray{T}, μ::AbstractArray{U}, σ::AbstractArray{S}) where {T <: Real, U <: Real, S <: Real}
     _zscore_chksize(X, μ, σ)
     ZT = typeof((zero(T) - zero(U)) / one(S))
-    _zscore!(Array{ZT}(undef, size(X)), X, μ, σ)
+    return _zscore!(Array{ZT}(undef, size(X)), X, μ, σ)
 end
 
 zscore(X::AbstractArray{<:Real}) = ((μ, σ) = mean_and_std(X); zscore(X, μ, σ))
 zscore(X::AbstractArray{<:Real}, dim::Int) = ((μ, σ) = mean_and_std(X, dim); zscore(X, μ, σ))
-
 
 
 #############################
@@ -736,8 +746,12 @@ Elements with probability 0 or 1 add 0 to the entropy.
 """
 function entropy(p)
     if isempty(p)
-        throw(ArgumentError("empty collections are not supported since they do not " *
-                            "represent proper probability distributions"))
+        throw(
+            ArgumentError(
+                "empty collections are not supported since they do not " *
+                    "represent proper probability distributions"
+            )
+        )
     end
     return -sum(xlogx, p)
 end
@@ -755,7 +769,7 @@ end
 
 Compute the Rényi (generalized) entropy of order `α` of an array `p`.
 """
-function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
+function renyientropy(p::AbstractArray{T}, α::Real) where {T <: Real}
     α < 0 && throw(ArgumentError("Order of Rényi entropy not legal, $(α) < 0."))
 
     s = zero(T)
@@ -763,7 +777,7 @@ function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
     scale = sum(p)
 
     if α ≈ 0
-        for i = 1:length(p)
+        for i in 1:length(p)
             pi = p[i]
             if pi > z
                 s += 1
@@ -771,7 +785,7 @@ function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
         end
         s = log(s / scale)
     elseif α ≈ 1
-        for i = 1:length(p)
+        for i in 1:length(p)
             pi = p[i]
             if pi > z
                 s -= pi * log(pi)
@@ -781,10 +795,10 @@ function renyientropy(p::AbstractArray{T}, α::Real) where T<:Real
     elseif (isinf(α))
         s = -log(maximum(p))
     else # a normal Rényi entropy
-        for i = 1:length(p)
+        for i in 1:length(p)
             pi = p[i]
             if pi > z
-                s += pi ^ α
+                s += pi^α
             end
         end
         s = log(s / scale) / (1 - α)
@@ -805,7 +819,7 @@ function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     if isempty(p)
         Base.depwarn(
             "support for empty collections will be removed since they do not " *
-            "represent proper probability distributions",
+                "represent proper probability distributions",
             :crossentropy,
         )
         # return zero for empty arrays
@@ -818,7 +832,7 @@ function crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
 end
 
 crossentropy(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
-    crossentropy(p,q) / log(b)
+    crossentropy(p, q) / log(b)
 
 
 """
@@ -835,8 +849,8 @@ function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
     # handle empty collections
     if isempty(p)
         Base.depwarn(
-            "support for empty collections will be removed since they do not "*
-            "represent proper probability distributions",
+            "support for empty collections will be removed since they do not " *
+                "represent proper probability distributions",
             :kldivergence,
         )
         # return zero for empty arrays
@@ -855,7 +869,7 @@ function kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real})
 end
 
 kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
-    kldivergence(p,q) / log(b)
+    kldivergence(p, q) / log(b)
 
 #############################
 #
@@ -863,7 +877,7 @@ kldivergence(p::AbstractArray{<:Real}, q::AbstractArray{<:Real}, b::Real) =
 #
 #############################
 
-struct SummaryStats{T<:Union{AbstractFloat,Missing}}
+struct SummaryStats{T <: Union{AbstractFloat, Missing}}
     mean::T
     sd::T
     min::T
@@ -884,23 +898,23 @@ Compute summary statistics for a real-valued array `a`. Returns a
 number of missing observations, standard deviation, mean, minimum,
 25th percentile, median, 75th percentile, and maximum.
 """
-function summarystats(a::AbstractArray{T}) where T<:Union{Real,Missing}
+function summarystats(a::AbstractArray{T}) where {T <: Union{Real, Missing}}
     # `mean` doesn't fail on empty input but rather returns `NaN`, so we can use the
     # return type to populate the `SummaryStats` structure.
     s = T >: Missing ? collect(skipmissing(a)) : a
     m = mean(s)
-    stdev = std(s, mean=m)
+    stdev = std(s, mean = m)
     R = typeof(m)
     n = length(a)
     ns = length(s)
     qs = if ns == 0
         R[NaN, NaN, NaN, NaN, NaN]
     elseif T >: Missing
-        quantile!(s, [0.00, 0.25, 0.50, 0.75, 1.00])
+        quantile!(s, [0.0, 0.25, 0.5, 0.75, 1.0])
     else
-        quantile(s, [0.00, 0.25, 0.50, 0.75, 1.00])
+        quantile(s, [0.0, 0.25, 0.5, 0.75, 1.0])
     end
-    SummaryStats{R}(m, stdev, qs..., n, n - ns)
+    return SummaryStats{R}(m, stdev, qs..., n, n - ns)
 end
 
 function Base.show(io::IO, ss::SummaryStats)
@@ -914,7 +928,7 @@ function Base.show(io::IO, ss::SummaryStats)
     @printf(io, "1st Quartile:   %.6f\n", ss.q25)
     @printf(io, "Median:         %.6f\n", ss.median)
     @printf(io, "3rd Quartile:   %.6f\n", ss.q75)
-    @printf(io, "Maximum:        %.6f\n", ss.max)
+    return @printf(io, "Maximum:        %.6f\n", ss.max)
 end
 
 
@@ -926,9 +940,9 @@ the mean, minimum, 25th percentile, median, 75th percentile, and
 maximum.
 """
 DataAPI.describe(x) = describe(stdout, x)
-function DataAPI.describe(io::IO, a::AbstractArray{T}) where T<:Union{Real,Missing}
+function DataAPI.describe(io::IO, a::AbstractArray{T}) where {T <: Union{Real, Missing}}
     show(io, summarystats(a))
-    println(io, "Type:           $(string(eltype(a)))")
+    return println(io, "Type:           $(string(eltype(a)))")
 end
 function DataAPI.describe(io::IO, a::AbstractArray)
     println(io, "Summary Stats:")

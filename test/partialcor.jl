@@ -2,14 +2,14 @@ using StatsBase
 using Test
 
 wechsler = Float32[
-     7  5  9  8
-     8  8  5  6
+    7  5  9  8
+    8  8  5  6
     16 18 11  9
-     8  3  7  9
-     6  3 13  9
+    8  3  7  9
+    6  3 13  9
     11  8 10 10
     12  7  9  8
-     8 11  9  3
+    8 11  9  3
     14 12 11  4
     13 13 13  6
     13  9  9  9
@@ -27,7 +27,7 @@ wechsler = Float32[
     10  7 14  6
     10 10  9  6
     10  7 10 10
-     7  6  5  9
+    7  6  5  9
     15 12 10  6
     17 15 15  8
     16 13 16  9
@@ -41,10 +41,12 @@ wechsler = Float32[
     14 13 14  9
 ]
 
-@test @inferred(partialcor(wechsler[:,1], wechsler[:,2], wechsler[:,3:4])) ≈ 0.7118787 rtol=1e-6
+@test @inferred(partialcor(wechsler[:, 1], wechsler[:, 2], wechsler[:, 3:4])) ≈ 0.7118787 rtol = 1.0e-6
 
-X = [ 2 1 0
-      4 2 0
-     15 3 1
-     20 4 1]
-@test @inferred(partialcor(view(X,:,1), view(X,:,2), view(X,:,3))) ≈ 0.919145 rtol=1e-6
+X = [
+    2 1 0
+    4 2 0
+    15 3 1
+    20 4 1
+]
+@test @inferred(partialcor(view(X, :, 1), view(X, :, 2), view(X, :, 3))) ≈ 0.919145 rtol = 1.0e-6
