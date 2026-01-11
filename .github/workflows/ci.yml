@@ -30,7 +30,6 @@ jobs:
         version:
           - 'min'
           - '1' # automatically expands to the latest stable 1.x release of Julia
-          - 'pre'
         os:
           - ubuntu-latest
           - macOS-latest
