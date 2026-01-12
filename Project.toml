@@ -1,12 +1,13 @@
 name = "StatsBase"
 uuid = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
+version = "0.34.10"
 authors = ["JuliaStats"]
-version = "0.34.9"
 
 [deps]
 AliasTables = "66dad0bd-aa9a-41b7-9441-69ab47430ed8"
 DataAPI = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+IrrationalConstants = "92d709cd-6900-40b7-9082-c6be49f344b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 LogExpFunctions = "2ab3a3ac-af41-5b50-aa03-7779005ae688"
 Missings = "e1d29d7a-bbdc-5cf2-9ac0-f12de2c33e28"
@@ -21,6 +22,7 @@ StatsAPI = "82ae8749-77ed-4fe6-ae5f-f523153014b0"
 AliasTables = "1"
 DataAPI = "1"
 DataStructures = "0.10, 0.11, 0.12, 0.13, 0.14, 0.17, 0.18, 0.19"
+IrrationalConstants = "0.2.6"
 JET = "0.9.18, 0.10"
 LinearAlgebra = "<0.0.1, 1"
 LogExpFunctions = "0.3"

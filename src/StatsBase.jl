@@ -2,7 +2,7 @@ module StatsBase
 
 import Base: length, size, isempty, values, sum, show, maximum, minimum, extrema
 import Base.Cartesian: @nloops, @nref, @nextract
-using Base: @irrational, @propagate_inbounds
+using Base: @propagate_inbounds
 using DataAPI
 import DataAPI: describe
 import DataStructures: heapify!, heappop!, percolate_down!
@@ -15,6 +15,7 @@ using LinearAlgebra
 using Random
 using Printf
 using SparseArrays
+import IrrationalConstants
 import Random: rand, rand!
 import LinearAlgebra: BlasReal, BlasFloat
 import Statistics: mean, mean!, var, varm, varm!, std, stdm, cov, covm,
