@@ -108,10 +108,11 @@ end
 Construct an `AnalyticWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Analytic weights describe a non-random relative importance (usually between 0 and 1)
-for each observation. These weights may also be referred to as reliability weights,
-precision weights or inverse variance weights. These are typically used when the observations
-being weighted are aggregate values (e.g., averages) with differing variances.
+Analytic weights are proportional to the inverse of the variance for each case.
+These weights may also be referred to as reliability weights or precision weights.
+
+The scale of analytic weights is significant: for some functions,
+multiplying all weights by a constant changes the result.
 """ AnalyticWeights
 
 """
@@ -148,8 +149,11 @@ end
 Construct a `FrequencyWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Frequency weights describe the number of times (or frequency) each observation
+Frequency weights represent the number of times (or frequency) each case
 was observed. These weights may also be referred to as case weights or repeat weights.
+
+The scale of frequency weights is significant: for some functions,
+multiplying all weights by a constant changes the result.
 """ FrequencyWeights
 
 """
@@ -185,9 +189,14 @@ end
 Construct a `ProbabilityWeights` vector with weight values `vs`.
 A precomputed sum may be provided as `wsum`.
 
-Probability weights represent the inverse of the sampling probability for each observation,
+Probability weights represent the inverse of the sampling probability for each case,
 providing a correction mechanism for under- or over-sampling certain population groups.
-These weights may also be referred to as sampling weights.
+These weights may also be referred to as sampling weights or survey weights.
+
+The scale of probability weights is not significant: multiplying all weights
+by a constant does not change the result of any weighted functions
+(except when explicitly computing the sum of weights). This is because
+the sample size is taken to be the number of cases with a non-zero weight.
 """ ProbabilityWeights
 
 """
