@@ -40,7 +40,7 @@ function check_vectors(x, y, skipmissing::Symbol)
         end
     end
     if m > 1 && n > 1
-        indsx == indsy ||
+        keys(first(x)) == keys(first(y)) ||
             throw(ArgumentError("All input vectors must have the same indices"))
     end
 end
