@@ -120,28 +120,57 @@ function show(io::IO, ::MIME"text/plain", ct::CoefTable)
     if length(rownms) == 0
         rownms = [lpad("[$i]",floor(Integer, log10(nr))+3) for i in 1:nr]
     end
+
+    if !(get(io, :limit, false)::Bool)
+        screenheight = screenwidth = typemax(Int)
+    else
+        sz = displaysize(io)::Tuple{Int,Int}
+        screenheight, screenwidth = sz[1] - 4, sz[2]
+    end
+
+    sepsize = 3
+    hdots = "  …  "
     mat = [j == 1 ? NoQuote(rownms[i]) :
            j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
            j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
            cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
            for i in 1:nr, j in 1:nc+1]
+
     # Code inspired by print_matrix in Base
     io = IOContext(io, :compact=>true, :limit=>false)
     A = Base.alignment(io, mat, 1:size(mat, 1), 1:size(mat, 2),
-                       typemax(Int), typemax(Int), 3)
+                       screenwidth, screenwidth, sepsize)
     nmswidths = pushfirst!(length.(colnms), 0)
     A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
          for i in 1:length(A)]
-    totwidth = sum(sum.(A)) + 2 * (length(A) - 1)
+
+    # remove columns that do not fit on the screen
+    maxcols = length(A)
+    if maxcols < nc+1
+        ncols = min(nc, maxcols)
+        mat = mat[:, 1:ncols]
+        mat = hcat(mat, [hdots for i in 1:nr])
+        colnms = colnms[1:ncols]
+        sepsize = textwidth(hdots)+1
+    else
+        sepsize = 0
+    end
+
+    # print table
+    totwidth = sum(sum, A) + 2 * (maxcols - 1) + sepsize
+
     println(io, repeat('─', totwidth))
     print(io, repeat(' ', sum(A[1])))
-    for j in 1:length(colnms)
+    for j in 1:maxcols-1
         print(io, "  ", lpad(colnms[j], sum(A[j+1])))
     end
+    maxcols < nc+1 && print(io, lpad(hdots, sepsize))
     println(io, '\n', repeat('─', totwidth))
-    for i in 1:size(mat, 1)
-        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), "  ")
-        i != size(mat, 1) && println(io)
+    m, n = size(mat)
+    for i in 1:m
+        Base.print_matrix_row(io, mat, A, i, 1:n, "  ")
+        maxcols < nc+1 && (i+4)%5 == 0 && print(io, lpad(hdots, sepsize))
+        i != m && println(io)
     end
     print(io, '\n', repeat('─', totwidth))
     nothing
