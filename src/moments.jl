@@ -18,8 +18,10 @@ replacing ``\\frac{1}{\\sum{w}}`` with a factor dependent on the type of weights
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 * `Weights`: `ArgumentError` (bias correction not supported)
 """
-function var(v::AbstractArray{<:Real}, w::AbstractWeights; mean=nothing,
-                  corrected::Union{Bool, Nothing}=nothing)
+function var(
+        v::AbstractArray{<:Real}, w::AbstractWeights; mean = nothing,
+        corrected::Union{Bool, Nothing} = nothing
+    )
     length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
     corrected = depcheck(:var, :corrected, corrected)
     if mean === nothing
@@ -27,8 +29,10 @@ function var(v::AbstractArray{<:Real}, w::AbstractWeights; mean=nothing,
     end
     return _moment2(v, w, mean; corrected)
 end
-function var(v::AbstractArray{<:Real}, w::UnitWeights; mean=nothing,
-                  corrected::Union{Bool, Nothing}=nothing)
+function var(
+        v::AbstractArray{<:Real}, w::UnitWeights; mean = nothing,
+        corrected::Union{Bool, Nothing} = nothing
+    )
     length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
     corrected = depcheck(:var, :corrected, corrected)
     return var(v; mean, corrected)
@@ -36,19 +40,21 @@ end
 
 ## var along dim
 
-function var!(R::AbstractArray, A::AbstractArray{<:Real}, w::AbstractWeights, dims::Int;
-              mean=nothing, corrected::Union{Bool, Nothing}=nothing)
+function var!(
+        R::AbstractArray, A::AbstractArray{<:Real}, w::AbstractWeights, dims::Int;
+        mean = nothing, corrected::Union{Bool, Nothing} = nothing
+    )
     corrected = depcheck(:var!, :corrected, corrected)
 
     if mean == 0
         mean = Base.reducedim_initarray(A, dims, 0, eltype(R))
     elseif mean === nothing
-        mean = Statistics.mean(A, w, dims=dims)
+        mean = Statistics.mean(A, w, dims = dims)
     else
         # check size of mean
-        for i = 1:ndims(A)
-            dA = size(A,i)
-            dM = size(mean,i)
+        for i in 1:ndims(A)
+            dA = size(A, i)
+            dM = size(mean, i)
             if i == dims
                 dM == 1 || throw(DimensionMismatch("Incorrect size of mean."))
             else
@@ -56,26 +62,34 @@ function var!(R::AbstractArray, A::AbstractArray{<:Real}, w::AbstractWeights, di
             end
         end
     end
-    return rmul!(_wsum_centralize!(R, abs2, A, convert(Vector, w), mean, dims, true),
-                 varcorrection(w, corrected))
+    return rmul!(
+        _wsum_centralize!(R, abs2, A, convert(Vector, w), mean, dims, true),
+        varcorrection(w, corrected)
+    )
 end
 
-function var(A::AbstractArray{<:Real}, w::AbstractWeights, dim::Int; mean=nothing,
-                  corrected::Union{Bool, Nothing}=nothing)
+function var(
+        A::AbstractArray{<:Real}, w::AbstractWeights, dim::Int; mean = nothing,
+        corrected::Union{Bool, Nothing} = nothing
+    )
     corrected = depcheck(:var, :corrected, corrected)
     if mean === nothing
         z = (zero(eltype(w)) * zero(eltype(A))^2) / zero(eltype(w))
     else
         z = (zero(eltype(w)) * zero(zero(eltype(A)) - zero(eltype(mean)))^2) / zero(eltype(w))
     end
-    var!(similar(A, typeof(z), Base.reduced_indices(axes(A), dim)), A, w, dim;
-         mean=mean, corrected=corrected)
+    return var!(
+        similar(A, typeof(z), Base.reduced_indices(axes(A), dim)), A, w, dim;
+        mean = mean, corrected = corrected
+    )
 end
-function var(v::AbstractArray{<:Real}, w::UnitWeights, dim::Int; mean=nothing,
-                  corrected::Union{Bool, Nothing}=nothing)
+function var(
+        v::AbstractArray{<:Real}, w::UnitWeights, dim::Int; mean = nothing,
+        corrected::Union{Bool, Nothing} = nothing
+    )
     length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
     corrected = depcheck(:var, :corrected, corrected)
-    return var(v; mean, corrected, dims=dim)
+    return var(v; mean, corrected, dims = dim)
 end
 
 ## std
@@ -97,12 +111,14 @@ weights used:
 * `ProbabilityWeights`: ``\\frac{n}{(n - 1) \\sum w}`` where ``n`` equals `count(!iszero, w)`
 * `Weights`: `ArgumentError` (bias correction not supported)
 """
-std(v::AbstractArray{<:Real}, w::AbstractWeights; mean=nothing, corrected::Union{Bool, Nothing}=nothing) =
-    sqrt.(var(v, w; mean=mean, corrected=depcheck(:std, :corrected, corrected)))
+std(v::AbstractArray{<:Real}, w::AbstractWeights; mean = nothing, corrected::Union{Bool, Nothing} = nothing) =
+    sqrt.(var(v, w; mean = mean, corrected = depcheck(:std, :corrected, corrected)))
 
-std(v::AbstractArray{<:Real}, w::AbstractWeights, dim::Int;
-    mean=nothing, corrected::Union{Bool, Nothing}=nothing) =
-    sqrt.(var(v, w, dim; mean=mean, corrected=depcheck(:std, :corrected, corrected)))
+std(
+    v::AbstractArray{<:Real}, w::AbstractWeights, dim::Int;
+    mean = nothing, corrected::Union{Bool, Nothing} = nothing
+) =
+    sqrt.(var(v, w, dim; mean = mean, corrected = depcheck(:std, :corrected, corrected)))
 
 ##### Fused statistics
 """
@@ -114,10 +130,10 @@ A weighting vector `w` can be specified to weight the estimates.
 Finally, bias correction is be applied to the variance calculation if `corrected=true`.
 See [`var`](@ref) documentation for more details.
 """
-function mean_and_var(x; corrected::Bool=true)
+function mean_and_var(x; corrected::Bool = true)
     m = mean(x)
-    v = var(x, mean=m, corrected=corrected)
-    m, v
+    v = var(x, mean = m, corrected = corrected)
+    return m, v
 end
 
 """
@@ -130,49 +146,52 @@ Finally, bias correction is applied to the
 standard deviation calculation if `corrected=true`.
 See [`std`](@ref) documentation for more details.
 """
-function mean_and_std(x; corrected::Bool=true)
+function mean_and_std(x; corrected::Bool = true)
     m = mean(x)
-    s = std(x, mean=m, corrected=corrected)
-    m, s
+    s = std(x, mean = m, corrected = corrected)
+    return m, s
 end
 
-function mean_and_var(x::AbstractArray{<:Real}, w::AbstractWeights; corrected::Union{Bool, Nothing}=nothing)
+function mean_and_var(x::AbstractArray{<:Real}, w::AbstractWeights; corrected::Union{Bool, Nothing} = nothing)
     m = mean(x, w)
-    v = var(x, w, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
-    m, v
+    v = var(x, w, mean = m, corrected = depcheck(:mean_and_var, :corrected, corrected))
+    return m, v
 end
-function mean_and_std(x::AbstractArray{<:Real}, w::AbstractWeights; corrected::Union{Bool, Nothing}=nothing)
+function mean_and_std(x::AbstractArray{<:Real}, w::AbstractWeights; corrected::Union{Bool, Nothing} = nothing)
     m = mean(x, w)
-    s = std(x, w, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
-    m, s
+    s = std(x, w, mean = m, corrected = depcheck(:mean_and_std, :corrected, corrected))
+    return m, s
 end
 
 
-function mean_and_var(x::AbstractArray{<:Real}, dim::Int; corrected::Bool=true)
-    m = mean(x, dims=dim)
-    v = var(x, dims=dim, mean=m, corrected=corrected)
-    m, v
+function mean_and_var(x::AbstractArray{<:Real}, dim::Int; corrected::Bool = true)
+    m = mean(x, dims = dim)
+    v = var(x, dims = dim, mean = m, corrected = corrected)
+    return m, v
 end
-function mean_and_std(x::AbstractArray{<:Real}, dim::Int; corrected::Bool=true)
-    m = mean(x, dims=dim)
-    s = std(x, dims=dim, mean=m, corrected=corrected)
-    m, s
-end
-
-
-function mean_and_var(x::AbstractArray{<:Real}, w::AbstractWeights, dims::Int;
-                      corrected::Union{Bool, Nothing}=nothing)
-    m = mean(x, w, dims=dims)
-    v = var(x, w, dims, mean=m, corrected=depcheck(:mean_and_var, :corrected, corrected))
-    m, v
-end
-function mean_and_std(x::AbstractArray{<:Real}, w::AbstractWeights, dims::Int;
-                      corrected::Union{Bool, Nothing}=nothing)
-    m = mean(x, w, dims=dims)
-    s = std(x, w, dims, mean=m, corrected=depcheck(:mean_and_std, :corrected, corrected))
-    m, s
+function mean_and_std(x::AbstractArray{<:Real}, dim::Int; corrected::Bool = true)
+    m = mean(x, dims = dim)
+    s = std(x, dims = dim, mean = m, corrected = corrected)
+    return m, s
 end
 
+
+function mean_and_var(
+        x::AbstractArray{<:Real}, w::AbstractWeights, dims::Int;
+        corrected::Union{Bool, Nothing} = nothing
+    )
+    m = mean(x, w, dims = dims)
+    v = var(x, w, dims, mean = m, corrected = depcheck(:mean_and_var, :corrected, corrected))
+    return m, v
+end
+function mean_and_std(
+        x::AbstractArray{<:Real}, w::AbstractWeights, dims::Int;
+        corrected::Union{Bool, Nothing} = nothing
+    )
+    m = mean(x, w, dims = dims)
+    s = std(x, w, dims, mean = m, corrected = depcheck(:mean_and_std, :corrected, corrected))
+    return m, s
+end
 
 
 ##### General central moment
@@ -221,7 +240,7 @@ function _moment3(v::AbstractArray{<:Real}, m::Real)
             end
         end
     end
-    s / n
+    return s / n
 end
 
 function _moment3(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
@@ -235,9 +254,9 @@ function _moment3(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
                 return zi^3 * wvi
             end
         end
-        s = sum(Broadcast.instantiate(broadcasted)) 
+        s = sum(Broadcast.instantiate(broadcasted))
     end
-    s / sum(wv)
+    return s / sum(wv)
 end
 
 function _moment4(v::AbstractArray{<:Real}, m::Real)
@@ -253,7 +272,7 @@ function _moment4(v::AbstractArray{<:Real}, m::Real)
             end
         end
     end
-    s / n
+    return s / n
 end
 
 function _moment4(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
@@ -269,7 +288,7 @@ function _moment4(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real)
         end
         s = sum(Broadcast.instantiate(broadcasted))
     end
-    s / sum(wv)
+    return s / sum(wv)
 end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, m::Real)
@@ -285,7 +304,7 @@ function _momentk(v::AbstractArray{<:Real}, k::Int, m::Real)
             end
         end
     end
-    s / n
+    return s / n
 end
 
 function _momentk(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real)
@@ -301,7 +320,7 @@ function _momentk(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real
         end
         s = sum(Broadcast.instantiate(broadcasted))
     end
-    s / sum(wv)
+    return s / sum(wv)
 end
 
 
@@ -311,19 +330,19 @@ end
 Return the `k`th order central moment of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function moment(v::AbstractArray{<:Real}, k::Int, m::Real=mean(v))
-    k == 2 ? _moment2(v, m; corrected = false) :
-    k == 3 ? _moment3(v, m) :
-    k == 4 ? _moment4(v, m) :
-    _momentk(v, k, m)
+function moment(v::AbstractArray{<:Real}, k::Int, m::Real = mean(v))
+    return k == 2 ? _moment2(v, m; corrected = false) :
+        k == 3 ? _moment3(v, m) :
+        k == 4 ? _moment4(v, m) :
+        _momentk(v, k, m)
 end
 
-function moment(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real=mean(v, wv))
+function moment(v::AbstractArray{<:Real}, k::Int, wv::AbstractWeights, m::Real = mean(v, wv))
     length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
-    k == 2 ? _moment2(v, wv, m; corrected = false) :
-    k == 3 ? _moment3(v, wv, m) :
-    k == 4 ? _moment4(v, wv, m) :
-    _momentk(v, k, wv, m)
+    return k == 2 ? _moment2(v, wv, m; corrected = false) :
+        k == 3 ? _moment3(v, wv, m) :
+        k == 4 ? _moment4(v, wv, m) :
+        _momentk(v, k, wv, m)
 end
 function moment(v::AbstractArray{<:Real}, k::Int, wv::UnitWeights, m::Real)
     length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
@@ -340,7 +359,7 @@ end
 Compute the standardized skewness of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function skewness(v::AbstractArray{<:Real}, m::Real=mean(v))
+function skewness(v::AbstractArray{<:Real}, m::Real = mean(v))
     n = length(v)
     if iszero(n)
         z = zero(zero(eltype(v)) - m)
@@ -356,13 +375,13 @@ function skewness(v::AbstractArray{<:Real}, m::Real=mean(v))
             end
         end
     end
-    return (cm3/n) / sqrt((cm2/n)^3)  # this is much faster than cm2^1.5
+    return (cm3 / n) / sqrt((cm2 / n)^3)  # this is much faster than cm2^1.5
 end
 
-function skewness(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real=mean(v, wv))
+function skewness(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real = mean(v, wv))
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
-    if iszero(n)    
+    if iszero(n)
         z = zero(zero(eltype(v)) - m)
         cm2 = z^2 * zero(eltype(wv)) # empirical 2nd centered moment (variance)
         cm3 = cm2 * z # empirical 3rd centered moment
@@ -378,7 +397,7 @@ function skewness(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real=mean(v,
         cm2, cm3 = reduce(_add, Broadcast.instantiate(broadcasted))
     end
     sw = sum(wv)
-    return (cm3/sw) / sqrt((cm2/sw)^3)  # this is much faster than cm2^1.5
+    return (cm3 / sw) / sqrt((cm2 / sw)^3)  # this is much faster than cm2^1.5
 end
 function skewness(v::AbstractArray{<:Real}, wv::UnitWeights, m::Real)
     length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
@@ -393,7 +412,7 @@ end
 Compute the excess kurtosis of a real-valued array `v`, optionally
 specifying a weighting vector `wv` and a center `m`.
 """
-function kurtosis(v::AbstractArray{<:Real}, m::Real=mean(v))
+function kurtosis(v::AbstractArray{<:Real}, m::Real = mean(v))
     n = length(v)
     if iszero(n)
         z = zero(zero(eltype(v)) - m)
@@ -409,10 +428,10 @@ function kurtosis(v::AbstractArray{<:Real}, m::Real=mean(v))
             end
         end
     end
-    return (cm4/n) / (cm2/n)^2 - 3
+    return (cm4 / n) / (cm2 / n)^2 - 3
 end
 
-function kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real=mean(v, wv))
+function kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real = mean(v, wv))
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     if iszero(n)
@@ -433,7 +452,7 @@ function kurtosis(v::AbstractArray{<:Real}, wv::AbstractWeights, m::Real=mean(v,
         cm2, cm4 = reduce(_add, Broadcast.instantiate(broadcasted))
     end
     sw = sum(wv)
-    return (cm4/sw) / (cm2/sw)^2 - 3
+    return (cm4 / sw) / (cm2 / sw)^2 - 3
 end
 function kurtosis(v::AbstractArray{<:Real}, wv::UnitWeights, m::Real)
     length(wv) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
@@ -454,8 +473,10 @@ Reference: Smith, P. J. 1995. A Recursive Formulation of the Old Problem of Obta
 Moments from Cumulants and Vice Versa. The American Statistician, 49(2), 217–218.
 https://doi.org/10.2307/2684642
 """
-function cumulant(v::AbstractArray{<:Real}, krange::Union{Integer, AbstractRange{<:Integer}}, wv::AbstractWeights,
-                  m::Real=mean(v, wv))
+function cumulant(
+        v::AbstractArray{<:Real}, krange::Union{Integer, AbstractRange{<:Integer}}, wv::AbstractWeights,
+        m::Real = mean(v, wv)
+    )
     n = length(v)
     length(wv) == n || throw(DimensionMismatch("Inconsistent array lengths."))
     kmin, kmax = extrema(krange)
@@ -465,15 +486,15 @@ function cumulant(v::AbstractArray{<:Real}, krange::Union{Integer, AbstractRange
     cmoms = [moment(v, i, wv, m) for i in 2:kmax]
     cumls = Vector{eltype(cmoms)}(undef, kmax)
     cumls[1] = m
-    for i = 2:kmax
-        kn = cmoms[i-1]
-        for j = 2:(i-2)
-            kn -= binomial(i-1, j)*cmoms[j-1]*cumls[i-j]
+    for i in 2:kmax
+        kn = cmoms[i - 1]
+        for j in 2:(i - 2)
+            kn -= binomial(i - 1, j) * cmoms[j - 1] * cumls[i - j]
         end
         cumls[i] = kn
     end
     return cumls[krange]
 end
 
-cumulant(v::AbstractArray{<:Real}, krange::Union{Integer, AbstractRange{<:Integer}}, m::Real=mean(v)) =
+cumulant(v::AbstractArray{<:Real}, krange::Union{Integer, AbstractRange{<:Integer}}, m::Real = mean(v)) =
     cumulant(v, krange, uweights(length(v)), m)

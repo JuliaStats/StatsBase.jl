@@ -10,6 +10,7 @@ function Base.show(io::IO, x::CronbachAlpha)
     for (idx, val) in enumerate(x.dropped)
         @printf(io, "item %i: %.4f\n", idx, val)
     end
+    return
 end
 
 """
@@ -52,13 +53,17 @@ item 4: 0.7826
 """
 function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
     if !isposdef(covmatrix)
-        throw(ArgumentError("Covariance matrix must be positive definite. " *
-                            "Maybe you passed the data matrix instead of its covariance matrix? " *
-                            "If so, call `cronbachalpha(cov(...))` instead."))
+        throw(
+            ArgumentError(
+                "Covariance matrix must be positive definite. " *
+                    "Maybe you passed the data matrix instead of its covariance matrix? " *
+                    "If so, call `cronbachalpha(cov(...))` instead."
+            )
+        )
     end
     k = size(covmatrix, 2)
     k > 1  || throw(ArgumentError("Covariance matrix must have more than one column."))
-    v = vec(sum(covmatrix, dims=1))
+    v = vec(sum(covmatrix, dims = 1))
     σ = sum(v)
     for i in axes(v, 1)
         v[i] -= covmatrix[i, i]
@@ -67,8 +72,10 @@ function cronbachalpha(covmatrix::AbstractMatrix{<:Real})
 
     alpha = k * (1 - σ_diag / σ) / (k - 1)
     if k > 2
-        dropped = typeof(alpha)[(k - 1) * (1 - (σ_diag - covmatrix[i, i]) / (σ - 2*v[i] - covmatrix[i, i])) / (k - 2)
-                                for i in 1:k]
+        dropped = typeof(alpha)[
+            (k - 1) * (1 - (σ_diag - covmatrix[i, i]) / (σ - 2 * v[i] - covmatrix[i, i])) / (k - 2)
+                for i in 1:k
+        ]
     else
         # if k = 2 do not produce dropped; this has to be also
         # correctly handled in show
