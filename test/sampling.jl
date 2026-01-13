@@ -298,6 +298,18 @@ end
     end
 end
 
+@testset "issue #982" begin
+    # Issue #982 was triggered in conjunction with SIMD support under certain circumstances, 
+    # in particular with the following weights when sum(w) == 0.662413f0.
+    # The following mimics this case.
+    w = Float32[0.0437019, 0.04302464, 0.039748967,  0.040406376, 0.042578973, 
+    0.040906563, 0.039586294, 0.04302464, 0.042357873, 0.04302464, 0.039262936, 
+    0.040406376, 0.040406376, 0.041919112, 0.041484896, 0.04057242, 0.0]
+    rng = StableRNG(889858990530)
+    s = sample(rng, Weights(w, 0.662413f0))
+    @test s == length(w) - 1
+    @test sample(rng, Weights([1, 2, 0, 0], 10000)) == 2  # another more trivial test
+end
 # Custom weights without `values` field
 struct YAUnitWeights <: AbstractWeights{Int, Int, Vector{Int}}
     n::Int
