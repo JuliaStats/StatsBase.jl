@@ -63,30 +63,37 @@ wv = weights([0.1:0.1:0.7; 0.1])
 @test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.3]))
 @test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
-## hsm_mode (half-sample mode)
+## mode with method=:halfsample (half-sample mode)
 
-@test hsm_mode([1, 2, 2, 3, 4, 4, 4, 5]) ≈ 4.0
-@test hsm_mode([10.0]) ≈ 10.0
-@test hsm_mode([1.0, 2.0, 3.0]) ≈ 1.5
-@test hsm_mode([NaN, 2, 2, Inf, 3]) ≈ 2.0
-@test hsm_mode([1.0, 2.0, 3.0, 4.0, 5.0]) ≈ 1.5
-@test isapprox(hsm_mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003]), 1.00431, atol=1e-4)
-@test hsm_mode([1.0, 1.0, 1.0, 10.0]) ≈ 1.0
-@test hsm_mode([-5.0, -3.0, -1.0, 0.0, 1.0, 3.0, 5.0]) ≈ -0.5
-@test_throws ArgumentError hsm_mode(Float64[])
-@test hsm_mode([1.0, 5.0]) ≈ 3.0  # two elements: returns midpoint
-@test_throws ArgumentError hsm_mode([NaN, Inf, -Inf])
-@test hsm_mode([1, 2, 3]) isa Float64
-@test hsm_mode([1.0f0, 2.0f0]) isa Float32
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample) ≈ 4.0
+@test mode([10.0], method=:halfsample) ≈ 10.0
+@test mode([1.0, 2.0, 3.0], method=:halfsample) ≈ 1.5
+@test mode([1.0, 2.0, 3.0, 4.0, 5.0], method=:halfsample) ≈ 1.5
+@test isapprox(mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003], method=:halfsample), 1.00431, atol=1e-4)
+@test mode([1.0, 1.0, 1.0, 10.0], method=:halfsample) ≈ 1.0
+@test mode([-5.0, -3.0, -1.0, 0.0, 1.0, 3.0, 5.0], method=:halfsample) ≈ -0.5
+@test_throws ArgumentError mode(Float64[], method=:halfsample)
+@test mode([1.0, 5.0], method=:halfsample) ≈ 3.0  # two elements: returns midpoint
+@test_throws ArgumentError mode([NaN, 2.0, 3.0], method=:halfsample)  # NaN not allowed
+@test mode([Inf, 2.0, 3.0], method=:halfsample) ≈ 2.5  # Inf is allowed
+@test mode([1, 2, 3], method=:halfsample) isa Float64
+@test mode([1.0f0, 2.0f0], method=:halfsample) isa Float32
 
 # Additional edge cases
-@test hsm_mode([1.0, 1.0, 1.0]) ≈ 1.0  # all identical
-@test hsm_mode([1, 1000000]) ≈ 500000.5  # extreme spread
-@test hsm_mode([1, 1, 1, 2, 2, 100]) ≈ 1.0  # outlier: finds densest region
-@test hsm_mode(Int32[1, 2, 3]) isa Float64  # type promotion
-@test hsm_mode(Float32[1, 2, 3]) isa Float32  # type preservation
-@test hsm_mode([1.0, 1.0, 1.0]) ≈ 1.0  # all identical
-@test hsm_mode([1, 1000000]) ≈ 500000.5  # extreme spread
+@test mode([1.0, 1.0, 1.0], method=:halfsample) ≈ 1.0  # all identical
+@test mode([1, 1, 1, 2, 2, 100], method=:halfsample) ≈ 1.0  # outlier: finds densest region
+@test mode(Int32[1, 2, 3], method=:halfsample) isa Float64  # type promotion
+@test mode(Float32[1, 2, 3], method=:halfsample) isa Float32  # type preservation
+
+# Test overflow protection with middle()
+@test mode([typemax(Int64)-1, typemax(Int64)], method=:halfsample) ≈ float(typemax(Int64)) - 0.5
+
+# Test with iterators (not just vectors)
+@test mode((x for x in [1.0, 2.0, 3.0]), method=:halfsample) ≈ 1.5
+@test mode(skipmissing([missing, 1.0, 2.0, 3.0]), method=:halfsample) ≈ 1.5
+
+# Test invalid method
+@test_throws ArgumentError mode([1, 2, 3], method=:invalid)
 
 
 
