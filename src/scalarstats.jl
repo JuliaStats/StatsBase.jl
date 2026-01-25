@@ -589,7 +589,7 @@ function sem(x::AbstractArray, weights::ProbabilityWeights; mean=nothing)
 end
 
 # Median absolute deviation
-@irrational mad_constant 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
+IrrationalConstants.@irrational mad_constant 1.4826022185056018 BigFloat("1.482602218505601860547076529360423431326703202590312896536266275245674447622701")
 
 """
     mad(x; center=median(x), normalize=true)
