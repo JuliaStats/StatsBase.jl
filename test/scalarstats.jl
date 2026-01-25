@@ -95,6 +95,19 @@ wv = weights([0.1:0.1:0.7; 0.1])
 # Test invalid method
 @test_throws ArgumentError mode([1, 2, 3], method=:invalid)
 
+# Test weighted mode with method parameter
+@test mode([1, 2, 3], weights([0.1, 0.6, 0.3]), method=:default) == 2
+@test modes([1, 2, 3], weights([0.1, 0.6, 0.3]), method=:default) == [2]
+@test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.6, 0.3]), method=:halfsample)
+@test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.6, 0.3]), method=:halfsample)
+@test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.6, 0.3]), method=:invalid)
+@test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.6, 0.3]), method=:invalid)
+
+# Test mode with range and method parameter
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:default) == 4
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:halfsample) ≈ 4.0  # Test halfsample with range
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:invalid)
+
 
 
 ## zscores

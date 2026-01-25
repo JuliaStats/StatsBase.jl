@@ -54,10 +54,30 @@ over a specified range `r` or weighted via a vector `wv`.
 If several modes exist, the first one (in order of appearance) is returned.
 
 The `method` keyword argument allows selecting different mode estimation methods:
-- `:default`: Frequency-based mode (counts occurrences)
-- `:halfsample`: Half-sample mode (HSM), a robust density-based estimator for continuous data
+- `:default`: Frequency-based mode (counts occurrences). This is the standard mode
+  that returns the most frequently occurring value in the data.
+- `:halfsample`: Half-sample mode (HSM), a robust density-based estimator for continuous data.
+  This method iteratively finds the shortest interval containing half the data points,
+  converging to the densest region. It returns the midpoint of the final interval as a
+  floating-point value. This method is particularly useful for:
+  - Continuous or near-continuous data
+  - Data with outliers (more robust than the mean)
+  - Skewed distributions where you want to find the peak density
+  
+  Note: The `:halfsample` method does not support NaN values and will throw an error if any are present.
+  For weighted mode calculations, only `:default` is supported.
 
-See the main `mode` function documentation for details on the `:halfsample` method.
+# Examples
+```julia
+# Frequency-based mode (default)
+mode([1, 2, 2, 3, 4, 4, 4, 5])  # returns 4
+
+# Half-sample mode for continuous data
+mode([1.0, 2.0, 2.1, 2.2, 3.0, 10.0], method=:halfsample)  # returns ≈2.0 (robust to outlier)
+
+# Weighted mode
+mode([1, 2, 3], weights([0.1, 0.6, 0.3]))  # returns 2
+```
 """
 function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:default) where T<:Integer
     if method == :halfsample
