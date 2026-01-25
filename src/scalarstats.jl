@@ -46,14 +46,45 @@ end
 
 # compute mode, given the range of integer values
 """
-    mode(a, [r])
+    mode(a, [r]; method=:default)
     mode(a::AbstractArray, wv::AbstractWeights)
 
 Return the mode (most common number) of an array, optionally
 over a specified range `r` or weighted via a vector `wv`.
 If several modes exist, the first one (in order of appearance) is returned.
+
+The `method` keyword argument allows selecting different mode estimation methods:
+- `:default`: Frequency-based mode (counts occurrences). This is the standard mode
+  that returns the most frequently occurring value in the data.
+- `:halfsample`: Half-sample mode (HSM), a robust density-based estimator for continuous data.
+  This method iteratively finds the shortest interval containing half the data points,
+  converging to the densest region. It returns the midpoint of the final interval as a
+  floating-point value. This method is particularly useful for:
+  - Continuous or near-continuous data
+  - Data with outliers (more robust than the mean)
+  - Skewed distributions where you want to find the peak density
+  
+  Note: The `:halfsample` method does not support NaN values and will throw an error if any are present.
+  For weighted mode calculations, only `:default` is supported.
+
+# Examples
+```julia
+# Frequency-based mode (default)
+mode([1, 2, 2, 3, 4, 4, 4, 5])  # returns 4
+
+# Half-sample mode for continuous data
+mode([1.0, 2.0, 2.1, 2.2, 3.0, 10.0], method=:halfsample)  # returns ≈2.0 (robust to outlier)
+
+# Weighted mode
+mode([1, 2, 3], weights([0.1, 0.6, 0.3]))  # returns 2
+```
 """
-function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
+function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:default) where T<:Integer
+    if method == :halfsample
+        return _hsm_mode(a)
+    elseif method != :default
+        throw(ArgumentError("method must be :default or :halfsample, got :$method"))
+    end
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     len = length(a)
     r0 = r[1]
@@ -108,7 +139,12 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
 end
 
 # compute mode over arbitrary iterable
-function mode(a)
+function mode(a; method::Symbol=:default)
+    if method == :halfsample
+        return _hsm_mode(a)
+    elseif method != :default
+        throw(ArgumentError("method must be :default or :halfsample, got :$method"))
+    end
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     cnts = Dict{eltype(a),Int}()
     # first element
@@ -161,7 +197,12 @@ function modes(a)
 end
 
 # Weighted mode of arbitrary vectors of values
-function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+function mode(a::AbstractVector, wv::AbstractWeights{T}; method::Symbol=:default) where T <: Real
+    if method == :halfsample
+        throw(ArgumentError("method=:halfsample is not supported for weighted mode"))
+    elseif method != :default
+        throw(ArgumentError("method must be :default or :halfsample, got :$method"))
+    end
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
@@ -183,7 +224,12 @@ function mode(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     return mv
 end
 
-function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
+function modes(a::AbstractVector, wv::AbstractWeights{T}; method::Symbol=:default) where T <: Real
+    if method == :halfsample
+        throw(ArgumentError("method=:halfsample is not supported for weighted modes"))
+    elseif method != :default
+        throw(ArgumentError("method must be :default or :halfsample, got :$method"))
+    end
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     isfinite(sum(wv)) || throw(ArgumentError("only finite weights are supported"))
     length(a) == length(wv) ||
@@ -202,6 +248,45 @@ function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
 
     # find values corresponding to maximum counts
     return [x for (x, w) in weights if w == mw]
+end
+
+
+#############################
+#
+#   Mode: Half-Sample Mode
+#
+#############################
+
+# Helper function for half-sample mode algorithm
+function _hsm_mode(a)
+    # Check for NaN
+    any(isnan, a) && throw(ArgumentError("mode with method=:halfsample does not support NaN values"))
+    
+    # Sort the data (allows any iterator)
+    a = sort(collect(a))
+    
+    len = length(a)
+    len == 0 && throw(ArgumentError("mode with method=:halfsample is not defined for empty collections"))
+    len == 1 && return float(a[1])
+    len == 2 && return middle(a[1], a[2])
+
+    while len > 2
+        win_size = cld(len, 2)  # Use ceiling division for correct half-sample
+        best_width = a[end] - a[1]
+        best_start = 1
+
+        for i in 1:(len-win_size+1)
+            width = a[i+win_size-1] - a[i]
+            if width < best_width
+                best_width = width
+                best_start = i
+            end
+        end
+        a = view(a, best_start:(best_start+win_size-1))
+        len = length(a)
+    end
+
+    return middle(a[1], a[end])
 end
 
 #############################
