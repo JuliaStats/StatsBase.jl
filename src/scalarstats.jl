@@ -83,7 +83,7 @@ function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:default) whe
     if method == :halfsample
         return _hsm_mode(a)
     elseif method != :default
-        throw(ArgumentError("method must be :default or :halfsample, got :$method"))
+        throw(ArgumentError("`method` must be `:default` or `:halfsample`, got `:$method`"))
     end
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     len = length(a)
