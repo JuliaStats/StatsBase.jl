@@ -86,7 +86,7 @@ wv = weights([0.1:0.1:0.7; 0.1])
 @test mode(Float32[1, 2, 3], method=:halfsample) isa Float32  # type preservation
 
 # Test overflow protection with middle()
-@test mode([typemax(Int64)-1, typemax(Int64)], method=:halfsample) ≈ float(typemax(Int64)) - 0.5
+@test mode([typemax(Int64)-1, typemax(Int64)], method=:halfsample) == typemax(Int64) - 0.5
 
 # Test with iterators (not just vectors)
 @test mode((x for x in [1.0, 2.0, 3.0]), method=:halfsample) ≈ 1.5
