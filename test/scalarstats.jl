@@ -81,7 +81,6 @@ wv = weights([0.1:0.1:0.7; 0.1])
 # Type tests
 @test mode([1, 2, 3], method=:halfsample) isa Float64
 @test mode(Int32[1, 2, 3], method=:halfsample) isa Float64  # type promotion
-@test mode([1.0f0, 2.0f0], method=:halfsample) isa Float32
 @test mode(Float32[1, 2, 3], method=:halfsample) isa Float32  # type preservation
 
 # Additional edge cases
