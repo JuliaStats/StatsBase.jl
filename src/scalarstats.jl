@@ -147,12 +147,18 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
 end
 
 # compute mode over arbitrary iterable
-function mode(a; method::Symbol=:default)
-    if method == :halfsample
+@inline function mode(a; method::Symbol=:default)
+    if method === :halfsample
         return _hsm_mode(a)
-    elseif method != :default
+    elseif method === :default
+        return _frequency_mode(a)
+    else
         throw(ArgumentError("`method` must be `:default` or `:halfsample`, got `:$method`"))
     end
+end
+
+# Helper function for default mode algorithm
+function _frequency_mode_mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     cnts = Dict{eltype(a),Int}()
     # first element
