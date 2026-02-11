@@ -75,7 +75,7 @@ my_frequency_mode(x) = mode(x, method=:halfsample)
 @test mode([1.0, 5.0], method=:halfsample) ≈ 3.0  # two elements: returns midpoint
 @test_throws ArgumentError mode(Float64[], method=:halfsample)
 
-@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample) == 4.0
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample)::Float64 == 4
 @test mode([1.0, 2.0, 3.0], method=:halfsample) == 1.5
 @test mode([1.0, 2.0, 3.0, 4.0, 5.0], method=:halfsample) == 1.5
 @test mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003], method=:halfsample) == 1.0043060000000001
