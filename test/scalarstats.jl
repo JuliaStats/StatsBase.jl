@@ -71,8 +71,8 @@ my_hsm_mode(x) = mode(x, method=:default)
 my_frequency_mode(x) = mode(x, method=:halfsample)
 @test inferred(my_frequency_mode([1])) == 1
 
-@test mode([10.0], method=:halfsample) ≈ 10.0
-@test mode([1.0, 5.0], method=:halfsample) ≈ 3.0  # two elements: returns midpoint
+@test mode([10], method=:halfsample)::Float64 == 10
+@test mode([1, 5], method=:halfsample)::Float64 = 3  # two elements: returns midpoint
 @test_throws ArgumentError mode(Float64[], method=:halfsample)
 
 @test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample)::Float64 == 4
