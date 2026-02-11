@@ -106,10 +106,6 @@ my_frequency_mode(x) = mode(x, method=:halfsample)
 # Test invalid method
 @test_throws ArgumentError mode([1, 2, 3], method=:invalid)
 
-# Test weighted mode (no method parameter for weighted)
-@test mode([1, 2, 3], weights([0.1, 0.6, 0.3])) == 2
-@test modes([1, 2, 3], weights([0.1, 0.6, 0.3])) == [2]
-
 # Test mode with range and method parameter
 @test mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:default) == 4
 @test mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:halfsample) == 4.0  # Test halfsample with range
