@@ -64,6 +64,12 @@ wv = weights([0.1:0.1:0.7; 0.1])
 @test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
 ## mode with method=:halfsample (half-sample mode)
+@test mode([1], method=:default) == 1
+@test mode((x for x in [1]), method=:default) == 1
+my_hsm_mode(x) = mode(x, method=:default)
+@test inferred(my_hsm_mode([1])) == 1
+my_frequency_mode(x) = mode(x, method=:halfsample)
+@test inferred(my_frequency_mode([1])) == 1
 
 @test mode([10.0], method=:halfsample) ≈ 10.0
 @test mode([1.0, 5.0], method=:halfsample) ≈ 3.0  # two elements: returns midpoint
