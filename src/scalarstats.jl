@@ -266,7 +266,7 @@ function _hsm_mode(a)
     
     len = length(a)
     len == 0 && throw(ArgumentError("mode is not defined for empty collections"))
-    len == 1 && return float(a[1])
+    len == 1 && return middle(a[1])
     len == 2 && return middle(a[1], a[2])
 
     while len > 2
