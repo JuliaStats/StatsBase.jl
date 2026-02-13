@@ -3,10 +3,12 @@ using LinearAlgebra, Random, Test
 
 @testset "Cronbach's Alpha" begin
     # basic vanilla test
-    cov_X = [10 6 6 6;
-             6 11 6 6;
-             6 6 12 6;
-             6 6 6 13]
+    cov_X = [
+        10 6 6 6;
+        6 11 6 6;
+        6 6 12 6;
+        6 6 6 13
+    ]
     cronbach_X = cronbachalpha(cov_X)
     @test cronbach_X isa CronbachAlpha{Float64}
     @test cronbach_X.alpha ≈ 0.8135593220338981
@@ -31,20 +33,26 @@ using LinearAlgebra, Random, Test
 
     # testing corner cases
     @test_throws MethodError cronbachalpha([1.0, 2.0])
-    cov_k2 = [10 6;
-              6 11]
+    cov_k2 = [
+        10 6;
+        6 11
+    ]
     cronbach_k2 = cronbachalpha(cov_k2)
     @test cronbach_k2.alpha ≈ 0.7272727272727273
     @test isempty(cronbach_k2.dropped)
 
     # testing when Matrix is not positive-definite
-    cov_not_pos = [-1 1;
-                   -1 1]
+    cov_not_pos = [
+        -1 1;
+        -1 1
+    ]
     @test_throws ArgumentError cronbachalpha(cov_not_pos)
 
     # testing with a zero
-    cov_zero = [1 2;
-                0 1]
+    cov_zero = [
+        1 2;
+        0 1
+    ]
     @test_throws ArgumentError cronbachalpha(cov_not_pos)
 
     # testing with one column
@@ -52,8 +60,10 @@ using LinearAlgebra, Random, Test
     @test_throws ArgumentError cronbachalpha(cov_k1)
 
     # testing with Missing
-    cov_missing = [1 2;
-                   missing 1]
+    cov_missing = [
+        1 2;
+        missing 1
+    ]
     @test_throws MethodError cronbachalpha(cov_missing)
 
 
