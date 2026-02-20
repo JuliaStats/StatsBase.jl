@@ -46,14 +46,58 @@ end
 
 # compute mode, given the range of integer values
 """
-    mode(a, [r])
-    mode(a::AbstractArray, wv::AbstractWeights)
+    mode(a; method=:frequency)
+    mode(a::AbstractArray{T}, r::UnitRange{T}; method=:frequency) where T<:Integer
 
-Return the mode (most common number) of an array, optionally
-over a specified range `r` or weighted via a vector `wv`.
-If several modes exist, the first one (in order of appearance) is returned.
+Return the mode (most common value) of `a`.
+
+The `method` keyword argument selects the estimation method:
+
+- `:frequency`: Frequency-based mode. Counts occurrences and returns the most common
+  value. If several modes exist, the first one (in order of appearance) is returned.
+  This is appropriate for discrete data.
+
+- `:halfsample`: Half-sample mode (HSM). A robust estimator of the mode for
+  continuous data. Repeatedly finds the contiguous half-sample with the smallest
+  range until ≤ 2 points remain, then returns their midpoint. The return value
+  is always a floating-point number and may not be an element of `a`.
+  This is appropriate for continuous data and is robust to outliers.
+  See: Bickel (2002), Robertson & Cryer (1974).
+
+# Examples
+```julia
+julia> mode([1, 2, 2, 3, 3, 3, 4])
+3
+
+julia> mode([1, 2, 2, 3, 3, 3, 4], method=:frequency)
+3
+
+julia> mode([1.0, 1.1, 1.2, 5.0, 5.1], method=:halfsample)
+1.1
+```
 """
-function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
+@inline function mode(a; method::Symbol=:frequency)
+    if method === :halfsample
+        return _hsm_mode(a)
+    elseif method === :frequency
+        return _frequency_mode(a)
+    else
+        throw(ArgumentError("`method` must be `:frequency` or `:halfsample`, got `:$method`"))
+    end
+end
+
+@inline function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:frequency) where T<:Integer
+    if method === :halfsample
+        throw(ArgumentError("The `:halfsample` method does not support a range argument. Call `mode(a, method=:halfsample)` without a range."))
+    elseif method === :frequency
+        return _frequency_mode(a, r)
+    else
+        throw(ArgumentError("`method` must be `:frequency` or `:halfsample`, got `:$method`"))
+    end
+end
+
+# The original frequency-based implementation, now a private helper
+function _frequency_mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     len = length(a)
     r0 = r[1]
@@ -107,8 +151,8 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     return ms
 end
 
-# compute mode over arbitrary iterable
-function mode(a)
+# The original frequency-based implementation, now a private helper
+function _frequency_mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     cnts = Dict{eltype(a),Int}()
     # first element
@@ -202,6 +246,43 @@ function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
 
     # find values corresponding to maximum counts
     return [x for (x, w) in weights if w == mw]
+end
+
+
+"""
+    _hsm_mode(a)
+
+Internal implementation of the Half-Sample Mode (HSM) estimator.
+Do not call directly; use `mode(a, method=:halfsample)` instead.
+"""
+function _hsm_mode(a)
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+
+    # Filter non-finite values and sort
+    filtered = sort([x for x in a if isfinite(x)])
+    len = length(filtered)
+
+    len == 0 && throw(ArgumentError("mode is not defined for collections with no finite values"))
+    len == 1 && return middle(filtered[1], filtered[1])
+    len == 2 && return middle(filtered[1], filtered[2])
+
+    # Iteratively find the half-sample with the smallest range
+    while len > 2
+        half = ceil(Int, len / 2)
+        best_i = 1
+        best_width = filtered[half] - filtered[1]
+        for i in 2:(len - half + 1)
+            w = filtered[i + half - 1] - filtered[i]
+            if w < best_width
+                best_width = w
+                best_i = i
+            end
+        end
+        filtered = filtered[best_i:(best_i + half - 1)]
+        len = length(filtered)
+    end
+
+    return middle(filtered[1], filtered[len])
 end
 
 #############################

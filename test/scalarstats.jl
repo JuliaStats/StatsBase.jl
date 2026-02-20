@@ -63,6 +63,50 @@ wv = weights([0.1:0.1:0.7; 0.1])
 @test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.3]))
 @test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
+## mode with method=:frequency (explicit, same as default)
+@test mode([1], method=:frequency) == 1
+@test mode((x for x in [1]), method=:frequency) == 1
+
+# Check no type inference regression on the default/frequency path
+my_frequency_mode(x) = mode(x, method=:frequency)
+@test @inferred(my_frequency_mode([1])) == 1
+
+# Check type inference on halfsample path
+my_hsm_mode(x) = mode(x, method=:halfsample)
+@test @inferred(my_hsm_mode([1]))::Float64 == 1.0
+
+## mode with method=:halfsample (half-sample mode)
+@test mode([10], method=:halfsample)::Float64 == 10.0
+@test mode([1, 5], method=:halfsample)::Float64 == 3.0         # midpoint of two elements
+@test mode([1.0, 5.0], method=:halfsample) ≈ 3.0
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample)::Float64 == 4.0
+@test mode([1.0, 1.1, 1.2, 5.0, 5.1], method=:halfsample) ≈ 1.1  atol=0.1
+
+# Robustness to outliers
+@test abs(mode([1.0, 1.05, 1.1, 1.15, 100.0], method=:halfsample) - 1.075) < 0.2
+
+# Non-finite values are filtered
+@test mode([1.0, NaN, 2.0, 2.0, Inf], method=:halfsample) ≈ 2.0
+@test mode([1.0, NaN, Inf, -Inf], method=:halfsample)::Float64 == 1.0
+
+# Edge cases
+@test_throws ArgumentError mode(Float64[], method=:halfsample)
+@test_throws ArgumentError mode([NaN, Inf, -Inf], method=:halfsample)
+
+# Invalid method throws
+@test_throws ArgumentError mode([1, 2, 3], method=:invalid)
+
+## mode with range argument
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:frequency) == 4
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:halfsample)
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:invalid)
+
+## @inferred check for default mode — no inference regression
+d1 = [1, 2, 3, 3, 4]
+@test @inferred(mode(d1)) == 3
+
+
+
 ## zscores
 
 @test zscore([-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]
