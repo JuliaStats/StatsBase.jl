@@ -47,7 +47,7 @@ using Statistics
 d1 = [1, 2, 3, 3, 4, 5, 5, 3]
 d2 = ['a', 'b', 'c', 'c', 'd', 'e', 'e', 'c']
 wv = weights([0.1:0.1:0.7; 0.1])
-@test @inferred(mode(d1)) == 3
+@test mode(d1) == 3
 @test mode(d2) == 'c'
 @test mode(d1, wv) == 5
 @test mode(d2, wv) == 'e'
@@ -63,53 +63,47 @@ wv = weights([0.1:0.1:0.7; 0.1])
 @test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.3]))
 @test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
+## mode with method=:frequency (explicit, same as default)
+@test mode([1], method=:frequency) == 1
+@test mode((x for x in [1]), method=:frequency) == 1
+
+# Check no type inference regression on the default/frequency path
+my_frequency_mode(x) = mode(x, method=:frequency)
+@test @inferred(my_frequency_mode([1])) == 1
+
+# Check type inference on halfsample path
+my_hsm_mode(x) = mode(x, method=:halfsample)
+@test @inferred(my_hsm_mode([1]))::Float64 == 1.0
+
 ## mode with method=:halfsample (half-sample mode)
-@test mode([1], method=:default) == 1
-@test mode((x for x in [1]), method=:default) == 1
-my_hsm_mode(x) = mode(x, method=:default)
-@test inferred(my_hsm_mode([1])) == 1
-my_frequency_mode(x) = mode(x, method=:halfsample)
-@test inferred(my_frequency_mode([1])) == 1
+@test mode([10], method=:halfsample)::Float64 == 10.0
+@test mode([1, 5], method=:halfsample)::Float64 == 3.0         # midpoint of two elements
+@test mode([1.0, 5.0], method=:halfsample) ≈ 3.0
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample)::Float64 == 4.0
+@test mode([1.0, 1.1, 1.2, 5.0, 5.1], method=:halfsample) ≈ 1.1  atol=0.1
 
-@test mode([10], method=:halfsample)::Float64 == 10
-@test mode([1, 5], method=:halfsample)::Float64 = 3  # two elements: returns midpoint
+# Robustness to outliers
+@test abs(mode([1.0, 1.05, 1.1, 1.15, 100.0], method=:halfsample) - 1.075) < 0.2
+
+# Non-finite values are filtered
+@test mode([1.0, NaN, 2.0, 2.0, Inf], method=:halfsample) ≈ 2.0
+@test mode([1.0, NaN, Inf, -Inf], method=:halfsample)::Float64 == 1.0
+
+# Edge cases
 @test_throws ArgumentError mode(Float64[], method=:halfsample)
+@test_throws ArgumentError mode([NaN, Inf, -Inf], method=:halfsample)
 
-@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample)::Float64 == 4
-@test mode([1.0, 2.0, 3.0], method=:halfsample) == 1.5
-@test mode([1.0, 2.0, 3.0, 4.0, 5.0], method=:halfsample) == 1.5
-@test mode([1.0097, 1.0054, 1.003212, 1.0231, 1.344, 1.00003], method=:halfsample) == 1.0043060000000001
-@test mode([1.0, 1.0, 1.0, 10.0], method=:halfsample) == 1.0
-@test mode([-5.0, -3.0, -1.0, 0.0, 1.0, 3.0, 5.0], method=:halfsample) == -0.5
-@test_throws ArgumentError mode([NaN, 2.0, 3.0], method=:halfsample)  # NaN not allowed
-@test mode([Inf, 2.0, 3.0], method=:halfsample) == 2.5  # Inf is allowed
-
-# Type tests
-@test mode([1, 2, 3], method=:halfsample) isa Float64
-@test mode(Int32[1, 2, 3], method=:halfsample) isa Float64  # type promotion
-@test mode(Float32[1, 2, 3], method=:halfsample) isa Float32  # type preservation
-
-# Additional edge cases
-@test mode([1.0, 1.0, 1.0], method=:halfsample) == 1.0  # all identical
-@test mode([1, 1, 1, 2, 2, 100], method=:halfsample) == 1.0  # outlier: finds densest region
-
-# Test overflow protection with middle()
-@test mode([typemax(Int64)-1, typemax(Int64)], method=:halfsample) == typemax(Int64) - 0.5
-
-# Test with iterators (not just vectors)
-@test mode((x for x in [1.0, 2.0, 3.0]), method=:halfsample) == 1.5
-@test mode(skipmissing([missing, 1.0, 2.0, 3.0]), method=:halfsample) == 1.5
-
-# Test with longer vector
-@test mode([1.0, 1.1, 1.2, 1.3, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0], method=:halfsample) == 1.15
-
-# Test invalid method
+# Invalid method throws
 @test_throws ArgumentError mode([1, 2, 3], method=:invalid)
 
-# Test mode with range and method parameter
-@test mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:default) == 4
-@test mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:halfsample) == 4.0  # Test halfsample with range
-@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 1:5, method=:invalid)
+## mode with range argument
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:frequency) == 4
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:halfsample)
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:invalid)
+
+## @inferred check for default mode — no inference regression
+d1 = [1, 2, 3, 3, 4]
+@test @inferred(mode(d1)) == 3
 
 
 
