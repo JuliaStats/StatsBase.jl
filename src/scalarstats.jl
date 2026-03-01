@@ -86,7 +86,7 @@ function mode(a; method::Symbol=:frequency)
     end
 end
 
-@inline function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:frequency) where T<:Integer
+function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:frequency) where T<:Integer
     if method === :halfsample
         throw(ArgumentError("The `:halfsample` method does not support a range argument. Call `mode(a, method=:halfsample)` without a range."))
     elseif method === :frequency
