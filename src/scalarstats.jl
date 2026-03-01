@@ -82,7 +82,7 @@ function mode(a; method::Symbol=:frequency)
     elseif method === :frequency
         return _frequency_mode(a)
     else
-        throw(ArgumentError("`method` must be `:frequency` or `:halfsample`, got `:$method`"))
+        throw(ArgumentError(LazyString("`method` must be `:frequency` or `:halfsample`, got `:", method, "`")))
     end
 end
 
