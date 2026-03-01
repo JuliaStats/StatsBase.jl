@@ -254,7 +254,7 @@ function _hsm_mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
 
     # Filter non-finite values and sort
-    filtered = sort([x for x in a if isfinite(x)])
+    filtered = sort!([x for x in a if isfinite(x)])
     len = length(filtered)
 
     len == 0 && throw(ArgumentError("mode is not defined for collections with no finite values"))
