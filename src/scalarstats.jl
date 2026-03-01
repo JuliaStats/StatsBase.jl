@@ -76,7 +76,7 @@ julia> mode([1.0, 1.1, 1.2, 5.0, 5.1], method=:halfsample)
 1.1
 ```
 """
-@inline function mode(a; method::Symbol=:frequency)
+function mode(a; method::Symbol=:frequency)
     if method === :halfsample
         return _hsm_mode(a)
     elseif method === :frequency
