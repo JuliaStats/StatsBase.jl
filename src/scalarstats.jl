@@ -92,7 +92,7 @@ function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:frequency) w
     elseif method === :frequency
         return _frequency_mode(a, r)
     else
-        throw(ArgumentError("`method` must be `:frequency` or `:halfsample`, got `:$method`"))
+        throw(ArgumentError(LazyString("`method` must be `:frequency` or `:halfsample`, got `:", method, "`")))
     end
 end
 
