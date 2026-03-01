@@ -249,12 +249,7 @@ function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
 end
 
 
-"""
-    _hsm_mode(a)
-
-Internal implementation of the Half-Sample Mode (HSM) estimator.
-Do not call directly; use `mode(a, method=:halfsample)` instead.
-"""
+# Internal implementation of the Half-Sample Mode (HSM) estimator
 function _hsm_mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
 
