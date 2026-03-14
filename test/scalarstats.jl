@@ -63,6 +63,53 @@ wv = weights([0.1:0.1:0.7; 0.1])
 @test_throws ArgumentError mode([1, 2, 3], weights([0.1, 0.3]))
 @test_throws ArgumentError modes([1, 2, 3], weights([0.1, 0.3]))
 
+## mode with method=:frequency (explicit, same as default)
+@test mode([1, 1, 1, 2, 3, 4], method=:frequency) == 1
+@test mode((x for x in [1, 1, 1, 2, 3, 4]), method=:frequency) == 1
+
+# Check no type inference regression on the default/frequency path
+@test @inferred(mode([1]))::Int == 1
+my_frequency_mode(x) = mode(x, method=:frequency)
+@test @inferred(my_frequency_mode([1]))::Int == 1
+
+# Check type inference on halfsample path
+my_hsm_mode(x) = mode(x, method=:halfsample)
+@test @inferred(my_hsm_mode([1]))::Float64 == 1.0
+
+## mode with method=:halfsample (half-sample mode)
+@test mode([10], method=:halfsample)::Float64 == 10.0
+@test mode([1, 5], method=:halfsample)::Float64 == 3.0         # midpoint of two elements
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], method=:halfsample)::Float64 == 4.0
+@test mode([1.0, 1.1, 1.2, 5.0, 5.1], method=:halfsample) == 1.15
+@test mode([1.0, 2.0, 3.0, 4.0, 10.0, 11.0, 12.0, 13.0], method=:halfsample) == 1.5
+@test mode([1.0, 2.0, 10.0, 10.1, 10.2, 10.3], method=:halfsample) == 10.05
+
+# Robustness to outliers
+@test mode([1.0, 1.01, 1.011, 100.0, 200.0], method=:halfsample) == 1.0105
+
+# Non-finite values throw ArgumentError
+@test_throws ArgumentError mode([1.0, NaN, 2.0, 2.0, Inf], method=:halfsample)
+@test_throws ArgumentError mode([1.0, NaN, Inf, -Inf], method=:halfsample)
+@test_throws ArgumentError mode([NaN, Inf, -Inf], method=:halfsample)
+@test_throws ArgumentError mode([Inf, -Inf], method=:halfsample)
+@test_throws ArgumentError mode([NaN], method=:halfsample)
+@test_throws ArgumentError mode([NaN, NaN, NaN], method=:halfsample)
+
+# Edge cases
+@test_throws ArgumentError mode(Float64[], method=:halfsample)
+
+
+# Invalid method throws
+@test_throws ArgumentError mode([1, 2, 3], method=:invalid)
+
+## mode with range argument
+@test mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:frequency) == 4
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:halfsample)
+@test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:invalid)
+
+
+
+@test mode([1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 5.0, 5.1, 5.2, 5.3], method=:halfsample) == 1.15
 ## zscores
 
 @test zscore([-3:3;], 1.5, 0.5) == [-9.0:2.0:3.0;]

@@ -46,14 +46,67 @@ end
 
 # compute mode, given the range of integer values
 """
-    mode(a, [r])
-    mode(a::AbstractArray, wv::AbstractWeights)
+    mode(a; method=:frequency)
+    mode(a::AbstractArray, wv::AbstractWeights; method=:frequency)
+    mode(a::AbstractArray{T}, r::UnitRange{T}; method=:frequency) where T<:Integer
 
-Return the mode (most common number) of an array, optionally
-over a specified range `r` or weighted via a vector `wv`.
-If several modes exist, the first one (in order of appearance) is returned.
+Return the mode (most common value) of `a`, optionally
+over a specified range `r` or weighted via a vector
+`wv`.
+
+The `method` keyword argument selects the estimation method:
+
+- `:frequency`: Frequency-based mode. Counts occurrences and returns the most common
+  value. If several modes exist, the first one (in order of appearance) is returned.
+  This is appropriate for discrete data.
+
+- `:halfsample`: Half-sample mode (HSM). A robust estimator of the mode for
+  continuous data. Repeatedly finds the contiguous half-sample with the smallest
+  range until at most 2 points remain, then returns their midpoint. The return value
+  is always a floating-point number and may not be an element of `a`.
+  Throws an `ArgumentError` if `a` contains any non-finite values (`NaN`, `Inf`,
+  or `-Inf`).
+  This method currently does not support `r` and `wv` arguments.
+    
+  # References
+- D.R. Bickel, R. Fruehwirth (2006). On a fast, robust estimator of the mode.
+  Computational Statistics & Data Analysis, 50(12), 3500-3530.
+- T. Robertson, J.D. Cryer (1974). An iterative procedure for estimating the mode.
+  Journal of the American Statistical Association, 69(348), 1012-1016.
+
+# Examples
+```julia
+julia> mode([1, 2, 2, 3, 3, 3, 4])
+3
+
+julia> mode([1, 2, 2, 3, 3, 3, 4], method=:frequency)
+3
+
+julia> mode([1.0, 1.1, 1.2, 5.0, 5.1], method=:halfsample)
+1.1
+```
 """
-function mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
+function mode(a; method::Symbol=:frequency)
+    if method === :halfsample
+        return _hsm_mode(a)
+    elseif method === :frequency
+        return _frequency_mode(a)
+    else
+        throw(ArgumentError(LazyString("`method` must be `:frequency` or `:halfsample`, got `:", method, "`")))
+    end
+end
+
+function mode(a::AbstractArray{T}, r::UnitRange{T}; method::Symbol=:frequency) where T<:Integer
+    if method === :halfsample
+        throw(ArgumentError("The `:halfsample` method does not support a range argument. Call `mode(a, method=:halfsample)` without a range."))
+    elseif method === :frequency
+        return _frequency_mode(a, r)
+    else
+        throw(ArgumentError(LazyString("`method` must be `:frequency` or `:halfsample`, got `:", method, "`")))
+    end
+end
+
+function _frequency_mode(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     len = length(a)
     r0 = r[1]
@@ -107,8 +160,7 @@ function modes(a::AbstractArray{T}, r::UnitRange{T}) where T<:Integer
     return ms
 end
 
-# compute mode over arbitrary iterable
-function mode(a)
+function _frequency_mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
     cnts = Dict{eltype(a),Int}()
     # first element
@@ -202,6 +254,41 @@ function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
 
     # find values corresponding to maximum counts
     return [x for (x, w) in weights if w == mw]
+end
+
+#Internal implementation of the Half-Sample Mode (HSM) estimator.
+function _hsm_mode(a)
+    isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
+
+    # Filter NaN values and sort
+    if !all(isfinite, a)
+        throw(ArgumentError("mode with `method=:halfsample` is not defined " *
+                            "for collections containing non-finite values"))
+    end
+    filteredv = sort!(collect(a))
+    len = length(filteredv)
+
+    len == 1 && return middle(filteredv[1], filteredv[1])
+    len == 2 && return middle(filteredv[1], filteredv[2])
+
+    # Iteratively find the half-sample with the smallest range
+    filteredv = @view filteredv[1:end]
+    while len > 2
+        half = cld(len, 2)
+        best_i = 1
+        best_width = filteredv[half] - filteredv[1]
+        for i in 2:(len - half + 1)
+            w = filteredv[i + half - 1] - filteredv[i]
+            if w < best_width
+                best_width = w
+                best_i = i
+            end
+        end
+        filteredv = @view filteredv[best_i:(best_i + half - 1)]
+        len = length(filteredv)
+    end
+
+    return middle(filteredv[1], filteredv[len])
 end
 
 #############################
