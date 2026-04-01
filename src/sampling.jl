@@ -596,6 +596,12 @@ function sample(rng::AbstractRNG, wv::AbstractWeights)
         i += 1
         cw += wv[i]
     end
+    if cw < t
+        # may happen with floating point weights due to numerical inaccuracies
+        while iszero(wv[i])
+            i -= 1
+        end
+    end
     return i
 end
 sample(wv::AbstractWeights) = sample(default_rng(), wv)
@@ -1063,3 +1069,4 @@ wsample(rng::AbstractRNG, a::AbstractArray{T}, w::AbstractVector{<:Real}, dims::
 wsample(a::AbstractArray, w::AbstractVector{<:Real}, dims::Dims;
         replace::Bool=true, ordered::Bool=false) =
     wsample(default_rng(), a, w, dims; replace=replace, ordered=ordered)
+
