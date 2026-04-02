@@ -11,19 +11,20 @@ function _check_randparams(rks, x, p)
     nx = length(x)
     np = length(p)
     nx == np == n || throw(
-        DimensionMismatch("lengths of x $nx and p $np do not match that of ranks $n"))
+        DimensionMismatch("lengths of x $nx and p $np do not match that of ranks $n")
+    )
     return n
 end
 
 # ranking helper function: calls sortperm(x) and then ranking method f!
-function _rank(f!, x::AbstractArray, R::Type=Int; sortkwargs...)
+function _rank(f!, x::AbstractArray, R::Type = Int; sortkwargs...)
     rks = similar(x, R)
     ord = reshape(sortperm(vec(x); sortkwargs...), size(x))
     return f!(rks, x, ord)
 end
 
 # ranking helper function for arrays with missing values
-function _rank(f!, x::AbstractArray{>: Missing}, R::Type=Int; sortkwargs...)
+function _rank(f!, x::AbstractArray{>:Missing}, R::Type = Int; sortkwargs...)
     inds = findall(!ismissing, vec(x))
     isempty(inds) && return missings(R, size(x))
     xv = disallowmissing(view(vec(x), inds))
@@ -143,7 +144,7 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Int
             if cx != v
                 # fill average rank to s : e-1
                 ar = (s + e - 1) / 2
-                for i = s : e-1
+                for i in s:(e - 1)
                     rks[p[i]] = ar
                 end
                 # switch to next range
@@ -154,7 +155,7 @@ function _tiedrank!(rks::AbstractArray, x::AbstractArray, p::AbstractArray{<:Int
 
         # the last range
         ar = (s + n) / 2
-        for i = s : n
+        for i in s:n
             rks[p[i]] = ar
         end
     end

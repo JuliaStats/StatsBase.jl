@@ -51,18 +51,18 @@ reconstruct(t::AbstractDataTransform, y::AbstractVector{<:Real}) =
 
 Standardization (Z-score transformation)
 """
-struct ZScoreTransform{T<:Real, U<:AbstractVector{T}} <: AbstractDataTransform
+struct ZScoreTransform{T <: Real, U <: AbstractVector{T}} <: AbstractDataTransform
     len::Int
     dims::Int
     mean::U
     scale::U
 
-    function ZScoreTransform(l::Int, dims::Int, m::U, s::U) where {T<:Real, U<:AbstractVector{T}}
+    function ZScoreTransform(l::Int, dims::Int, m::U, s::U) where {T <: Real, U <: AbstractVector{T}}
         lenm = length(m)
         lens = length(s)
         lenm == l || lenm == 0 || throw(DimensionMismatch("Inconsistent dimensions."))
         lens == l || lens == 0 || throw(DimensionMismatch("Inconsistent dimensions."))
-        new{T, U}(l, dims, m, s)
+        return new{T, U}(l, dims, m, s)
     end
 end
 
@@ -108,8 +108,10 @@ julia> StatsBase.transform(dt, X)
  -1.0   0.0  1.0
 ```
 """
-function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
-             dims::Union{Integer,Nothing}=nothing, center::Bool=true, scale::Bool=true)
+function fit(
+        ::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
+        dims::Union{Integer, Nothing} = nothing, center::Bool = true, scale::Bool = true
+    )
     if dims === nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
         dims = 2
@@ -125,25 +127,29 @@ function fit(::Type{ZScoreTransform}, X::AbstractMatrix{<:Real};
     else
         throw(DomainError(dims, "fit only accept dims to be 1 or 2."))
     end
-    return ZScoreTransform(l, dims, (center ? vec(m) : similar(m, 0)),
-                                    (scale ? vec(s) : similar(s, 0)))
+    return ZScoreTransform(
+        l, dims, (center ? vec(m) : similar(m, 0)),
+        (scale ? vec(s) : similar(s, 0))
+    )
 end
 
-function fit(::Type{ZScoreTransform}, X::AbstractVector{<:Real};
-             dims::Integer=1, center::Bool=true, scale::Bool=true)
+function fit(
+        ::Type{ZScoreTransform}, X::AbstractVector{<:Real};
+        dims::Integer = 1, center::Bool = true, scale::Bool = true
+    )
     if dims != 1
         throw(DomainError(dims, "fit only accepts dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
 
-    return fit(ZScoreTransform, reshape(X, :, 1); dims=dims, center=center, scale=scale)
+    return fit(ZScoreTransform, reshape(X, :, 1); dims = dims, center = center, scale = scale)
 end
 
 function transform!(y::AbstractMatrix{<:Real}, t::ZScoreTransform, x::AbstractMatrix{<:Real})
     if t.dims == 1
         l = t.len
-        size(x,2) == size(y,2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
-        n = size(y,1)
-        size(x,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+        size(x, 2) == size(y, 2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
+        n = size(y, 1)
+        size(x, 1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
         m = t.mean
         s = t.scale
@@ -160,7 +166,7 @@ function transform!(y::AbstractMatrix{<:Real}, t::ZScoreTransform, x::AbstractMa
             if isempty(s)
                 broadcast!(-, y, x, m')
             else
-                broadcast!((x,m,s)->(x-m)/s, y, x, m', s')
+                broadcast!((x, m, s) -> (x - m) / s, y, x, m', s')
             end
         end
     elseif t.dims == 2
@@ -173,9 +179,9 @@ end
 function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::AbstractMatrix{<:Real})
     if t.dims == 1
         l = t.len
-        size(x,2) == size(y,2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
-        n = size(y,1)
-        size(x,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+        size(x, 2) == size(y, 2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
+        n = size(y, 1)
+        size(x, 1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
         m = t.mean
         s = t.scale
@@ -192,7 +198,7 @@ function reconstruct!(x::AbstractMatrix{<:Real}, t::ZScoreTransform, y::Abstract
             if isempty(s)
                 broadcast!(+, x, y, m')
             else
-                broadcast!((y,m,s)->y*s+m, x, y, m', s')
+                broadcast!((y, m, s) -> y * s + m, x, y, m', s')
             end
         end
     elseif t.dims == 2
@@ -207,19 +213,19 @@ end
 
 Unit range normalization
 """
-struct UnitRangeTransform{T<:Real, U<:AbstractVector}  <: AbstractDataTransform
+struct UnitRangeTransform{T <: Real, U <: AbstractVector} <: AbstractDataTransform
     len::Int
     dims::Int
     unit::Bool
     min::U
     scale::U
 
-    function UnitRangeTransform(l::Int, dims::Int, unit::Bool, min::U, max::U) where {T, U<:AbstractVector{T}}
+    function UnitRangeTransform(l::Int, dims::Int, unit::Bool, min::U, max::U) where {T, U <: AbstractVector{T}}
         lenmin = length(min)
         lenmax = length(max)
         lenmin == l || lenmin == 0 || throw(DimensionMismatch("Inconsistent dimensions."))
         lenmax == l || lenmax == 0 || throw(DimensionMismatch("Inconsistent dimensions."))
-        new{T, U}(l, dims, unit, min, max)
+        return new{T, U}(l, dims, unit, min, max)
     end
 end
 
@@ -264,8 +270,10 @@ julia> StatsBase.transform(dt, X)
  0.0  0.5  1.0
 ```
 """
-function fit(::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
-             dims::Union{Integer,Nothing}=nothing, unit::Bool=true)
+function fit(
+        ::Type{UnitRangeTransform}, X::AbstractMatrix{<:Real};
+        dims::Union{Integer, Nothing} = nothing, unit::Bool = true
+    )
     if dims === nothing
         Base.depwarn("fit(t, x) is deprecated: use fit(t, x, dims=2) instead", :fit)
         dims = 2
@@ -288,8 +296,10 @@ function _compute_extrema(X::AbstractMatrix, dims::Integer)
     return tmin, tmax
 end
 
-function fit(::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
-             dims::Integer=1, unit::Bool=true)
+function fit(
+        ::Type{UnitRangeTransform}, X::AbstractVector{<:Real};
+        dims::Integer = 1, unit::Bool = true
+    )
     if dims != 1
         throw(DomainError(dims, "fit only accept dims=1 over a vector. Try fit(t, x, dims=1)."))
     end
@@ -301,15 +311,15 @@ end
 function transform!(y::AbstractMatrix{<:Real}, t::UnitRangeTransform, x::AbstractMatrix{<:Real})
     if t.dims == 1
         l = t.len
-        size(x,2) == size(y,2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
-        n = size(x,1)
-        size(y,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+        size(x, 2) == size(y, 2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
+        n = size(x, 1)
+        size(y, 1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
         tmin = t.min
         tscale = t.scale
 
         if t.unit
-            broadcast!((x,s,m)->(x-m)*s, y, x, tscale', tmin')
+            broadcast!((x, s, m) -> (x - m) * s, y, x, tscale', tmin')
         else
             broadcast!(*, y, x, tscale')
         end
@@ -323,15 +333,15 @@ end
 function reconstruct!(x::AbstractMatrix{<:Real}, t::UnitRangeTransform, y::AbstractMatrix{<:Real})
     if t.dims == 1
         l = t.len
-        size(x,2) == size(y,2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
-        n = size(y,1)
-        size(x,1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
+        size(x, 2) == size(y, 2) == l || throw(DimensionMismatch("Inconsistent dimensions."))
+        n = size(y, 1)
+        size(x, 1) == n || throw(DimensionMismatch("Inconsistent dimensions."))
 
         tmin = t.min
         tscale = t.scale
 
         if t.unit
-            broadcast!((y,s,m)->y/s+m, x, y, tscale', tmin')
+            broadcast!((y, s, m) -> y / s + m, x, y, tscale', tmin')
         else
             broadcast!(/, x, y, tscale')
         end

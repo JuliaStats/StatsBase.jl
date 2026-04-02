@@ -118,7 +118,7 @@ proportions(x::AbstractArray{<:Integer}, wv::AbstractWeights) = proportions(x, s
 
 #### functions for counting a single list of integers (2D)
 
-function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}})
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2, UnitRange{<:Integer}})
     # add counts of pairs from zip(x,y) to r
 
     xlevels, ylevels = levels
@@ -144,8 +144,10 @@ function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractAr
     return r
 end
 
-function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer},
-                    levels::NTuple{2,UnitRange{<:Integer}}, wv::AbstractWeights)
+function addcounts!(
+        r::AbstractArray, x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer},
+        levels::NTuple{2, UnitRange{<:Integer}}, wv::AbstractWeights
+    )
     # add counts of pairs from zip(x,y) to r
 
     length(x) == length(y) == length(wv) ||
@@ -180,12 +182,12 @@ end
 
 # facet functions
 
-function counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}})
-    addcounts!(zeros(Int, length(levels[1]), length(levels[2])), x, y, levels)
+function counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2, UnitRange{<:Integer}})
+    return addcounts!(zeros(Int, length(levels[1]), length(levels[2])), x, y, levels)
 end
 
-function counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}, wv::AbstractWeights)
-    addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
+function counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2, UnitRange{<:Integer}}, wv::AbstractWeights)
+    return addcounts!(zeros(eltype(wv), length(levels[1]), length(levels[2])), x, y, levels, wv)
 end
 
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) =
@@ -193,9 +195,9 @@ counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::UnitRan
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}, wv::AbstractWeights) =
     counts(x, y, (levels, levels), wv)
 
-counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2, Integer}) =
     counts(x, y, (1:ks[1], 1:ks[2]))
-counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}, wv::AbstractWeights) =
+counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2, Integer}, wv::AbstractWeights) =
     counts(x, y, (1:ks[1], 1:ks[2]), wv)
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer) = counts(x, y, (1:k, 1:k))
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) =
@@ -203,14 +205,14 @@ counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer, wv:
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}) = counts(x, y, (span(x), span(y)))
 counts(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, wv::AbstractWeights) = counts(x, y, (span(x), span(y)), wv)
 
-proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2, UnitRange{<:Integer}}) =
     counts(x, y, levels) / length(x)
-proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2,UnitRange{<:Integer}}, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, levels::NTuple{2, UnitRange{<:Integer}}, wv::AbstractWeights) =
     counts(x, y, levels, wv) / sum(wv)
 
-proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2, Integer}) =
     proportions(x, y, (1:ks[1], 1:ks[2]))
-proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2,Integer}, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, ks::NTuple{2, Integer}, wv::AbstractWeights) =
     proportions(x, y, (1:ks[1], 1:ks[2]), wv)
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer) = proportions(x, y, (1:k, 1:k))
 proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) =
@@ -231,8 +233,8 @@ proportions(x::AbstractArray{<:Integer}, y::AbstractArray{<:Integer}, wv::Abstra
 
 ## auxiliary functions
 
-function _normalize_countmap(cm::Dict{T}, s::Real) where T
-    r = Dict{T,Float64}()
+function _normalize_countmap(cm::Dict{T}, s::Real) where {T}
+    r = Dict{T, Float64}()
     for (k, c) in cm
         r[k] = c / s
     end
@@ -269,7 +271,7 @@ raw counts.
 """
 addcounts!(cm::Dict, x; alg = :auto) = _addcounts!(eltype(x), cm, x, alg = alg)
 
-function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
+function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where {T}
     # if it's safe to be sorted using radixsort then it should be faster
     # albeit using more RAM
     if radixsort_safe(T) && (alg == :auto || alg == :radixsort)
@@ -277,13 +279,13 @@ function _addcounts!(::Type{T}, cm::Dict, x; alg = :auto) where T
     elseif alg == :radixsort
         throw(ArgumentError("`alg = :radixsort` is chosen but type `radixsort_safe($T)` did not return `true`; use `alg = :auto` or `alg = :dict` instead"))
     else
-        addcounts_dict!(cm,x)
+        addcounts_dict!(cm, x)
     end
     return cm
 end
 
 """Dict-based addcounts method"""
-function addcounts_dict!(cm::Dict{T}, x) where T
+function addcounts_dict!(cm::Dict{T}, x) where {T}
     for v in x
         index = ht_keyindex2!(cm, v)
         if index > 0
@@ -304,7 +306,7 @@ function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x::AbstractArray{Bool}; alg =
     sumx = sum(x)
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + length(x) - sumx
-    cm
+    return cm
 end
 
 # specialized for `Bool` iterator
@@ -317,10 +319,10 @@ function _addcounts!(::Type{Bool}, cm::Dict{Bool}, x; alg = :ignored)
     end
     cm[true] = get(cm, true, 0) + sumx
     cm[false] = get(cm, false, 0) + len - sumx
-    cm
+    return cm
 end
 
-function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union{UInt8, UInt16, Int8, Int16}
+function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where {T <: Union{UInt8, UInt16, Int8, Int16}}
     counts = zeros(Int, 2^(8sizeof(T)))
 
     for xi in x
@@ -337,24 +339,26 @@ function _addcounts!(::Type{T}, cm::Dict{T}, x; alg = :ignored) where T <: Union
             end
         end
     end
-    cm
+    return cm
 end
 
-const BaseRadixSortSafeTypes = Union{Int8, Int16, Int32, Int64, Int128,
-                                     UInt8, UInt16, UInt32, UInt64, UInt128,
-                                     Float32, Float64}
+const BaseRadixSortSafeTypes = Union{
+    Int8, Int16, Int32, Int64, Int128,
+    UInt8, UInt16, UInt32, UInt64, UInt128,
+    Float32, Float64,
+}
 
 "Can the type be safely sorted by radixsort"
-radixsort_safe(::Type{T}) where T = T<:BaseRadixSortSafeTypes
+radixsort_safe(::Type{T}) where {T} = T <: BaseRadixSortSafeTypes
 
-function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
+function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where {T}
     isempty(sx) && return cm
     last_sx = first(sx)
     start_i = firstindex(sx)
 
     # now the data is sorted: can just run through and accumulate values before
     # adding into the Dict
-    for i in start_i+1:lastindex(sx)
+    for i in (start_i + 1):lastindex(sx)
         sxi = sx[i]
         if !isequal(last_sx, sxi)
             cm[last_sx] = get(cm, last_sx, 0) + i - start_i
@@ -369,9 +373,9 @@ function _addcounts_radix_sort_loop!(cm::Dict{T}, sx::AbstractVector{T}) where T
     return cm
 end
 
-function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
+function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where {T}
     # sort the x using radixsort
-    sx = sort(vec(x), alg=Base.DEFAULT_UNSTABLE)
+    sx = sort(vec(x), alg = Base.DEFAULT_UNSTABLE)
 
     # Delegate the loop to a separate function since sort might not
     # be inferred in Julia 0.6 after SortingAlgorithms is loaded.
@@ -380,13 +384,13 @@ function addcounts_radixsort!(cm::Dict{T}, x::AbstractArray{T}) where T
 end
 
 # fall-back for `x` an iterator
-function addcounts_radixsort!(cm::Dict{T}, x) where T
+function addcounts_radixsort!(cm::Dict{T}, x) where {T}
     cx = vec(collect(x))
     sx = sort!(cx, alg = Base.DEFAULT_UNSTABLE)
     return _addcounts_radix_sort_loop!(cm, sx)
 end
 
-function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real}
+function addcounts!(cm::Dict{T}, x::AbstractArray{T}, wv::AbstractVector{W}) where {T, W <: Real}
     # add wv weighted counts of integers from x to cm
 
     length(x) == length(wv) ||
@@ -430,8 +434,8 @@ raw counts.
                      RAM, is safe for any data type, is faster for small arrays, and
                      is faster when there are not many duplicates.
 """
-countmap(x; alg = :auto) = addcounts!(Dict{eltype(x),Int}(), x; alg = alg)
-countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T,W<:Real} = addcounts!(Dict{T,W}(), x, wv)
+countmap(x; alg = :auto) = addcounts!(Dict{eltype(x), Int}(), x; alg = alg)
+countmap(x::AbstractArray{T}, wv::AbstractVector{W}) where {T, W <: Real} = addcounts!(Dict{T, W}(), x, wv)
 
 
 """
