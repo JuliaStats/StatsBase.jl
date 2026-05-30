@@ -22,10 +22,10 @@ mutable struct Xmultinom <: WithRep end
 tsample!(s::Xmultinom, a, x) = xmultinom_sample!(a, x)
 
 mutable struct Sample_WRep <: WithRep end
-tsample!(s::Sample_WRep, a, x) = sample!(a, x; replace=true, ordered=false)
+tsample!(s::Sample_WRep, a, x) = sample!(a, x; replace = true, ordered = false)
 
 mutable struct Sample_WRep_Ord <: WithRep end
-tsample!(s::Sample_WRep_Ord, a, x) = sample!(a, x; replace=true, ordered=true)
+tsample!(s::Sample_WRep_Ord, a, x) = sample!(a, x; replace = true, ordered = true)
 
 mutable struct Knuths <: NoRep end
 tsample!(s::Knuths, a, x) = knuths_sample!(a, x)
@@ -46,22 +46,22 @@ mutable struct Seq_D <: NoRep end
 tsample!(s::Seq_D, a, x) = seqsample_d!(a, x)
 
 mutable struct Sample_NoRep <: NoRep end
-tsample!(s::Sample_NoRep, a, x) = sample!(a, x; replace=false, ordered=false)
+tsample!(s::Sample_NoRep, a, x) = sample!(a, x; replace = false, ordered = false)
 
 mutable struct Sample_NoRep_Ord <: NoRep end
-tsample!(s::Sample_NoRep_Ord, a, x) = sample!(a, x; replace=false, ordered=true)
+tsample!(s::Sample_NoRep_Ord, a, x) = sample!(a, x; replace = false, ordered = true)
 
 
 # config is in the form of (n, k)
 
 Base.string(p::SampleProc{Alg}) where {Alg} = lowercase(string(Alg))
 
-Base.length(p::SampleProc, cfg::Tuple{Int,Int}) = cfg[2]
-Base.isvalid(p::SampleProc{<:WithRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= 1 && k >= 1)
-Base.isvalid(p::SampleProc{<:NoRep}, cfg::Tuple{Int,Int}) = ((n, k) = cfg; n >= k >= 1)
+Base.length(p::SampleProc, cfg::Tuple{Int, Int}) = cfg[2]
+Base.isvalid(p::SampleProc{<:WithRep}, cfg::Tuple{Int, Int}) = ((n, k) = cfg; n >= 1 && k >= 1)
+Base.isvalid(p::SampleProc{<:NoRep}, cfg::Tuple{Int, Int}) = ((n, k) = cfg; n >= k >= 1)
 
-Base.start(p::SampleProc, cfg::Tuple{Int,Int}) = Vector{Int}(cfg[2])
-Base.run(p::SampleProc{Alg}, cfg::Tuple{Int,Int}, s::Vector{Int}) where {Alg} = tsample!(Alg(), 1:cfg[1], s)
+Base.start(p::SampleProc, cfg::Tuple{Int, Int}) = Vector{Int}(cfg[2])
+Base.run(p::SampleProc{Alg}, cfg::Tuple{Int, Int}, s::Vector{Int}) where {Alg} = tsample!(Alg(), 1:cfg[1], s)
 Base.done(p::SampleProc, cfg, s) = nothing
 
 
@@ -72,26 +72,30 @@ const ks = 2 .^ [1:16]
 
 ## with replacement
 
-const procs1 = Proc[ SampleProc{Direct}(),
-                     SampleProc{Sample_WRep}(),
-                     SampleProc{Xmultinom}(),
-                     SampleProc{Sample_WRep_Ord}() ]
+const procs1 = Proc[
+    SampleProc{Direct}(),
+    SampleProc{Sample_WRep}(),
+    SampleProc{Xmultinom}(),
+    SampleProc{Sample_WRep_Ord}(),
+]
 
 const cfgs1 = vec([(n, k) for k in ks, n in ns])
 
-rtable1 = run(procs1, cfgs1; duration=0.2)
+rtable1 = run(procs1, cfgs1; duration = 0.2)
 println()
 
 ## without replacement
 
-const procs2 = Proc[ SampleProc{Knuths}(),
-                     SampleProc{Fisher_Yates}(),
-                     SampleProc{Self_Avoid}(),
-                     SampleProc{Sample_NoRep}(),
-                     SampleProc{Seq_A}(),
-                     SampleProc{Seq_C}(),
-                     SampleProc{Seq_D}(),
-                     SampleProc{Sample_NoRep_Ord}() ]
+const procs2 = Proc[
+    SampleProc{Knuths}(),
+    SampleProc{Fisher_Yates}(),
+    SampleProc{Self_Avoid}(),
+    SampleProc{Sample_NoRep}(),
+    SampleProc{Seq_A}(),
+    SampleProc{Seq_C}(),
+    SampleProc{Seq_D}(),
+    SampleProc{Sample_NoRep_Ord}(),
+]
 
 const cfgs2 = (Int, Int)[]
 for n in 5 * (2 .^ [0:11]), k in 2 .^ [1:16]
@@ -100,17 +104,17 @@ for n in 5 * (2 .^ [0:11]), k in 2 .^ [1:16]
     end
 end
 
-rtable2 = run(procs2, cfgs2; duration=0.2)
+rtable2 = run(procs2, cfgs2; duration = 0.2)
 println()
 
 ## show results
 
 println("Sampling With Replacement")
 println("===================================")
-show(rtable1; unit=:mps, cfghead="(n, k)")
+show(rtable1; unit = :mps, cfghead = "(n, k)")
 println()
 
 println("Sampling Without Replacement")
 println("===================================")
-show(rtable2; unit=:mps, cfghead="(n, k)")
+show(rtable2; unit = :mps, cfghead = "(n, k)")
 println()

@@ -11,7 +11,7 @@ function _pairwise!(::Val{:none}, f, dest::AbstractMatrix, x, y, symmetric::Bool
     end
     if symmetric
         m, n = size(dest)
-        for j in 1:n, i in (j+1):m
+        for j in 1:n, i in (j + 1):m
             dest[i, j] = dest[j, i]
         end
     end
@@ -22,8 +22,12 @@ function check_vectors(x, y, skipmissing::Symbol)
     m = length(x)
     n = length(y)
     if !(all(xi -> xi isa AbstractVector, x) && all(yi -> yi isa AbstractVector, y))
-        throw(ArgumentError("All entries in x and y must be vectors " *
-                            "when skipmissing=:$skipmissing"))
+        throw(
+            ArgumentError(
+                "All entries in x and y must be vectors " *
+                    "when skipmissing=:$skipmissing"
+            )
+        )
     end
     if m > 1
         indsx = keys(first(x))
@@ -39,7 +43,7 @@ function check_vectors(x, y, skipmissing::Symbol)
                 throw(ArgumentError("All input vectors must have the same indices"))
         end
     end
-    if m > 1 && n > 1
+    return if m > 1 && n > 1
         indsx == indsy ||
             throw(ArgumentError("All input vectors must have the same indices"))
     end
@@ -70,7 +74,7 @@ function _pairwise!(::Val{:pairwise}, f, dest::AbstractMatrix, x, y, symmetric::
     end
     if symmetric
         m, n = size(dest)
-        for j in 1:n, i in (j+1):m
+        for j in 1:n, i in (j + 1):m
             dest[i, j] = dest[j, i]
         end
     end
@@ -94,14 +98,18 @@ function _pairwise!(::Val{:listwise}, f, dest::AbstractMatrix, x, y, symmetric::
     # TODO: check whether wrapping views in a custom array type which asserts
     # that entries cannot be `missing` (similar to `skipmissing`)
     # could offer better performance
-    return _pairwise!(Val(:none), f, dest,
-                      [view(xi, nminds′) for xi in x],
-                      [view(yi, nminds′) for yi in y],
-                      symmetric)
+    return _pairwise!(
+        Val(:none), f, dest,
+        [view(xi, nminds′) for xi in x],
+        [view(yi, nminds′) for yi in y],
+        symmetric
+    )
 end
 
-function _pairwise!(f, dest::AbstractMatrix, x, y;
-                    symmetric::Bool=false, skipmissing::Symbol=:none)
+function _pairwise!(
+        f, dest::AbstractMatrix, x, y;
+        symmetric::Bool = false, skipmissing::Symbol = :none
+    )
     if !(skipmissing in (:none, :pairwise, :listwise))
         throw(ArgumentError("skipmissing must be one of :none, :pairwise or :listwise"))
     end
@@ -123,7 +131,7 @@ using Base: typejoin_union_tuple
 
 # Identical to `Base.promote_typejoin` except that it uses `promote_type`
 # instead of `typejoin` to combine members of `Union` types
-function promote_type_union(::Type{T}) where T
+function promote_type_union(::Type{T}) where {T}
     if T === Union{}
         return Union{}
     elseif T isa UnionAll
@@ -144,8 +152,10 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
     n = length(y′)
 
     T = Core.Compiler.return_type(f, Tuple{eltype(x′), eltype(y′)})
-    Tsm = Core.Compiler.return_type((x, y) -> f(disallowmissing(x), disallowmissing(y)),
-                                     Tuple{eltype(x′), eltype(y′)})
+    Tsm = Core.Compiler.return_type(
+        (x, y) -> f(disallowmissing(x), disallowmissing(y)),
+        Tuple{eltype(x′), eltype(y′)}
+    )
 
     if skipmissing === :none
         dest = Matrix{T}(undef, m, n)
@@ -158,7 +168,7 @@ function _pairwise(::Val{skipmissing}, f, x, y, symmetric::Bool) where {skipmiss
     # Preserve inferred element type
     isempty(dest) && return dest
 
-    _pairwise!(f, dest, x′, y′, symmetric=symmetric, skipmissing=skipmissing)
+    _pairwise!(f, dest, x′, y′, symmetric = symmetric, skipmissing = skipmissing)
 
     if isconcretetype(eltype(dest))
         return dest
@@ -232,14 +242,20 @@ julia> dest
  -0.866025  -1.0        1.0
 ```
 """
-function pairwise!(f, dest::AbstractMatrix, x, y=x;
-                   symmetric::Bool=false, skipmissing::Symbol=:none)
+function pairwise!(
+        f, dest::AbstractMatrix, x, y = x;
+        symmetric::Bool = false, skipmissing::Symbol = :none
+    )
     if symmetric && x !== y
-        throw(ArgumentError("symmetric=true only makes sense passing " *
-                            "a single set of variables (x === y)"))
+        throw(
+            ArgumentError(
+                "symmetric=true only makes sense passing " *
+                    "a single set of variables (x === y)"
+            )
+        )
     end
 
-    return _pairwise!(f, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
+    return _pairwise!(f, dest, x, y, symmetric = symmetric, skipmissing = skipmissing)
 end
 
 """
@@ -295,10 +311,14 @@ julia> pairwise(cor, eachcol(y), skipmissing=:pairwise)
  -0.866025  -1.0        1.0
 ```
 """
-function pairwise(f, x, y=x; symmetric::Bool=false, skipmissing::Symbol=:none)
+function pairwise(f, x, y = x; symmetric::Bool = false, skipmissing::Symbol = :none)
     if symmetric && x !== y
-        throw(ArgumentError("symmetric=true only makes sense passing " *
-                            "a single set of variables (x === y)"))
+        throw(
+            ArgumentError(
+                "symmetric=true only makes sense passing " *
+                    "a single set of variables (x === y)"
+            )
+        )
     end
 
     return _pairwise(Val(skipmissing), f, x, y, symmetric)
@@ -307,23 +327,29 @@ end
 # cov(x) is faster than cov(x, x)
 _cov(x, y) = x === y ? cov(x) : cov(x, y)
 
-pairwise!(::typeof(cov), dest::AbstractMatrix, x, y;
-          symmetric::Bool=false, skipmissing::Symbol=:none) =
-    pairwise!(_cov, dest, x, y, symmetric=symmetric, skipmissing=skipmissing)
+pairwise!(
+    ::typeof(cov), dest::AbstractMatrix, x, y;
+    symmetric::Bool = false, skipmissing::Symbol = :none
+) =
+    pairwise!(_cov, dest, x, y, symmetric = symmetric, skipmissing = skipmissing)
 
-pairwise(::typeof(cov), x, y; symmetric::Bool=false, skipmissing::Symbol=:none) =
-    pairwise(_cov, x, y, symmetric=symmetric, skipmissing=skipmissing)
+pairwise(::typeof(cov), x, y; symmetric::Bool = false, skipmissing::Symbol = :none) =
+    pairwise(_cov, x, y, symmetric = symmetric, skipmissing = skipmissing)
 
-pairwise!(::typeof(cov), dest::AbstractMatrix, x;
-         symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise!(_cov, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
+pairwise!(
+    ::typeof(cov), dest::AbstractMatrix, x;
+    symmetric::Bool = true, skipmissing::Symbol = :none
+) =
+    pairwise!(_cov, dest, x, x, symmetric = symmetric, skipmissing = skipmissing)
 
-pairwise(::typeof(cov), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise(_cov, x, x, symmetric=symmetric, skipmissing=skipmissing)
+pairwise(::typeof(cov), x; symmetric::Bool = true, skipmissing::Symbol = :none) =
+    pairwise(_cov, x, x, symmetric = symmetric, skipmissing = skipmissing)
 
-pairwise!(::typeof(cor), dest::AbstractMatrix, x;
-          symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise!(cor, dest, x, x, symmetric=symmetric, skipmissing=skipmissing)
+pairwise!(
+    ::typeof(cor), dest::AbstractMatrix, x;
+    symmetric::Bool = true, skipmissing::Symbol = :none
+) =
+    pairwise!(cor, dest, x, x, symmetric = symmetric, skipmissing = skipmissing)
 
-pairwise(::typeof(cor), x; symmetric::Bool=true, skipmissing::Symbol=:none) =
-    pairwise(cor, x, x, symmetric=symmetric, skipmissing=skipmissing)
+pairwise(::typeof(cor), x; symmetric::Bool = true, skipmissing::Symbol = :none) =
+    pairwise(cor, x, x, symmetric = symmetric, skipmissing = skipmissing)

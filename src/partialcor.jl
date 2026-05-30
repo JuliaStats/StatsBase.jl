@@ -16,12 +16,12 @@ end
 function _partialcor(x::AbstractVector, μx, y::AbstractVector, μy, Z::AbstractMatrix)
     p = size(Z, 2)
     p == 1 && return _partialcor(x, μx, y, μy, vec(Z))
-    z₀   = view(Z, :, 1)
+    z₀ = view(Z, :, 1)
     Zmz₀ = view(Z, :, 2:p)
     μz₀ = mean(z₀)
-    rxz = _partialcor(x,  μx,  z₀, μz₀, Zmz₀)
-    rzy = _partialcor(z₀, μz₀, y,  μy,  Zmz₀)
-    rxy = _partialcor(x,  μx,  y,  μy,  Zmz₀)::typeof(rxz)
+    rxz = _partialcor(x, μx, z₀, μz₀, Zmz₀)
+    rzy = _partialcor(z₀, μz₀, y, μy, Zmz₀)
+    rxy = _partialcor(x, μx, y, μy, Zmz₀)::typeof(rxz)
     return (rxy - rxz * rzy) / (sqrt(1 - rxz^2) * sqrt(1 - rzy^2))
 end
 

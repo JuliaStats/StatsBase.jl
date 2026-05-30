@@ -170,7 +170,7 @@ Return the root mean squared deviation between two optionally
 normalized arrays. The root mean squared deviation is computed
 as `sqrt(msd(a, b))`.
 """
-function rmsd(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}; normalize::Bool=false)
+function rmsd(a::AbstractArray{<:Number}, b::AbstractArray{<:Number}; normalize::Bool = false)
     v = sqrt(msd(a, b))
     if normalize
         amin, amax = isempty(a) ? (zero(eltype(a)), zero(eltype(a))) : extrema(a)
