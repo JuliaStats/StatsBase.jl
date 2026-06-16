@@ -481,4 +481,20 @@ end
     end
 end
 
+@testset "weighted var/std along a dimension with UnitWeights" begin
+    x = reshape(collect(1.0:12.0), 3, 4)
+
+    # `UnitWeights` along a dimension must match the unweighted result and must
+    # not erroneously compare the weight length against the total array length.
+    @test var(x, uweights(3), 1; corrected=true) ≈ var(x; dims=1)
+    @test var(x, uweights(4), 2; corrected=true) ≈ var(x; dims=2)
+    @test var(x, uweights(3), 1; corrected=false) ≈ var(x; dims=1, corrected=false)
+    @test std(x, uweights(3), 1; corrected=true) ≈ std(x; dims=1)
+    @test std(x, uweights(4), 2; corrected=true) ≈ std(x; dims=2)
+
+    # A weight vector whose length does not match the reduction dimension errors.
+    @test_throws DimensionMismatch var(x, uweights(4), 1; corrected=true)
+    @test_throws DimensionMismatch var(x, uweights(3), 2; corrected=true)
+end
+
 end # @testset "StatsBase.Moments"

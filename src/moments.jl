@@ -73,7 +73,7 @@ function var(A::AbstractArray{<:Real}, w::AbstractWeights, dim::Int; mean=nothin
 end
 function var(v::AbstractArray{<:Real}, w::UnitWeights, dim::Int; mean=nothing,
                   corrected::Union{Bool, Nothing}=nothing)
-    length(w) == length(v) || throw(DimensionMismatch("Inconsistent array lengths."))
+    size(v, dim) == length(w) || throw(DimensionMismatch("Inconsistent array lengths."))
     corrected = depcheck(:var, :corrected, corrected)
     return var(v; mean, corrected, dims=dim)
 end
