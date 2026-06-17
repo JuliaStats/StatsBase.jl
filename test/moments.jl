@@ -482,7 +482,7 @@ end
 end
 
 @testset "weighted var/std along a dimension with UnitWeights" begin
-    x = reshape(collect(1.0:12.0), 3, 4)
+    x = reshape(1.0:12.0, 3, 4)
 
     # `UnitWeights` along a dimension must match the unweighted result and must
     # not erroneously compare the weight length against the total array length.
