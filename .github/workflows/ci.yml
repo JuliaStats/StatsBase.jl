@@ -28,7 +28,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - 'min'
+          - 'min-patch'
           - '1' # automatically expands to the latest stable 1.x release of Julia
         os:
           - ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
           - windows-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v3
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
       - uses: julia-actions/cache@v3
