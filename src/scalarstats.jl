@@ -75,7 +75,6 @@ The `method` keyword argument selects the estimation method:
   Journal of the American Statistical Association, 69(348), 1012-1016.
 
 # Examples
-```julia
 julia> mode([1, 2, 2, 3, 3, 3, 4])
 3
 
@@ -256,10 +255,13 @@ function modes(a::AbstractVector, wv::AbstractWeights{T}) where T <: Real
     return [x for (x, w) in weights if w == mw]
 end
 
-#Internal implementation of the Half-Sample Mode (HSM) estimator.
+# Internal implementation of the Half-Sample Mode (HSM) estimator.
 function _hsm_mode(a)
     isempty(a) && throw(ArgumentError("mode is not defined for empty collections"))
-
+    if !all(x -> x isa Real, a)
+        throw(ArgumentError("mode with `method=:halfsample` is only defined " *
+                            "for collections containing real numbers"))
+    end
     # Filter NaN values and sort
     if !all(isfinite, a)
         throw(ArgumentError("mode with `method=:halfsample` is not defined " *

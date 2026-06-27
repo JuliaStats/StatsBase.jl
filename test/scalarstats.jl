@@ -87,6 +87,10 @@ my_hsm_mode(x) = mode(x, method=:halfsample)
 # Robustness to outliers
 @test mode([1.0, 1.01, 1.011, 100.0, 200.0], method=:halfsample) == 1.0105
 
+# Non-real values throw ArgumentError
+@test_throws ArgumentError mode(["a", "b", "c"], method=:halfsample)
+@test_throws ArgumentError mode([1+1im, 1+2im], method=:halfsample)
+
 # Non-finite values throw ArgumentError
 @test_throws ArgumentError mode([1.0, NaN, 2.0, 2.0, Inf], method=:halfsample)
 @test_throws ArgumentError mode([1.0, NaN, Inf, -Inf], method=:halfsample)
@@ -98,7 +102,6 @@ my_hsm_mode(x) = mode(x, method=:halfsample)
 # Edge cases
 @test_throws ArgumentError mode(Float64[], method=:halfsample)
 
-
 # Invalid method throws
 @test_throws ArgumentError mode([1, 2, 3], method=:invalid)
 
@@ -106,8 +109,6 @@ my_hsm_mode(x) = mode(x, method=:halfsample)
 @test mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:frequency) == 4
 @test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:halfsample)
 @test_throws ArgumentError mode([1, 2, 2, 3, 4, 4, 4, 5], 2:4, method=:invalid)
-
-
 
 @test mode([1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 5.0, 5.1, 5.2, 5.3], method=:halfsample) == 1.15
 ## zscores
