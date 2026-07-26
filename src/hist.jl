@@ -40,46 +40,54 @@ function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:left) where 
 end
 
 function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
-    if hi == lo
-        start = F(hi)
-        step = one(F)
-        divisor = one(F)
-        len = one(F)
-    else
-        bw = (F(hi) - F(lo)) / n
-        lbw = log10(bw)
-        if lbw >= 0
-            step = exp10(floor(lbw))
-            r = bw / step
-            if r <= 1.1
-                nothing
-            elseif r <= 2.2
-                step *= 2
-            elseif r <= 5.5
-                step *= 5
-            else
-                step *= 10
-            end
-            divisor = one(F)
-            start = step*floor(lo/step)
-            len = ceil((hi - start)/step)
+    closed == :left || closed ==:right || 
+        throw(ArgumentError("closed must be :left or :right"))
+    lo = float(lo)
+    hi = float(hi)
+    if abs(hi-lo) < n*10eps(F)
+        if closed == :left
+            hi = hi + n*10eps(F)
+        elseif closed ==:right
+            lo = lo - n*10eps(F)
         else
-            divisor = exp10(-floor(lbw))
-            r = bw * divisor
-            if r <= 1.1
-                nothing
-            elseif r <= 2.2
-                divisor /= 2
-            elseif r <= 5.5
-                divisor /= 5
-            else
-                divisor /= 10
-            end
-            step = one(F)
-            start = floor(lo*divisor)
-            len = ceil(hi*divisor - start)
+            # never happens
         end
     end
+
+    bw = (F(hi) - F(lo)) / n
+    lbw = log10(bw)
+    if lbw >= 0
+        step = exp10(floor(lbw))
+        r = bw / step
+        if r <= 1.1
+            nothing
+        elseif r <= 2.2
+            step *= 2
+        elseif r <= 5.5
+            step *= 5
+        else
+            step *= 10
+        end
+        divisor = one(F)
+        start = step*floor(lo/step)
+        len = ceil((hi - start)/step)
+    else
+        divisor = exp10(-floor(lbw))
+        r = bw * divisor
+        if r <= 1.1
+            nothing
+        elseif r <= 2.2
+            divisor /= 2
+        elseif r <= 5.5
+            divisor /= 5
+        else
+            divisor /= 10
+        end
+        step = one(F)
+        start = floor(lo*divisor)
+        len = ceil(hi*divisor - start)
+    end
+
     # fix up endpoints
     if closed == :right #(,]
         while lo <= start/divisor
