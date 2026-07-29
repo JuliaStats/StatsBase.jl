@@ -42,11 +42,15 @@ end
 function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
     if hi == lo
         start = F(hi)
-        step = one(F)
+        # if step is below the floating-point spacing at `hi`, bump it up
+        step = max(one(F), eps(start))
         divisor = one(F)
         len = one(F)
     else
         bw = (F(hi) - F(lo)) / n
+        # a bin width below the floating-point spacing of the data would
+        # stall the endpoint adjustments below
+        bw = max(bw, eps(F(hi)), eps(F(lo)))
         lbw = log10(bw)
         if lbw >= 0
             step = exp10(floor(lbw))
