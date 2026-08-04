@@ -606,6 +606,11 @@ sample(a::AbstractArray, wv::AbstractWeights) = sample(default_rng(), a, wv)
 # Specialization for `UnitWeights`
 sample(rng::AbstractRNG, wv::UnitWeights) = rand(rng, 1:length(wv))
 
+function sample(rng::AbstractRNG, wv::AbstractWeights{<:Real,<:Real,<:SparseVector})
+    i = sample(rng, Weights(nonzeros(wv.values), sum(wv)))
+    return rowvals(wv.values)[i]
+end
+
 """
     direct_sample!([rng], a::AbstractArray, wv::AbstractWeights, x::AbstractArray)
 
