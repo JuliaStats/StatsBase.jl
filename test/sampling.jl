@@ -308,7 +308,8 @@ end
     rng = StableRNG(889858990530)
     s = sample(rng, Weights(w, 0.662413f0))
     @test s == length(w) - 1
-    @test sample(rng, Weights([1, 2, 0, 0], 10000)) == 2  # another more trivial test
+    # Artificial test with provided sum greater than actual sum
+    @test sample(rng, Weights([1, 2, 0, 0], 10000)) == 2
 end
 # Custom weights without `values` field
 struct YAUnitWeights <: AbstractWeights{Int, Int, Vector{Int}}
