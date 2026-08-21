@@ -148,7 +148,9 @@ function show(io::IO, ::MIME"text/plain", ct::CoefTable)
 end
 
 function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
-    cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
+    cols = ct.cols
+    rownms = ct.rownms
+    colnms = ct.colnms
     nc = length(cols)
     nr = length(cols[1])
     if length(rownms) == 0
@@ -167,29 +169,22 @@ function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
     A = [nmswidths[i] > sum(A[i]) ? (A[i][1]+nmswidths[i]-sum(A[i]), A[i][2]) : A[i]
          for i in 1:length(A)]
 
-    # not using Markdown stdlib here because that won't give us nice decimal
-    # alignment (even if that is lost when rendering to HTML, it's still nice
-    # when looking at the markdown itself)
-
-    print(io, '|', ' '^(sum(A[1])+1))
-    for j in 1:length(colnms)
-        print(io, " | ", lpad(colnms[j], sum(A[j+1])))
+    # Decimal alignment comes from Base's matrix machinery, which pads each cell
+    # to the column's (left, right) widths in `A` — so render the rows through
+    # `print_matrix_row` and split them back apart on a separator that cannot
+    # occur in the output. Handing the padded strings to the Markdown stdlib keeps
+    # that alignment (`padcells!` only ever adds the same width to every cell in a
+    # column) while it takes care of escaping `|` and drawing the rules.
+    rows = map(1:size(mat, 1)) do i
+        cells = sprint(Base.print_matrix_row, mat, A, i, 1:size(mat, 2), "\0";
+                       context = io)
+        collect(split(cells, '\0'))
     end
-
-    println(io, " |")
-    print(io, '|', rpad(':', sum(A[1])+2, '-'))
-    for j in 1:length(colnms)
-        _pad = j-1 in [ct.teststatcol; ct.pvalcol] ? rpad : lpad
-        print(io, '|', _pad(':', sum(A[j+1])+2, '-'))
-    end
-    println(io, '|')
-
-    for i in 1:size(mat, 1)
-        print(io, "| ")
-        Base.print_matrix_row(io, mat, A, i, 1:size(mat, 2), " | ")
-        print(io, " |")
-        i != size(mat, 1) && println(io)
-    end
+    pushfirst!(rows, ["", colnms...])
+    # `j-1` rather than `j`, carried over verbatim from the hand-rolled writer:
+    # only the p-value column ends up left-aligned.
+    align = [:l; [j-1 in [ct.teststatcol; ct.pvalcol] ? :l : :r for j in 1:nc]]
+    print(io, chomp(sprint(Markdown.plain, Markdown.Table(rows, align))))
 
     nothing
 end

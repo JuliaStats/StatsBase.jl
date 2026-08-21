@@ -9,6 +9,7 @@ import DataStructures: heapify!, heappop!, percolate_down!
 using SortingAlgorithms
 using Missings
 using LogExpFunctions: xlogx, xlogy
+import Markdown
 
 using Statistics
 using LinearAlgebra
