@@ -1069,4 +1069,3 @@ wsample(rng::AbstractRNG, a::AbstractArray{T}, w::AbstractVector{<:Real}, dims::
 wsample(a::AbstractArray, w::AbstractVector{<:Real}, dims::Dims;
         replace::Bool=true, ordered::Bool=false) =
     wsample(default_rng(), a, w, dims; replace=replace, ordered=ordered)
-
