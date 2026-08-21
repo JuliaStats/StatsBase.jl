@@ -596,6 +596,12 @@ function sample(rng::AbstractRNG, wv::AbstractWeights)
         i += 1
         cw += wv[i]
     end
+    if cw < t
+        # may happen with floating point weights due to numerical inaccuracies
+        while iszero(wv[i])
+            i -= 1
+        end
+    end
     return i
 end
 sample(wv::AbstractWeights) = sample(default_rng(), wv)
