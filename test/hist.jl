@@ -62,6 +62,9 @@ end
     d = collect(0:99)
     v = view(d, fill(true, 100))
     @test fit(Histogram{Float32},v,weights(2*ones(100)),nbins=5).weights == [40,40,40,40,40]
+
+    # Issue 972: OutOfMemoryError for identical values of large magnitude
+    @test sum(fit(Histogram, [-5.603325961434038e25, -5.603325961434038e25]).weights) == 2
 end
 
 
@@ -110,6 +113,34 @@ end
     # Issue 616/667
     @test StatsBase.histrange([1.0 for i in 1:100], 10, :left) == 1.0:1.0:2.0
     @test StatsBase.histrange([1.05 for i in 1:100], 10, :left) == 1.05:1.0:2.05
+
+    # Issue 972: values whose magnitude is so large that a bin width of
+    # one (or the computed width) is below the floating-point spacing
+    let x = -5.603325961434038e25
+        r = StatsBase.histrange([x, x], 10, :left)
+        @test first(r) == x
+        @test length(r) == 2
+        @test step(r) >= eps(x)
+        for closed in (:left, :right), n in (10, 100, 1000)
+            r = StatsBase.histrange(x, nextfloat(x, 3), n, closed)
+            @test length(r) < 100
+            @test step(r) >= eps(x)
+            if closed == :left
+                @test first(r) <= x
+                @test last(r) > nextfloat(x, 3)
+            else
+                @test first(r) < x
+                @test last(r) >= nextfloat(x, 3)
+            end
+        end
+    end
+    # tiny spans relative to the magnitude used to stall in the fractional
+    # bin width branch
+    let r = StatsBase.histrange(1.0e15, 1.0e15 + 0.001, 10, :left)
+        @test length(r) < 100
+        @test first(r) <= 1.0e15
+        @test last(r) > 1.0e15 + 0.001
+    end
 
     @test_throws ArgumentError StatsBase.histrange([1, 10], 0, :left)
     @test_throws ArgumentError StatsBase.histrange([1, 10], -1, :left)
