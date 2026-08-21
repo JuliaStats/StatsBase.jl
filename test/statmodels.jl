@@ -1,6 +1,6 @@
 using StatsBase
 using StatsBase: PValue, TestStat
-using Test, Random, StatsAPI, LinearAlgebra
+using Test, Random, StatsAPI, LinearAlgebra, Markdown
 
 v1 = [1.45666, -23.14, 1.56734e-13]
 v2 = ["Good", "Great", "Bad"]
@@ -45,6 +45,24 @@ x3    1.56734e-13     Bad     2    0.00  <1e-15
 | [1] |   1.45666     |    Good  |  1 | -12.56 | 0.1200 |
 | [2] | -23.14        |    Great | 56 |   0.13 | 0.3467 |
 | [3] |   1.56734e-13 |    Bad   |  2 |   0.00 | <1e-15 |"""
+
+# Pipes in a header, a row name or a string cell must be escaped: an unescaped one
+# ends its cell, so the row presents more cells than the alignment row and the
+# whole thing stops parsing as a table. Downstream packages hit this with the
+# R-style `Pr(>|z|)` p-value header.
+ct_pipes = CoefTable(Any[v1, ["a|b", "Great", "Bad"], v3, v4, v5],
+                     ["Estimate", "Comments", "df", "t", "Pr(>|z|)"],
+                     ["x|1", "x2", "x3"], 5, 4)
+md_pipes = sprint(show, MIME"text/markdown"(), ct_pipes)
+@test occursin(raw"Pr(>\|z\|)", md_pipes)
+@test occursin(raw"x\|1", md_pipes)
+@test occursin(raw"a\|b", md_pipes)
+# Every row must present as many cells as the alignment row.
+let counts = [length(collect(eachmatch(r"(?<!\\)\|", row))) for row in split(md_pipes, '\n')]
+    @test all(==(first(counts)), counts)
+end
+# ... and the result must parse as a table rather than degrade to a paragraph.
+@test only(Markdown.parse(md_pipes).content) isa Markdown.Table
 
 @test length(ct) === 3
 @test eltype(ct) ==
