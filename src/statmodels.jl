@@ -147,8 +147,18 @@ function show(io::IO, ::MIME"text/plain", ct::CoefTable)
     nothing
 end
 
+# An unescaped `|` ends the cell it appears in, so a row containing one no longer
+# has the same number of cells as the alignment row and the table stops parsing as
+# a table at all. Callers hit this with the R-style `Pr(>|z|)` p-value header, and
+# with any string cell or row name that happens to contain a pipe. Same rule the
+# Markdown stdlib applies in `plain(::IO, ::Markdown.Table)`; applying it before
+# the column widths are measured keeps them consistent with what is printed.
+escape_markdown_pipes(s::AbstractString) = replace(s, '|' => "\\|")
+
 function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
-    cols = ct.cols; rownms = ct.rownms; colnms = ct.colnms;
+    cols = ct.cols
+    rownms = escape_markdown_pipes.(ct.rownms)
+    colnms = escape_markdown_pipes.(ct.colnms)
     nc = length(cols)
     nr = length(cols[1])
     if length(rownms) == 0
@@ -157,7 +167,7 @@ function show(io::IO, ::MIME"text/markdown", ct::CoefTable)
     mat = [j == 1 ? NoQuote(rownms[i]) :
            j-1 == ct.pvalcol ? NoQuote(sprint(show, PValue(cols[j-1][i]))) :
            j-1 in ct.teststatcol ? TestStat(cols[j-1][i]) :
-           cols[j-1][i] isa AbstractString ? NoQuote(cols[j-1][i]) : cols[j-1][i]
+           cols[j-1][i] isa AbstractString ? NoQuote(escape_markdown_pipes(cols[j-1][i])) : cols[j-1][i]
            for i in 1:nr, j in 1:nc+1]
     # Code inspired by print_matrix in Base
     io = IOContext(io, :compact=>true, :limit=>false)
