@@ -207,3 +207,10 @@ end
     @test proportionmap(x, xw) == proportionmap(y, yw) == proportionmap(z, zw)
     # countmap and proportionmap only support the :dict algorithm for weighted sums.
 end
+
+@testset "proportionmap with iterator" begin
+    a = [1, 2, 3, 4]
+    b =[true, true ,false, false, true, false]
+    @test proportionmap(skipmissing(a)) == Dict(1 => 0.25, 2 => 0.25, 3 => 0.25, 4 => 0.25)
+    @test proportionmap(skipmissing(b)) == Dict(true => 0.5, false => 0.5)
+end
