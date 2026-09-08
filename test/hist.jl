@@ -96,7 +96,10 @@ end
     @test StatsBase.histrange([200.0,300.0], 10, :right) == 190.0:10.0:300.0
 
     @test @inferred(StatsBase.histrange(Int64[1:5;], 1, :left)) == 0:5:10
-    @test StatsBase.histrange(Int64[1:5;], 1, :left) isa Vector{Float64}
+    @test StatsBase.histrange(Int64[1:5;], 1, :left) isa StatsBase.UniformEdges{Float64}
+    @test step(StatsBase.histrange(Int64[1:5;], 1, :left)) == 5.0
+    @test step(StatsBase.histrange([0.2, 0.3], 10, :left)) == 0.01
+    @test step(StatsBase.histrange([0.0, 0.2], 9, :right)) == 0.05
     @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
 
     @test StatsBase.histrange([0, 1, 2, 3], 4, :left) == 0.0:1.0:4.0
@@ -121,9 +124,11 @@ end
     @test StatsBase.histrange([-0.7], 3, :left) == [-1.0, 0.0]
 
     # Edges have the floating point type of the data
-    @test StatsBase.histrange(Float32[0.7, 0.8], 12, :left) isa Vector{Float32}
-    @test StatsBase.histrange(Float16[0.7, 0.8], 12, :left) isa Vector{Float16}
-    @test StatsBase.histrange(BigFloat[0.7, 0.8], 12, :left) isa Vector{BigFloat}
+    @test StatsBase.histrange(Float32[0.7, 0.8], 12, :left) isa StatsBase.UniformEdges{Float32}
+    @test StatsBase.histrange(Float16[0.7, 0.8], 12, :left) isa StatsBase.UniformEdges{Float16}
+    @test StatsBase.histrange(BigFloat[0.7, 0.8], 12, :left) isa StatsBase.UniformEdges{BigFloat}
+    @test step(StatsBase.histrange(Float32[0.7, 0.8], 12, :left)) === 0.01f0
+    @test step(StatsBase.histrange(Float16[0.001, 0.002], 12, :left)) === Float16(0.0001)
     @test StatsBase.histrange(Float32[0.7, 0.8], 12, :left) == Float32.(0.7:0.01:0.81)
     @test StatsBase.histrange(Float32[0.7, 0.8], 12, :right) == Float32.(0.69:0.01:0.8)
     @test StatsBase.histrange(Float16[0.001, 0.002], 12, :left) == Float16.(0.001:0.0001:0.0021)
@@ -151,6 +156,23 @@ end
             @test issorted(r, lt = <=)
             @test length(r) <= max(k, 1) + 2
         end
+    end
+
+    # binindex on UniformEdges agrees with the generic search for all inputs
+    for closed in (:left, :right), r in (StatsBase.histrange([0.2, 0.3], 10, closed),
+                                         StatsBase.histrange(Float32[0.0, 1.0], 7, closed),
+                                         StatsBase.histrange([-3.0, 5.0], 1, closed))
+        edges = collect(r)
+        xs = vcat(edges, prevfloat.(edges), nextfloat.(edges), rand(eltype(r), 200) .* (last(r) - first(r) + 1) .+ first(r) .- 0.5,
+                  eltype(r)[-0.0, 0.0, Inf, -Inf], [1, 0, -1])
+        for x in xs
+            @test StatsBase._edge_binindex(r, closed, x) == StatsBase._edge_binindex(edges, closed, x)
+        end
+        # NaN is outside the bins on both paths (which side differs, as in Base's searchsorted)
+        @test StatsBase._edge_binindex(r, closed, NaN) ∉ 1:length(r) - 1
+        @test StatsBase._edge_binindex(edges, closed, NaN) ∉ 1:length(r) - 1
+        h = fit(Histogram, [first(r)], r, closed=closed)
+        @test all(StatsBase.binvolume(h, i) == step(r) for i in 1:length(r) - 1)
     end
 
     @test_throws ArgumentError StatsBase.histrange([1.0, Inf], 4, :left)
@@ -218,11 +240,14 @@ end
 @testset "Histogram show" begin
     # hist show
     show_h = sprint(show, fit(Histogram,[0,1,2]))
-    @test occursin("edges:\n  [0.0, 1.0, 2.0, 3.0]", show_h)
-    # many edges are abbreviated
-    show_big = sprint(show, fit(Histogram, rand(1000), nbins=1000))
-    edges_line = split(show_big, '\n')[3]
-    @test occursin("…", edges_line) && length(edges_line) < 200
+    @test occursin("edges:\n  0.0:1.0:3.0", show_h)
+    # uniform edges print as first edge, width, last edge however many there are
+    show_big = sprint(show, fit(Histogram, rand(1000), 0.0:0.001:1.0))
+    @test occursin("edges:\n  0.0:0.001:1.0", show_big)
+    @test sprint(show, StatsBase.histrange([0.0, 1.0], 1000, :left)) == "0.0:0.001:1.001"
+    # and user-supplied vectors are abbreviated
+    show_vec = sprint(show, fit(Histogram, rand(1000), collect(0.0:0.001:1.0)))
+    @test occursin("…", split(show_vec, '\n')[3])
     @test occursin("weights: $([1,1,1])", show_h)
     @test occursin("closed: left", show_h)
     @test occursin("isdensity: false", show_h)
