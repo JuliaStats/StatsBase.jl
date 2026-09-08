@@ -23,6 +23,27 @@ end
 end
 
 
+"""
+    UniformEdges{F} <: AbstractVector{F}
+
+Bin edges of equal width, as produced by `fit(Histogram, v; nbins)`. The edges are stored
+as a `Vector{F}` and `step(edges)` gives the bin width. Because each edge is the value of a
+decimal number rounded to `F`, differences of neighbouring edges may deviate from `step` by
+an ulp, but the bins are equal-width by construction.
+"""
+struct UniformEdges{F<:AbstractFloat} <: AbstractVector{F}
+    edges::Vector{F}
+    step::F
+end
+
+Base.size(e::UniformEdges) = size(e.edges)
+Base.IndexStyle(::Type{<:UniformEdges}) = IndexLinear()
+Base.@propagate_inbounds Base.getindex(e::UniformEdges, i::Int) = e.edges[i]
+Base.step(e::UniformEdges) = e.step
+# Print like a range: first edge, width, last edge
+Base.show(io::IO, e::UniformEdges) = print(io, first(e), ':', step(e), ':', last(e))
+Base.show(io::IO, ::MIME"text/plain", e::UniformEdges) = show(io, e)
+
 ## nice-valued edges for histograms
 function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:left) where T
     F = float(T)
@@ -32,16 +53,16 @@ function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:left) where 
     elseif nv > 0 && n < 1
         throw(ArgumentError("number of bins must be ≥ 1 for a non-empty array, got $n"))
     elseif nv == 0
-        return [zero(F)]
+        return UniformEdges([zero(F)], one(F))
     end
 
     lo, hi = extrema(v)
     histrange(F(lo), F(hi), n, closed)
 end
 
-# Return a `Vector{F}` of strictly increasing bin edges covering `[lo, hi]` with approximately
-# `n` bins of equal width, where the width is a "nice" decimal number: 1, 2 or 5 times a
-# power of ten.
+# Return `UniformEdges{F}` of strictly increasing bin edges covering `[lo, hi]` with
+# approximately `n` bins of equal width, where the width is a "nice" decimal number: 1, 2 or 5
+# times a power of ten.
 # The edges are the decimal numbers `k * 10^e` for consecutive multiples `k` of the width,
 # each rounded to the nearest `F`. Rounding each edge individually is what makes this
 # work for every floating point type: no arithmetic progression has to be represented in F,
@@ -106,7 +127,7 @@ function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F<:Abst
             klast += m
         end
     end
-    return F[edge(k) for k in kfirst:m:klast]
+    return UniformEdges(F[edge(k) for k in kfirst:m:klast], stepF)
 end
 
 # Integer type for the multiples of the width: they are bounded by 2^precision(F) / 3
@@ -302,6 +323,41 @@ binindex(h::Histogram{T,N}, xs::NTuple{N,Real}) where {T,N} =
         return searchsortedlast(edge, x, lt = <)
     end
 end
+# For equal-width bins, estimate the index from the width and correct it against the stored
+# edges. The estimate is off by at most one, so this is a few operations instead of a binary
+# search, and the result is exactly what the search would give.
+@inline function _edge_binindex(edge::UniformEdges, closed::Symbol, x::Real)
+    v = edge.edges
+    n = length(v)
+    @inbounds begin
+        lo = v[1]
+        hi = v[n]
+        if closed === :right
+            # number of edges strictly below x
+            lo < x || return 0
+            hi < x && return n
+            i = clamp(floor(Int, (x - lo) / edge.step) + 1, 1, n - 1)
+            while i > 0 && !(v[i] < x)
+                i -= 1
+            end
+            while i < n && v[i + 1] < x
+                i += 1
+            end
+        else
+            # number of edges at or below x
+            lo <= x || return 0
+            hi <= x && return n
+            i = clamp(floor(Int, (x - lo) / edge.step) + 1, 1, n - 1)
+            while i > 0 && !(v[i] <= x)
+                i -= 1
+            end
+            while i < n && v[i + 1] <= x
+                i += 1
+            end
+        end
+        return i
+    end
+end
 
 
 binvolume(h::AbstractHistogram{T,1}, binidx::Integer) where {T} = binvolume(h, (binidx,))
@@ -315,6 +371,7 @@ binvolume(::Type{V}, h::Histogram{T,N}, binidx::NTuple{N,Integer}) where {V,T,N}
 
 @inline _edge_binvolume(::Type{V}, edge::AbstractVector, i::Integer) where {V} = V(edge[i+1]) - V(edge[i])
 @inline _edge_binvolume(::Type{V}, edge::AbstractRange, i::Integer) where {V} = V(step(edge))
+@inline _edge_binvolume(::Type{V}, edge::UniformEdges, i::Integer) where {V} = V(step(edge))
 @inline _edge_binvolume(edge::AbstractVector, i::Integer) = _edge_binvolume(eltype(edge), edge, i)
 
 
@@ -428,9 +485,10 @@ Fit a histogram to `data`.
 !!! note
     In most cases, the number of bins will be `nbins`. However, to ensure that the bins have
     equal width, more or fewer than `nbins` bins may be used. The automatically chosen bin
-    width is a "nice" decimal number (1, 2 or 5 times a power of ten), the edges are
-    multiples of it rounded to the floating point type of the data, and they are returned
-    as a `Vector`. All observations are guaranteed to fall inside the automatically chosen edges.
+    width is a "nice" decimal number (1, 2 or 5 times a power of ten) and the edges are
+    multiples of it rounded to the floating point type of the data, returned as
+    [`UniformEdges`](@ref), a vector of edges which also records the bin width as `step`.
+    All observations are guaranteed to fall inside the automatically chosen edges.
     For data of extreme magnitude (beyond about `1e±22` for `Float64`, `1e±10` for `Float32`),
     the edges may differ from the decimal number by up to two units in the last place.
 
