@@ -78,7 +78,7 @@ end
 
 @testset "histrange" begin
     # Note: atm histrange must be qualified
-    @test @inferred(StatsBase.histrange(Float64[], 0, :left)) == 0.0:1.0:0.0
+    @test @inferred(StatsBase.histrange(Float64[], 0, :left)) == [0.0]
     @test StatsBase.histrange(Float64[1:5;], 1, :left) == 0.0:5.0:10.0
     @test StatsBase.histrange(Float64[1:10;], 1, :left) == 0.0:10.0:20.0
     @test StatsBase.histrange(1.0, 10.0, 1, :left) == 0.0:10.0:20.0
@@ -96,6 +96,10 @@ end
     @test StatsBase.histrange([200.0,300.0], 10, :right) == 190.0:10.0:300.0
 
     @test @inferred(StatsBase.histrange(Int64[1:5;], 1, :left)) == 0:5:10
+    @test StatsBase.histrange(Int64[1:5;], 1, :left) isa StatsBase.UniformEdges{Float64}
+    @test step(StatsBase.histrange(Int64[1:5;], 1, :left)) == 5.0
+    @test step(StatsBase.histrange([0.2, 0.3], 10, :left)) == 0.01
+    @test step(StatsBase.histrange([0.0, 0.2], 9, :right)) == 0.05
     @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
 
     @test StatsBase.histrange([0, 1, 2, 3], 4, :left) == 0.0:1.0:4.0
@@ -112,19 +116,101 @@ end
 
     # Issue 616/667
     @test StatsBase.histrange([1.0 for i in 1:100], 10, :left) == 1.0:1.0:2.0
-    @test StatsBase.histrange([1.05 for i in 1:100], 10, :left) == 1.05:1.0:2.05
+    @test StatsBase.histrange([1.05 for i in 1:100], 10, :left) == [1.0, 2.0]
+    @test StatsBase.histrange([1.05 for i in 1:100], 10, :right) == [1.0, 2.0]
+    @test StatsBase.histrange([1.0 for i in 1:100], 10, :right) == [0.0, 1.0]
+    @test StatsBase.histrange([0.0], 3, :left) == [0.0, 1.0]
+    @test StatsBase.histrange([0.0], 3, :right) == [-1.0, 0.0]
+    @test StatsBase.histrange([-0.7], 3, :left) == [-1.0, 0.0]
+
+    # Edges have the floating point type of the data
+    @test StatsBase.histrange(Float32[0.7, 0.8], 12, :left) isa StatsBase.UniformEdges{Float32}
+    @test StatsBase.histrange(Float16[0.7, 0.8], 12, :left) isa StatsBase.UniformEdges{Float16}
+    @test StatsBase.histrange(BigFloat[0.7, 0.8], 12, :left) isa StatsBase.UniformEdges{BigFloat}
+    @test step(StatsBase.histrange(Float32[0.7, 0.8], 12, :left)) === 0.01f0
+    @test step(StatsBase.histrange(Float16[0.001, 0.002], 12, :left)) === Float16(0.0001)
+    @test StatsBase.histrange(Float32[0.7, 0.8], 12, :left) == Float32.(0.7:0.01:0.81)
+    @test StatsBase.histrange(Float32[0.7, 0.8], 12, :right) == Float32.(0.69:0.01:0.8)
+    @test StatsBase.histrange(Float16[0.001, 0.002], 12, :left) == Float16.(0.001:0.0001:0.0021)
+    # BigFloat[0.7, 0.8] would convert the Float64 literals, which lie below the decimals
+    @test StatsBase.histrange(parse.(BigFloat, ["0.7", "0.8"]), 12, :left) ==
+        parse.(BigFloat, ["0.7", "0.71", "0.72", "0.73", "0.74", "0.75", "0.76", "0.77", "0.78", "0.79", "0.8", "0.81"])
+
+    # Beyond the exactly representable powers of ten, edges are within two ulps of the decimal
+    for (v, expected) in (([1e300, 3e300], [1e300, 1.5e300, 2e300, 2.5e300, 3e300, 3.5e300]),
+                          ([1e-300, 3e-300], [1e-300, 1.5e-300, 2e-300, 2.5e-300, 3e-300, 3.5e-300]),
+                          (Float32[1e-33, 3e-33], Float32[1e-33, 1.5e-33, 2e-33, 2.5e-33, 3e-33, 3.5e-33]),
+                          (Float16[1e-4, 3e-4], Float16[1e-4, 1.5e-4, 2e-4, 2.5e-4, 3e-4, 3.5e-4]))
+        r = StatsBase.histrange(v, 4, :left)
+        @test length(r) == length(expected)
+        @test all(abs(x - y) <= 2 * eps(y) for (x, y) in zip(r, expected))
+    end
+    @test StatsBase.histrange(Float16[1e-4, 3e-4], 4, :left) == Float16[1e-4, 1.5e-4, 2e-4, 2.5e-4, 3e-4, 3.5e-4]
+
+    # Requested bins finer than the resolution of the data give fewer, strictly increasing edges
+    r = StatsBase.histrange([1e17, 1e17 + 16], 4, :right)
+    @test issorted(r, lt = <=) && first(r) < 1e17 && 1e17 + 16 <= last(r)
+    for F in (Float16, Float32, Float64), closed in (:left, :right), n in (1, 3, 10, 1000)
+        for x in (F(0.7), F(1), prevfloat(F(2)), F(-1000), floatmax(F) / 2), k in (0, 1, 2, 5, 40)
+            r = StatsBase.histrange(x, nextfloat(x, k), n, closed)
+            @test issorted(r, lt = <=)
+            @test length(r) <= max(k, 1) + 2
+        end
+    end
+
+    # binindex on UniformEdges agrees with the generic search for all inputs
+    for closed in (:left, :right), r in (StatsBase.histrange([0.2, 0.3], 10, closed),
+                                         StatsBase.histrange(Float32[0.0, 1.0], 7, closed),
+                                         StatsBase.histrange([-3.0, 5.0], 1, closed))
+        edges = collect(r)
+        xs = vcat(edges, prevfloat.(edges), nextfloat.(edges), rand(eltype(r), 200) .* (last(r) - first(r) + 1) .+ first(r) .- 0.5,
+                  eltype(r)[-0.0, 0.0, Inf, -Inf], [1, 0, -1])
+        for x in xs
+            @test StatsBase._edge_binindex(r, closed, x) == StatsBase._edge_binindex(edges, closed, x)
+        end
+        # NaN is outside the bins on both paths (which side differs, as in Base's searchsorted)
+        @test StatsBase._edge_binindex(r, closed, NaN) ∉ 1:length(r) - 1
+        @test StatsBase._edge_binindex(edges, closed, NaN) ∉ 1:length(r) - 1
+        h = fit(Histogram, [first(r)], r, closed=closed)
+        @test all(StatsBase.binvolume(h, i) == step(r) for i in 1:length(r) - 1)
+    end
+
+    @test_throws ArgumentError StatsBase.histrange([1.0, Inf], 4, :left)
+    @test_throws ArgumentError StatsBase.histrange([NaN, 1.0], 4, :left)
+
+    # Issue #1009: observations at the extremes were dropped because the endpoint checks
+    # were done in the element type while the edges were Float64, or because the last
+    # element of the edge range evaluated an ulp below the value that was checked
+    for T in (Float16, Float32, Float64, BigFloat), closed in (:left, :right), nbins in 1:12
+        for v in ([0.7, 0.8], [0.81, 0.87], [0.0, 0.2], [8.2, 8.93], [6.34, 6.44],
+                  [2.5, 3.6, 4.4], [0.001, 0.002], [0.1, 0.1, 1.0, 0.3, 0.6], [0.3, 0.4])
+            vT = T.(v)
+            r = StatsBase.histrange(vT, nbins, closed)
+            @test eltype(r) == T
+            lo, hi = extrema(vT)
+            if closed == :right
+                @test first(r) < lo && hi <= last(r)
+            else
+                @test first(r) <= lo && hi < last(r)
+            end
+            h = fit(Histogram, vT, nbins=nbins, closed=closed)
+            @test sum(h.weights) == length(vT)
+        end
+    end
 
     # Issue 972: values whose magnitude is so large that a bin width of
     # one (or the computed width) is below the floating-point spacing
     let x = -5.603325961434038e25
-        r = StatsBase.histrange([x, x], 10, :left)
-        @test first(r) == x
-        @test length(r) == 2
-        @test step(r) >= eps(x)
+        for closed in (:left, :right)
+            r = StatsBase.histrange([x, x], 10, closed)
+            @test length(r) == 2
+            @test r[1] < r[2]
+            @test closed == :left ? (r[1] <= x < r[2]) : (r[1] < x <= r[2])
+        end
         for closed in (:left, :right), n in (10, 100, 1000)
             r = StatsBase.histrange(x, nextfloat(x, 3), n, closed)
             @test length(r) < 100
-            @test step(r) >= eps(x)
+            @test minimum(diff(r)) >= eps(x)
             if closed == :left
                 @test first(r) <= x
                 @test last(r) > nextfloat(x, 3)
@@ -155,6 +241,13 @@ end
     # hist show
     show_h = sprint(show, fit(Histogram,[0,1,2]))
     @test occursin("edges:\n  0.0:1.0:3.0", show_h)
+    # uniform edges print as first edge, width, last edge however many there are
+    show_big = sprint(show, fit(Histogram, rand(1000), 0.0:0.001:1.0))
+    @test occursin("edges:\n  0.0:0.001:1.0", show_big)
+    @test sprint(show, StatsBase.histrange([0.0, 1.0], 1000, :left)) == "0.0:0.001:1.001"
+    # and user-supplied vectors are abbreviated
+    show_vec = sprint(show, fit(Histogram, rand(1000), collect(0.0:0.001:1.0)))
+    @test occursin("…", split(show_vec, '\n')[3])
     @test occursin("weights: $([1,1,1])", show_h)
     @test occursin("closed: left", show_h)
     @test occursin("isdensity: false", show_h)
@@ -295,8 +388,29 @@ end
         fit(Histogram, [0.0, 1.0], -0.5:0.5:0.0, closed=:right) ==
         fit(Histogram, [-0.0, 1.0], -0.5:0.5:0.0, closed=:right)
 
-    @test_throws ArgumentError fit(Histogram, [-0.5], LinRange(-1.0, -0.0, 3))
-    @test_throws ArgumentError fit(Histogram, [-0.5], UnitRange(-0.0, 1.0))
+    # edges containing both -0.0 and 0.0, in either order, behave like two 0.0 edges:
+    # the bin between them is empty and the neighbouring bins get the same observations
+    for closed in (:left, :right)
+        obs = [-0.5, -0.0, 0.0, 0.5]
+        w = fit(Histogram, obs, [-1.0, 0.0, 0.0, 1.0], closed=closed).weights
+        @test fit(Histogram, obs, [-1.0, -0.0, 0.0, 1.0], closed=closed).weights == w
+        @test fit(Histogram, obs, [-1.0, 0.0, -0.0, 1.0], closed=closed).weights == w
+        @test w == (closed == :left ? [1, 0, 3] : [3, 0, 1])
+    end
+    # ranges containing -0.0 behave like the corresponding ranges with 0.0
+    @test fit(Histogram, [-0.5, 0.0], LinRange(-1.0, -0.0, 3)) ==
+        fit(Histogram, [-0.5, 0.0], LinRange(-1.0, 0.0, 3))
+    @test fit(Histogram, [-0.5, 0.0], LinRange(-1.0, -0.0, 3), closed=:right) ==
+        fit(Histogram, [-0.5, -0.0], LinRange(-1.0, 0.0, 3), closed=:right)
+    @test fit(Histogram, [0.0, 0.5], UnitRange(-0.0, 1.0)) ==
+        fit(Histogram, [-0.0, 0.5], UnitRange(0.0, 1.0))
+    @test fit(Histogram, [0.0, 0.5], UnitRange(-0.0, 1.0), closed=:right) ==
+        fit(Histogram, [-0.0, 0.5], UnitRange(0.0, 1.0), closed=:right)
+    # NaN is dropped
+    @test fit(Histogram, [NaN, 0.5], 0.0:0.5:1.0).weights == [0, 1]
+    @test fit(Histogram, [NaN, 0.5], 0.0:0.5:1.0, closed=:right).weights == [1, 0]
+    @test fit(Histogram, [NaN, 0.5], [0.0, 0.5, 1.0]).weights == [0, 1]
+    @test fit(Histogram, [NaN, 0.5], [0.0, 0.5, 1.0], closed=:right).weights == [1, 0]
 end
 
 end # @testset "StatsBase.Histogram"

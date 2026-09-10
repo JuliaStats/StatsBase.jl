@@ -23,7 +23,28 @@ end
 end
 
 
-## nice-valued ranges for histograms
+"""
+    UniformEdges{F} <: AbstractVector{F}
+
+Bin edges of equal width, as produced by `fit(Histogram, v; nbins)`. The edges are stored
+as a `Vector{F}` and `step(edges)` gives the bin width. Because each edge is the value of a
+decimal number rounded to `F`, differences of neighbouring edges may deviate from `step` by
+an ulp, but the bins are equal-width by construction.
+"""
+struct UniformEdges{F<:AbstractFloat} <: AbstractVector{F}
+    edges::Vector{F}
+    step::F
+end
+
+Base.size(e::UniformEdges) = size(e.edges)
+Base.IndexStyle(::Type{<:UniformEdges}) = IndexLinear()
+Base.@propagate_inbounds Base.getindex(e::UniformEdges, i::Int) = e.edges[i]
+Base.step(e::UniformEdges) = e.step
+# Print like a range: first edge, width, last edge
+Base.show(io::IO, e::UniformEdges) = print(io, first(e), ':', step(e), ':', last(e))
+Base.show(io::IO, ::MIME"text/plain", e::UniformEdges) = show(io, e)
+
+## nice-valued edges for histograms
 function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:left) where T
     F = float(T)
     nv = length(v)
@@ -32,77 +53,135 @@ function histrange(v::AbstractArray{T}, n::Integer, closed::Symbol=:left) where 
     elseif nv > 0 && n < 1
         throw(ArgumentError("number of bins must be ≥ 1 for a non-empty array, got $n"))
     elseif nv == 0
-        return zero(F):zero(F)
+        return UniformEdges([zero(F)], one(F))
     end
 
     lo, hi = extrema(v)
     histrange(F(lo), F(hi), n, closed)
 end
 
-function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F
-    if hi == lo
-        start = F(hi)
-        # if step is below the floating-point spacing at `hi`, bump it up
-        step = max(one(F), eps(start))
-        divisor = one(F)
-        len = one(F)
-    else
-        bw = (F(hi) - F(lo)) / n
-        # a bin width below the floating-point spacing of the data would
-        # stall the endpoint adjustments below
-        bw = max(bw, eps(F(hi)), eps(F(lo)))
-        lbw = log10(bw)
-        if lbw >= 0
-            step = exp10(floor(lbw))
-            r = bw / step
-            if r <= 1.1
-                nothing
-            elseif r <= 2.2
-                step *= 2
-            elseif r <= 5.5
-                step *= 5
-            else
-                step *= 10
-            end
-            divisor = one(F)
-            start = step*floor(lo/step)
-            len = ceil((hi - start)/step)
-        else
-            divisor = exp10(-floor(lbw))
-            r = bw * divisor
-            if r <= 1.1
-                nothing
-            elseif r <= 2.2
-                divisor /= 2
-            elseif r <= 5.5
-                divisor /= 5
-            else
-                divisor /= 10
-            end
-            step = one(F)
-            start = floor(lo*divisor)
-            len = ceil(hi*divisor - start)
-        end
-    end
-    # fix up endpoints
+# Return `UniformEdges{F}` of strictly increasing bin edges covering `[lo, hi]` with
+# approximately `n` bins of equal width, where the width is a "nice" decimal number: 1, 2 or 5
+# times a power of ten.
+# The edges are the decimal numbers `k * 10^e` for consecutive multiples `k` of the width,
+# each rounded to the nearest `F`. Rounding each edge individually is what makes this
+# work for every floating point type: no arithmetic progression has to be represented in F,
+# and an observation that is the rounding of the same decimal as an edge compares equal to
+# that edge. The endpoints are then adjusted by comparing `lo` and `hi` against the F
+# edges themselves, i.e. against exactly what `binindex` compares against, so no
+# observation can fall outside the edges (#1009).
+function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F<:AbstractFloat
+    isfinite(lo) && isfinite(hi) ||
+        throw(ArgumentError("histogram edges cannot be computed for non-finite data"))
+    # Choose the decimal exponent e and the multiplier m ∈ {1, 2, 5, 10} of the bin width
+    # from the raw width in F. Only the integers e and m are used from here on, so the
+    # rounding of these few operations does not affect the exactness of the edges.
+    # If all values are identical, use a single bin of unit width around the value.
+    bw = hi == lo ? one(F) : hi / n - lo / n
+    # The nice width below is at least bw/1.1. For consecutive decimal edges to round to
+    # distinct values of F, the width must exceed twice the floating-point spacing of the
+    # edges, and the spacing at the last edge can be twice that at hi when the edge lies in
+    # the next binade. Requiring bw ≥ 3 eps thus guarantees strictly increasing edges.
+    bw = max(bw, 3 * eps(lo), 3 * eps(hi))
+    lbw = log10(bw)
+    e0 = floor(Int, lbw)
+    r = exp10(lbw - e0)  # bw / 10^e0 in [1, 10), without forming 10^e0 in F
+    m0 = r <= 1.1 ? 1 : r <= 2.2 ? 2 : r <= 5.5 ? 5 : 10
+    # write 10 * 10^e0 as 1 * 10^(e0 + 1) so that the multiples k below stay as small as possible
+    m, e = m0 == 10 ? (1, e0 + 1) : (m0, e0)
+    # Multiples of the width near lo and hi. The width is at least three times the spacing of
+    # the data, so these quotients are at most 2^precision / 3 and their rounding error is
+    # below one; the adjustment below corrects the remaining off-by-one.
+    edge(k) = _decimal(F, k, e)
+    stepF = edge(m)
+    K = _multiple_type(F)
+    kfirst = m * floor(K, lo / stepF)
+    klast = m * ceil(K, hi / stepF)
+    # Adjust the endpoints against the F edges so that lo and hi are inside the edges, with
+    # the first edge as large and the last edge as small as possible. Note that e.g. the
+    # Float32 observation 0.7f0 is below the decimal 0.7 but equals the Float32 edge 0.7f0
     if closed == :right #(,]
-        while lo <= start/divisor
-            start -= step
+        while edge(kfirst + m) < lo
+            kfirst += m
         end
-        while (start + (len-1)*step)/divisor < hi
-            len += one(F)
+        while lo <= edge(kfirst)
+            kfirst -= m
         end
-    else
-        while lo < start/divisor
-            start -= step
+        while edge(klast - m) >= hi
+            klast -= m
         end
-        while (start + (len-1)*step)/divisor <= hi
-            len += one(F)
+        while edge(klast) < hi
+            klast += m
+        end
+    else #[,)
+        while edge(kfirst + m) <= lo
+            kfirst += m
+        end
+        while lo < edge(kfirst)
+            kfirst -= m
+        end
+        while edge(klast - m) > hi
+            klast -= m
+        end
+        while edge(klast) <= hi
+            klast += m
         end
     end
-    StepRangeLen(Base.TwicePrecision{Float64}((start, divisor)),
-                 Base.TwicePrecision{Float64}((step, divisor)),
-                 Int(len))
+    return UniformEdges(F[edge(k) for k in kfirst:m:klast], stepF)
+end
+
+# Integer type for the multiples of the width: they are bounded by 2^precision(F) / 3
+_multiple_type(::Type{<:Union{Float16,Float32,Float64}}) = Int
+_multiple_type(::Type{<:AbstractFloat}) = BigInt
+
+# The decimal number k * 10^e rounded to F. When k and 10^|e| are both exactly representable
+# in F, the single multiplication or division is correctly rounded by IEEE arithmetic; this
+# covers all but extreme magnitudes. Beyond that, the power of ten is taken from a table of
+# correctly rounded powers and at most three roundings occur (k, the power, the product or
+# quotient), so the result is within two ulps of the decimal. Exact conversion for all
+# exponents is the job of a decimal parser and is not attempted here. Note that `F(k // 10^d)`
+# is not an option: Base performs that division in F itself, so the denominator is already
+# rounded for F = Float32 from 10^11 on (JuliaLang/julia#49749).
+function _decimal(::Type{F}, k::Integer, e::Integer) where F<:AbstractFloat
+    if abs(k) <= maxintfloat(F) && abs(e) <= _maxexp10(F)
+        p = F(10)^abs(e)
+        return e >= 0 ? F(k) * p : F(k) / p
+    elseif e >= 0
+        return F(k) * _pow10(F, e)
+    else
+        p = _pow10(F, -e)
+        isfinite(p) && return F(k) / p
+        # 10^(-e) overflows F although k * 10^e may not: divide by an exact power first
+        a = _maxexp10(F)
+        return F(k) / F(10)^a / _pow10(F, -e - a)
+    end
+end
+
+# 10^d for d ≥ 0 rounded to the nearest F, from tables for the IEEE types (Inf beyond floatmax)
+const _POW10_FLOAT64 = Float64[Float64(big(10)^d) for d in 0:308]
+const _POW10_FLOAT32 = Float32[Float32(big(10)^d) for d in 0:38]
+const _POW10_FLOAT16 = Float16[Float16(big(10)^d) for d in 0:4]
+_pow10(::Type{Float64}, d::Integer) = d < length(_POW10_FLOAT64) ? @inbounds(_POW10_FLOAT64[d + 1]) : Inf
+_pow10(::Type{Float32}, d::Integer) = d < length(_POW10_FLOAT32) ? @inbounds(_POW10_FLOAT32[d + 1]) : Inf32
+_pow10(::Type{Float16}, d::Integer) = d < length(_POW10_FLOAT16) ? @inbounds(_POW10_FLOAT16[d + 1]) : Inf16
+_pow10(::Type{F}, d::Integer) where F<:AbstractFloat = F(10)^d
+
+# The largest d such that 10^d = 2^d * 5^d is exactly representable in F, i.e. 5^d < 2^precision(F)
+_maxexp10(::Type{Float16}) = 4
+_maxexp10(::Type{Float32}) = 10
+_maxexp10(::Type{Float64}) = 22
+function _maxexp10(::Type{F}) where F<:AbstractFloat
+    # 5^d computed in F is exact while below 2^precision and at least 2^precision otherwise,
+    # so the comparison decides exactly; start from the closed form and correct if needed
+    lim = ldexp(one(F), precision(F))
+    d = floor(Int, precision(F) / log2(5))
+    while F(5)^d >= lim
+        d -= 1
+    end
+    while F(5)^(d + 1) < lim && isfinite(F(10)^(d + 1))
+        d += 1
+    end
+    return d
 end
 
 histrange(vs::NTuple{N,AbstractVector},nbins::NTuple{N,Integer},closed::Symbol) where {N} =
@@ -197,14 +276,6 @@ mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
         closed == :right || closed == :left || error("closed must :left or :right")
         isdensity && !(T <: AbstractFloat) && error("Density histogram must have float-type weights")
         _edges_nbins(edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
-        # We do not handle -0.0 in ranges correctly in `binindex` for performance
-        # Constructing ranges starting or ending with -0.0 is very hard,
-        # and ranges containing -0.0 elsewhere virtually impossible,
-        # but check this just in case as it is cheap
-        foreach(edges) do e
-            e isa AbstractRange && any(isequal(-0.0), e) &&
-                throw(ArgumentError("ranges containing -0.0 not allowed in edges"))
-        end
         new{T,N,E}(edges,weights,closed,isdensity)
     end
 end
@@ -225,7 +296,7 @@ function show(io::IO, h::AbstractHistogram)
     println(io, typeof(h))
     println(io,"edges:")
     for e in h.edges
-        println(io,"  ",e)
+        println(IOContext(io, :limit => true),"  ",e)
     end
     println(io,"weights: ",h.weights)
     println(io,"closed: ",h.closed)
@@ -240,25 +311,51 @@ binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]
 binindex(h::Histogram{T,N}, xs::NTuple{N,Real}) where {T,N} =
     map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
 
-_normalize_zero(x::AbstractFloat) = isequal(x, -0.0) ? zero(x) : x
-_normalize_zero(x::Any) = x
-
-# Always treat -0.0 like 0.0
+# Compare with `<` rather than the default `isless`: `isless(-0.0, 0.0)` is true, so -0.0
+# would be binned differently from 0.0, whereas `-0.0 < 0.0` is false and the two are
+# treated as equal. NaN compares false with everything under `<`, so it ends up outside
+# the edges (bin index 0 or `length(edge)`) and is dropped by `push!` as before. `<` is also
+# cheaper than `isless` and keeps the arithmetic fast path for ranges.
 @inline function _edge_binindex(edge::AbstractVector, closed::Symbol, x::Real)
     if closed === :right
-        return searchsortedfirst(edge, _normalize_zero(x), by=_normalize_zero) - 1
+        return searchsortedfirst(edge, x, lt = <) - 1
     else
-        return searchsortedlast(edge, _normalize_zero(x), by=_normalize_zero)
+        return searchsortedlast(edge, x, lt = <)
     end
 end
-# Passing by=_normalize_zero for ranges would have a large performance hit
-# as it would force using the AbstractVector fallback
-# This is not worth it given that it is very difficult to construct a range containing -0.0
-@inline function _edge_binindex(edge::AbstractRange, closed::Symbol, x::Real)
-    if closed === :right
-        return searchsortedfirst(edge, _normalize_zero(x)) - 1
-    else
-        return searchsortedlast(edge, _normalize_zero(x))
+# For equal-width bins, estimate the index from the width and correct it against the stored
+# edges. The estimate is off by at most one, so this is a few operations instead of a binary
+# search, and the result is exactly what the search would give.
+@inline function _edge_binindex(edge::UniformEdges, closed::Symbol, x::Real)
+    v = edge.edges
+    n = length(v)
+    @inbounds begin
+        lo = v[1]
+        hi = v[n]
+        if closed === :right
+            # number of edges strictly below x
+            lo < x || return 0
+            hi < x && return n
+            i = clamp(floor(Int, (x - lo) / edge.step) + 1, 1, n - 1)
+            while i > 0 && !(v[i] < x)
+                i -= 1
+            end
+            while i < n && v[i + 1] < x
+                i += 1
+            end
+        else
+            # number of edges at or below x
+            lo <= x || return 0
+            hi <= x && return n
+            i = clamp(floor(Int, (x - lo) / edge.step) + 1, 1, n - 1)
+            while i > 0 && !(v[i] <= x)
+                i -= 1
+            end
+            while i < n && v[i + 1] <= x
+                i += 1
+            end
+        end
+        return i
     end
 end
 
@@ -274,6 +371,7 @@ binvolume(::Type{V}, h::Histogram{T,N}, binidx::NTuple{N,Integer}) where {V,T,N}
 
 @inline _edge_binvolume(::Type{V}, edge::AbstractVector, i::Integer) where {V} = V(edge[i+1]) - V(edge[i])
 @inline _edge_binvolume(::Type{V}, edge::AbstractRange, i::Integer) where {V} = V(step(edge))
+@inline _edge_binvolume(::Type{V}, edge::UniformEdges, i::Integer) where {V} = V(step(edge))
 @inline _edge_binvolume(edge::AbstractVector, i::Integer) = _edge_binvolume(eltype(edge), edge, i)
 
 
@@ -380,13 +478,28 @@ Fit a histogram to `data`.
   data vectors), denoting the weight each observation contributes to the
   bin. If no weight vector is supplied, each observation has weight 1.
 
-* `edges`: a vector (typically an `AbstractRange` object), or tuple of vectors, that gives
+* `edges`: a vector (for example an `AbstractRange` object), or tuple of vectors, that gives
   the edges of the bins along each dimension. If no edges are provided, they are chosen
   so that approximately `nbins` bins of equal width are constructed along each dimension.
 
 !!! note
     In most cases, the number of bins will be `nbins`. However, to ensure that the bins have
-    equal width, more or fewer than `nbins` bins may be used.
+    equal width, more or fewer than `nbins` bins may be used. The automatically chosen bin
+    width is a "nice" decimal number (1, 2 or 5 times a power of ten) and the edges are
+    multiples of it rounded to the floating point type of the data, returned as
+    [`UniformEdges`](@ref), a vector of edges which also records the bin width as `step`.
+    All observations are guaranteed to fall inside the automatically chosen edges.
+    For data of extreme magnitude (beyond about `1e±22` for `Float64`, `1e±10` for `Float32`),
+    the edges may differ from the decimal number by up to two units in the last place.
+
+!!! note
+    Observations that fall outside the supplied `edges` are not counted. No error or warning
+    is raised, so the edges should span the data unless dropping observations is intended.
+    For the observations and the edges to compare as the decimal numbers they were written
+    as, the edges should have the same floating point type as the data. For example,
+    `0.7f0` is slightly smaller than the `Float64` value `0.7` and would be counted in the bin
+    below `0.7` if the edges are `Float64`, but in the bin starting at `0.7f0` if the edges
+    are `Float32`.
 
 # Keyword arguments
 
