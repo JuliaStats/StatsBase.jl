@@ -295,6 +295,15 @@ end
         fit(Histogram, [0.0, 1.0], -0.5:0.5:0.0, closed=:right) ==
         fit(Histogram, [-0.0, 1.0], -0.5:0.5:0.0, closed=:right)
 
+    # edges containing both -0.0 and 0.0, in either order, behave like two 0.0 edges:
+    # the bin between them is empty and the neighbouring bins get the same observations
+    for closed in (:left, :right)
+        obs = [-0.5, -0.0, 0.0, 0.5]
+        w = fit(Histogram, obs, [-1.0, 0.0, 0.0, 1.0], closed=closed).weights
+        @test fit(Histogram, obs, [-1.0, -0.0, 0.0, 1.0], closed=closed).weights == w
+        @test fit(Histogram, obs, [-1.0, 0.0, -0.0, 1.0], closed=closed).weights == w
+        @test w == (closed == :left ? [1, 0, 3] : [3, 0, 1])
+    end
     # ranges containing -0.0 behave like the corresponding ranges with 0.0
     @test fit(Histogram, [-0.5, 0.0], LinRange(-1.0, -0.0, 3)) ==
         fit(Histogram, [-0.5, 0.0], LinRange(-1.0, 0.0, 3))
