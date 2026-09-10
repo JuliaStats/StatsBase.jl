@@ -130,9 +130,8 @@ function histrange(lo::F, hi::F, n::Integer, closed::Symbol=:left) where F<:Abst
     return UniformEdges(F[edge(k) for k in kfirst:m:klast], stepF)
 end
 
-# Integer type for the multiples of the width: they are bounded by 2^precision(F) / 3
-_multiple_type(::Type{<:Union{Float16,Float32,Float64}}) = Int
-_multiple_type(::Type{<:AbstractFloat}) = BigInt
+# Integer type for the multiples of the width, which are bounded by 5/3 * maxintfloat(F)
+_multiple_type(::Type{F}) where F<:AbstractFloat = 2 * maxintfloat(F) <= typemax(Int) ? Int : BigInt
 
 # The decimal number k * 10^e rounded to F. When k and 10^|e| are both exactly representable
 # in F, the single multiplication or division is correctly rounded by IEEE arithmetic; this
@@ -158,13 +157,13 @@ function _decimal(::Type{F}, k::Integer, e::Integer) where F<:AbstractFloat
 end
 
 # 10^d for d ≥ 0 rounded to the nearest F, from tables for the IEEE types (Inf beyond floatmax)
-const _POW10_FLOAT64 = Float64[Float64(big(10)^d) for d in 0:308]
-const _POW10_FLOAT32 = Float32[Float32(big(10)^d) for d in 0:38]
-const _POW10_FLOAT16 = Float16[Float16(big(10)^d) for d in 0:4]
+const _POW10_FLOAT64 = [Float64(big(10)^d) for d in 0:308]
+const _POW10_FLOAT32 = [Float32(big(10)^d) for d in 0:38]
+const _POW10_FLOAT16 = [Float16(big(10)^d) for d in 0:4]
 _pow10(::Type{Float64}, d::Integer) = d < length(_POW10_FLOAT64) ? @inbounds(_POW10_FLOAT64[d + 1]) : Inf
 _pow10(::Type{Float32}, d::Integer) = d < length(_POW10_FLOAT32) ? @inbounds(_POW10_FLOAT32[d + 1]) : Inf32
 _pow10(::Type{Float16}, d::Integer) = d < length(_POW10_FLOAT16) ? @inbounds(_POW10_FLOAT16[d + 1]) : Inf16
-_pow10(::Type{F}, d::Integer) where F<:AbstractFloat = F(10)^d
+_pow10(::Type{F}, d::Integer) where F<:AbstractFloat = F(big(10)^d)
 
 # The largest d such that 10^d = 2^d * 5^d is exactly representable in F, i.e. 5^d < 2^precision(F)
 _maxexp10(::Type{Float16}) = 4
@@ -487,7 +486,7 @@ Fit a histogram to `data`.
     equal width, more or fewer than `nbins` bins may be used. The automatically chosen bin
     width is a "nice" decimal number (1, 2 or 5 times a power of ten) and the edges are
     multiples of it rounded to the floating point type of the data, returned as
-    [`UniformEdges`](@ref), a vector of edges which also records the bin width as `step`.
+    [`StatsBase.UniformEdges`](@ref), a vector of edges which also records the bin width as `step`.
     All observations are guaranteed to fall inside the automatically chosen edges.
     For data of extreme magnitude (beyond about `1e±22` for `Float64`, `1e±10` for `Float32`),
     the edges may differ from the decimal number by up to two units in the last place.

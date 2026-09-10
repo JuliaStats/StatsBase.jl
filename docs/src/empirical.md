@@ -10,6 +10,7 @@ Histograms can be fitted to data using the `fit` method.
 
 ```@docs
 fit(::Type{Histogram}, args...; kwargs...)
+StatsBase.UniformEdges
 ```
 
 Additional methods

@@ -96,8 +96,8 @@ end
     @test StatsBase.histrange([200.0,300.0], 10, :right) == 190.0:10.0:300.0
 
     @test @inferred(StatsBase.histrange(Int64[1:5;], 1, :left)) == 0:5:10
-    @test StatsBase.histrange(Int64[1:5;], 1, :left) isa StatsBase.UniformEdges{Float64}
-    @test step(StatsBase.histrange(Int64[1:5;], 1, :left)) == 5.0
+    @test StatsBase.histrange([1:5;], 1, :left) isa StatsBase.UniformEdges{Float64}
+    @test step(StatsBase.histrange([1:5;], 1, :left)) == 5.0
     @test step(StatsBase.histrange([0.2, 0.3], 10, :left)) == 0.01
     @test step(StatsBase.histrange([0.0, 0.2], 9, :right)) == 0.05
     @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
@@ -133,8 +133,8 @@ end
     @test StatsBase.histrange(Float32[0.7, 0.8], 12, :right) == Float32.(0.69:0.01:0.8)
     @test StatsBase.histrange(Float16[0.001, 0.002], 12, :left) == Float16.(0.001:0.0001:0.0021)
     # BigFloat[0.7, 0.8] would convert the Float64 literals, which lie below the decimals
-    @test StatsBase.histrange(parse.(BigFloat, ["0.7", "0.8"]), 12, :left) ==
-        parse.(BigFloat, ["0.7", "0.71", "0.72", "0.73", "0.74", "0.75", "0.76", "0.77", "0.78", "0.79", "0.8", "0.81"])
+    @test StatsBase.histrange(BigFloat.(["0.7", "0.8"]), 12, :left) ==
+        BigFloat.(["0.7", "0.71", "0.72", "0.73", "0.74", "0.75", "0.76", "0.77", "0.78", "0.79", "0.8", "0.81"])
 
     # Beyond the exactly representable powers of ten, edges are within two ulps of the decimal
     for (v, expected) in (([1e300, 3e300], [1e300, 1.5e300, 2e300, 2.5e300, 3e300, 3.5e300]),
@@ -150,11 +150,18 @@ end
     # Requested bins finer than the resolution of the data give fewer, strictly increasing edges
     r = StatsBase.histrange([1e17, 1e17 + 16], 4, :right)
     @test issorted(r, lt = <=) && first(r) < 1e17 && 1e17 + 16 <= last(r)
+    @test length(r) == 3  # 2 bins rather than the 4 requested: the data spans one ulp
     for F in (Float16, Float32, Float64), closed in (:left, :right), n in (1, 3, 10, 1000)
         for x in (F(0.7), F(1), prevfloat(F(2)), F(-1000), floatmax(F) / 2), k in (0, 1, 2, 5, 40)
-            r = StatsBase.histrange(x, nextfloat(x, k), n, closed)
+            y = nextfloat(x, k)
+            r = StatsBase.histrange(x, y, n, closed)
             @test issorted(r, lt = <=)
             @test length(r) <= max(k, 1) + 2
+            if closed == :right
+                @test first(r) < x && y <= last(r)
+            else
+                @test first(r) <= x && y < last(r)
+            end
         end
     end
 
