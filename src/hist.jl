@@ -197,14 +197,6 @@ mutable struct Histogram{T<:Real,N,E} <: AbstractHistogram{T,N,E}
         closed == :right || closed == :left || error("closed must :left or :right")
         isdensity && !(T <: AbstractFloat) && error("Density histogram must have float-type weights")
         _edges_nbins(edges) == size(weights) || error("Histogram edge vectors must be 1 longer than corresponding weight dimensions")
-        # We do not handle -0.0 in ranges correctly in `binindex` for performance
-        # Constructing ranges starting or ending with -0.0 is very hard,
-        # and ranges containing -0.0 elsewhere virtually impossible,
-        # but check this just in case as it is cheap
-        foreach(edges) do e
-            e isa AbstractRange && any(isequal(-0.0), e) &&
-                throw(ArgumentError("ranges containing -0.0 not allowed in edges"))
-        end
         new{T,N,E}(edges,weights,closed,isdensity)
     end
 end
@@ -240,25 +232,16 @@ binindex(h::AbstractHistogram{T,1}, x::Real) where {T} = binindex(h, (x,))[1]
 binindex(h::Histogram{T,N}, xs::NTuple{N,Real}) where {T,N} =
     map((edge, x) -> _edge_binindex(edge, h.closed, x), h.edges, xs)
 
-_normalize_zero(x::AbstractFloat) = isequal(x, -0.0) ? zero(x) : x
-_normalize_zero(x::Any) = x
-
-# Always treat -0.0 like 0.0
+# Compare with `<` rather than the default `isless`: `isless(-0.0, 0.0)` is true, so -0.0
+# would be binned differently from 0.0, whereas `-0.0 < 0.0` is false and the two are
+# treated as equal. NaN compares false with everything under `<`, so it ends up outside
+# the edges (bin index 0 or `length(edge)`) and is dropped by `push!` as before. `<` is also
+# cheaper than `isless` and keeps the arithmetic fast path for ranges.
 @inline function _edge_binindex(edge::AbstractVector, closed::Symbol, x::Real)
     if closed === :right
-        return searchsortedfirst(edge, _normalize_zero(x), by=_normalize_zero) - 1
+        return searchsortedfirst(edge, x, lt = <) - 1
     else
-        return searchsortedlast(edge, _normalize_zero(x), by=_normalize_zero)
-    end
-end
-# Passing by=_normalize_zero for ranges would have a large performance hit
-# as it would force using the AbstractVector fallback
-# This is not worth it given that it is very difficult to construct a range containing -0.0
-@inline function _edge_binindex(edge::AbstractRange, closed::Symbol, x::Real)
-    if closed === :right
-        return searchsortedfirst(edge, _normalize_zero(x)) - 1
-    else
-        return searchsortedlast(edge, _normalize_zero(x))
+        return searchsortedlast(edge, x, lt = <)
     end
 end
 
