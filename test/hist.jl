@@ -95,12 +95,12 @@ end
     @test StatsBase.histrange([200.0,300.0], 10, :left) == 200.0:10.0:310.0
     @test StatsBase.histrange([200.0,300.0], 10, :right) == 190.0:10.0:300.0
 
-    @test @inferred(StatsBase.histrange(Int64[1:5;], 1, :left)) == 0:5:10
+    @test @inferred(StatsBase.histrange([1:5;], 1, :left)) == 0:5:10
     @test StatsBase.histrange([1:5;], 1, :left) isa StatsBase.UniformEdges{Float64}
     @test step(StatsBase.histrange([1:5;], 1, :left)) == 5.0
     @test step(StatsBase.histrange([0.2, 0.3], 10, :left)) == 0.01
     @test step(StatsBase.histrange([0.0, 0.2], 9, :right)) == 0.05
-    @test StatsBase.histrange(Int64[1:10;], 1, :left) == 0:10:20
+    @test StatsBase.histrange([1:10;], 1, :left) == 0:10:20
 
     @test StatsBase.histrange([0, 1, 2, 3], 4, :left) == 0.0:1.0:4.0
     @test StatsBase.histrange([0, 1, 1, 3], 4, :left) == 0.0:1.0:4.0
