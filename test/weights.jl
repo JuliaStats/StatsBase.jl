@@ -279,6 +279,27 @@ end
         @test mean(a, f(wt), dims=3) ≈ sum(a.*reshape(wt, 1, 1, length(wt)), dims=3)/sum(wt)
         @test_throws ErrorException mean(a, f(wt), dims=4)
     end
+
+    @test mean(√, [1:3;], f([1.0, 1.0, 0.5])) ≈ 1.3120956
+    @test mean(√, 1:3, f([1.0, 1.0, 0.5]))    ≈ 1.3120956
+    @test mean(√, [1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ 1.60824421 + 0.88948688im
+
+    @test mean(log, [1:3;], f([1.0, 1.0, 0.5])) ≈ 0.49698133
+    @test mean(log, 1:3, f([1.0, 1.0, 0.5])) ≈ 0.49698133
+    @test mean(log, [1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ 1.155407982 + 1.03678427im
+
+    @test mean(x -> x^2, [1:3;], f([1.0, 1.0, 0.5])) ≈ 3.8
+    @test mean(x -> x^2, 1:3, f([1.0, 1.0, 0.5])) ≈ 3.8
+    @test mean(x -> x^2, [1 + 2im, 4 + 5im], f([1.0, 0.5])) ≈ -5.0 + 16.0im
+
+    c = 1.0:9.0
+    w = UnitWeights{Float64}(9)
+    @test mean(√, c, w) ≈ sum(sqrt.(c)) / length(c)
+    @test_throws DimensionMismatch mean(√, c, UnitWeights{Float64}(6))
+    @test mean(log, c, w) ≈ sum(log.(c)) / length(c)
+    @test_throws DimensionMismatch mean(log, c, UnitWeights{Float64}(6))
+    @test mean(x -> x^2, c, w) ≈ sum(c.^2) / length(c)
+    @test_throws DimensionMismatch mean(x -> x^2, c, UnitWeights{Float64}(6))
 end
 
 @testset "Quantile fweights" begin
