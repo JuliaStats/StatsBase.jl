@@ -14,7 +14,6 @@ using Statistics
 using LinearAlgebra
 using Random
 using Printf
-using SparseArrays
 import IrrationalConstants
 import Random: rand, rand!
 import LinearAlgebra: BlasReal, BlasFloat

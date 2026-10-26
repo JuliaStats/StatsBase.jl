@@ -44,17 +44,12 @@ II = [false true  false false false;
 x = [2, 1, 3, 3, 2]
 @test indicatormat(x, 3) == II
 @test indicatormat(SparseMatrixCSC, x, 3)::SparseMatrixCSC{Bool,Int} == II
-@test (@test_deprecated indicatormat(x, 3; sparse=true)) == II
-@test (@test_deprecated indicatormat(x, 3; sparse=false)) == II
 
 x = ["b", "a", "c", "c", "b"]
 @test indicatormat(x) == II
 @test indicatormat(x, ["a", "b", "c"]) == II
 @test indicatormat(SparseMatrixCSC, x)::SparseMatrixCSC{Bool,Int} == II
 @test indicatormat(SparseMatrixCSC, x, ["a", "b", "c"])::SparseMatrixCSC{Bool,Int} == II
-@test (@test_deprecated indicatormat(x; sparse=true)) == II
-@test (@test_deprecated indicatormat(x; sparse=false)) == II
-@test (@test_deprecated indicatormat(x, ["a", "b", "c"]; sparse=true)) == II
 
 io = IOBuffer()
 describe(io, collect(1:10))
