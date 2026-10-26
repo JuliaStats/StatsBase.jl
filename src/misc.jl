@@ -123,11 +123,7 @@ end
 Construct a boolean matrix `I` of size `(k, length(x))` such that
 `I[x[i], i] = true` and all other elements are set to `false`.
 If `SparseMatrixCSC` is passed as first argument, the output will be a sparse matrix,
-otherwise it will be dense (default).
-
-!!! compat "Deprecated keyword argument"
-    The keyword argument `sparse` is deprecated.
-    Use `indicatormat(SparseMatrixCSC, x, k)` instead of `indicatormat(x, k; sparse=true)`.
+otherwise it will be dense (default). Sparse output requires SparseArrays to be loaded.
 
 # Examples
 
@@ -140,11 +136,14 @@ julia> indicatormat([1 2 2], 2)
  0  1  1
 ```
 """
-function indicatormat(x::AbstractArray{<:Integer}, k::Integer; sparse::Union{Bool,Nothing}=nothing)
-    sparse === nothing || _depwarn_indicatormat_sparse()
-    sparse === true ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
+function indicatormat(x::AbstractArray{<:Integer}, k::Integer)
+    n = length(x)
+    r = zeros(Bool, k, n)
+    for i = 1 : n
+        r[x[i], i] = true
+    end
+    return r
 end
-indicatormat(::Type{SparseMatrixCSC}, x::AbstractArray{<:Integer}, k::Integer) = _indicatormat_sparse(x, k)
 
 
 """
@@ -154,35 +153,9 @@ Construct a boolean matrix `I` of size `(length(c), length(x))`.
 Let `ci` be the index of `x[i]` in `c`. Then `I[ci, i] = true` and
 all other elements are `false`.
 If `SparseMatrixCSC` is passed as first argument, the output will be a sparse matrix,
-otherwise it will be dense (default).
-
-!!! compat "Deprecated keyword argument"
-    The keyword argument `sparse` is deprecated.
-    Use `indicatormat(SparseMatrixCSC, x, c)` instead of `indicatormat(x, c; sparse=true)`.
+otherwise it will be dense (default). Sparse output requires SparseArrays to be loaded.
 """
-function indicatormat(x::AbstractArray, c::AbstractArray=sort!(unique(x)); sparse::Union{Bool,Nothing}=nothing)
-    sparse === nothing || _depwarn_indicatormat_sparse()
-    sparse === true ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
-end
-indicatormat(::Type{SparseMatrixCSC}, x::AbstractArray, c::AbstractArray=sort!(unique(x))) = _indicatormat_sparse(x, c)
-
-# TODO: Remove keyword argument `sparse` and make SparseArrays a weak dependency (StatsBase 0.35)
-_depwarn_indicatormat_sparse() =
-    Base.depwarn("keyword argument `sparse` of `indicatormat` is deprecated; " *
-                 "use `indicatormat(SparseMatrixCSC, x, ...)` (requires `using SparseArrays`) " *
-                 "for sparse and `indicatormat(x, ...)` for dense output.", :indicatormat)
-
-
-function _indicatormat_dense(x::AbstractArray{<:Integer}, k::Integer)
-    n = length(x)
-    r = zeros(Bool, k, n)
-    for i = 1 : n
-        r[x[i], i] = true
-    end
-    return r
-end
-
-function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
+function indicatormat(x::AbstractArray{T}, c::AbstractArray{T}=sort!(unique(x))) where T
     d = indexmap(c)
     m = length(c)
     n = length(x)
@@ -194,18 +167,4 @@ function _indicatormat_dense(x::AbstractArray{T}, c::AbstractArray{T}) where T
         o += m
     end
     return r
-end
-
-_indicatormat_sparse(x::AbstractArray{<:Integer}, k::Integer) = (n = length(x); sparse(x, 1:n, true, k, n))
-
-function _indicatormat_sparse(x::AbstractArray{T}, c::AbstractArray{T}) where T
-    d = indexmap(c)
-    m = length(c)
-    n = length(x)
-
-    rinds = Vector{Int}(undef, n)
-    for i = 1 : n
-        rinds[i] = d[x[i]]
-    end
-    return sparse(rinds, 1:n, true, m, n)
 end
