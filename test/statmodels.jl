@@ -201,7 +201,31 @@ end
               aic, aicc, bic, r2, r², adjr2, adjr²)
         @test f isa Function
     end
-    # Defined but not reexported
+# Defined but not reexported
     @test StatsBase.params isa Function
     @test StatsBase.params! isa Function
+end
+
+@testset "CoefTable abstract matrix inputs" begin
+    values = [1.0 10.0; 2.0 20.0; 3.0 30.0]
+    columns, rows = ["a", "b"], ["x", "y", "z"]
+    for wrap in (identity, x -> view(x, :, :), x -> transpose(copy(transpose(x))))
+        matrix = wrap(copy(values))
+        reference = CoefTable(Matrix(matrix), columns, rows)
+        table = CoefTable(matrix, columns, rows)
+        @test collect(table) == collect(reference)
+        @test sprint(show, MIME"text/plain"(), table) ==
+              sprint(show, MIME"text/plain"(), reference)
+        @test sprint(show, MIME"text/markdown"(), table) ==
+              sprint(show, MIME"text/markdown"(), reference)
+        @test eltype(table.cols[1]) === eltype(values)
+        matrix[1, 1] = -99
+        @test table.cols[1][1] == values[1, 1]
+        table.cols[1][2] = 77
+        @test matrix[2, 1] == values[2, 1]
+        @test_throws ArgumentError CoefTable(matrix, ["a"], rows)
+        @test_throws ArgumentError CoefTable(matrix, columns, ["x"])
+        @test_throws ArgumentError CoefTable(matrix, columns, rows, 3)
+        @test_throws ArgumentError CoefTable(matrix, columns, rows, 0, 3)
+    end
 end

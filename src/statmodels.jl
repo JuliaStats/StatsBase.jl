@@ -82,10 +82,9 @@ mutable struct CoefTable
         new(cols,colnms,rownms,pvalcol,teststatcol)
     end
 
-    function CoefTable(mat::Matrix,colnms::Vector,rownms::Vector,
+    function CoefTable(mat::AbstractMatrix,colnms::Vector,rownms::Vector,
                        pvalcol::Int=0,teststatcol::Int=0)
-        nc = size(mat,2)
-        cols = Any[mat[:, i] for i in 1:nc]
+        cols = Any[collect(col) for col in eachcol(mat)]
         CoefTable(cols,colnms,rownms,pvalcol,teststatcol)
     end
 end
