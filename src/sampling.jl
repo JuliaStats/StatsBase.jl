@@ -386,8 +386,8 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     vprime = exp(-randexp(rng)/n)
     q1 = N - n + 1
     q2 = q1 / N
-    alpha = 1 / 13 # choose alpha value
-    threshold = alpha * n
+    inv_alpha = 13.0 # Switch to algorithm A when N <= n / alpha.
+    threshold = inv_alpha * n
 
     while n > 1 && threshold < N
         while true
@@ -440,11 +440,11 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
         n -= 1
         q1 -= s
         q2 = q1 / N
-        threshold -= alpha
+        threshold -= inv_alpha
     end
 
     if n > 1
-        seqsample_a!(rng, a[i+1:end], @view x[j+1:end])
+        seqsample_a!(rng, @view(a[i+1:end]), @view(x[j+1:end]))
     else
         s = trunc(Int, N * vprime)
         x[j+=1] = a[i+=s+1]
