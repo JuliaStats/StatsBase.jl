@@ -71,6 +71,7 @@ mutable struct CoefTable
     teststatcol::Int
     function CoefTable(cols::Vector,colnms::Vector,rownms::Vector,
                        pvalcol::Int=0,teststatcol::Int=0)
+        Base.require_one_based_indexing(cols...)
         nc = length(cols)
         nrs = map(length,cols)
         nr = nrs[1]
@@ -84,7 +85,8 @@ mutable struct CoefTable
 
     function CoefTable(mat::AbstractMatrix,colnms::Vector,rownms::Vector,
                        pvalcol::Int=0,teststatcol::Int=0)
-        cols = Any[collect(col) for col in eachcol(mat)]
+        Base.require_one_based_indexing(mat)
+        cols = collect(Any, eachcol(mat))
         CoefTable(cols,colnms,rownms,pvalcol,teststatcol)
     end
 end
