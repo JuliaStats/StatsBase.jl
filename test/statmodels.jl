@@ -1,6 +1,6 @@
 using StatsBase
 using StatsBase: PValue, TestStat
-using Test, Random, StatsAPI, LinearAlgebra, Markdown
+using Test, Random, StatsAPI, LinearAlgebra, Markdown, OffsetArrays
 
 v1 = [1.45666, -23.14, 1.56734e-13]
 v2 = ["Good", "Great", "Bad"]
@@ -201,7 +201,7 @@ end
               aic, aicc, bic, r2, r², adjr2, adjr²)
         @test f isa Function
     end
-# Defined but not reexported
+    # Defined but not reexported
     @test StatsBase.params isa Function
     @test StatsBase.params! isa Function
 end
@@ -214,18 +214,24 @@ end
         reference = CoefTable(Matrix(matrix), columns, rows)
         table = CoefTable(matrix, columns, rows)
         @test collect(table) == collect(reference)
-        @test sprint(show, MIME"text/plain"(), table) ==
-              sprint(show, MIME"text/plain"(), reference)
-        @test sprint(show, MIME"text/markdown"(), table) ==
-              sprint(show, MIME"text/markdown"(), reference)
+        @test repr("text/plain", table) == repr("text/plain", reference)
+        @test repr("text/markdown", table) == repr("text/markdown", reference)
         @test eltype(table.cols[1]) === eltype(values)
-        matrix[1, 1] = -99
-        @test table.cols[1][1] == values[1, 1]
-        table.cols[1][2] = 77
-        @test matrix[2, 1] == values[2, 1]
-        @test_throws ArgumentError CoefTable(matrix, ["a"], rows)
-        @test_throws ArgumentError CoefTable(matrix, columns, ["x"])
-        @test_throws ArgumentError CoefTable(matrix, columns, rows, 3)
-        @test_throws ArgumentError CoefTable(matrix, columns, rows, 0, 3)
+        @test_throws ArgumentError("colnms should have length 0 or 2") CoefTable(matrix, ["a"], rows)
+        @test_throws ArgumentError("rownms should have length 0 or 3") CoefTable(matrix, columns, ["x"])
+        @test_throws ArgumentError("pvalcol should be between 0 and 2") CoefTable(matrix, columns, rows, 3)
+        @test_throws ArgumentError("teststatcol should be between 0 and 2") CoefTable(matrix, columns, rows, 0, 3)
     end
+end
+
+@testset "CoefTable rejects offset arrays" begin
+    offset_error = ArgumentError("offset arrays are not supported but got an array with index other than 1")
+    values = [1.0 10.0; 2.0 20.0; 3.0 30.0]
+    columns, rows = ["a", "b"], ["x", "y", "z"]
+    # matrix inputs, with offset row or column axis
+    @test_throws offset_error CoefTable(OffsetArray(values, 0:2, 1:2), columns, rows)
+    @test_throws offset_error CoefTable(OffsetArray(values, 1:3, 0:1), columns, rows)
+    # vector-of-columns inputs, with an offset column
+    @test_throws offset_error CoefTable(Any[OffsetArray(values[:, 1], 0:2), values[:, 2]], columns, rows)
+    @test_throws offset_error CoefTable(Any[values[:, 1], OffsetArray(values[:, 2], 0:2)], columns, rows)
 end
