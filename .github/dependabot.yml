@@ -6,8 +6,8 @@ updates:
     schedule:
       interval: "monthly"
   - package-ecosystem: "julia"
-    directories: # Location of Julia projects
-      - "/"
-      - "/docs"
+    # The `docs` project is part of the workspace defined in Project.toml
+    # and is therefore covered by the root directory.
+    directory: "/"
     schedule:
       interval: "daily"
