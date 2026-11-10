@@ -13,33 +13,47 @@ else
 end
 
 #### functions for counting a single list of integers (1D)
+
+_count_modulo(x::Union{Base.BitInteger,BigInt}) = x % UInt
+_count_modulo(::Integer) = nothing
+
+@inline _count_index(x::Union{Base.BitInteger,BigInt}, m0::Integer, u0::UInt) =
+    ((x % UInt) - u0) % Int + 1
+@inline _count_index(x::Integer, m0::Integer, u0) =
+    Int(x - (m0 + zero(Int))) + 1
+
 """
-    addcounts!(r, x, levels::UnitRange{<:Integer}, [wv::AbstractWeights])
+    addcounts!(r, x, levels::AbstractUnitRange{<:Integer}, [wv::AbstractWeights])
 
 Add the number of occurrences in `x` of each value in `levels` to an existing
-array `r`. For each `xi ∈ x`, if `xi == levels[j]`, then we increment `r[j]`.
+array `r`. `r[j]` counts the `j`th value in `levels`, independently of the
+indices of `levels`.
 
 If a weighting vector `wv` is specified, the sum of weights is used rather than the
 raw counts.
 """
-function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer})
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer})
     # add counts of integers from x that fall within levels to r
 
-    checkbounds(r, axes(levels)...)
+    checkbounds(r, 1:length(levels))
 
     m0 = first(levels)
     m1 = last(levels)
-    b = m0 - firstindex(levels) # firstindex(levels) == 1 because levels::UnitRange{<:Integer}
+    # `m0 <= xi <= m1` implies `0 <= xi - m0 < length(levels) <= length(r) <= typemax(Int)`
+    # (by the `checkbounds` call above), so the offset is computed exactly in modular
+    # `UInt` arithmetic for built-in integers, without per-element `BigInt` allocations.
+    # Other Integer types retain ordinary arithmetic rather than requiring modular conversion.
+    u0 = _count_modulo(m0)
 
     for xi in x
         if m0 <= xi <= m1
-            r[xi - b] += 1
+            r[_count_index(xi, m0, u0)] += 1
         end
     end
     return r
 end
 
-function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}, wv::AbstractWeights)
+function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer}, wv::AbstractWeights)
     # add wv weighted counts of integers from x that fall within levels to r
 
     length(x) == length(wv) ||
@@ -47,16 +61,17 @@ function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::UnitR
 
     xv = vec(x) # discard shape because weights() discards shape
 
-    checkbounds(r, axes(levels)...)
+    checkbounds(r, 1:length(levels))
 
     m0 = first(levels)
     m1 = last(levels)
-    b = m0 - 1
+    # See the unweighted method: the offset `xi - m0` is exact in modular `UInt` arithmetic.
+    u0 = _count_modulo(m0)
 
     for i in eachindex(xv, wv)
         xi = xv[i]
         if m0 <= xi <= m1
-            r[xi - b] += wv[i]
+            r[_count_index(xi, m0, u0)] += wv[i]
         end
     end
     return r
@@ -65,7 +80,7 @@ end
 
 """
     counts(x, [wv::AbstractWeights])
-    counts(x, levels::UnitRange{<:Integer}, [wv::AbstractWeights])
+    counts(x, levels::AbstractUnitRange{<:Integer}, [wv::AbstractWeights])
     counts(x, k::Integer, [wv::AbstractWeights])
 
 Count the number of times each value in `x` occurs. If `levels` is provided, only values
@@ -80,9 +95,9 @@ The output is a vector of length `length(levels)`.
 """
 function counts end
 
-counts(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) =
+counts(x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer}) =
     addcounts!(zeros(Int, length(levels)), x, levels)
-counts(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}, wv::AbstractWeights) =
+counts(x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer}, wv::AbstractWeights) =
     addcounts!(zeros(eltype(wv), length(levels)), x, levels, wv)
 counts(x::AbstractArray{<:Integer}, k::Integer) = counts(x, 1:k)
 counts(x::AbstractArray{<:Integer}, k::Integer, wv::AbstractWeights) = counts(x, 1:k, wv)
@@ -99,8 +114,8 @@ Equivalent to `counts(x, levels) / length(x)`.
 If a vector of weights `wv` is provided, the proportion of weights is computed rather
 than the proportion of raw counts.
 """
-proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}) = counts(x, levels) / length(x)
-proportions(x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer}, wv::AbstractWeights) =
+proportions(x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer}) = counts(x, levels) / length(x)
+proportions(x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer}, wv::AbstractWeights) =
     counts(x, levels, wv) / sum(wv)
 
 """

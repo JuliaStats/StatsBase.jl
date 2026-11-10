@@ -7,7 +7,7 @@ The package provides functions to count the occurrences of distinct values.
 ```@docs
 counts
 proportions
-addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::UnitRange{<:Integer})
+addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer})
 ```
 
 ## Counting over arbitrary distinct values

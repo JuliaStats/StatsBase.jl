@@ -4,6 +4,80 @@ using OffsetArrays
 
 n = 5000
 
+@testset "abstract unit ranges as count levels" begin
+    x = [1, 1, 2, 3]
+    w = weights([1.0, 2.0, 3.0, 4.0])
+    @test counts(x, Base.OneTo(4)) == [2, 1, 1, 0]
+    @test counts(x, Base.OneTo(5)) == [2, 1, 1, 0, 0]
+    @test isempty(counts(x, Base.OneTo(0)))
+
+    # Bin positions depend on the values, even for a range with offset axes.
+    levels = Base.IdentityUnitRange(2:5)
+    @test counts(x, levels) == [1, 1, 0, 0]
+    @test addcounts!(ones(Int, 4), x, levels) == [2, 2, 1, 1]
+    @test counts(x, levels, w) == [3.0, 4.0, 0.0, 0.0]
+    @test proportions(x, levels) == [0.25, 0.25, 0.0, 0.0]
+    @test proportions(x, levels, w) ≈ [0.3, 0.4, 0.0, 0.0]
+    @test addcounts!(ones(4), x, levels, w) == [4.0, 5.0, 1.0, 1.0]
+
+    # `r` must have linear indices `1:length(levels)`.
+    @test_throws BoundsError addcounts!(zeros(Int, 3), x, levels)
+    @test_throws BoundsError addcounts!(zeros(3), x, levels, w)
+    @test_throws BoundsError addcounts!(OffsetVector(zeros(Int, 4), 2:5), x, levels)
+    @test_throws BoundsError addcounts!(OffsetVector(zeros(4), 2:5), x, levels, w)
+
+    # Examples from #908.
+    @test counts(x, Base.OneTo(4), w) == [3.0, 3.0, 4.0, 0.0]
+    @test proportions(x, Base.OneTo(4)) == [0.5, 0.25, 0.25, 0.0]
+    @test proportions(x, Base.OneTo(4), w) ≈ [0.3, 0.3, 0.4, 0.0]
+end
+
+@testset "integer count bin arithmetic" begin
+    # The offset must not overflow during subtraction of small integers.
+    levels = Int8(-100):Int8(100)
+    x = Int8[-101, -100, 100, 101]
+    w = weights([1.0, 2.0, 3.0, 4.0])
+    expected = zeros(Int, 201)
+    expected[[1, 201]] .= 1
+    expected_w = zeros(201)
+    expected_w[[1, 201]] = [2.0, 3.0]
+    @test counts(x, levels) == expected
+    @test counts(x, levels, w) == expected_w
+
+    lo = typemin(Int)
+    limits = Base.IdentityUnitRange(lo:lo+1)
+    wide = BigInt[lo, big(lo) + 1]
+    @test counts(wide, limits) == [1, 1]
+    @test counts(wide, limits, weights([2.0, 3.0])) == [2.0, 3.0]
+
+    for T in (UInt64, UInt128)
+        zero_limits = zero(T):one(T)
+        @test counts(BigInt[0, 1], zero_limits) == [1, 1]
+        @test counts(BigInt[0, 1], zero_limits, weights([2.0, 3.0])) == [2.0, 3.0]
+    end
+
+end
+
+struct PromotingCountInteger <: Integer
+    value::BigInt
+end
+Base.convert(::Type{BigInt}, x::PromotingCountInteger) = x.value
+Base.BigInt(x::PromotingCountInteger) = x.value
+Base.convert(::Type{UInt}, x::PromotingCountInteger) = UInt(x.value)
+Base.promote_rule(::Type{PromotingCountInteger}, ::Type{T}) where {T<:Integer} = BigInt
+
+@testset "integer count bin arithmetic with generic promotion" begin
+    # Ordinary arithmetic works without a specialized modular conversion.
+    x = PromotingCountInteger.(BigInt[-1, 1])
+    @test counts(x, -1:1) == [1, 0, 1]
+    @test counts(x, -1:1, weights([2.0, 3.0])) == [2.0, 0.0, 3.0]
+
+    lo = big(10)^50
+    wide = PromotingCountInteger.([lo, lo + 1])
+    @test counts(wide, lo:lo+1) == [1, 1]
+    @test counts(wide, lo:lo+1, weights([2.0, 3.0])) == [2.0, 3.0]
+end
+
 @testset "1D integer counts" begin
     x = rand(1:5, n)
     w = weights(rand(n))
