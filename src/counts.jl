@@ -13,11 +13,20 @@ else
 end
 
 #### functions for counting a single list of integers (1D)
+
+_count_modulo(x::Union{Base.BitInteger,BigInt}) = x % UInt
+_count_modulo(::Integer) = nothing
+
+@inline _count_index(x::Union{Base.BitInteger,BigInt}, m0::Integer, u0::UInt) =
+    ((x % UInt) - u0) % Int + 1
+@inline _count_index(x::Integer, m0::Integer, u0) =
+    Int(x - (m0 + zero(Int))) + 1
+
 """
     addcounts!(r, x, levels::AbstractUnitRange{<:Integer}, [wv::AbstractWeights])
 
 Add the number of occurrences in `x` of each value in `levels` to an existing
-array `r`. The `j`th bin counts the `j`th value in `levels`, independently of the
+array `r`. `r[j]` counts the `j`th value in `levels`, independently of the
 indices of `levels`.
 
 If a weighting vector `wv` is specified, the sum of weights is used rather than the
@@ -26,16 +35,19 @@ raw counts.
 function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::AbstractUnitRange{<:Integer})
     # add counts of integers from x that fall within levels to r
 
-    checkbounds(r, Base.OneTo(length(levels)))
+    checkbounds(r, 1:length(levels))
 
     m0 = first(levels)
     m1 = last(levels)
-    # Promote narrow bounds before subtracting; keep generic integer arithmetic.
-    lower = m0 + zero(Int)
+    # `m0 <= xi <= m1` implies `0 <= xi - m0 < length(levels) <= length(r) <= typemax(Int)`
+    # (by the `checkbounds` call above), so the offset is computed exactly in modular
+    # `UInt` arithmetic for built-in integers, without per-element `BigInt` allocations.
+    # Other Integer types retain ordinary arithmetic rather than requiring modular conversion.
+    u0 = _count_modulo(m0)
 
     for xi in x
         if m0 <= xi <= m1
-            r[(xi - lower) + 1] += 1
+            r[_count_index(xi, m0, u0)] += 1
         end
     end
     return r
@@ -49,16 +61,17 @@ function addcounts!(r::AbstractArray, x::AbstractArray{<:Integer}, levels::Abstr
 
     xv = vec(x) # discard shape because weights() discards shape
 
-    checkbounds(r, Base.OneTo(length(levels)))
+    checkbounds(r, 1:length(levels))
 
     m0 = first(levels)
     m1 = last(levels)
-    lower = m0 + zero(Int)
+    # See the unweighted method: the offset `xi - m0` is exact in modular `UInt` arithmetic.
+    u0 = _count_modulo(m0)
 
     for i in eachindex(xv, wv)
         xi = xv[i]
         if m0 <= xi <= m1
-            r[(xi - lower) + 1] += wv[i]
+            r[_count_index(xi, m0, u0)] += wv[i]
         end
     end
     return r

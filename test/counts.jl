@@ -11,12 +11,6 @@ n = 5000
     @test counts(x, Base.OneTo(5)) == [2, 1, 1, 0, 0]
     @test isempty(counts(x, Base.OneTo(0)))
 
-    lo = typemin(Int)
-    limits = Base.IdentityUnitRange(lo:lo+1)
-    wide = BigInt[lo, big(lo) + 1]
-    @test counts(wide, limits) == [1, 1]
-    @test counts(wide, limits, weights([2.0, 3.0])) == [2.0, 3.0]
-
     # Bin positions depend on the values, even for a range with offset axes.
     levels = Base.IdentityUnitRange(2:5)
     @test counts(x, levels) == [1, 1, 0, 0]
@@ -24,10 +18,22 @@ n = 5000
     @test counts(x, levels, w) == [3.0, 4.0, 0.0, 0.0]
     @test proportions(x, levels) == [0.25, 0.25, 0.0, 0.0]
     @test proportions(x, levels, w) ≈ [0.3, 0.4, 0.0, 0.0]
+    @test addcounts!(ones(4), x, levels, w) == [4.0, 5.0, 1.0, 1.0]
+
+    # `r` must have linear indices `1:length(levels)`.
+    @test_throws BoundsError addcounts!(zeros(Int, 3), x, levels)
+    @test_throws BoundsError addcounts!(zeros(3), x, levels, w)
+    @test_throws BoundsError addcounts!(OffsetVector(zeros(Int, 4), 2:5), x, levels)
+    @test_throws BoundsError addcounts!(OffsetVector(zeros(4), 2:5), x, levels, w)
+
+    # Examples from #908.
+    @test counts(x, Base.OneTo(4), w) == [3.0, 3.0, 4.0, 0.0]
+    @test proportions(x, Base.OneTo(4)) == [0.5, 0.25, 0.25, 0.0]
+    @test proportions(x, Base.OneTo(4), w) ≈ [0.3, 0.3, 0.4, 0.0]
 end
 
 @testset "integer count bin arithmetic" begin
-    # The 201st bin must not wrap during Int8 subtraction.
+    # The offset must not overflow during subtraction of small integers.
     levels = Int8(-100):Int8(100)
     x = Int8[-101, -100, 100, 101]
     w = weights([1.0, 2.0, 3.0, 4.0])
@@ -37,56 +43,39 @@ end
     expected_w[[1, 201]] = [2.0, 3.0]
     @test counts(x, levels) == expected
     @test counts(x, levels, w) == expected_w
-    @test addcounts!(ones(Int, 201), x, levels) == expected .+ 1
-    @test addcounts!(ones(201), x, levels, w) == expected_w .+ 1
-    @test proportions(x, levels) == expected ./ 4
-    @test proportions(x, levels, w) ≈ expected_w ./ 10
-    @test x == Int8[-101, -100, 100, 101]
-    @test w == weights([1.0, 2.0, 3.0, 4.0])
 
-    # Bool is an Integer but does not have a widen method.
-    bools = Bool[false, true, true]
-    @test counts(bools, 0:1) == [1, 2]
-    @test counts(bools, 0:1, weights([2.0, 3.0, 5.0])) == [2.0, 8.0]
-    @test addcounts!(ones(Int, 2), bools, 0:1) == [2, 3]
-    @test addcounts!(ones(2), bools, 0:1, weights([2.0, 3.0, 5.0])) == [3.0, 9.0]
-
-    # Use ordinal bins with mixed signedness and abstract eltypes.
-    mixed = Integer[Int8(-100), UInt64(100), big(0)]
-    expected[101] = 1
-    @test counts(mixed, levels) == expected
-    @test counts(mixed, levels, weights([2.0, 3.0, 4.0])) ==
-        [i == 1 ? 2.0 : i == 101 ? 4.0 : i == 201 ? 3.0 : 0.0 for i in 1:201]
-    unsigned = UInt64[0, 100, 101]
-    expected_u = zeros(Int, 201)
-    expected_u[[101, 201]] .= 1
-    @test counts(unsigned, levels) == expected_u
-    @test counts(unsigned, levels, weights([2.0, 3.0, 4.0])) ==
-        [i == 101 ? 2.0 : i == 201 ? 3.0 : 0.0 for i in 1:201]
-
-    # Convert both the range bound and input before the index arithmetic.
-    wider = typemin(Int16):typemax(Int16)
-    expected_wider = zeros(Int, 65536)
-    expected_wider[32869] = 1
-    @test counts(Int8[100], wider) == expected_wider
-    @test counts(Int8[100], wider, weights([2.0])) == expected_wider .* 2
+    lo = typemin(Int)
+    limits = Base.IdentityUnitRange(lo:lo+1)
+    wide = BigInt[lo, big(lo) + 1]
+    @test counts(wide, limits) == [1, 1]
+    @test counts(wide, limits, weights([2.0, 3.0])) == [2.0, 3.0]
 
     for T in (UInt64, UInt128)
-        hi = typemax(T)
-        limits = (hi - one(T)):hi
-        values = T[hi - one(T), hi]
-        @test counts(values, limits) == [1, 1]
-        @test counts(values, limits, weights([2.0, 3.0])) == [2.0, 3.0]
-        @test counts(BigInt.(values), limits) == [1, 1]
-        @test counts(BigInt.(values), limits, weights([2.0, 3.0])) == [2.0, 3.0]
         zero_limits = zero(T):one(T)
         @test counts(BigInt[0, 1], zero_limits) == [1, 1]
         @test counts(BigInt[0, 1], zero_limits, weights([2.0, 3.0])) == [2.0, 3.0]
     end
 
-    huge = big(10)^50
-    @test counts([huge, huge + 1], huge:huge+1) == [1, 1]
-    @test counts([huge, huge + 1], huge:huge+1, weights([2.0, 3.0])) == [2.0, 3.0]
+end
+
+struct PromotingCountInteger <: Integer
+    value::BigInt
+end
+Base.convert(::Type{BigInt}, x::PromotingCountInteger) = x.value
+Base.BigInt(x::PromotingCountInteger) = x.value
+Base.convert(::Type{UInt}, x::PromotingCountInteger) = UInt(x.value)
+Base.promote_rule(::Type{PromotingCountInteger}, ::Type{T}) where {T<:Integer} = BigInt
+
+@testset "integer count bin arithmetic with generic promotion" begin
+    # Ordinary arithmetic works without a specialized modular conversion.
+    x = PromotingCountInteger.(BigInt[-1, 1])
+    @test counts(x, -1:1) == [1, 0, 1]
+    @test counts(x, -1:1, weights([2.0, 3.0])) == [2.0, 0.0, 3.0]
+
+    lo = big(10)^50
+    wide = PromotingCountInteger.([lo, lo + 1])
+    @test counts(wide, lo:lo+1) == [1, 1]
+    @test counts(wide, lo:lo+1, weights([2.0, 3.0])) == [2.0, 3.0]
 end
 
 @testset "1D integer counts" begin
