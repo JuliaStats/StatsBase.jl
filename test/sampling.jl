@@ -186,41 +186,41 @@ check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 test_rng_use(seqsample_d!, 1:10, zeros(Int, 6))
 
-# Track when algorithm D hands its remaining population to algorithm A.
-struct SamplingTailProbe <: AbstractVector{Int}
-    population::UnitRange{Int}
-    tails::Vector{UnitRange{Int}}
+@testset "algorithm D sampling" begin
+    # Exercise D's rejection loop and the mixed D → A regime.
+    for (N, k) in ((100, 3), (40, 3))
+        a = zeros(Int, k, n)
+        for j = 1:size(a,2)
+            seqsample_d!(1:N, view(a,:,j))
+        end
+        check_sample_norep(a, (1, N), 5.0e-3; ordered=true)
+    end
 end
-Base.size(a::SamplingTailProbe) = size(a.population)
-Base.getindex(a::SamplingTailProbe, i::Int) = a.population[i]
-Base.getindex(::SamplingTailProbe, ::UnitRange{Int}) = error("copied the population tail")
-function Base.view(a::SamplingTailProbe, indices::UnitRange{Int})
-    push!(a.tails, indices)
-    return view(a.population, indices)
-end
+
+test_rng_use(seqsample_d!, 1:100, zeros(Int, 3))
 
 @testset "algorithm D fallback" begin
-    for N in (25, 26, 27)
-        a = SamplingTailProbe(1:N, UnitRange{Int}[])
-        x = zeros(Int, 2)
-        seqsample_d!(MersenneTwister(1), a, x)
-        @test 1 <= x[1] < x[2] <= N
-        @test a.tails == (N <= 26 ? [1:N] : UnitRange{Int}[])
+    for N in (25, 26, 27), seed in 1:5
+        rng_d = MersenneTwister(seed)
+        x_d = zeros(Int, 2)
+        @test seqsample_d!(rng_d, 1:N, x_d) === x_d
+        rng_a = MersenneTwister(seed)
+        randexp(rng_a)
+        x_a = seqsample_a!(rng_a, 1:N, zeros(Int, 2))
+        @test (x_d == x_a && rng_d == rng_a) == (N <= 26)
     end
+end
 
-    # With three draws, D starts first. Its first selection determines
-    # whether the remaining population is dense enough for A.
-    switched = Bool[]
-    for seed in 1:32
-        a = SamplingTailProbe(1:40, UnitRange{Int}[])
-        x = zeros(Int, 3)
-        seqsample_d!(MersenneTwister(seed), a, x)
-        @test 1 <= x[1] < x[2] < x[3] <= 40
-        switch = 40 - x[1] <= 13 * 2
-        push!(switched, switch)
-        @test a.tails == (switch ? [(x[1] + 1):40] : UnitRange{Int}[])
+@testset "algorithm D return value" begin
+    for (N, k) in ((0, 0), (10, 0), (100, 1), (100, 3), (40, 3), (10, 10))
+        rng = MersenneTwister(1)
+        previous_rng = copy(rng)
+        x = zeros(Int, k)
+        @test seqsample_d!(rng, 1:N, x) === x
+        if k == 0
+            @test rng == previous_rng
+        end
     end
-    @test any(switched) && !all(switched)
 end
 
 a = sample(3:12, 5; replace=false)
