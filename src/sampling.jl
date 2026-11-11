@@ -368,6 +368,11 @@ Random subsequence sampling using algorithm D described in the following paper (
 Jeffrey Scott Vitter. "Faster Methods for Random Sampling". Communications of the ACM,
 27 (7), July 1984.
 
+When the remaining population has at most 13 times the remaining sample size,
+this switches to algorithm A, using ``α = 1/13`` from:
+Jeffrey Scott Vitter. "An Efficient Algorithm for Sequential Random Sampling".
+ACM Transactions on Mathematical Software, 13 (1), March 1987.
+
 This algorithm consumes ``O(k)`` random numbers, with `k=length(x)`.
 The outputs are ordered.
 """
@@ -379,6 +384,7 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     N = length(a)
     n = length(x)
     n <= N || error("length(x) should not exceed length(a)")
+    n == 0 && return x
 
     i = 0
     j = 0
@@ -386,8 +392,8 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
     vprime = exp(-randexp(rng)/n)
     q1 = N - n + 1
     q2 = q1 / N
-    alpha = 1 / 13 # choose alpha value
-    threshold = alpha * n
+    alpha_inv = 13.0 # 1/α with α = 1/13 as in Vitter (1987).
+    threshold = alpha_inv * n
 
     while n > 1 && threshold < N
         while true
@@ -440,15 +446,16 @@ function seqsample_d!(rng::AbstractRNG, a::AbstractArray, x::AbstractArray)
         n -= 1
         q1 -= s
         q2 = q1 / N
-        threshold -= alpha
+        threshold -= alpha_inv
     end
 
     if n > 1
-        seqsample_a!(rng, a[i+1:end], @view x[j+1:end])
+        seqsample_a!(rng, @view(a[i+1:end]), @view(x[j+1:end]))
     else
         s = trunc(Int, N * vprime)
         x[j+=1] = a[i+=s+1]
     end
+    return x
 end
 
 seqsample_d!(a::AbstractArray, x::AbstractArray) = seqsample_d!(default_rng(), a, x)
