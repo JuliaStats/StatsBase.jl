@@ -87,8 +87,12 @@ function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray, x::Abstra
 end
 
 # special case of a range can be done more efficiently
-sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractRange, x::AbstractArray) =
-    sort!(sampler!(rng, a, x), rev=step(a)<0)
+function sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractRange, x::AbstractArray)
+    # Split this into two branches so that `rev` is a constant in each branch.
+    # With `rev = step(a) < 0` the type of the sort order is only known at run time,
+    # so the call cannot be resolved statically, e.g. when compiling with `juliac --trim`.
+    return step(a) < 0 ? sort!(sampler!(rng, a, x), rev = true) : sort!(sampler!(rng, a, x))
+end
 
 # weighted case:
 sample_ordered!(sampler!, rng::AbstractRNG, a::AbstractArray,
