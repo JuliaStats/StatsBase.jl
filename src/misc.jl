@@ -118,12 +118,16 @@ function levelsmap(a::AbstractArray{T}) where T
 end
 
 """
-    indicatormat(x, k::Integer; sparse=false)
+    indicatormat([SparseMatrixCSC,] x, k::Integer)
 
 Construct a boolean matrix `I` of size `(k, length(x))` such that
 `I[x[i], i] = true` and all other elements are set to `false`.
-If `sparse` is `true`, the output will be a sparse matrix, otherwise
-it will be dense (default).
+If `SparseMatrixCSC` is passed as first argument, the output will be a sparse matrix,
+otherwise it will be dense (default).
+
+!!! compat "Deprecated keyword argument"
+    The keyword argument `sparse` is deprecated.
+    Use `indicatormat(SparseMatrixCSC, x, k)` instead of `indicatormat(x, k; sparse=true)`.
 
 # Examples
 
@@ -136,24 +140,37 @@ julia> indicatormat([1 2 2], 2)
  0  1  1
 ```
 """
-function indicatormat(x::AbstractArray{<:Integer}, k::Integer; sparse::Bool=false)
-    sparse ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
+function indicatormat(x::AbstractArray{<:Integer}, k::Integer; sparse::Union{Bool,Nothing}=nothing)
+    sparse === nothing || _depwarn_indicatormat_sparse()
+    sparse === true ? _indicatormat_sparse(x, k) : _indicatormat_dense(x, k)
 end
+indicatormat(::Type{SparseMatrixCSC}, x::AbstractArray{<:Integer}, k::Integer) = _indicatormat_sparse(x, k)
 
 
 """
-    indicatormat(x, c=sort(unique(x)); sparse=false)
+    indicatormat([SparseMatrixCSC,] x, c=sort(unique(x)))
 
 Construct a boolean matrix `I` of size `(length(c), length(x))`.
 Let `ci` be the index of `x[i]` in `c`. Then `I[ci, i] = true` and
 all other elements are `false`.
-"""
-function indicatormat(x::AbstractArray, c::AbstractArray; sparse::Bool=false)
-    sparse ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
-end
+If `SparseMatrixCSC` is passed as first argument, the output will be a sparse matrix,
+otherwise it will be dense (default).
 
-indicatormat(x::AbstractArray; sparse::Bool=false) =
-    indicatormat(x, sort!(unique(x)); sparse=sparse)
+!!! compat "Deprecated keyword argument"
+    The keyword argument `sparse` is deprecated.
+    Use `indicatormat(SparseMatrixCSC, x, c)` instead of `indicatormat(x, c; sparse=true)`.
+"""
+function indicatormat(x::AbstractArray, c::AbstractArray=sort!(unique(x)); sparse::Union{Bool,Nothing}=nothing)
+    sparse === nothing || _depwarn_indicatormat_sparse()
+    sparse === true ? _indicatormat_sparse(x, c) : _indicatormat_dense(x, c)
+end
+indicatormat(::Type{SparseMatrixCSC}, x::AbstractArray, c::AbstractArray=sort!(unique(x))) = _indicatormat_sparse(x, c)
+
+# TODO: Remove keyword argument `sparse` and make SparseArrays a weak dependency (StatsBase 0.35)
+_depwarn_indicatormat_sparse() =
+    Base.depwarn("keyword argument `sparse` of `indicatormat` is deprecated; " *
+                 "use `indicatormat(SparseMatrixCSC, x, ...)` (requires `using SparseArrays`) " *
+                 "for sparse and `indicatormat(x, ...)` for dense output.", :indicatormat)
 
 
 function _indicatormat_dense(x::AbstractArray{<:Integer}, k::Integer)
