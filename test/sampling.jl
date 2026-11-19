@@ -178,6 +178,7 @@ check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 test_rng_use(seqsample_c!, 1:10, zeros(Int, 6))
 
+# These dense cases exercise the immediate handoff to A, not D's main loop.
 a = zeros(Int, 5, n)
 for j = 1:size(a,2)
     seqsample_d!(3:12, view(a,:,j))
@@ -185,6 +186,48 @@ end
 check_sample_norep(a, (3, 12), 5.0e-3; ordered=true)
 
 test_rng_use(seqsample_d!, 1:10, zeros(Int, 6))
+
+@testset "algorithm D sampling" begin
+    # Exercise D's main loop (N > 13n) and the mixed D → A regime.
+    for (N, k) in ((100, 3), (40, 3))
+        a = zeros(Int, k, n)
+        for j = 1:size(a,2)
+            seqsample_d!(1:N, view(a,:,j))
+        end
+        check_sample_norep(a, (1, N), 5.0e-3; ordered=true)
+    end
+end
+
+test_rng_use(seqsample_d!, 1:100, zeros(Int, 3))
+
+@testset "algorithm D fallback" begin
+    for N in (25, 26, 27), seed in 1:5
+        rng_d = MersenneTwister(seed)
+        x_d = zeros(Int, 2)
+        @test seqsample_d!(rng_d, 1:N, x_d) === x_d
+        rng_a = MersenneTwister(seed)
+        randexp(rng_a)
+        x_a = seqsample_a!(rng_a, 1:N, zeros(Int, 2))
+        @test (x_d == x_a && rng_d == rng_a) == (N <= 26)
+    end
+end
+
+@testset "algorithm D empty sample" begin
+    for N in (0, 10)
+        rng = MersenneTwister(1)
+        x = Int[]
+        @test seqsample_d!(rng, 1:N, x) === x
+        @test rng == MersenneTwister(1)
+    end
+end
+
+@testset "algorithm D return value" begin
+    for (N, k) in ((100, 1), (100, 3), (40, 3), (10, 10))
+        rng = MersenneTwister(1)
+        x = zeros(Int, k)
+        @test seqsample_d!(rng, 1:N, x) === x
+    end
+end
 
 a = sample(3:12, 5; replace=false)
 check_sample_norep(a, (3, 12), 0; ordered=false)
