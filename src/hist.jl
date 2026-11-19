@@ -451,6 +451,8 @@ float(h::Histogram{T,N}) where {T,N} = Histogram(h.edges, float(h.weights), h.cl
 
 Normalize the histogram `h` and optionally scale one or more auxiliary weight
 arrays appropriately. See description of `normalize` for details. Returns `h`.
+In-place normalization requires floating-point weights; use `normalize(h)` for
+other weight types.
 """
 @generated function normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T<:AbstractFloat,N}
     quote
@@ -501,6 +503,12 @@ arrays appropriately. See description of `normalize` for details. Returns `h`.
         end
         h
     end
+end
+
+
+function normalize!(h::Histogram{T,N}, aux_weights::Array{T,N}...; mode::Symbol=:pdf) where {T,N}
+    throw(ArgumentError("Cannot normalize a histogram with $T weights in-place; " *
+                        "floating-point weights are required. Use normalize(h) instead."))
 end
 
 

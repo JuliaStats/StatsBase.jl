@@ -161,6 +161,30 @@ end
 end
 
 
+@testset "In-place histogram normalization requires floating-point weights" begin
+    for w in ([1, 2], [1//1, 2//1], [1 2; 3 4])
+        h = Histogram(ntuple(_ -> 0:2, ndims(w)), w)
+        original = deepcopy(h)
+        aux = copy(w)
+        for mode in (:pdf, :density, :probability, :none)
+            @test_throws ArgumentError normalize!(h; mode=mode)
+            @test_throws ArgumentError normalize!(h, aux; mode=mode)
+            @test_throws r"floating-point.*normalize\(h\)" normalize!(h; mode=mode)
+            @test h == original
+            @test aux == w
+        end
+        @test eltype(normalize(h).weights) <: AbstractFloat
+    end
+    for T in (Float32, Float64)
+        h = Histogram((0:2,), T[1, 2])
+        aux = T[2, 4]
+        @test normalize!(h, aux; mode=:probability) === h
+        @test h.weights ≈ T[1/3, 2/3]
+        @test aux ≈ T[2/3, 4/3]
+    end
+end
+
+
 @testset "Histogram norm and normalize" begin
     rng = MersenneTwister(345678)
     edges = (
