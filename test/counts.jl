@@ -65,6 +65,13 @@ Base.convert(::Type{BigInt}, x::PromotingCountInteger) = x.value
 Base.BigInt(x::PromotingCountInteger) = x.value
 Base.convert(::Type{UInt}, x::PromotingCountInteger) = UInt(x.value)
 Base.promote_rule(::Type{PromotingCountInteger}, ::Type{T}) where {T<:Integer} = BigInt
+PromotingCountInteger(x::PromotingCountInteger) = x
+# Same-type operations also let this integer serve as a UnitRange endpoint.
+Base.:(==)(x::PromotingCountInteger, y::PromotingCountInteger) = x.value == y.value
+Base.:(<)(x::PromotingCountInteger, y::PromotingCountInteger) = x.value < y.value
+Base.:(<=)(x::PromotingCountInteger, y::PromotingCountInteger) = x.value <= y.value
+Base.:+(x::PromotingCountInteger, y::PromotingCountInteger) = PromotingCountInteger(x.value + y.value)
+Base.:-(x::PromotingCountInteger, y::PromotingCountInteger) = x.value - y.value
 
 @testset "integer count bin arithmetic with generic promotion" begin
     # Ordinary arithmetic works without a specialized modular conversion.
@@ -76,6 +83,15 @@ Base.promote_rule(::Type{PromotingCountInteger}, ::Type{T}) where {T<:Integer} =
     wide = PromotingCountInteger.([lo, lo + 1])
     @test counts(wide, lo:lo+1) == [1, 1]
     @test counts(wide, lo:lo+1, weights([2.0, 3.0])) == [2.0, 3.0]
+end
+
+@testset "integer count levels with generic promotion" begin
+    levels = PromotingCountInteger(-1):PromotingCountInteger(1)
+    @test BigInt.(collect(levels)) == BigInt[-1, 0, 1]
+
+    x = [-2, -1, 0, 1, 2]
+    @test counts(x, levels) == [1, 1, 1]
+    @test counts(x, levels, weights([1.0, 2.0, 3.0, 4.0, 5.0])) == [2.0, 3.0, 4.0]
 end
 
 @testset "1D integer counts" begin
